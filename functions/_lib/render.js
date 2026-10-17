@@ -99,8 +99,7 @@ export function shell({ origin, apiBase, path, title, desc, image, jsonld = [], 
 <meta name="robots" content="${robots}">
 <meta name="author" content="nivread">
 <link rel="canonical" href="${esc(canonical)}">
-<link rel="icon" href="/img/fnnzpng.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" sizes="180x180" href="/img/fnnzpng.svg">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0d0d0d">
 <meta name="api-base" content="${esc(apiBase)}">
 <meta property="og:site_name" content="nivread">
@@ -125,8 +124,7 @@ ${ld}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/style.css">
-<link rel="manifest" href="/manifest.json">
+<style>body{font-family:'Kanit',sans-serif}</style>
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white transition-colors duration-300 min-h-screen flex flex-col relative overflow-x-hidden">
 <div class="fixed inset-0 pointer-events-none z-0">
@@ -136,8 +134,7 @@ ${ld}
 <header id="main-header" class="z-20"></header>
 ${body}
 <div id="main-footer" class="z-10"></div>
-<script src="/header.js"></script>
-<script src="/main.js"></script>
+<script src="/nivread.js"></script>
 <script src="/posts-feed.js" defer></script>
 </body>
 </html>`;

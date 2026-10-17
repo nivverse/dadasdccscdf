@@ -41,7 +41,7 @@
     const likeBtn = e.target.closest('[data-like]');
     if (likeBtn) {
       const uid = getUserId();
-      if (!uid) { location.href = '/login.html'; return; }
+      if (!uid) { location.href = '/login?redirect=' + encodeURIComponent(location.pathname + location.search); return; }
       const slug = likeBtn.dataset.like;
       likeBtn.disabled = true;
       try {
@@ -93,6 +93,92 @@
     }, { rootMargin: '600px' });
 
     if (!feed.dataset.nextPage) end(); else io.observe(sentinel);
+  }
+
+  // ---------- ความคิดเห็น (เฉพาะหน้าโพสต์เดี่ยว) ----------
+  const cbox = document.querySelector('[data-comments-for]');
+  const NIV = window.NIV;
+  if (cbox && NIV) {
+    const { api, el, session } = NIV;
+    const slug = cbox.dataset.commentsFor.replace(/^post:/, '');
+    const list = document.getElementById('comment-list');
+    const form = document.getElementById('comment-box');
+    const countEl = document.getElementById('comment-count');
+    const s = session();
+    const loggedIn = !!(s.token && s.userId);
+    let items = [];
+    let isAdmin = false;
+
+    const fmt = (ms) => new Date(ms).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
+
+    const draw = () => {
+      countEl.textContent = items.length;
+      list.replaceChildren();
+      if (!items.length) {
+        list.append(el('p', 'text-sm text-slate-500 dark:text-neutral-400', 'ยังไม่มีความคิดเห็น มาเป็นคนแรกได้เลย'));
+        return;
+      }
+      for (const c of items) {
+        const row = el('div', 'flex gap-3');
+        const av = c.avatar_url
+          ? Object.assign(el('img', 'w-9 h-9 rounded-full object-cover flex-shrink-0'), { src: c.avatar_url, alt: '', loading: 'lazy', referrerPolicy: 'no-referrer' })
+          : el('div', 'w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 grid place-items-center text-white text-sm font-bold flex-shrink-0', String(c.display_name || '?').charAt(0).toUpperCase());
+        const body = el('div', 'min-w-0 flex-1 rounded-2xl bg-slate-100 dark:bg-white/5 px-4 py-2.5');
+        const head = el('div', 'flex items-center gap-2 text-xs text-slate-500 dark:text-neutral-400');
+        head.append(el('span', 'font-semibold text-sm text-slate-900 dark:text-white truncate', c.display_name), el('span', '', fmt(c.created_at)));
+        if (loggedIn && (c.user_id === s.userId || isAdmin)) {
+          const del = el('button', 'ml-auto text-rose-500 hover:underline', 'ลบ');
+          del.type = 'button';
+          del.addEventListener('click', async () => {
+            if (!confirm('ลบความคิดเห็นนี้ใช่ไหม?')) return;
+            const r = await api('/api/blog/comment-delete', { method: 'POST', body: { userId: s.userId, commentId: c.id } });
+            if (!r.ok) return toast(r.data.error || 'ลบไม่สำเร็จ');
+            items = items.filter((x) => x.id !== c.id);
+            draw();
+          });
+          head.append(del);
+        }
+        body.append(head, el('p', 'mt-1 text-sm whitespace-pre-wrap break-words', c.content));
+        row.append(av, body);
+        list.append(row);
+      }
+    };
+
+    if (!loggedIn) {
+      const p = el('p', 'text-sm text-slate-600 dark:text-neutral-300');
+      const a = el('a', 'text-amber-600 dark:text-amber-400 font-semibold hover:underline', 'เข้าสู่ระบบ');
+      a.href = '/login?redirect=' + encodeURIComponent(location.pathname + '#comments');
+      p.append(a, ' เพื่อแสดงความคิดเห็น');
+      form.append(p);
+    } else {
+      const ta = el('textarea', 'w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20');
+      ta.rows = 3; ta.maxLength = 1000; ta.placeholder = 'เขียนความคิดเห็น...';
+      const btn = el('button', 'mt-2 px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 disabled:opacity-60', 'ส่งความคิดเห็น');
+      btn.type = 'button';
+      btn.addEventListener('click', async () => {
+        const content = ta.value.trim();
+        if (!content) return;
+        btn.disabled = true;
+        const r = await api('/api/blog/comment', { method: 'POST', body: { slug, userId: s.userId, content } });
+        btn.disabled = false;
+        if (r.status === 401) { location.href = '/login?redirect=' + encodeURIComponent(location.pathname); return; }
+        if (!r.ok) return toast(r.data.error || 'ส่งไม่สำเร็จ');
+        ta.value = '';
+        items.push(r.data.comment);
+        draw();
+      });
+      form.append(ta, btn);
+    }
+
+    (async () => {
+      const [r, me] = await Promise.all([
+        api('/api/blog/comments?slug=' + encodeURIComponent(slug)),
+        loggedIn ? api('/api/blog/me?userId=' + encodeURIComponent(s.userId)) : null,
+      ]);
+      if (me && me.ok) isAdmin = !!me.data.isAdmin;
+      items = r.ok ? r.data.comments : [];
+      draw();
+    })();
   }
 
   loadLiked();

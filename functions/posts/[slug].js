@@ -51,7 +51,7 @@ export async function onRequestGet({ request, env, params }) {
       inLanguage: 'th',
       articleSection: p.category || undefined,
       author: { '@type': 'Person', name: author },
-      publisher: { '@type': 'Organization', name: 'nivread', url: origin + '/', logo: { '@type': 'ImageObject', url: origin + '/img/fnnzpng.svg' } },
+      publisher: { '@type': 'Organization', name: 'nivread', url: origin + '/', logo: { '@type': 'ImageObject', url: origin + '/favicon.svg' } },
     },
     {
       '@context': 'https://schema.org',
@@ -82,8 +82,9 @@ ${paragraphs}
   </article>
 
   <section id="comments" class="mt-6 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4" data-comments-for="post:${esc(p.slug)}">
-    <h2 class="font-bold">ความคิดเห็น (${p.comment_count || 0})</h2>
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">ส่วนความคิดเห็น: ดึงจาก <code>/api/blog/comments?slug=${esc(p.slug)}</code> และส่งด้วย <code>/api/blog/comment</code> (ยังไม่ได้ทำ UI)</p>
+    <h2 class="font-bold">ความคิดเห็น (<span id="comment-count">${p.comment_count || 0}</span>)</h2>
+    <div id="comment-box" class="mt-3"></div>
+    <div id="comment-list" class="mt-4 space-y-4"></div>
   </section>
 
   ${more.length ? `<section class="mt-10" aria-labelledby="more-h">

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /write
+Disallow: /admin
+
+Sitemap: https://nivread.com/sitemap-posts.xml

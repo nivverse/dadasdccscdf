@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>อนุมัติโพสต์ | nivread</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0d0d0d">
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Kanit',sans-serif}</style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+
+<header id="main-header" class="z-20"></header>
+
+<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
+  <h1 class="text-3xl font-extrabold tracking-tight">อนุมัติโพสต์</h1>
+  <p class="text-sm text-slate-600 dark:text-neutral-400 mt-1">โพสต์ที่สมาชิกส่งมาจะขึ้นหน้าเว็บและ Google หลังกดอนุมัติเท่านั้น</p>
+
+  <div id="message" class="mt-4 text-sm font-medium min-h-[1.25rem]" role="status"></div>
+  <div id="list" class="mt-4 space-y-4"></div>
+</main>
+
+<div id="main-footer" class="z-10"></div>
+<script src="/nivread.js"></script>
+<script>
+  const { session, api, el } = NIV;
+  const s = session();
+  if (!s.token || !s.userId) location.replace('/login?redirect=/admin');
+
+  const $ = (id) => document.getElementById(id);
+  const say = (t, kind) => {
+    const m = $('message');
+    m.textContent = t || '';
+    m.className = 'mt-4 text-sm font-medium min-h-[1.25rem] ' +
+      (kind === 'err' ? 'text-rose-600 dark:text-rose-400' : kind === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400');
+  };
+  const fmt = (ms) => new Date(ms).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
+
+  async function review(slug, action, card) {
+    card.querySelectorAll('button').forEach((b) => (b.disabled = true));
+    const r = await api('/api/blog/review', { method: 'POST', body: { userId: s.userId, slug, action } });
+    if (!r.ok) {
+      card.querySelectorAll('button').forEach((b) => (b.disabled = false));
+      return say(r.data.error || 'ทำรายการไม่สำเร็จ', 'err');
+    }
+    card.remove();
+    say(action === 'approve' ? 'อนุมัติแล้ว โพสต์จะขึ้นหน้าเว็บภายในไม่กี่นาที' : 'ปฏิเสธแล้ว', 'ok');
+    if (!$('list').children.length) $('list').append(el('p', 'text-sm text-slate-500 dark:text-neutral-400', 'ไม่มีโพสต์ที่รออนุมัติ'));
+  }
+
+  async function load() {
+    const r = await api('/api/blog/mine?userId=' + encodeURIComponent(s.userId));
+    if (r.status === 401) { localStorage.removeItem('token'); return location.replace('/login?redirect=/admin'); }
+    if (!r.ok) return say(r.data.error || 'โหลดรายการไม่สำเร็จ', 'err');
+    if (!r.data.isAdmin) return say('หน้านี้สำหรับแอดมินเท่านั้น', 'err');
+
+    const box = $('list');
+    box.replaceChildren();
+    if (!r.data.pending.length) {
+      box.append(el('p', 'text-sm text-slate-500 dark:text-neutral-400', 'ไม่มีโพสต์ที่รออนุมัติ'));
+      return;
+    }
+
+    for (const p of r.data.pending) {
+      const card = el('article', 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4');
+      card.append(el('h2', 'font-bold leading-snug', p.title));
+      card.append(el('div', 'mt-1 text-xs text-slate-500 dark:text-neutral-400', `โดย ${p.author_name} · ${fmt(p.updated_at)}${p.category ? ' · ' + p.category : ''}`));
+
+      const body = el('div', 'hidden mt-3 rounded-xl bg-slate-100 dark:bg-black/40 p-3 text-sm leading-7 whitespace-pre-wrap break-words max-h-96 overflow-auto');
+      const read = el('button', 'mt-3 text-sm text-amber-600 dark:text-amber-400 hover:underline', 'อ่านเนื้อหา');
+      read.type = 'button';
+      let loaded = false;
+      read.addEventListener('click', async () => {
+        if (!loaded) {
+          read.disabled = true;
+          const d = await api('/api/blog/edit-get?userId=' + encodeURIComponent(s.userId) + '&slug=' + encodeURIComponent(p.slug));
+          read.disabled = false;
+          if (!d.ok) return say(d.data.error || 'โหลดเนื้อหาไม่สำเร็จ', 'err');
+          body.textContent = d.data.post.content;   // textContent เสมอ ไม่ใช้ innerHTML กัน XSS
+          loaded = true;
+        }
+        const hidden = body.classList.toggle('hidden');
+        read.textContent = hidden ? 'อ่านเนื้อหา' : 'ซ่อนเนื้อหา';
+      });
+
+      const actions = el('div', 'mt-4 flex gap-2');
+      const ok = el('button', 'px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 disabled:opacity-60', 'อนุมัติ');
+      ok.type = 'button';
+      ok.addEventListener('click', () => review(p.slug, 'approve', card));
+      const no = el('button', 'px-4 py-2 rounded-xl border border-rose-500/40 text-rose-500 text-sm font-semibold hover:bg-rose-500/10 disabled:opacity-60', 'ปฏิเสธ');
+      no.type = 'button';
+      no.addEventListener('click', () => { if (confirm('ปฏิเสธโพสต์นี้ใช่ไหม?')) review(p.slug, 'reject', card); });
+      actions.append(ok, no);
+
+      card.append(read, body, actions);
+      box.append(card);
+    }
+  }
+  load();
+</script>
+</body>
+</html>
