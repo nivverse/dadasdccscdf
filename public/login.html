@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เข้าสู่ระบบ | nivread</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0d0d0d">
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Kanit',sans-serif}</style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+
+<header id="main-header" class="z-20"></header>
+
+<main class="flex-1 flex items-center justify-center px-4 py-12 z-10">
+  <div class="w-full max-w-md rounded-3xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-xl p-6 sm:p-8">
+    <h1 id="form-title" class="text-2xl font-bold">เข้าสู่ระบบ</h1>
+    <p id="form-sub" class="text-sm text-slate-500 dark:text-neutral-400 mt-1">เข้าสู่ระบบเพื่อเขียนโพสต์ ถูกใจ และแสดงความคิดเห็น</p>
+
+    <div id="message" class="mt-4 text-sm font-medium min-h-[1.25rem]" role="status"></div>
+
+    <form id="auth-form" class="mt-2 space-y-4">
+      <div>
+        <label for="email" class="block text-sm font-medium mb-1.5">อีเมล</label>
+        <input id="email" type="email" required autocomplete="email" placeholder="name@example.com"
+          class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium mb-1.5">รหัสผ่าน</label>
+        <input id="password" type="password" required minlength="6" autocomplete="current-password" placeholder="อย่างน้อย 6 ตัวอักษร"
+          class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+      </div>
+      <button id="submit-btn" type="submit"
+        class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-md shadow-amber-500/25 transition disabled:opacity-60">
+        เข้าสู่ระบบ
+      </button>
+    </form>
+
+    <div class="flex items-center gap-3 my-5">
+      <div class="h-px flex-1 bg-slate-200 dark:bg-white/10"></div>
+      <span class="text-xs text-slate-400 dark:text-neutral-500">หรือ</span>
+      <div class="h-px flex-1 bg-slate-200 dark:bg-white/10"></div>
+    </div>
+    <div id="google-signin-button" class="flex justify-center"></div>
+
+    <p class="mt-6 text-center text-sm text-slate-500 dark:text-neutral-400">
+      <span id="toggle-text">ยังไม่มีบัญชี?</span>
+      <button id="toggle-btn" type="button" class="ml-1 font-semibold text-amber-600 dark:text-amber-400 hover:underline">สมัครสมาชิก</button>
+    </p>
+  </div>
+</main>
+
+<div id="main-footer" class="z-10"></div>
+<script src="/nivread.js"></script>
+<script>
+  const API = NIV.API;
+  // ใช้ Client ID ชุดเดียวกับ FNNZ — ต้องเพิ่มโดเมน nivread ใน "Authorized JavaScript origins" ที่ Google Cloud Console
+  const GOOGLE_CLIENT_ID = '259904684800-d62h42edjfuvvse2v04drtek4hqdiflp.apps.googleusercontent.com';
+
+  // กลับไปหน้าเดิมหลังล็อกอิน (รับเฉพาะ path ภายในเว็บนี้)
+  const next = (() => {
+    const r = new URLSearchParams(location.search).get('redirect') || '';
+    return r.startsWith('/') && !r.startsWith('//') && !r.includes('\\') ? r : '/posts';
+  })();
+
+  let loginMode = true;
+  const $ = (id) => document.getElementById(id);
+  const msg = (text, kind) => {
+    const m = $('message');
+    m.textContent = text || '';
+    m.className = 'mt-4 text-sm font-medium min-h-[1.25rem] ' +
+      (kind === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : kind === 'err' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400');
+  };
+
+  function saveSession(d, email) {
+    if (d.token) localStorage.setItem('token', d.token);
+    localStorage.setItem('userId', d.userId);
+    if (email || d.email) localStorage.setItem('userEmail', email || d.email);
+    if (d.name) localStorage.setItem('userName', d.name); else localStorage.removeItem('userName');
+  }
+
+  async function post(path, body) {
+    const res = await fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    let data = {};
+    try { data = await res.json(); } catch {}
+    return { ok: res.ok && data.success !== false, data };
+  }
+
+  $('toggle-btn').addEventListener('click', () => {
+    loginMode = !loginMode;
+    $('form-title').textContent = loginMode ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
+    $('form-sub').textContent = loginMode ? 'เข้าสู่ระบบเพื่อเขียนโพสต์ ถูกใจ และแสดงความคิดเห็น' : 'สร้างบัญชีเพื่อเริ่มเขียนโพสต์ของคุณ';
+    $('submit-btn').textContent = loginMode ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
+    $('toggle-text').textContent = loginMode ? 'ยังไม่มีบัญชี?' : 'มีบัญชีอยู่แล้ว?';
+    $('toggle-btn').textContent = loginMode ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+    $('password').autocomplete = loginMode ? 'current-password' : 'new-password';
+    msg('');
+  });
+
+  $('auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = $('email').value.trim();
+    const password = $('password').value;
+    $('submit-btn').disabled = true;
+    msg('กำลังดำเนินการ...');
+    try {
+      if (!loginMode) {
+        const reg = await post('/api/register', { email, password });
+        if (!reg.ok) return msg(reg.data.error || 'สมัครสมาชิกไม่สำเร็จ', 'err');
+      }
+      const r = await post('/api/login', { email, password });
+      if (!r.ok) return msg(r.data.error || 'เข้าสู่ระบบไม่สำเร็จ', 'err');
+      saveSession(r.data, email);
+      msg('เข้าสู่ระบบสำเร็จ', 'ok');
+      setTimeout(() => (location.href = next), 500);
+    } catch {
+      msg('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่', 'err');
+    } finally {
+      $('submit-btn').disabled = false;
+    }
+  });
+
+  async function onGoogle(resp) {
+    msg('กำลังเข้าสู่ระบบด้วย Google...');
+    try {
+      const r = await post('/api/google-login', { credential: resp.credential });
+      if (!r.ok) return msg(r.data.error || 'เข้าสู่ระบบด้วย Google ไม่สำเร็จ', 'err');
+      saveSession(r.data);
+      msg('เข้าสู่ระบบสำเร็จ', 'ok');
+      setTimeout(() => (location.href = next), 500);
+    } catch {
+      msg('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่', 'err');
+    }
+  }
+
+  window.addEventListener('load', () => {
+    if (typeof google === 'undefined') return;
+    google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogle });
+    google.accounts.id.renderButton($('google-signin-button'), { type: 'standard', theme: 'filled_black', size: 'large', shape: 'pill', text: 'continue_with' });
+  });
+</script>
+</body>
+</html>

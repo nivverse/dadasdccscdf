@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เขียนโพสต์ | nivread</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0d0d0d">
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Kanit',sans-serif}</style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+
+<header id="main-header" class="z-20"></header>
+
+<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
+  <h1 class="text-3xl font-extrabold tracking-tight">เขียนโพสต์</h1>
+  <p class="text-sm text-slate-600 dark:text-neutral-400 mt-1">โพสต์ของคุณจะแสดงบนหน้าโพสต์และค้นหาได้บน Google หลังแอดมินอนุมัติ</p>
+
+  <form id="post-form" class="mt-6 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4 sm:p-6 space-y-5">
+    <div>
+      <label for="title" class="block text-sm font-medium mb-1.5">หัวข้อ</label>
+      <input id="title" required minlength="5" maxlength="120" placeholder="หัวข้อที่บอกได้ชัดว่าโพสต์นี้เกี่ยวกับอะไร"
+        class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label for="category" class="block text-sm font-medium mb-1.5">หมวดหมู่ <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
+        <input id="category" maxlength="40" placeholder="เช่น ข่าวอนิเมะ รีวิว"
+          class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+      </div>
+      <div>
+        <label for="cover" class="block text-sm font-medium mb-1.5">ลิงก์รูปปก <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
+        <input id="cover" type="url" maxlength="500" placeholder="https://..."
+          class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+      </div>
+    </div>
+    <div>
+      <label for="excerpt" class="block text-sm font-medium mb-1.5">คำอธิบายสั้น <span class="text-slate-400 font-normal">(แสดงใต้หัวข้อและบน Google)</span></label>
+      <textarea id="excerpt" rows="2" maxlength="300" placeholder="สรุปโพสต์ใน 1-2 ประโยค ประมาณ 120-155 ตัวอักษรกำลังดี"
+        class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"></textarea>
+    </div>
+    <div>
+      <div class="flex justify-between items-end mb-1.5">
+        <label for="content" class="block text-sm font-medium">เนื้อหา</label>
+        <span id="count" class="text-xs text-slate-400">0 / 20000</span>
+      </div>
+      <textarea id="content" rows="14" required minlength="50" maxlength="20000" placeholder="เว้นบรรทัดว่างหนึ่งบรรทัดเพื่อขึ้นย่อหน้าใหม่"
+        class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm leading-7 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"></textarea>
+      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">เนื้อหาเป็นข้อความล้วน ยาวอย่างน้อย 50 ตัวอักษร</p>
+    </div>
+
+    <div id="message" class="text-sm font-medium min-h-[1.25rem]" role="status"></div>
+
+    <button id="submit-btn" type="submit"
+      class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-md shadow-amber-500/25 transition disabled:opacity-60">
+      ส่งโพสต์
+    </button>
+  </form>
+
+  <section class="mt-10" aria-labelledby="mine-h">
+    <h2 id="mine-h" class="text-lg font-bold mb-3">โพสต์ของฉัน</h2>
+    <div id="mine" class="space-y-3"></div>
+  </section>
+</main>
+
+<div id="main-footer" class="z-10"></div>
+<script src="/nivread.js"></script>
+<script>
+  const { session, api, el } = NIV;
+  const s = session();
+  if (!s.token || !s.userId) location.replace('/login?redirect=/write');
+
+  const $ = (id) => document.getElementById(id);
+  const msg = (text, kind) => {
+    const m = $('message');
+    m.replaceChildren();
+    m.className = 'text-sm font-medium min-h-[1.25rem] ' +
+      (kind === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : kind === 'err' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400');
+    if (text) m.append(text);
+    return m;
+  };
+  const needLogin = () => { NIV.logout && location.replace('/login?redirect=/write'); };
+
+  $('content').addEventListener('input', () => { $('count').textContent = $('content').value.length + ' / 20000'; });
+
+  const STATUS = {
+    pending:   ['รออนุมัติ', 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'],
+    published: ['เผยแพร่แล้ว', 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'],
+    rejected:  ['ไม่ผ่านการอนุมัติ', 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'],
+    draft:     ['ร่าง', 'bg-slate-500/15 text-slate-600 dark:text-neutral-300 border-slate-500/30'],
+  };
+  const fmt = (ms) => new Date(ms).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+
+  async function loadMine() {
+    const box = $('mine');
+    const r = await api('/api/blog/mine?userId=' + encodeURIComponent(s.userId));
+    if (r.status === 401) return needLogin();
+    box.replaceChildren();
+    if (!r.ok) { box.append(el('p', 'text-sm text-rose-500', r.data.error || 'โหลดรายการไม่สำเร็จ')); return; }
+    if (!r.data.posts.length) { box.append(el('p', 'text-sm text-slate-500 dark:text-neutral-400', 'ยังไม่มีโพสต์ เขียนโพสต์แรกของคุณได้ที่ฟอร์มด้านบน')); return; }
+
+    for (const p of r.data.posts) {
+      const row = el('div', 'rounded-xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-3 flex items-center gap-3');
+      const info = el('div', 'min-w-0 flex-1');
+      info.append(el('div', 'font-semibold text-sm truncate', p.title));
+      const meta = el('div', 'mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-neutral-400');
+      const [label, cls] = STATUS[p.status] || [p.status, STATUS.draft[1]];
+      meta.append(el('span', 'px-2 py-0.5 rounded-full border ' + cls, label), el('span', '', fmt(p.updated_at)));
+      info.append(meta);
+      row.append(info);
+
+      if (p.status === 'published') {
+        const a = el('a', 'text-sm text-amber-600 dark:text-amber-400 hover:underline', 'ดูโพสต์');
+        a.href = '/posts/' + p.slug;
+        row.append(a);
+      }
+      const del = el('button', 'text-sm text-rose-500 hover:underline', 'ลบ');
+      del.type = 'button';
+      del.addEventListener('click', async () => {
+        if (!confirm('ลบโพสต์นี้ถาวรใช่ไหม?')) return;
+        const d = await api('/api/blog/delete', { method: 'POST', body: { userId: s.userId, slug: p.slug } });
+        if (!d.ok) return alert(d.data.error || 'ลบไม่สำเร็จ');
+        loadMine();
+      });
+      row.append(del);
+      box.append(row);
+    }
+  }
+
+  $('post-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('submit-btn').disabled = true;
+    msg('กำลังส่งโพสต์...');
+    try {
+      const r = await api('/api/blog/create', {
+        method: 'POST',
+        body: {
+          userId: s.userId,
+          title: $('title').value,
+          category: $('category').value,
+          excerpt: $('excerpt').value,
+          coverUrl: $('cover').value,
+          content: $('content').value,
+        },
+      });
+      if (r.status === 401) return needLogin();
+      if (!r.ok) return msg(r.data.error || 'ส่งโพสต์ไม่สำเร็จ', 'err');
+
+      $('post-form').reset();
+      $('count').textContent = '0 / 20000';
+      if (r.data.status === 'published') {
+        const m = msg('', 'ok');
+        const a = el('a', 'underline', 'เปิดดูโพสต์');
+        a.href = '/posts/' + r.data.slug;
+        m.append('เผยแพร่แล้ว ', a);
+      } else {
+        msg('ส่งโพสต์แล้ว รอแอดมินอนุมัติก่อนจึงจะแสดงบนหน้าโพสต์', 'ok');
+      }
+      loadMine();
+    } catch {
+      msg('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่', 'err');
+    } finally {
+      $('submit-btn').disabled = false;
+    }
+  });
+
+  loadMine();
+</script>
+</body>
+</html>
