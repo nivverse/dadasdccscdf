@@ -146,7 +146,12 @@
     $('list').replaceChildren();
     const r = await api('/api/blog/reports?userId=' + encodeURIComponent(s.userId) + '&status=' + tab);
     if (r.status === 401) { NIV.logout(); return; }
-    if (r.status === 403) return say('หน้านี้สำหรับแอดมินเท่านั้น', 'err');
+    if (r.status === 403) {
+      const me = await api('/api/blog/me?userId=' + encodeURIComponent(s.userId));
+      const who = me.ok ? `${me.data.user.email || '(ไม่มีอีเมล)'} (@${me.data.user.id})` : '@' + s.userId;
+      return say('บัญชีนี้ไม่ใช่แอดมิน — ตอนนี้ล็อกอินเป็น ' + who + ' ให้ล็อกอินด้วยบัญชี fnnzart@gmail.com', 'err');
+    }
+    if (r.status === 404) return say('Worker ยังไม่ได้อัปเดต (ไม่พบระบบรายงาน) กรุณา deploy blog-api.js ใหม่', 'err');
     if (!r.ok) return say(r.data.error || 'โหลดรายการไม่สำเร็จ', 'err');
     say('');
     const groups = r.data.groups;
