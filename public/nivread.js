@@ -49,7 +49,7 @@
       ${loggedIn
         ? `<a id="niv-admin" href="/admin" class="hidden ${link}">อนุมัติโพสต์</a>
            <a href="/write" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold shadow-md shadow-amber-500/25">เขียนโพสต์</a>
-           <span id="niv-user" class="hidden sm:inline px-2 text-slate-500 dark:text-neutral-400 max-w-[8rem] truncate"></span>
+           <a id="niv-user" href="/profile" class="hidden sm:inline px-2 text-slate-600 dark:text-neutral-300 hover:text-amber-500 max-w-[8rem] truncate"></a>
            <button id="niv-logout" type="button" class="${link}">ออกจากระบบ</button>`
         : `<a href="/login?redirect=${here}" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold shadow-md shadow-amber-500/25">เข้าสู่ระบบ</a>`}
     </nav>

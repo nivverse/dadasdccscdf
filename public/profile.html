@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โปรไฟล์ | nivread</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0d0d0d">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Kanit', sans-serif; }
+  .glass-card { background: rgba(255,255,255,.88); backdrop-filter: blur(16px); border: 1px solid rgba(226,232,240,.8); box-shadow: 0 10px 25px -5px rgba(15,23,42,.08); }
+  .dark .glass-card { background: rgba(18,18,18,.82); border: 1px solid rgba(255,255,255,.1); box-shadow: none; }
+  .fld { width: 100%; padding: .75rem 1rem; border-radius: .75rem; font-size: .875rem; background: #f1f5f9; border: 1px solid #e2e8f0; outline: none; }
+  .dark .fld { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); }
+  .fld:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.2); }
+  .fld:disabled { opacity: .55; cursor: not-allowed; }
+  .btn-main { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .75rem 1.5rem; border-radius: .75rem; font-size: .875rem; font-weight: 600; color: #fff; background: linear-gradient(to right,#f59e0b,#f97316); cursor: pointer; box-shadow: 0 8px 20px -8px rgba(245,158,11,.55); }
+  .btn-main:hover { filter: brightness(1.08); }
+  .btn-main:disabled { opacity: .5; cursor: not-allowed; }
+  .tab-on { color: #f59e0b !important; border-color: #f59e0b !important; }
+</style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/25 opacity-40 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/25 opacity-40 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+
+<header id="main-header" class="z-20"></header>
+
+<main class="flex-1 z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 lg:py-10">
+  <div class="lg:grid lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-6 lg:items-start">
+
+    <aside class="glass-card rounded-3xl overflow-hidden lg:sticky lg:top-20">
+      <div class="h-28 bg-gradient-to-br from-amber-500/60 via-orange-500/50 to-red-500/40"></div>
+      <div class="px-5 pb-6">
+        <div class="relative -mt-12 w-24 h-24">
+          <img id="avatar-img" src="" alt="รูปโปรไฟล์" class="w-24 h-24 rounded-full object-cover ring-4 ring-white dark:ring-[#121212] shadow-lg hidden">
+          <div id="avatar-ph" class="w-24 h-24 rounded-full bg-amber-500/20 ring-4 ring-white dark:ring-[#121212] flex items-center justify-center text-3xl font-bold text-amber-500 shadow-lg">?</div>
+        </div>
+        <h1 id="p-name" class="mt-3 text-xl font-bold truncate">...</h1>
+        <p id="p-user" class="text-sm text-slate-500 dark:text-neutral-400 truncate"></p>
+        <div class="grid grid-cols-2 gap-3 mt-5">
+          <div class="rounded-2xl p-3 bg-gradient-to-br from-amber-500/15 to-orange-500/5 border border-amber-500/30">
+            <p id="stat-posts" class="text-xl font-extrabold text-amber-500 leading-tight">-</p>
+            <p class="text-[11px] text-slate-500 dark:text-neutral-400">โพสต์</p>
+          </div>
+          <div class="rounded-2xl p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+            <p id="stat-likes" class="text-xl font-extrabold leading-tight">-</p>
+            <p class="text-[11px] text-slate-500 dark:text-neutral-400">ไลก์ที่ได้รับ</p>
+          </div>
+        </div>
+        <a href="/write" class="btn-main w-full mt-4">เขียนโพสต์ใหม่</a>
+      </div>
+    </aside>
+
+    <section class="glass-card rounded-3xl mt-4 lg:mt-0 min-w-0">
+      <nav class="flex overflow-x-auto border-b border-slate-200 dark:border-white/10 px-2" aria-label="เมนูโปรไฟล์">
+        <button type="button" data-tab="posts" class="tab px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">โพสต์ของฉัน</button>
+        <button type="button" data-tab="info" class="tab px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">ข้อมูลส่วนตัว</button>
+        <button type="button" data-tab="security" class="tab px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">ความปลอดภัย</button>
+        <button type="button" data-tab="account" class="tab px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">บัญชี</button>
+      </nav>
+
+      <div data-panel="posts" class="p-5 sm:p-6"><div id="mine" class="space-y-3"></div></div>
+
+      <div data-panel="info" class="hidden p-5 sm:p-6">
+        <h2 class="font-bold text-base">ข้อมูลส่วนตัว</h2>
+        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 mb-5">ชื่อที่แสดงจะขึ้นบนโพสต์และความคิดเห็นของคุณ</p>
+        <form id="info-form" class="space-y-4 max-w-lg">
+          <div><label class="block text-sm font-medium text-slate-600 dark:text-neutral-400 mb-1" for="f-email">อีเมลบัญชี</label><input type="email" id="f-email" disabled class="fld"></div>
+          <div><label class="block text-sm font-medium text-slate-600 dark:text-neutral-400 mb-1" for="f-id">Username</label><input type="text" id="f-id" required autocomplete="username" class="fld"></div>
+          <div><label class="block text-sm font-medium text-slate-600 dark:text-neutral-400 mb-1" for="f-name">ชื่อที่แสดง</label><input type="text" id="f-name" required class="fld"></div>
+          <p id="info-msg" class="hidden"></p>
+          <button type="submit" class="btn-main">บันทึกข้อมูล</button>
+        </form>
+      </div>
+
+      <div data-panel="security" class="hidden p-5 sm:p-6">
+        <h2 class="font-bold text-base">เปลี่ยนรหัสผ่าน</h2>
+        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 mb-5">เปลี่ยนได้ทุก 15 วัน ต้องกรอกรหัสผ่านเดิมเพื่อยืนยัน</p>
+        <p id="g-note" class="hidden text-sm text-slate-500 dark:text-neutral-400 mb-4">บัญชีนี้ล็อกอินด้วย Google จึงไม่มีรหัสผ่านให้เปลี่ยน</p>
+        <form id="pw-form" class="space-y-4 max-w-lg">
+          <div><label class="block text-sm font-medium text-slate-600 dark:text-neutral-400 mb-1" for="f-old">รหัสผ่านเดิม</label><input type="password" id="f-old" required autocomplete="current-password" class="fld"></div>
+          <div><label class="block text-sm font-medium text-slate-600 dark:text-neutral-400 mb-1" for="f-new">รหัสผ่านใหม่</label><input type="password" id="f-new" required autocomplete="new-password" class="fld"></div>
+          <p id="pw-msg" class="hidden"></p>
+          <button type="submit" class="btn-main">เปลี่ยนรหัสผ่าน</button>
+        </form>
+      </div>
+
+      <div data-panel="account" class="hidden p-5 sm:p-6 space-y-5">
+        <div class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-white/10 p-4">
+          <div><p class="text-sm font-semibold">ออกจากระบบ</p><p class="text-xs text-slate-500 dark:text-neutral-400">จบเซสชันบนอุปกรณ์นี้</p></div>
+          <button id="logout-btn" type="button" class="shrink-0 px-4 py-2 rounded-xl border border-slate-300 dark:border-white/15 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer">ออกจากระบบ</button>
+        </div>
+        <div class="rounded-2xl border border-red-300/60 dark:border-red-500/30 bg-red-50/60 dark:bg-red-500/[0.06] p-4">
+          <p class="text-sm font-bold text-red-500">โซนอันตราย</p>
+          <div class="flex items-center justify-between gap-3 mt-3">
+            <div><p class="text-sm font-semibold text-red-500">ลบบัญชีถาวร</p><p class="text-xs text-slate-500 dark:text-neutral-400">โพสต์และความคิดเห็นทั้งหมดของคุณจะถูกลบด้วย กู้คืนไม่ได้</p></div>
+            <button id="open-delete-btn" type="button" class="shrink-0 px-4 py-2 rounded-xl border border-red-500 text-red-500 hover:bg-red-500 hover:text-white text-sm font-semibold transition-colors cursor-pointer">ลบบัญชี</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div id="del-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="del-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl">
+    <h2 class="text-lg font-bold text-red-500">ยืนยันการลบบัญชีถาวร</h2>
+    <p class="text-sm text-slate-600 dark:text-neutral-300 mt-3 leading-relaxed">การกระทำนี้<b class="text-red-500">ไม่สามารถกู้คืนได้</b> โปรไฟล์ โพสต์ ความคิดเห็น และทุกอย่างที่เกี่ยวข้องจะถูกลบทันที</p>
+    <div class="mt-5"><label class="block text-sm font-medium text-slate-600 dark:text-neutral-400 mb-1">พิมพ์ ID ของคุณ (<span class="font-mono" id="del-target"></span>) เพื่อยืนยัน</label><input type="text" id="del-id" autocomplete="off" class="fld"></div>
+    <div id="del-pw-wrap" class="mt-4 hidden"><label class="block text-sm font-medium text-slate-600 dark:text-neutral-400 mb-1">รหัสผ่านปัจจุบัน</label><input type="password" id="del-pw" autocomplete="current-password" class="fld"></div>
+    <div id="del-g-wrap" class="mt-4 hidden">
+      <label class="block text-sm font-medium text-slate-600 dark:text-neutral-400 mb-1">ยืนยันตัวตนด้วย Google</label>
+      <div id="del-g-btn" class="flex justify-center"></div>
+      <p id="del-g-ok" class="text-xs text-emerald-500 font-medium mt-2 hidden">ยืนยันตัวตนสำเร็จ</p>
+    </div>
+    <p id="del-err" class="text-sm text-red-500 font-medium mt-3 hidden"></p>
+    <div class="pt-6 flex gap-3">
+      <button id="del-cancel" type="button" class="w-1/2 py-3 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 font-semibold text-sm cursor-pointer">ยกเลิก</button>
+      <button id="del-confirm" type="button" disabled class="w-1/2 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">ลบบัญชีถาวร</button>
+    </div>
+  </div>
+</div>
+
+<div id="main-footer" class="z-10"></div>
+<script src="/nivread.js"></script>
+<script>
+(() => {
+  const { session, api, el } = NIV;
+  const GID = '257024478167-6c9vuk9v8hsbvj2tqs302d1u6t74ko66.apps.googleusercontent.com';
+  const s = session();
+  if (!s.token || !s.userId) { location.replace('/login?redirect=/profile'); return; }
+  const uid = s.userId;
+  const $ = (id) => document.getElementById(id);
+  let isG = false, gCred = null;
+
+  // ---------- แท็บ ----------
+  const tabs = [...document.querySelectorAll('[data-tab]')], panels = [...document.querySelectorAll('[data-panel]')];
+  const go = (n) => {
+    tabs.forEach((t) => t.classList.toggle('tab-on', t.dataset.tab === n));
+    panels.forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== n));
+    history.replaceState(null, '', '#' + n);
+  };
+  tabs.forEach((t) => (t.onclick = () => go(t.dataset.tab)));
+  go(tabs.some((t) => t.dataset.tab === location.hash.slice(1)) ? location.hash.slice(1) : 'posts');
+
+  // ---------- ข้อมูลผู้ใช้ ----------
+  function renderAvatar(url, name) {
+    const img = $('avatar-img'), ph = $('avatar-ph');
+    if (url && /^https?:\/\//.test(url)) { img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); }
+    else { img.classList.add('hidden'); ph.classList.remove('hidden'); ph.textContent = (name || uid || 'n').charAt(0).toUpperCase(); }
+  }
+  function renderIdentity(name) {
+    $('p-name').textContent = name || uid;
+    $('p-user').textContent = '@' + uid;
+    $('f-name').value = name || '';
+  }
+  $('f-id').value = uid;
+  $('f-email').value = localStorage.getItem('userEmail') || '';
+  renderIdentity(s.name);
+  renderAvatar('', s.name);
+
+  api('/api/get-profile?id=' + encodeURIComponent(uid)).then((r) => {
+    if (r.status === 401) return NIV.logout();
+    const u = r.ok && r.data.user; if (!u) return;
+    $('f-email').value = u.email || '';
+    renderIdentity(u.display_name);
+    renderAvatar(u.avatar_url, u.display_name);
+    isG = !!u.is_google_account;
+    if (isG) { $('pw-form').classList.add('hidden'); $('g-note').classList.remove('hidden'); }
+    try { localStorage.setItem('userEmail', u.email || ''); localStorage.setItem('userName', u.display_name || ''); } catch {}
+  }).catch(() => {});
+
+  // ---------- โพสต์ของฉัน ----------
+  const STATUS = {
+    pending:   ['รออนุมัติ', 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'],
+    published: ['เผยแพร่แล้ว', 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'],
+    rejected:  ['ไม่ผ่านการอนุมัติ', 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'],
+    draft:     ['ร่าง', 'bg-slate-500/15 text-slate-600 dark:text-neutral-300 border-slate-500/30'],
+  };
+  const fmt = (ms) => new Date(ms).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+
+  async function loadMine() {
+    const box = $('mine');
+    const r = await api('/api/blog/mine?userId=' + encodeURIComponent(uid));
+    box.replaceChildren();
+    if (!r.ok) { box.append(el('p', 'text-sm text-rose-500', r.data.error || 'โหลดรายการไม่สำเร็จ')); return; }
+    const posts = r.data.posts || [];
+    $('stat-posts').textContent = posts.length.toLocaleString('th-TH');
+    $('stat-likes').textContent = posts.reduce((n, p) => n + (p.like_count || 0), 0).toLocaleString('th-TH');
+    if (!posts.length) { box.append(el('p', 'text-sm text-slate-500 dark:text-neutral-400', 'ยังไม่มีโพสต์ เขียนโพสต์แรกของคุณได้เลย')); return; }
+    for (const p of posts) {
+      const row = el('div', 'rounded-xl bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-3 flex items-center gap-3');
+      const info = el('div', 'min-w-0 flex-1');
+      info.append(el('div', 'font-semibold text-sm truncate', p.title));
+      const meta = el('div', 'mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-neutral-400');
+      const [label, cls] = STATUS[p.status] || [p.status, STATUS.draft[1]];
+      meta.append(el('span', 'px-2 py-0.5 rounded-full border ' + cls, label), el('span', '', fmt(p.updated_at)), el('span', '', '♥ ' + (p.like_count || 0)));
+      info.append(meta);
+      row.append(info);
+      if (p.status === 'published') {
+        const a = el('a', 'text-sm text-amber-600 dark:text-amber-400 hover:underline', 'ดูโพสต์');
+        a.href = '/posts/' + p.slug;
+        row.append(a);
+      }
+      const del = el('button', 'text-sm text-rose-500 hover:underline', 'ลบ');
+      del.type = 'button';
+      del.addEventListener('click', async () => {
+        if (!confirm('ลบโพสต์นี้ถาวรใช่ไหม?')) return;
+        const d = await api('/api/blog/delete', { method: 'POST', body: { userId: uid, slug: p.slug } });
+        if (!d.ok) return alert(d.data.error || 'ลบไม่สำเร็จ');
+        loadMine();
+      });
+      row.append(del);
+      box.append(row);
+    }
+  }
+  loadMine();
+
+  // ---------- บันทึกฟอร์ม ----------
+  const msg = (box, text, err) => { box.textContent = text; box.className = 'text-sm font-medium ' + (err ? 'text-red-500' : 'text-emerald-500'); };
+  async function save(body, box, btn) {
+    const label = btn.textContent; btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+    try {
+      const r = await api('/api/update-profile', { method: 'POST', body: { oldId: uid, ...body } });
+      if (r.status === 401) { NIV.logout(); return null; }
+      if (!r.ok) throw new Error(r.data.error || `เกิดข้อผิดพลาด (status ${r.status})`);
+      return r.data;
+    } catch (e) { msg(box, e.message, true); return null; }
+    finally { btn.disabled = false; btn.textContent = label; }
+  }
+  $('info-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const newId = $('f-id').value.trim(), name = $('f-name').value.trim();
+    const d = await save({ newId, name }, $('info-msg'), e.submitter || e.target.querySelector('button'));
+    if (!d) return;
+    try { localStorage.setItem('userId', newId); localStorage.setItem('userName', name); if (d.token) localStorage.setItem('token', d.token); } catch {}
+    msg($('info-msg'), 'บันทึกข้อมูลสำเร็จ', false);
+    setTimeout(() => location.reload(), 900);
+  };
+  $('pw-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const d = await save({ newId: uid, oldPassword: $('f-old').value, password: $('f-new').value }, $('pw-msg'), e.submitter || e.target.querySelector('button'));
+    if (!d) return;
+    msg($('pw-msg'), 'เปลี่ยนรหัสผ่านสำเร็จ', false);
+    $('f-old').value = $('f-new').value = '';
+  };
+  $('logout-btn').onclick = () => NIV.logout();
+
+  // ---------- ลบบัญชี ----------
+  const modal = $('del-modal'), idIn = $('del-id'), pwIn = $('del-pw'), cBtn = $('del-confirm'), err = $('del-err');
+  const showErr = (t) => { err.textContent = t; err.classList.remove('hidden'); };
+  const refresh = () => { cBtn.disabled = !(idIn.value.trim() === uid && (isG ? !!gCred : !!pwIn.value)); };
+  const reset = () => { idIn.value = pwIn.value = ''; gCred = null; $('del-g-ok').classList.add('hidden'); err.classList.add('hidden'); cBtn.disabled = true; cBtn.textContent = 'ลบบัญชีถาวร'; };
+  const closeModal = () => { modal.classList.add('hidden'); reset(); };
+  $('open-delete-btn').onclick = () => {
+    reset(); $('del-target').textContent = uid;
+    $('del-pw-wrap').classList.toggle('hidden', isG);
+    $('del-g-wrap').classList.toggle('hidden', !isG);
+    if (isG) {
+      $('del-g-btn').replaceChildren();
+      if (window.google && google.accounts && google.accounts.id) {
+        google.accounts.id.initialize({ client_id: GID, callback: (r) => { gCred = r.credential; $('del-g-ok').classList.remove('hidden'); refresh(); } });
+        google.accounts.id.renderButton($('del-g-btn'), { theme: 'outline', size: 'large' });
+      } else showErr('โหลดระบบยืนยันตัวตนของ Google ไม่สำเร็จ กรุณารีเฟรชหน้าแล้วลองใหม่');
+    }
+    modal.classList.remove('hidden'); idIn.focus();
+  };
+  $('del-cancel').onclick = $('del-backdrop').onclick = closeModal;
+  idIn.oninput = pwIn.oninput = refresh;
+  cBtn.onclick = async () => {
+    err.classList.add('hidden'); cBtn.disabled = true; cBtn.textContent = 'กำลังลบ...';
+    try {
+      const r = await api('/api/delete-account', { method: 'POST', body: isG ? { userId: uid, credential: gCred } : { userId: uid, password: pwIn.value } });
+      if (!r.ok) throw new Error(r.data.error || `เกิดข้อผิดพลาด (status ${r.status})`);
+      NIV.logout();
+    } catch (e) { showErr('ลบบัญชีไม่สำเร็จ: ' + e.message); cBtn.disabled = false; cBtn.textContent = 'ลบบัญชีถาวร'; }
+  };
+})();
+</script>
+</body>
+</html>
