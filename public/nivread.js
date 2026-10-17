@@ -90,7 +90,73 @@
     return card;
   }
 
-  window.NIV = { API, session, logout, api, el, userUrl, avatarEl, postCardEl, ago };
+
+  // ---------- กล่องรายงาน (โพสต์ / ความคิดเห็น / ผู้ใช้) ----------
+  const REASONS = {
+    spam: 'สแปม / โฆษณา',
+    abuse: 'ล่วงละเมิด / คำหยาบคาย',
+    misleading: 'ข้อมูลเท็จ / ทำให้เข้าใจผิด',
+    inappropriate: 'เนื้อหาไม่เหมาะสม',
+    copyright: 'ละเมิดลิขสิทธิ์',
+    other: 'อื่น ๆ',
+  };
+  const TYPE_TH = { post: 'โพสต์', comment: 'ความคิดเห็น', user: 'ผู้ใช้' };
+
+  function reportDialog(type, target) {
+    const s = session();
+    if (!s.token || !s.userId) { location.href = '/login?redirect=' + encodeURIComponent(location.pathname + location.search); return; }
+    if (document.getElementById('niv-report')) return;
+
+    const wrap = el('div', 'fixed inset-0 z-[60] flex items-center justify-center p-4');
+    wrap.id = 'niv-report';
+    const bd = el('div', 'absolute inset-0 bg-black/60 backdrop-blur-sm');
+    const box = el('form', 'relative w-full max-w-md rounded-3xl bg-white dark:bg-[#161616] border border-slate-200 dark:border-white/10 shadow-2xl p-6 text-slate-900 dark:text-white');
+    box.append(el('h2', 'text-lg font-bold', 'รายงาน' + TYPE_TH[type]));
+    box.append(el('p', 'text-sm text-slate-500 dark:text-neutral-400 mt-1', 'เลือกเหตุผล แอดมินจะตรวจสอบให้'));
+
+    const list = el('div', 'mt-4 space-y-2');
+    Object.entries(REASONS).forEach(([k, label], i) => {
+      const row = el('label', 'flex items-center gap-3 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 cursor-pointer hover:border-amber-500/60 text-sm');
+      const r = el('input'); r.type = 'radio'; r.name = 'reason'; r.value = k; r.className = 'accent-amber-500'; if (i === 0) r.checked = true;
+      row.append(r, el('span', '', label));
+      list.append(row);
+    });
+    const detail = el('textarea', 'mt-3 w-full px-4 py-3 rounded-xl text-sm bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20');
+    detail.rows = 3; detail.maxLength = 300; detail.placeholder = 'รายละเอียดเพิ่มเติม (ไม่บังคับ)';
+    const msg = el('p', 'mt-3 text-sm font-medium min-h-[1.25rem]'); msg.setAttribute('role', 'status');
+    const btns = el('div', 'mt-4 flex gap-3');
+    const cancel = el('button', 'w-1/2 py-2.5 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-sm font-semibold cursor-pointer', 'ยกเลิก'); cancel.type = 'button';
+    const ok = el('button', 'w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 disabled:opacity-60 cursor-pointer', 'ส่งรายงาน'); ok.type = 'submit';
+    btns.append(cancel, ok);
+    box.append(list, detail, msg, btns);
+    wrap.append(bd, box);
+    document.body.append(wrap);
+
+    const close = () => { wrap.remove(); document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKey);
+    bd.addEventListener('click', close);
+    cancel.addEventListener('click', close);
+
+    box.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      ok.disabled = true; msg.textContent = 'กำลังส่ง...'; msg.className = 'mt-3 text-sm font-medium min-h-[1.25rem] text-amber-600 dark:text-amber-400';
+      const reason = box.querySelector('input[name=reason]:checked').value;
+      const r = await api('/api/blog/report', { method: 'POST', body: { userId: s.userId, type, target: String(target), reason, detail: detail.value } });
+      if (r.status === 401) { logout(); return; }
+      if (!r.ok) {
+        ok.disabled = false;
+        msg.textContent = r.data.error || 'ส่งรายงานไม่สำเร็จ';
+        msg.className = 'mt-3 text-sm font-medium min-h-[1.25rem] text-rose-500';
+        return;
+      }
+      msg.textContent = r.data.already ? 'คุณรายงานเรื่องนี้ไว้แล้ว แอดมินกำลังตรวจสอบ' : 'ส่งรายงานแล้ว ขอบคุณที่ช่วยดูแลชุมชน';
+      msg.className = 'mt-3 text-sm font-medium min-h-[1.25rem] text-emerald-500';
+      setTimeout(close, 1400);
+    });
+  }
+
+  window.NIV = { API, session, logout, api, el, userUrl, avatarEl, postCardEl, ago, reportDialog, REASONS };
 
   // ---------- CSS ของเมนูข้าง ----------
   const CSS = `
@@ -156,7 +222,6 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
         { href: '/write', label: 'เขียนโพสต์', ic: 'write', on: path === '/write' },
         { href: userUrl(s.userId), label: 'โปรไฟล์ของฉัน', ic: 'user', on: path === '/user' && params.get('id') === s.userId },
         { href: '/profile', label: 'ตั้งค่าบัญชี', ic: 'cog', on: path === '/profile' },
-        { href: '/admin', label: 'อนุมัติโพสต์', ic: 'check', on: path === '/admin', id: 'niv-admin', hidden: true },
       ] : []),
     ];
 
@@ -257,7 +322,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
       };
       fill({ id: s.userId, display_name: s.name, avatar_url: s.avatar });
       document.getElementById('niv-logout').addEventListener('click', logout);
-      // สิทธิ์แอดมินจริงตรวจที่เซิร์ฟเวอร์ทุกครั้ง ตรงนี้แค่ซ่อน/แสดงลิงก์
+      // ดึงชื่อ/รูปล่าสุดมาอัปเดตในเมนู
       api('/api/blog/me?userId=' + encodeURIComponent(s.userId)).then((r) => {
         if (r.status === 401) { logout(); return; }
         if (!r.ok) return;
@@ -265,7 +330,6 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
         fill({ id: s.userId, display_name: u.display_name || s.name, avatar_url: u.avatar_url });
         if (u.avatar_url) lsSet('userAvatar', u.avatar_url);
         if (u.display_name) lsSet('userName', u.display_name);
-        if (r.data.isAdmin) document.getElementById('niv-admin')?.classList.remove('hidden');
       }).catch(() => {});
     }
   }

@@ -101,6 +101,10 @@
       </div>
 
       <div data-panel="account" class="hidden p-5 sm:p-6 space-y-5">
+        <div id="admin-box" class="hidden flex items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
+          <div><p class="text-sm font-semibold text-amber-600 dark:text-amber-400">หน้าแอดมิน</p><p class="text-xs text-slate-500 dark:text-neutral-400">ตรวจสอบรายงานโพสต์ ความคิดเห็น และผู้ใช้</p></div>
+          <a href="/admin" class="shrink-0 btn-main !py-2">เปิดหน้าแอดมิน</a>
+        </div>
         <div class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-white/10 p-4">
           <div><p class="text-sm font-semibold">ออกจากระบบ</p><p class="text-xs text-slate-500 dark:text-neutral-400">จบเซสชันบนอุปกรณ์นี้</p></div>
           <button id="logout-btn" type="button" class="shrink-0 px-4 py-2 rounded-xl border border-slate-300 dark:border-white/15 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer">ออกจากระบบ</button>
@@ -184,6 +188,9 @@
     isG = !!u.is_google_account;
     if (isG) { $('pw-form').classList.add('hidden'); $('g-note').classList.remove('hidden'); }
     try { localStorage.setItem('userEmail', u.email || ''); localStorage.setItem('userName', u.display_name || ''); } catch {}
+  }).catch(() => {});
+  api('/api/blog/me?userId=' + encodeURIComponent(uid)).then((r) => {
+    if (r.ok && r.data.isAdmin) $('admin-box').classList.remove('hidden');
   }).catch(() => {});
 
   // ---------- โพสต์ของฉัน ----------

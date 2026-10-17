@@ -80,6 +80,7 @@ ${paragraphs}
     </div>
     ${postBar(p, origin)}
   </article>
+  <div class="mt-2 text-right"><button type="button" data-report-post="${esc(p.slug)}" class="text-xs text-slate-400 hover:text-amber-500 hover:underline cursor-pointer">รายงานโพสต์นี้</button></div>
 
   <section id="comments" class="mt-6 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4" data-comments-for="post:${esc(p.slug)}">
     <h2 class="font-bold">ความคิดเห็น (<span id="comment-count">${p.comment_count || 0}</span>)</h2>

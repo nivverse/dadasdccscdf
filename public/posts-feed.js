@@ -129,8 +129,14 @@
         const nm = el('a', 'font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500', c.display_name);
         nm.href = window.NIV.userUrl(c.user_id);
         head.append(nm, el('span', '', fmt(c.created_at)));
+        if (c.user_id !== s.userId) {
+          const rp = el('button', 'text-slate-400 hover:text-amber-500 hover:underline ml-auto', 'รายงาน');
+          rp.type = 'button';
+          rp.addEventListener('click', () => NIV.reportDialog('comment', c.id));
+          head.append(rp);
+        }
         if (loggedIn && (c.user_id === s.userId || isAdmin)) {
-          const del = el('button', 'ml-auto text-rose-500 hover:underline', 'ลบ');
+          const del = el('button', 'text-rose-500 hover:underline' + (c.user_id === s.userId ? ' ml-auto' : ''), 'ลบ');
           del.type = 'button';
           del.addEventListener('click', async () => {
             if (!confirm('ลบความคิดเห็นนี้ใช่ไหม?')) return;
@@ -183,6 +189,12 @@
       draw();
     })();
   }
+
+  // ปุ่ม "รายงานโพสต์นี้" (หน้าโพสต์เดี่ยว)
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-report-post]');
+    if (b && window.NIV) window.NIV.reportDialog('post', b.dataset.reportPost);
+  });
 
   loadLiked();
 })();
