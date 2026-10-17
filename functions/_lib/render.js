@@ -43,10 +43,14 @@ export function avatar(p, size = 'w-11 h-11') {
 }
 
 function postHead(p) {
+  const profile = p.author_id ? `/user?id=${encodeURIComponent(p.author_id)}` : '';
+  const who = esc(p.display_name || 'nivread');
   return `<div class="flex items-center gap-3 p-4">
-    ${avatar(p)}
+    ${profile ? `<a href="${profile}" class="flex-shrink-0" aria-label="โปรไฟล์ ${who}">${avatar(p)}</a>` : avatar(p)}
     <div class="min-w-0">
-      <div class="font-semibold text-sm text-slate-900 dark:text-white truncate">${esc(p.display_name || 'nivread')}</div>
+      ${profile
+        ? `<a href="${profile}" class="block font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a>`
+        : `<div class="font-semibold text-sm text-slate-900 dark:text-white truncate">${who}</div>`}
       <div class="text-xs text-slate-500 dark:text-neutral-400">
         <time datetime="${new Date(p.published_at).toISOString()}">${esc(ago(p.published_at))}</time>
         ${p.category ? `<span class="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400">${esc(p.category)}</span>` : ''}

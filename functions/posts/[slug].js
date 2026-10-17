@@ -50,7 +50,7 @@ export async function onRequestGet({ request, env, params }) {
       dateModified: new Date(p.updated_at || p.published_at).toISOString(),
       inLanguage: 'th',
       articleSection: p.category || undefined,
-      author: { '@type': 'Person', name: author },
+      author: { '@type': 'Person', name: author, url: origin + '/user?id=' + encodeURIComponent(p.author_id || '') },
       publisher: { '@type': 'Organization', name: 'nivread', url: origin + '/', logo: { '@type': 'ImageObject', url: origin + '/favicon.svg' } },
     },
     {

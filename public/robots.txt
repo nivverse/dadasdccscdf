@@ -3,5 +3,6 @@ Allow: /
 Disallow: /login
 Disallow: /write
 Disallow: /admin
+Disallow: /search
 
 Sitemap: https://nivread.com/sitemap-posts.xml

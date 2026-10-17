@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โปรไฟล์ผู้ใช้ | nivread</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0d0d0d">
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Kanit',sans-serif}.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}</style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+<header id="main-header" class="z-20"></header>
+<main class="flex-1 z-10 w-full max-w-2xl mx-auto px-4 sm:px-6 py-6">
+  <section id="card" class="rounded-3xl overflow-hidden bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm">
+    <div class="h-28 sm:h-36 bg-gradient-to-br from-amber-500/60 via-orange-500/50 to-red-500/40"></div>
+    <div class="px-5 pb-5">
+      <div class="flex items-end justify-between gap-3">
+        <div id="av" class="-mt-12 rounded-full ring-4 ring-white dark:ring-[#121212] w-24 h-24 bg-slate-200 dark:bg-white/10"></div>
+        <a id="edit" href="/profile" class="hidden px-4 py-2 rounded-xl border border-slate-300 dark:border-white/15 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-white/10">แก้ไขโปรไฟล์</a>
+      </div>
+      <h1 id="name" class="mt-3 text-xl font-bold truncate">...</h1>
+      <p id="uid" class="text-sm text-slate-500 dark:text-neutral-400 truncate"></p>
+      <div class="mt-4 flex gap-6 text-sm">
+        <div><span id="n-posts" class="text-lg font-extrabold text-amber-500">-</span> <span class="text-slate-500 dark:text-neutral-400">โพสต์</span></div>
+        <div><span id="n-likes" class="text-lg font-extrabold">-</span> <span class="text-slate-500 dark:text-neutral-400">ไลก์ที่ได้รับ</span></div>
+      </div>
+    </div>
+  </section>
+  <div id="status" class="mt-6 text-sm text-slate-500 dark:text-neutral-400" role="status"></div>
+  <section class="mt-4"><div id="posts" class="space-y-6"></div></section>
+</main>
+<div id="main-footer" class="z-10"></div>
+<script src="/nivread.js"></script>
+<script>
+(async () => {
+  const { api, el, session, avatarEl, postCardEl } = NIV;
+  const $ = (id) => document.getElementById(id);
+  const id = (new URLSearchParams(location.search).get('id') || '').trim();
+  const fail = (t) => { $('card').classList.add('hidden'); $('status').textContent = t; };
+  if (!id) return fail('ไม่พบผู้ใช้');
+  const r = await api('/api/blog/user?id=' + encodeURIComponent(id));
+  if (!r.ok) return fail(r.status === 404 ? 'ไม่พบผู้ใช้นี้' : (r.data.error || 'โหลดข้อมูลไม่สำเร็จ'));
+  const { user, stats, posts } = r.data;
+  document.title = `${user.display_name} (@${user.id}) | nivread`;
+  $('av').replaceChildren(avatarEl(user, 'w-24 h-24'));
+  $('name').textContent = user.display_name;
+  $('uid').textContent = '@' + user.id;
+  $('n-posts').textContent = (stats.posts || 0).toLocaleString('th-TH');
+  $('n-likes').textContent = (stats.likes || 0).toLocaleString('th-TH');
+  if (session().userId === user.id) $('edit').classList.remove('hidden');
+  if (!posts.length) { $('status').textContent = 'ยังไม่มีโพสต์'; return; }
+  for (const p of posts) $('posts').append(postCardEl(p));
+})();
+</script>
+</body>
+</html>

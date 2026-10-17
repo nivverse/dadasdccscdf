@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ค้นหา | nivread</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0d0d0d">
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Kanit',sans-serif}.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}</style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+<header id="main-header" class="z-20"></header>
+<main class="flex-1 z-10 w-full max-w-2xl mx-auto px-4 sm:px-6 py-6">
+  <h1 class="text-3xl font-extrabold tracking-tight">ค้นหา</h1>
+  <form id="sf" action="/search" method="get" role="search" class="mt-4 flex gap-2">
+    <label for="sq" class="sr-only">คำค้นหา</label>
+    <input id="sq" name="q" type="search" maxlength="40" autocomplete="off" placeholder="ชื่อโพสต์ เนื้อหา หมวดหมู่ หรือไอดีผู้ใช้"
+      class="flex-1 min-w-0 px-4 py-3 rounded-xl text-sm bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+    <button class="px-5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 cursor-pointer">ค้นหา</button>
+  </form>
+  <div id="status" class="mt-4 text-sm text-slate-500 dark:text-neutral-400" role="status"></div>
+  <section id="users-sec" class="hidden mt-6" aria-labelledby="uh">
+    <h2 id="uh" class="text-sm font-bold text-slate-500 dark:text-neutral-400 mb-2">ผู้ใช้</h2>
+    <div id="users" class="grid gap-2"></div>
+  </section>
+  <section id="posts-sec" class="hidden mt-6" aria-labelledby="ph">
+    <h2 id="ph" class="text-sm font-bold text-slate-500 dark:text-neutral-400 mb-2">โพสต์</h2>
+    <div id="posts" class="space-y-6"></div>
+  </section>
+</main>
+<div id="main-footer" class="z-10"></div>
+<script src="/nivread.js"></script>
+<script>
+(async () => {
+  const { api, el, userUrl, avatarEl, postCardEl } = NIV;
+  const $ = (id) => document.getElementById(id);
+  const q = (new URLSearchParams(location.search).get('q') || '').trim().slice(0, 40);
+  $('sq').value = q;
+  $('sf').addEventListener('submit', (e) => { if ($('sq').value.trim().length < 2) { e.preventDefault(); $('sq').focus(); } });
+  const st = $('status');
+  if (q.length < 2) { st.textContent = 'พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาโพสต์หรือไอดีผู้ใช้'; return; }
+  document.title = `ค้นหา "${q}" | nivread`;
+  st.textContent = 'กำลังค้นหา...';
+  const r = await api('/api/blog/search?q=' + encodeURIComponent(q));
+  if (!r.ok) { st.textContent = r.data.error || 'ค้นหาไม่สำเร็จ กรุณาลองใหม่'; return; }
+  const { users = [], posts = [] } = r.data;
+  if (!users.length && !posts.length) { st.textContent = `ไม่พบผลลัพธ์สำหรับ "${q}"`; return; }
+  st.textContent = `พบ ${users.length} ผู้ใช้ และ ${posts.length} โพสต์`;
+
+  if (users.length) {
+    $('users-sec').classList.remove('hidden');
+    for (const u of users) {
+      const a = el('a', 'flex items-center gap-3 p-3 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-amber-500/50 transition-colors');
+      a.href = userUrl(u.id);
+      const t = el('div', 'min-w-0');
+      t.append(el('div', 'font-semibold text-sm truncate', u.display_name), el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + u.id));
+      a.append(avatarEl(u, 'w-11 h-11'), t);
+      $('users').append(a);
+    }
+  }
+  if (posts.length) {
+    $('posts-sec').classList.remove('hidden');
+    for (const p of posts) $('posts').append(postCardEl(p));
+  }
+})();
+</script>
+</body>
+</html>

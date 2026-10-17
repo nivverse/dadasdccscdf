@@ -120,12 +120,15 @@
       }
       for (const c of items) {
         const row = el('div', 'flex gap-3');
-        const av = c.avatar_url
-          ? Object.assign(el('img', 'w-9 h-9 rounded-full object-cover flex-shrink-0'), { src: c.avatar_url, alt: '', loading: 'lazy', referrerPolicy: 'no-referrer' })
-          : el('div', 'w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 grid place-items-center text-white text-sm font-bold flex-shrink-0', String(c.display_name || '?').charAt(0).toUpperCase());
+        const av = el('a', 'flex-shrink-0');
+        av.href = window.NIV.userUrl(c.user_id);
+        av.setAttribute('aria-label', 'โปรไฟล์ ' + (c.display_name || c.user_id));
+        av.append(window.NIV.avatarEl({ id: c.user_id, display_name: c.display_name, avatar_url: c.avatar_url }, 'w-9 h-9'));
         const body = el('div', 'min-w-0 flex-1 rounded-2xl bg-slate-100 dark:bg-white/5 px-4 py-2.5');
         const head = el('div', 'flex items-center gap-2 text-xs text-slate-500 dark:text-neutral-400');
-        head.append(el('span', 'font-semibold text-sm text-slate-900 dark:text-white truncate', c.display_name), el('span', '', fmt(c.created_at)));
+        const nm = el('a', 'font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500', c.display_name);
+        nm.href = window.NIV.userUrl(c.user_id);
+        head.append(nm, el('span', '', fmt(c.created_at)));
         if (loggedIn && (c.user_id === s.userId || isAdmin)) {
           const del = el('button', 'ml-auto text-rose-500 hover:underline', 'ลบ');
           del.type = 'button';
