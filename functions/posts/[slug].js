@@ -1,5 +1,6 @@
 // functions/posts/[slug].js — หน้าโพสต์เดี่ยว /posts/<slug> (SSR + meta + JSON-LD)
 import { api, esc, fmtDate, shell, htmlResponse, postHead, postBar, postCard } from '../_lib/render.js';
+import { videoGallery, videoLd } from '../_lib/videos.js';
 
 const stripText = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
@@ -64,6 +65,8 @@ export async function onRequestGet({ request, env, params }) {
     },
   ];
 
+  jsonld.push(...videoLd(p.videos, { title: p.title, desc, uploadDate: new Date(p.published_at).toISOString() }));
+
   const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
   <nav aria-label="breadcrumb" class="mb-4 text-xs text-slate-500 dark:text-neutral-400">
     <a href="/" class="hover:text-amber-500">หน้าแรก</a> / <a href="/posts" class="hover:text-amber-500">โพสต์</a>
@@ -78,6 +81,7 @@ export async function onRequestGet({ request, env, params }) {
     <div class="px-4 py-6 space-y-5 text-[15px]">
 ${paragraphs}
     </div>
+    ${videoGallery(p.videos, p.title)}
     ${postBar(p, origin)}
   </article>
   <div class="mt-2 text-right"><button type="button" data-report-post="${esc(p.slug)}" class="text-xs text-slate-400 hover:text-amber-500 hover:opacity-70 cursor-pointer">รายงานโพสต์นี้</button></div>

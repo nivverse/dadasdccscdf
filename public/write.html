@@ -60,6 +60,20 @@
       <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">เนื้อหาเป็นข้อความล้วน ยาวอย่างน้อย 50 ตัวอักษร</p>
     </div>
 
+    <div>
+      <div class="flex justify-between items-end mb-1.5">
+        <label for="yt-input" class="block text-sm font-medium">วิดีโอ YouTube <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
+        <span id="yt-count" class="text-xs text-slate-400">0 / 15</span>
+      </div>
+      <div class="flex gap-2">
+        <input id="yt-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์ YouTube ได้ครั้งละหลายลิงก์"
+          class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+        <button id="yt-add" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition">เพิ่ม</button>
+      </div>
+      <p id="yt-msg" class="text-xs mt-1 text-slate-500 dark:text-neutral-400" role="status">รองรับ youtube.com/watch, youtu.be, shorts — สูงสุด 15 คลิป</p>
+      <ul id="yt-list" class="mt-3 space-y-2"></ul>
+    </div>
+
     <div id="message" class="text-sm font-medium min-h-[1.25rem]" role="status"></div>
 
     <button id="submit-btn" type="submit"
@@ -91,6 +105,66 @@
 
   $('content').addEventListener('input', () => { $('count').textContent = $('content').value.length + ' / 20000'; });
 
+  // ---------- วิดีโอ YouTube (ช่องเดียว วางได้หลายลิงก์ สูงสุด 15) ----------
+  const YT_MAX = 15;
+  let videos = [];
+  const ytId = (raw) => {
+    const t = String(raw || '').trim();
+    if (/^[A-Za-z0-9_-]{11}$/.test(t)) return t;
+    let u; try { u = new URL(/^https?:\/\//i.test(t) ? t : 'https://' + t); } catch { return null; }
+    const h = u.hostname.replace(/^(www|m|music)\./, '');
+    let id = null;
+    if (h === 'youtu.be') id = u.pathname.split('/')[1];
+    else if (h === 'youtube.com' || h === 'youtube-nocookie.com') {
+      if (u.pathname === '/watch') id = u.searchParams.get('v');
+      else { const m = u.pathname.match(/^\/(?:shorts|embed|live|v)\/([^/?#]+)/); if (m) id = m[1]; }
+    }
+    return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
+  };
+  const ytMsg = (t, bad) => { const m = $('yt-msg'); m.textContent = t; m.className = 'text-xs mt-1 ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
+  function renderVideos() {
+    const ul = $('yt-list'); ul.replaceChildren();
+    videos.forEach((id, i) => {
+      const li = el('li', 'flex items-center gap-3 p-2 rounded-xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10');
+      const img = el('img', 'w-24 aspect-video rounded-lg object-cover shrink-0 bg-black'); img.src = 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg'; img.alt = ''; img.loading = 'lazy';
+      const info = el('div', 'min-w-0 flex-1');
+      info.append(el('div', 'text-sm font-semibold', 'วิดีโอที่ ' + (i + 1)), el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', 'youtu.be/' + id));
+      const mk = (label, text, fn, dis) => { const b = el('button', 'w-8 h-8 rounded-lg text-sm text-slate-500 dark:text-neutral-300 hover:bg-amber-500/15 hover:text-amber-500 disabled:opacity-30 disabled:hover:bg-transparent', text); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label); b.disabled = !!dis; b.addEventListener('click', fn); return b; };
+      const swap = (a, b) => { [videos[a], videos[b]] = [videos[b], videos[a]]; renderVideos(); };
+      li.append(img, info,
+        mk('เลื่อนขึ้น', '↑', () => swap(i, i - 1), i === 0),
+        mk('เลื่อนลง', '↓', () => swap(i, i + 1), i === videos.length - 1),
+        mk('ลบ', '✕', () => { videos.splice(i, 1); renderVideos(); ytMsg(''); }));
+      ul.append(li);
+    });
+    $('yt-count').textContent = videos.length + ' / ' + YT_MAX;
+    $('yt-input').disabled = $('yt-add').disabled = videos.length >= YT_MAX;
+    if (videos.length >= YT_MAX) ytMsg('ครบ 15 คลิปแล้ว');
+  }
+  function addVideos() {
+    const parts = $('yt-input').value.split(/[\s,]+/).filter(Boolean);
+    if (!parts.length) return;
+    let added = 0, bad = 0, dup = 0, over = 0;
+    for (const p of parts) {
+      const id = ytId(p);
+      if (!id) { bad++; continue; }
+      if (videos.includes(id)) { dup++; continue; }
+      if (videos.length >= YT_MAX) { over++; continue; }
+      videos.push(id); added++;
+    }
+    $('yt-input').value = '';
+    renderVideos();
+    const notes = [];
+    if (added) notes.push('เพิ่มแล้ว ' + added + ' คลิป');
+    if (bad) notes.push(bad + ' ลิงก์ไม่ใช่ YouTube');
+    if (dup) notes.push(dup + ' ซ้ำ');
+    if (over) notes.push(over + ' เกินจำนวนสูงสุด');
+    if (notes.length) ytMsg(notes.join(' · '), bad || over);
+  }
+  $('yt-add').addEventListener('click', addVideos);
+  $('yt-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addVideos(); } });
+  $('yt-input').addEventListener('paste', () => setTimeout(addVideos, 0));
+
   $('post-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     $('submit-btn').disabled = true;
@@ -105,6 +179,7 @@
           category: $('category').value,
           coverUrl: $('cover').value,
           content: $('content').value,
+          videos,
         },
       });
       if (r.status === 401) return needLogin();
@@ -120,6 +195,7 @@
         return;
       }
       $('post-form').reset();
+      videos = []; renderVideos(); ytMsg('รองรับ youtube.com/watch, youtu.be, shorts — สูงสุด 15 คลิป');
       $('count').textContent = '0 / 20000';
       if (r.data.status === 'published') {
         const m = msg('', 'ok');
@@ -153,6 +229,7 @@
     $('category').value = p.category || '';
     $('cover').value = p.cover_url || '';
     $('content').value = p.content || '';
+    videos = Array.isArray(p.videos) ? p.videos.slice(0, YT_MAX) : []; renderVideos();
     $('count').textContent = $('content').value.length + ' / 20000';
     const left = r.data.edits_left;
     $('page-sub').textContent = left == null ? 'แอดมินแก้ไขได้ไม่จำกัด' : `แก้ไขโพสต์ได้ไม่เกิน 2 ครั้ง — เหลืออีก ${left} ครั้ง`;
@@ -163,6 +240,7 @@
     } else msg('');
   }
 
+  renderVideos();
   loadEdit();
 </script>
 </body>
