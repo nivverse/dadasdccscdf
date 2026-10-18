@@ -70,6 +70,7 @@ export async function onRequestGet({ request, env }) {
 
   const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
   <h1 class="sr-only">โพสต์ล่าสุด nivread</h1>
+  <div id="composer" class="mb-6" data-composer></div>
   <div id="feed" class="space-y-6" data-next-page="${data.hasMore ? page + 1 : ''}">
 ${cards}
   </div>

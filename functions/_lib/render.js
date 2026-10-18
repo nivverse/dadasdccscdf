@@ -61,15 +61,13 @@ function postHead(p) {
 
 function postBar(p, origin) {
   const href = `/posts/${p.slug}`;
-  const btn = 'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors';
-  return `<div class="px-4 pt-3 pb-1 flex justify-between text-xs text-slate-500 dark:text-neutral-400">
-      <span><span data-like-count="${esc(p.slug)}">${p.like_count || 0}</span> ถูกใจ</span>
-      <a href="${href}#comments" class="hover:underline">${p.comment_count || 0} ความคิดเห็น</a>
-    </div>
-    <div class="px-3 pb-3 pt-1 flex gap-1 border-t border-slate-200 dark:border-white/10 mt-2">
-      <button type="button" data-like="${esc(p.slug)}" class="${btn}" aria-pressed="false">${icon('heart')}<span>ถูกใจ</span></button>
-      <a href="${href}#comments" class="${btn}">${icon('chat')}<span>แสดงความคิดเห็น</span></a>
-      <button type="button" data-share data-url="${esc(origin + href)}" data-title="${esc(p.title)}" class="${btn}">${icon('share')}<span>แชร์</span></button>
+  const btn = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 transition-colors';
+  return `<div class="px-3 py-2 flex items-center justify-between border-t border-slate-200 dark:border-white/10">
+      <div class="flex items-center gap-1">
+        <button type="button" data-like="${esc(p.slug)}" class="${btn}" aria-pressed="false" aria-label="ถูกใจ" title="ถูกใจ">${icon('heart')}<span data-like-count="${esc(p.slug)}" class="tabular-nums">${p.like_count || 0}</span></button>
+        <a href="${href}#comments" class="${btn}" aria-label="ความคิดเห็น" title="ความคิดเห็น">${icon('chat')}<span class="tabular-nums">${p.comment_count || 0}</span></a>
+      </div>
+      <button type="button" data-share data-url="${esc(origin + href)}" data-title="${esc(p.title)}" class="${btn}" aria-label="แชร์" title="แชร์">${icon('share')}</button>
     </div>`;
 }
 
@@ -81,6 +79,7 @@ export function postCard(p, origin, first = false) {
   <div class="px-4 pb-3">
     <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-snug"><a href="${href}" class="hover:text-amber-500 transition-colors">${esc(p.title)}</a></h2>
     ${p.excerpt ? `<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-3">${esc(p.excerpt)}</p>` : ''}
+    <a href="${href}" class="inline-block mt-2 text-sm font-semibold text-amber-600 dark:text-amber-400 hover:underline">อ่านเพิ่มเติม →</a>
   </div>
   ${p.cover_url ? `<a href="${href}" tabindex="-1" aria-hidden="true"><img src="${esc(p.cover_url)}" alt="${esc(p.title)}" width="1200" height="675" ${first ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" class="w-full aspect-video object-cover"></a>` : ''}
   ${postBar(p, origin)}

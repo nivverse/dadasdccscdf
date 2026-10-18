@@ -68,6 +68,31 @@
     }
   });
 
+
+  // ---------- กล่อง "เขียนอะไรดี" บนสุดของฟีด ----------
+  const composer = document.getElementById('composer');
+  if (composer && window.NIV) {
+    const { session, el, avatarEl, userUrl } = window.NIV;
+    const s = session();
+    const loggedIn = !!(s.token && s.userId);
+    const card = el('div', 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-3 sm:p-4 flex items-center gap-3');
+    if (loggedIn) {
+      const av = el('a', 'flex-shrink-0'); av.href = userUrl(s.userId); av.setAttribute('aria-label', 'โปรไฟล์ของฉัน');
+      av.append(avatarEl({ id: s.userId, display_name: s.name, avatar_url: s.avatar }, 'w-11 h-11'));
+      const go = el('a', 'flex-1 min-w-0 px-4 py-2.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm text-slate-500 dark:text-neutral-400 hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-400 transition-colors truncate', 'เขียนอะไรดี' + (s.name ? ', ' + s.name : '') + '?');
+      go.href = '/write';
+      const pen = el('a', 'flex-shrink-0 w-10 h-10 grid place-items-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/25 hover:brightness-110');
+      pen.href = '/write'; pen.setAttribute('aria-label', 'เขียนโพสต์'); pen.title = 'เขียนโพสต์';
+      pen.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
+      card.append(av, go, pen);
+    } else {
+      const go = el('a', 'flex-1 min-w-0 px-4 py-2.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm text-slate-500 dark:text-neutral-400 hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-400 transition-colors truncate', 'เข้าสู่ระบบเพื่อเขียนโพสต์ของคุณ');
+      go.href = '/login?redirect=/write';
+      card.append(go);
+    }
+    composer.append(card);
+  }
+
   // ---------- เลื่อนโหลดเพิ่ม (ใช้ HTML ชิ้นส่วนจากเซิร์ฟเวอร์) ----------
   const feed = document.getElementById('feed');
   const sentinel = document.getElementById('feed-sentinel');
