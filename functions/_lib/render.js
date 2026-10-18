@@ -79,7 +79,7 @@ export function postCard(p, origin, first = false) {
   <div class="px-4 pb-3">
     <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-snug"><a href="${href}" class="hover:text-amber-500 transition-colors">${esc(p.title)}</a></h2>
     ${p.excerpt ? `<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-3">${esc(p.excerpt)}</p>` : ''}
-    <a href="${href}" class="inline-block mt-2 text-sm font-semibold text-amber-600 dark:text-amber-400 hover:underline">อ่านเพิ่มเติม →</a>
+    <a href="${href}" class="inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500" aria-label="อ่านโพสต์ต่อ" title="อ่านโพสต์ต่อ">...</a>
   </div>
   ${p.cover_url ? `<a href="${href}" tabindex="-1" aria-hidden="true"><img src="${esc(p.cover_url)}" alt="${esc(p.title)}" width="1200" height="675" ${first ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" class="w-full aspect-video object-cover"></a>` : ''}
   ${postBar(p, origin)}

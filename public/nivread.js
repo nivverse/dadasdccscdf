@@ -75,7 +75,7 @@
     const ha = el('a', 'hover:text-amber-500 transition-colors', p.title); ha.href = '/posts/' + p.slug;
     h.append(ha); body.append(h);
     if (p.excerpt) body.append(el('p', 'mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-3', p.excerpt));
-    const more = el('a', 'inline-block mt-2 text-sm font-semibold text-amber-600 dark:text-amber-400 hover:underline', 'อ่านเพิ่มเติม →'); more.href = '/posts/' + p.slug;
+    const more = el('a', 'inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500', '...'); more.href = '/posts/' + p.slug; more.setAttribute('aria-label', 'อ่านโพสต์ต่อ'); more.title = 'อ่านโพสต์ต่อ';
     body.append(more);
     card.append(body);
 
