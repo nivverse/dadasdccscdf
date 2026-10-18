@@ -275,6 +275,14 @@
     document.head.appendChild(st);
   }
 
+  // ---------- ฟีดแบบหลายคอลัมน์บนจอคอม (masonry) — มือถือเป็นคอลัมน์เดียว ----------
+  if (!document.getElementById('niv-mas')) {
+    const st = document.createElement('style');
+    st.id = 'niv-mas';
+    st.textContent = '.nv-mas{column-gap:1.5rem}.nv-mas>*{break-inside:avoid;margin-bottom:1.5rem}@media (min-width:1024px){.nv-mas{column-count:2}}@media (min-width:1536px){.nv-mas{column-count:3}}';
+    document.head.appendChild(st);
+  }
+
   // ---------- ฟอนต์ Josefin Sans สำหรับชื่อเว็บ ----------
   if (!document.getElementById('niv-font')) {
     const lk = document.createElement('link');
@@ -362,7 +370,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
     header.innerHTML = `
 <style id="niv-style">${CSS}</style>
 <div class="sticky top-0 z-30 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0d0d0d]/80 backdrop-blur-md">
-  <div class="max-w-[76rem] mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
+  <div class="max-w-[90rem] mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
     <a href="/posts" class="flex items-center gap-2 mr-auto sm:mr-0" aria-label="nivread">
       <img src="/img/nivreadfavon.png" alt="" width="32" height="32" class="w-8 h-8 rounded-lg object-contain">
       <span class="nv-brand text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">nivread</span>
@@ -460,89 +468,6 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
       }).catch(() => {});
     }
   }
-
-  // ---------- เลย์เอาต์จอคอม: เมนูซ้าย + ฟีดกลาง + โพสต์ล่าสุดขวา (มือถือ/แท็บเล็ตไม่เปลี่ยน) ----------
-  (function desktopLayout() {
-    const path = location.pathname.replace(/\/+$/, '') || '/';
-    if (!(path === '/posts' || path.startsWith('/posts/') || path === '/search' || path === '/user' || path === '/user.html')) return;
-    const main = document.querySelector('main');
-    if (!main || document.getElementById('niv-wrap')) return;
-
-    const st = document.createElement('style');
-    st.textContent = '.nv-wrap{display:contents}.nv-side{display:none}' +
-      '@media (min-width:1100px){.nv-wrap{display:flex;justify-content:center;gap:1.5rem;width:100%;max-width:76rem;margin:0 auto;padding:0 1.25rem;flex:1 1 auto;position:relative;z-index:10}' +
-      '.nv-wrap>main{flex:1 1 0;min-width:0;max-width:42rem!important;margin:0!important;padding-left:0!important;padding-right:0!important}' +
-      '.nv-side{display:block;flex:none;width:14.5rem;position:sticky;top:4.5rem;align-self:flex-start;padding:1.5rem 0;max-height:calc(100dvh - 4.5rem);overflow-y:auto;scrollbar-width:none}' +
-      '.nv-side::-webkit-scrollbar{display:none}.nv-side.r{width:17.5rem}}' +
-      '.nv-sl{display:flex;align-items:center;gap:.7rem;padding:.6rem .8rem;border-radius:.8rem;font-size:.92rem;font-weight:500;color:#475569;transition:background .2s,color .2s,transform .2s}' +
-      '.dark .nv-sl{color:#a3a3a3}.nv-sl:hover{background:rgba(245,158,11,.1);color:#d97706;transform:translateX(3px)}.dark .nv-sl:hover{color:#fbbf24}' +
-      '.nv-sl.on{background:rgba(245,158,11,.16);color:#d97706}.dark .nv-sl.on{background:rgba(245,158,11,.2);color:#fbbf24}.nv-sl svg{width:1.15rem;height:1.15rem;flex:none}' +
-      '.nv-logo{border-radius:14px;box-shadow:0 0 0 1px rgba(245,158,11,.5),0 0 22px rgba(245,158,11,.5)}';
-    document.head.appendChild(st);
-
-    const wrap = el('div', 'nv-wrap'); wrap.id = 'niv-wrap';
-    main.parentNode.insertBefore(wrap, main);
-    const card = 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm';
-    const ic = (d) => '<svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>';
-    const ICONS = {
-      home: ic('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'),
-      search: ic('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>'),
-      pen: ic('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>'),
-      user: ic('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>'),
-      gear: ic('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/>'),
-    };
-
-    // ---- ซ้าย ----
-    const left = el('aside', 'nv-side l'); left.setAttribute('aria-label', 'เมนู');
-    const brand = el('a', card + ' flex items-center gap-3 p-4 mb-4'); brand.href = '/posts';
-    brand.innerHTML = '<img class="nv-logo w-11 h-11 object-cover" src="/img/nivreadfavon.png" alt="" width="44" height="44"><span><span class="nv-brand block text-2xl text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">nivread</span><span class="block text-xs text-slate-500 dark:text-neutral-400 mt-1">อ่าน เขียน แบ่งปัน</span></span>';
-    const nav = el('nav', card + ' p-2 space-y-1');
-    const sess = session();
-    const items = [['โพสต์ทั้งหมด', '/posts', 'home'], ['ค้นหา', '/search', 'search']];
-    if (sess.userId) items.push(['เขียนโพสต์', '/write', 'pen'], ['โปรไฟล์ของฉัน', userUrl(sess.userId), 'user'], ['ตั้งค่าบัญชี', '/profile', 'gear']);
-    items.forEach(([label, href, icon]) => {
-      const a = el('a', 'nv-sl'); a.href = href; a.innerHTML = ICONS[icon]; a.append(label);
-      const hp = href.split('?')[0];
-      if (path === hp || (hp === '/posts' && path.startsWith('/posts/')) || (icon === 'user' && path.startsWith('/user') && new URLSearchParams(location.search).get('id') === sess.userId)) a.classList.add('on');
-      nav.append(a);
-    });
-    left.append(brand, nav);
-    if (!sess.userId) {
-      const lg = el('a', 'block mt-4 text-center px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-sm shadow-md shadow-amber-500/25 hover:opacity-90', 'เข้าสู่ระบบ / สมัครสมาชิก'); lg.href = '/login';
-      left.append(lg);
-    } else {
-      const w = el('a', 'block mt-4 text-center px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-sm shadow-md shadow-amber-500/25 hover:opacity-90', '+ เขียนโพสต์ใหม่'); w.href = '/write';
-      left.append(w);
-    }
-
-    // ---- ขวา ----
-    const right = el('aside', 'nv-side r'); right.setAttribute('aria-label', 'โพสต์ล่าสุด');
-    const box = el('div', card + ' p-4');
-    box.append(el('h2', 'font-bold text-sm mb-3', 'โพสต์ล่าสุด'));
-    const list = el('div', 'space-y-3'); box.append(list);
-    const foot = el('p', 'mt-4 px-2 text-xs text-slate-400 dark:text-neutral-500', '© ' + new Date().getFullYear() + ' nivread');
-    right.append(box, foot);
-    wrap.append(left, main, right);
-
-    if (window.matchMedia('(min-width:1100px)').matches) {
-      const cur = path.startsWith('/posts/') ? decodeURIComponent(path.slice(7)) : '';
-      api('/api/blog/list?page=1&limit=8').then((r) => {
-        const ps = (r.ok && r.data.posts || []).filter((x) => x.slug !== cur).slice(0, 6);
-        if (!ps.length) { box.classList.add('hidden'); return; }
-        ps.forEach((x) => {
-          const a = el('a', 'flex gap-3 group'); a.href = '/posts/' + x.slug;
-          const vid = (x.videos || []).find((v) => YT_ID.test(v));
-          const src = x.cover_url && /^https:\/\//.test(x.cover_url) ? x.cover_url : vid ? ytThumb(vid) : '';
-          const th = el('div', 'w-16 h-12 flex-none rounded-lg overflow-hidden bg-gradient-to-br from-amber-500/30 to-orange-600/30');
-          if (src) th.append(Object.assign(el('img', 'w-full h-full object-cover group-hover:scale-110 transition-transform duration-300'), { src, alt: '', loading: 'lazy' }));
-          const tx = el('div', 'min-w-0');
-          tx.append(el('div', 'text-[13px] font-semibold leading-snug line-clamp-2 group-hover:text-amber-500 transition-colors', x.title),
-                    el('div', 'text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 truncate', (x.display_name || x.author_id) + ' · ' + ago(x.published_at)));
-          a.append(th, tx); list.append(a);
-        });
-      }).catch(() => { box.classList.add('hidden'); });
-    }
-  })();
 
   // ---------- footer ----------
   const footer = document.getElementById('main-footer');
