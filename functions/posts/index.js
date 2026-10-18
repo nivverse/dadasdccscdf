@@ -69,15 +69,7 @@ export async function onRequestGet({ request, env }) {
   </nav>`;
 
   const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
-  <div class="mb-8">
-    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-semibold mb-3 backdrop-blur-md shadow-sm">
-      <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> nivread Feed
-    </div>
-    <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-      โพสต์ <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">ล่าสุด</span>
-    </h1>
-    <p class="text-slate-600 dark:text-neutral-400 text-sm mt-1">บทความ ข่าวสาร และเรื่องเล่าวงการอนิเมะ อัปเดตทุกวัน</p>
-  </div>
+  <h1 class="sr-only">โพสต์ล่าสุด nivread</h1>
   <div id="feed" class="space-y-6" data-next-page="${data.hasMore ? page + 1 : ''}">
 ${cards}
   </div>

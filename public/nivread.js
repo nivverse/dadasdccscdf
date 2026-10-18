@@ -158,11 +158,11 @@
 
   window.NIV = { API, session, logout, api, el, userUrl, avatarEl, postCardEl, ago, reportDialog, REASONS };
 
-  // ---------- ฟอนต์ Cinzel สำหรับชื่อเว็บ ----------
+  // ---------- ฟอนต์ Josefin Sans สำหรับชื่อเว็บ ----------
   if (!document.getElementById('niv-font')) {
     const lk = document.createElement('link');
     lk.id = 'niv-font'; lk.rel = 'stylesheet';
-    lk.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap';
+    lk.href = 'https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&display=swap';
     document.head.appendChild(lk);
   }
 
@@ -186,7 +186,7 @@
 .dark .nv-link.is-active{background:rgba(245,158,11,.2);color:#fbbf24}
 .nv-link svg{width:1.15rem;height:1.15rem;flex:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
 .nv-link:hover svg{transform:translateX(2px) rotate(-8deg) scale(1.12)}
-.nv-brand{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.1em;line-height:1}
+.nv-brand{font-family:'Josefin Sans',sans-serif;font-weight:700;letter-spacing:.04em;line-height:1}
 .nv-in{opacity:0;transform:translateX(18px);transition:background .2s,color .2s,opacity .35s ease,transform .4s cubic-bezier(.22,1,.36,1)}
 #niv-drawer.is-open .nv-in{opacity:1;transform:none;transition-delay:0s,0s,calc(.08s + var(--i,0)*.05s),calc(.08s + var(--i,0)*.05s)}
 .nv-burger{position:relative;display:block;width:1.3rem;height:.95rem}
