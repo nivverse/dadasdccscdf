@@ -68,6 +68,12 @@
     if (p.category) sub.append(el('span', 'ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400', p.category));
     meta.append(a2, sub);
     head.append(a1, meta);
+    if (session().userId && session().userId === p.author_id) {
+      const pen = el('a', 'ml-auto flex-shrink-0 w-9 h-9 grid place-items-center rounded-full text-slate-500 dark:text-neutral-400 hover:text-amber-500 hover:bg-amber-500/10 transition-colors');
+      pen.href = '/write?edit=' + encodeURIComponent(p.slug); pen.title = 'แก้ไขโพสต์'; pen.setAttribute('aria-label', 'แก้ไขโพสต์');
+      pen.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
+      head.append(pen);
+    }
     card.append(head);
 
     const body = el('div', 'px-4 pb-3');
@@ -75,8 +81,10 @@
     const ha = el('a', 'hover:text-amber-500 transition-colors', p.title); ha.href = '/posts/' + p.slug;
     h.append(ha); body.append(h);
     if (p.excerpt) body.append(el('p', 'mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-3', p.excerpt));
-    const more = el('a', 'inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500', '...'); more.href = '/posts/' + p.slug; more.setAttribute('aria-label', 'อ่านโพสต์ต่อ'); more.title = 'อ่านโพสต์ต่อ';
-    body.append(more);
+    if ((p.content_len || 0) > 160) {
+      const more = el('a', 'inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500', '...'); more.href = '/posts/' + p.slug; more.setAttribute('aria-label', 'อ่านโพสต์ต่อ'); more.title = 'อ่านโพสต์ต่อ';
+      body.append(more);
+    }
     card.append(body);
 
     if (p.cover_url && /^https:\/\//.test(p.cover_url)) {
@@ -86,7 +94,7 @@
     }
     const foot = el('div', 'px-4 py-3 flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400');
     foot.append(el('span', '', '♥ ' + (p.like_count || 0)));
-    const ca2 = el('a', 'hover:underline', (p.comment_count || 0) + ' ความคิดเห็น'); ca2.href = '/posts/' + p.slug + '#comments';
+    const ca2 = el('a', 'hover:opacity-70', (p.comment_count || 0) + ' ความคิดเห็น'); ca2.href = '/posts/' + p.slug + '#comments';
     foot.append(ca2);
     card.append(foot);
     return card;
@@ -159,6 +167,14 @@
   }
 
   window.NIV = { API, session, logout, api, el, userUrl, avatarEl, postCardEl, ago, reportDialog, REASONS };
+
+  // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
+  if (!document.getElementById('niv-nozoom')) {
+    const st = document.createElement('style');
+    st.id = 'niv-nozoom';
+    st.textContent = 'html{-webkit-text-size-adjust:100%;touch-action:manipulation}@media (max-width:1024px){input,textarea,select{font-size:16px!important}}';
+    document.head.appendChild(st);
+  }
 
   // ---------- ฟอนต์ Josefin Sans สำหรับชื่อเว็บ ----------
   if (!document.getElementById('niv-font')) {

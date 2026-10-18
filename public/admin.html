@@ -2,7 +2,7 @@
 <html lang="th" class="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>รายงาน | nivread แอดมิน</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/img/nivreadfavon.png" type="image/png">
@@ -94,7 +94,7 @@
       box.append(a);
     } else if (g.type === 'comment') {
       box.append(el('p', 'whitespace-pre-wrap leading-6', pv.content));
-      const a = el('a', 'mt-2 inline-block text-xs text-amber-600 dark:text-amber-400 hover:underline', 'ในโพสต์: ' + pv.title); a.href = '/posts/' + pv.slug + '#comments'; a.target = '_blank'; a.rel = 'noopener';
+      const a = el('a', 'mt-2 inline-block text-xs text-amber-600 dark:text-amber-400 hover:opacity-70', 'ในโพสต์: ' + pv.title); a.href = '/posts/' + pv.slug + '#comments'; a.target = '_blank'; a.rel = 'noopener';
       box.append(a);
     } else {
       const a = el('a', 'font-semibold hover:text-amber-500', '@' + g.target); a.href = userUrl(g.target); a.target = '_blank'; a.rel = 'noopener';

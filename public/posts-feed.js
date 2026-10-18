@@ -27,7 +27,16 @@
       b.querySelector('svg')?.setAttribute('fill', liked ? 'currentColor' : 'none');
     });
   };
+  // ปุ่มดินสอแก้ไขโพสต์: เห็นเฉพาะเจ้าของโพสต์
+  const revealEdit = () => {
+    const uid = getUserId();
+    if (!uid) return;
+    document.querySelectorAll('[data-edit-post]').forEach((a) => {
+      if (a.dataset.author === uid) { a.classList.remove('hidden'); a.classList.add('grid'); }
+    });
+  };
   const loadLiked = async () => {
+    revealEdit();
     const uid = getUserId();
     if (!uid || !API) return;
     try {
@@ -155,13 +164,13 @@
         nm.href = window.NIV.userUrl(c.user_id);
         head.append(nm, el('span', '', fmt(c.created_at)));
         if (c.user_id !== s.userId) {
-          const rp = el('button', 'text-slate-400 hover:text-amber-500 hover:underline ml-auto', 'รายงาน');
+          const rp = el('button', 'text-slate-400 hover:text-amber-500 hover:opacity-70 ml-auto', 'รายงาน');
           rp.type = 'button';
           rp.addEventListener('click', () => NIV.reportDialog('comment', c.id));
           head.append(rp);
         }
         if (loggedIn && (c.user_id === s.userId || isAdmin)) {
-          const del = el('button', 'text-rose-500 hover:underline' + (c.user_id === s.userId ? ' ml-auto' : ''), 'ลบ');
+          const del = el('button', 'text-rose-500 hover:opacity-70' + (c.user_id === s.userId ? ' ml-auto' : ''), 'ลบ');
           del.type = 'button';
           del.addEventListener('click', async () => {
             if (!confirm('ลบความคิดเห็นนี้ใช่ไหม?')) return;
@@ -180,7 +189,7 @@
 
     if (!loggedIn) {
       const p = el('p', 'text-sm text-slate-600 dark:text-neutral-300');
-      const a = el('a', 'text-amber-600 dark:text-amber-400 font-semibold hover:underline', 'เข้าสู่ระบบ');
+      const a = el('a', 'text-amber-600 dark:text-amber-400 font-semibold hover:opacity-70', 'เข้าสู่ระบบ');
       a.href = '/login?redirect=' + encodeURIComponent(location.pathname + '#comments');
       p.append(a, ' เพื่อแสดงความคิดเห็น');
       form.append(p);

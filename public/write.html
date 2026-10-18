@@ -2,7 +2,7 @@
 <html lang="th" class="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>เขียนโพสต์ | nivread</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/img/nivreadfavon.png" type="image/png">
@@ -66,7 +66,7 @@
       class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-md shadow-amber-500/25 transition disabled:opacity-60">
       <span id="submit-label">โพสต์เลย</span>
     </button>
-    <a id="cancel-edit" href="/profile#posts" class="hidden ml-3 text-sm text-slate-500 dark:text-neutral-400 hover:underline">ยกเลิกการแก้ไข</a>
+    <a id="cancel-edit" href="/posts" class="hidden ml-3 text-sm text-slate-500 dark:text-neutral-400 hover:opacity-70">ยกเลิกการแก้ไข</a>
   </form>
 
 </main>
@@ -112,9 +112,9 @@
 
       if (editSlug) {
         const m = msg('', 'ok');
-        const a = el('a', 'underline', 'เปิดดูโพสต์');
+        const a = el('a', 'font-semibold', 'เปิดดูโพสต์');
         a.href = '/posts/' + editSlug;
-        const back = el('a', 'underline ml-3', 'โพสต์ของฉัน'); back.href = '/profile#posts';
+        const back = el('a', 'font-semibold ml-3', 'โพสต์ของฉัน'); back.href = NIV.userUrl(s.userId);
         m.append('บันทึกการแก้ไขแล้ว' + (r.data.edits_left == null ? ' ' : ` (เหลือแก้ไขได้อีก ${r.data.edits_left} ครั้ง) `), a, back);
         if (r.data.edits_left === 0) { $('submit-btn').classList.add('hidden'); [...$('post-form').elements].forEach((x) => { if (x.id !== 'submit-btn') x.disabled = true; }); }
         return;
@@ -123,9 +123,9 @@
       $('count').textContent = '0 / 20000';
       if (r.data.status === 'published') {
         const m = msg('', 'ok');
-        const a = el('a', 'underline', 'เปิดดูโพสต์');
+        const a = el('a', 'font-semibold', 'เปิดดูโพสต์');
         a.href = '/posts/' + r.data.slug;
-        const back = el('a', 'underline ml-3', 'โพสต์ของฉัน'); back.href = '/profile#posts';
+        const back = el('a', 'font-semibold ml-3', 'โพสต์ของฉัน'); back.href = NIV.userUrl(s.userId);
         m.append('เผยแพร่แล้ว ', a, back);
       } else {
         msg('ส่งโพสต์แล้ว', 'ok');
@@ -143,7 +143,7 @@
     if (!editSlug) return;
     $('page-h').textContent = 'แก้ไขโพสต์';
     $('submit-label').textContent = 'บันทึกการแก้ไข';
-    $('cancel-edit').classList.remove('hidden');
+    $('cancel-edit').classList.remove('hidden'); $('cancel-edit').href = NIV.userUrl(s.userId);
     msg('กำลังโหลดโพสต์...');
     const r = await api('/api/blog/edit-get?userId=' + encodeURIComponent(s.userId) + '&slug=' + encodeURIComponent(editSlug));
     if (r.status === 401) return needLogin();

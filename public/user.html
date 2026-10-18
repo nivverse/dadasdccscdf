@@ -2,7 +2,7 @@
 <html lang="th" class="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>โปรไฟล์ผู้ใช้ | nivread</title>
 <meta name="robots" content="noindex, follow">
 <link rel="icon" href="/img/nivreadfavon.png" type="image/png">
@@ -18,6 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{font-family:'Kanit',sans-serif}.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}</style>
+<style>.tab-on{background:linear-gradient(to right,#f59e0b,#f97316);color:#fff;box-shadow:0 6px 16px -6px rgba(245,158,11,.55)}.tab:not(.tab-on){color:#64748b}</style>
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
 <div class="fixed inset-0 pointer-events-none z-0">
@@ -42,8 +43,12 @@
       </div>
     </div>
   </section>
+  <nav id="tabs" class="mt-4 hidden flex rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md p-1" aria-label="หมวดในโปรไฟล์">
+    <button type="button" data-tab="posts" class="tab flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer">โพสต์</button>
+    <button type="button" data-tab="likes" class="tab flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer">ถูกใจ</button>
+  </nav>
   <div id="status" class="mt-6 text-sm text-slate-500 dark:text-neutral-400" role="status"></div>
-  <section class="mt-4"><div id="posts" class="space-y-6"></div></section>
+  <section class="mt-4"><div id="posts" class="space-y-6"></div><div id="liked" class="hidden space-y-6"></div></section>
 </main>
 <div id="main-footer" class="z-10"></div>
 <script src="/nivread.js"></script>
@@ -57,16 +62,79 @@
   const r = await api('/api/blog/user?id=' + encodeURIComponent(id));
   if (!r.ok) return fail(r.status === 404 ? 'ไม่พบผู้ใช้นี้' : (r.data.error || 'โหลดข้อมูลไม่สำเร็จ'));
   const { user, stats, posts } = r.data;
+  const me = session();
+  const own = !!me.token && me.userId === user.id;
+
   document.title = `${user.display_name} (@${user.id}) | nivread`;
   $('av').replaceChildren(avatarEl(user, 'w-24 h-24'));
   $('name').textContent = user.display_name;
   $('uid').textContent = '@' + user.id;
   $('n-posts').textContent = (stats.posts || 0).toLocaleString('th-TH');
   $('n-likes').textContent = (stats.likes || 0).toLocaleString('th-TH');
-  if (session().userId === user.id) $('edit').classList.remove('hidden');
+  if (own) $('edit').classList.remove('hidden');
   else { $('report').classList.remove('hidden'); $('report').addEventListener('click', () => NIV.reportDialog('user', user.id)); }
-  if (!posts.length) { $('status').textContent = 'ยังไม่มีโพสต์'; return; }
-  for (const p of posts) $('posts').append(postCardEl(p));
+
+  // ---- ไอคอนถังขยะ (ลบโพสต์ของตัวเอง) ----
+  const trash = (card, slug) => {
+    const b = el('button', 'flex-shrink-0 w-9 h-9 grid place-items-center rounded-full text-slate-500 dark:text-neutral-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer');
+    b.type = 'button'; b.title = 'ลบโพสต์'; b.setAttribute('aria-label', 'ลบโพสต์');
+    b.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>';
+    b.addEventListener('click', async () => {
+      if (!confirm('ลบโพสต์นี้ถาวรใช่ไหม?')) return;
+      const d = await api('/api/blog/delete', { method: 'POST', body: { userId: me.userId, slug } });
+      if (!d.ok) return alert(d.data.error || 'ลบไม่สำเร็จ');
+      card.remove();
+      if (!$('posts').children.length) $('status').textContent = 'ยังไม่มีโพสต์';
+    });
+    card.firstElementChild.append(b);
+  };
+
+  // ---- แท็บโพสต์ ----
+  let editsLeft = {};
+  if (own) {
+    const m = await api('/api/blog/mine?userId=' + encodeURIComponent(user.id));
+    if (m.ok) for (const x of m.data.posts) editsLeft[x.slug] = x.edits_left;
+  }
+  if (!posts.length) $('status').textContent = 'ยังไม่มีโพสต์';
+  for (const p of posts) {
+    const c = postCardEl(p);
+    if (own) {
+      const pen = c.querySelector('a[aria-label="แก้ไขโพสต์"]');
+      const left = editsLeft[p.slug];
+      if (pen && left === 0) { pen.removeAttribute('href'); pen.classList.add('opacity-40', 'pointer-events-none'); pen.title = 'แก้ไขครบ 2 ครั้งแล้ว'; }
+      else if (pen && typeof left === 'number') pen.title = `แก้ไขโพสต์ (เหลือ ${left} ครั้ง)`;
+      trash(c, p.slug);
+    }
+    $('posts').append(c);
+  }
+
+  // ---- แท็บถูกใจ (เห็นเฉพาะเจ้าของบัญชี) ----
+  let likedLoaded = false;
+  async function loadLiked() {
+    if (likedLoaded) return;
+    likedLoaded = true;
+    $('status').textContent = 'กำลังโหลด...';
+    const l = await api('/api/blog/liked-posts?userId=' + encodeURIComponent(user.id));
+    $('status').textContent = '';
+    if (!l.ok) { likedLoaded = false; $('status').textContent = l.data.error || 'โหลดรายการไม่สำเร็จ'; return; }
+    if (!l.data.posts.length) { $('status').textContent = 'ยังไม่ได้กดถูกใจโพสต์ไหนเลย'; return; }
+    for (const p of l.data.posts) $('liked').append(postCardEl(p));
+  }
+
+  function show(tab) {
+    document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('tab-on', t.dataset.tab === tab));
+    $('posts').classList.toggle('hidden', tab !== 'posts');
+    $('liked').classList.toggle('hidden', tab !== 'likes');
+    $('status').textContent = '';
+    if (tab === 'posts' && !posts.length) $('status').textContent = 'ยังไม่มีโพสต์';
+    if (tab === 'likes') { if (likedLoaded && !$('liked').children.length) $('status').textContent = 'ยังไม่ได้กดถูกใจโพสต์ไหนเลย'; loadLiked(); }
+    history.replaceState(null, '', location.pathname + location.search + '#' + tab);
+  }
+  if (own) {
+    $('tabs').classList.remove('hidden');
+    document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => show(t.dataset.tab)));
+    show(location.hash === '#likes' ? 'likes' : 'posts');
+  }
 })();
 </script>
 </body>
