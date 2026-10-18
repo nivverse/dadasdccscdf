@@ -87,7 +87,7 @@
     }
     card.append(body);
 
-    const vid = videoEl(p.videos, p.title);
+    const vid = videoEl(p.videos, p.title, '/posts/' + p.slug);
     if (vid) card.append(vid);
     else if (p.cover_url && /^https:\/\//.test(p.cover_url)) {
       const ca = el('a'); ca.href = '/posts/' + p.slug; ca.tabIndex = -1;
@@ -130,6 +130,18 @@
 .vg-mark{position:absolute;right:.7rem;bottom:.6rem;z-index:1;display:flex;align-items:center;gap:.4rem;padding:.25rem .6rem .25rem .3rem;border-radius:999px;background:rgba(10,10,10,.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);pointer-events:none}
 .vg-mark img{width:20px;height:20px;border-radius:6px}
 .vg-mark span{font-family:'Josefin Sans',sans-serif;font-weight:700;letter-spacing:.12em;font-size:.78rem;color:#fff}
+.vg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-top:.9rem}
+@media (min-width:560px){.vg-grid{grid-template-columns:repeat(3,1fr)}}
+.vg-grid .vg-t{width:auto;opacity:.75;border-radius:14px}
+.vg-grid .vg-t::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent 55%);pointer-events:none}
+.vg-grid .vg-t b{z-index:2}
+.vg-eq{position:absolute;right:.45rem;bottom:.4rem;z-index:2;display:none;align-items:flex-end;gap:2px;height:14px}
+.vg-eq s{display:block;width:3px;background:#fbbf24;border-radius:2px;animation:vg-eq 1s ease-in-out infinite}
+.vg-eq s:nth-child(2){animation-delay:.2s}.vg-eq s:nth-child(3){animation-delay:.4s}
+@keyframes vg-eq{0%,100%{height:3px}50%{height:14px}}
+.vg-t[aria-current="true"] .vg-eq{display:flex}
+.vg-more{margin-left:auto;font-size:.72rem;font-weight:600;color:#fbbf24;padding:.15rem .6rem;border-radius:999px;border:1px solid rgba(251,191,36,.45);background:rgba(245,158,11,.1);transition:background .2s}
+.vg-more:hover{background:rgba(245,158,11,.25)}
 .vg-strip{display:flex;gap:.6rem;margin-top:.8rem;padding:.25rem .15rem .6rem;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:#f59e0b33 transparent}
 .vg-t{position:relative;flex:0 0 auto;width:132px;aspect-ratio:16/9;padding:0;border:0;border-radius:12px;overflow:hidden;cursor:pointer;scroll-snap-align:start;opacity:.62;transform:translateY(0);transition:opacity .2s,transform .2s,box-shadow .2s;background:#111}
 .vg-t:hover{opacity:1;transform:translateY(-3px)}
@@ -143,23 +155,21 @@
   // ---------- วิดีโอ YouTube (การ์ดในฟีด / หน้าโปรไฟล์ / ค้นหา) — ใช้ CSS ชุดเดียวกับหน้าโพสต์ ----------
   const YT_ID = /^[A-Za-z0-9_-]{11}$/;
   const ytThumb = (id) => 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg';
-  function videoEl(ids, title) {
+  function videoEl(ids, title, href) {
     const list = (Array.isArray(ids) ? ids : []).filter((x) => YT_ID.test(x)).slice(0, 15);
     if (!list.length) return null;
     const root = el('section', 'vg vg-c');
     root.dataset.title = title || '';
     root.setAttribute('aria-label', 'วิดีโอ');
-    const strip = list.length > 1
-      ? '<div class="vg-strip" role="list" aria-label="เลือกวิดีโอ">' + list.map((id, i) =>
-          '<button type="button" role="listitem" class="vg-t" data-id="' + id + '"' + (i === 0 ? ' aria-current="true"' : '') + ' aria-label="เล่นวิดีโอที่ ' + (i + 1) + '"><img src="' + ytThumb(id) + '" alt="" loading="lazy" decoding="async"><b>' + String(i + 1).padStart(2, '0') + '</b></button>').join('') + '</div>'
-      : '';
     root.innerHTML =
-      '<div class="vg-frame"><div class="vg-in"><div class="vg-bar"><span class="vg-tag">PLAYER</span><span class="vg-count">1 / ' + list.length + '</span></div>' +
+      '<div class="vg-frame"><div class="vg-in"><div class="vg-bar"><span class="vg-tag">PLAYER</span>' +
+      (list.length > 1 ? '<a class="vg-more">ดูทั้งหมด ' + list.length + ' คลิป</a>' : '') + '</div>' +
       '<div class="vg-stage"><button type="button" class="vg-poster" data-id="' + list[0] + '" aria-label="เล่นวิดีโอ">' +
       '<img class="vg-img" src="' + ytThumb(list[0]) + '" alt="" loading="lazy" decoding="async">' +
       '<span class="vg-play"><img src="/img/nivreadfavon.png" alt=""></span>' +
-      '<span class="vg-mark"><img src="/img/nivreadfavon.png" alt=""><span>nivread</span></span></button></div></div></div>' + strip;
+      '<span class="vg-mark"><img src="/img/nivreadfavon.png" alt=""><span>nivread</span></span></button></div></div></div>';
     root.querySelector('.vg-img').alt = title || '';
+    const more = root.querySelector('.vg-more'); if (more) more.href = href || '#';
     return root;
   }
 
@@ -176,6 +186,7 @@
       const id = (p || t).getAttribute('data-id'), i = t ? ts.indexOf(t) : 0;
       if (!YT_ID.test(id)) return;
       const stage = root.querySelector('.vg-stage'), strip = root.querySelector('.vg-strip'), count = root.querySelector('.vg-count');
+      const grid = root.querySelector('.vg-grid');
       const f = document.createElement('iframe');
       f.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
       f.title = (root.dataset.title || 'วิดีโอ') + ' — วิดีโอ ' + (i + 1);
@@ -184,6 +195,7 @@
       stage.replaceChildren(f);
       ts.forEach((x, k) => { if (k === i) x.setAttribute('aria-current', 'true'); else x.removeAttribute('aria-current'); });
       if (count) count.textContent = (i + 1) + ' / ' + (ts.length || 1);
+      if (grid && t) stage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       if (strip && ts[i]) strip.scrollTo({ left: ts[i].offsetLeft - strip.clientWidth / 2 + ts[i].clientWidth / 2, behavior: 'smooth' });
     });
   }
