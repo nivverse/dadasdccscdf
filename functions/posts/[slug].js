@@ -51,7 +51,7 @@ export async function onRequestGet({ request, env, params }) {
       inLanguage: 'th',
       articleSection: p.category || undefined,
       author: { '@type': 'Person', name: author, url: origin + '/user?id=' + encodeURIComponent(p.author_id || '') },
-      publisher: { '@type': 'Organization', name: 'nivread', url: origin + '/', logo: { '@type': 'ImageObject', url: origin + '/favicon.svg' } },
+      publisher: { '@type': 'Organization', name: 'nivread', url: origin + '/', logo: { '@type': 'ImageObject', url: origin + '/img/nivreadfavon.png' } },
     },
     {
       '@context': 'https://schema.org',

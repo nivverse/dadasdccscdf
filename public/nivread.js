@@ -158,6 +158,14 @@
 
   window.NIV = { API, session, logout, api, el, userUrl, avatarEl, postCardEl, ago, reportDialog, REASONS };
 
+  // ---------- ฟอนต์ Cinzel สำหรับชื่อเว็บ ----------
+  if (!document.getElementById('niv-font')) {
+    const lk = document.createElement('link');
+    lk.id = 'niv-font'; lk.rel = 'stylesheet';
+    lk.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap';
+    document.head.appendChild(lk);
+  }
+
   // ---------- CSS ของเมนูข้าง ----------
   const CSS = `
 #niv-drawer{position:fixed;inset:0;z-index:50;visibility:hidden;pointer-events:none;transition:visibility 0s linear .3s}
@@ -178,6 +186,7 @@
 .dark .nv-link.is-active{background:rgba(245,158,11,.2);color:#fbbf24}
 .nv-link svg{width:1.15rem;height:1.15rem;flex:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
 .nv-link:hover svg{transform:translateX(2px) rotate(-8deg) scale(1.12)}
+.nv-brand{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.1em;line-height:1}
 .nv-in{opacity:0;transform:translateX(18px);transition:background .2s,color .2s,opacity .35s ease,transform .4s cubic-bezier(.22,1,.36,1)}
 #niv-drawer.is-open .nv-in{opacity:1;transform:none;transition-delay:0s,0s,calc(.08s + var(--i,0)*.05s),calc(.08s + var(--i,0)*.05s)}
 .nv-burger{position:relative;display:block;width:1.3rem;height:.95rem}
@@ -237,7 +246,10 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
 <style id="niv-style">${CSS}</style>
 <div class="sticky top-0 z-30 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0d0d0d]/80 backdrop-blur-md">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
-    <a href="/posts" class="text-xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500 mr-auto sm:mr-0">nivread</a>
+    <a href="/posts" class="flex items-center gap-2 mr-auto sm:mr-0" aria-label="nivread">
+      <img src="/img/nivreadfavon.png" alt="" width="32" height="32" class="w-8 h-8 rounded-lg object-contain">
+      <span class="nv-brand text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">nivread</span>
+    </a>
     <div class="hidden sm:block flex-1 max-w-md mx-auto">${searchBox('niv-q')}</div>
     <nav class="flex items-center gap-1.5" aria-label="เมนูด่วน">
       <a href="/search" class="sm:hidden w-10 h-10 grid place-items-center rounded-xl text-slate-700 dark:text-neutral-200 hover:bg-slate-200/70 dark:hover:bg-white/10" aria-label="ค้นหา">${svg('search', 'w-5 h-5')}</a>
@@ -255,12 +267,11 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
   <div id="niv-backdrop"></div>
   <aside class="shadow-2xl border-l border-slate-200 dark:border-white/10 text-slate-800 dark:text-white" role="dialog" aria-label="เมนู">
     <div class="flex items-center justify-between px-5 h-14 border-b border-slate-200 dark:border-white/10 flex-none">
-      <span class="text-xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">nivread</span>
+      <span class="flex items-center gap-2"><img src="/img/nivreadfavon.png" alt="" width="32" height="32" class="w-8 h-8 rounded-lg object-contain"><span class="nv-brand text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">nivread</span></span>
       <button id="niv-close" type="button" class="w-9 h-9 grid place-items-center rounded-xl hover:bg-slate-200/70 dark:hover:bg-white/10 cursor-pointer" aria-label="ปิดเมนู">${svg('close', 'w-5 h-5')}</button>
     </div>
     <div class="nv-scroll">
-      <div class="nv-in" style="--i:0">${searchBox('niv-q2')}</div>
-      <button id="niv-theme" type="button" class="nv-link nv-in nv-theme mt-3 cursor-pointer" style="--i:1" aria-label="สลับโหมดสี">
+      <button id="niv-theme" type="button" class="nv-link nv-in nv-theme cursor-pointer" style="--i:1" aria-label="สลับโหมดสี">
         <span class="block w-[1.15rem] h-[1.15rem] flex-none"><span class="moon">${svg('moon', 'w-full h-full')}</span><span class="sun">${svg('sun', 'w-full h-full')}</span></span>
         <span><span class="nv-mode-n">โหมดกลางคืน</span><span class="nv-mode-d">โหมดกลางวัน</span></span>
       </button>
@@ -289,7 +300,6 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
       drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
       burger.setAttribute('aria-expanded', open ? 'true' : 'false');
       document.documentElement.style.overflow = open ? 'hidden' : '';
-      if (open) setTimeout(() => document.getElementById('niv-q2')?.focus({ preventScroll: true }), 320);
     };
     burger.addEventListener('click', () => setOpen(!drawer.classList.contains('is-open')));
     document.getElementById('niv-backdrop').addEventListener('click', () => setOpen(false));

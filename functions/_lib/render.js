@@ -103,7 +103,8 @@ export function shell({ origin, apiBase, path, title, desc, image, jsonld = [], 
 <meta name="robots" content="${robots}">
 <meta name="author" content="nivread">
 <link rel="canonical" href="${esc(canonical)}">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/img/nivreadfavon.png" type="image/png">
+<link rel="apple-touch-icon" href="/img/nivreadfavon.png">
 <meta name="theme-color" content="#0d0d0d">
 <meta name="api-base" content="${esc(apiBase)}">
 <meta property="og:site_name" content="nivread">
