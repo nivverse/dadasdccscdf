@@ -26,7 +26,7 @@
   <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
 </div>
 <header id="main-header" class="z-20"></header>
-<main class="flex-1 z-10 w-full max-w-2xl mx-auto px-4 sm:px-6 py-6">
+<main class="flex-1 z-10 w-full max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-6">
   <section id="card" class="rounded-3xl overflow-hidden bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm">
     <div class="h-28 sm:h-36 bg-gradient-to-br from-amber-500/60 via-orange-500/50 to-red-500/40"></div>
     <div class="px-5 pb-5">
@@ -43,12 +43,12 @@
       </div>
     </div>
   </section>
-  <nav id="tabs" class="mt-4 hidden flex rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md p-1" aria-label="หมวดในโปรไฟล์">
+  <nav id="tabs" class="mt-4 hidden flex max-w-md rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md p-1" aria-label="หมวดในโปรไฟล์">
     <button type="button" data-tab="posts" class="tab flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer">โพสต์</button>
     <button type="button" data-tab="likes" class="tab flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer">ถูกใจ</button>
   </nav>
   <div id="status" class="mt-6 text-sm text-slate-500 dark:text-neutral-400" role="status"></div>
-  <section class="mt-4"><div id="posts" class="space-y-6"></div><div id="liked" class="hidden space-y-6"></div></section>
+  <section class="mt-4"><div id="posts" class="nv-mas"></div><div id="liked" class="hidden nv-mas"></div></section>
 </main>
 <div id="main-footer" class="z-10"></div>
 <script src="/nivread.js"></script>

@@ -68,10 +68,10 @@ export async function onRequestGet({ request, env }) {
     ${data.hasMore ? `<a rel="next" href="/posts?page=${page + 1}" class="${btn} bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white transition-all shadow-md shadow-amber-500/25">ถัดไป</a>` : ''}
   </nav>`;
 
-  const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
+  const body = `<main class="flex-1 max-w-[90rem] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 z-10">
   <h1 class="sr-only">โพสต์ล่าสุด nivread</h1>
-  <div id="composer" class="mb-6" data-composer></div>
-  <div id="feed" class="space-y-6" data-next-page="${data.hasMore ? page + 1 : ''}">
+  <div id="composer" class="mb-6 max-w-3xl mx-auto" data-composer></div>
+  <div id="feed" class="nv-mas" data-next-page="${data.hasMore ? page + 1 : ''}">
 ${cards}
   </div>
   <div id="feed-sentinel" class="h-10" aria-hidden="true"></div>

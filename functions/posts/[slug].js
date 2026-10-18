@@ -67,34 +67,38 @@ export async function onRequestGet({ request, env, params }) {
 
   jsonld.push(...videoLd(p.videos, { title: p.title, desc, uploadDate: new Date(p.published_at).toISOString() }));
 
-  const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
+  const body = `<main class="flex-1 max-w-[90rem] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 z-10">
   <nav aria-label="breadcrumb" class="mb-4 text-xs text-slate-500 dark:text-neutral-400">
     <a href="/" class="hover:text-amber-500">หน้าแรก</a> / <a href="/posts" class="hover:text-amber-500">โพสต์</a>
   </nav>
+  <div class="xl:grid xl:grid-cols-[minmax(0,1fr)_26rem] xl:gap-8 xl:items-start">
+  <div class="min-w-0">
   <article class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
     ${postHead(p)}
     <div class="px-4 pb-4">
       <h1 class="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
       <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">เผยแพร่ ${esc(fmtDate(p.published_at))}${p.updated_at - p.published_at > 86400000 ? ` · อัปเดต ${esc(fmtDate(p.updated_at))}` : ''}</p>
     </div>
-    ${p.cover_url ? `<img src="${esc(p.cover_url)}" alt="${esc(p.title)}" width="1200" height="675" fetchpriority="high" decoding="async" class="w-full aspect-video object-cover">` : ''}
-    <div class="px-4 py-6 space-y-5 text-[15px]">
+    ${p.cover_url ? `<img src="${esc(p.cover_url)}" alt="${esc(p.title)}" width="1200" height="675" fetchpriority="high" decoding="async" class="w-full aspect-video max-h-[34rem] object-cover">` : ''}
+    <div class="px-4 lg:px-8 py-6 space-y-5 text-[15px] lg:text-base max-w-4xl">
 ${paragraphs}
     </div>
     ${videoGallery(p.videos, p.title)}
     ${postBar(p, origin)}
   </article>
   <div class="mt-2 text-right"><button type="button" data-report-post="${esc(p.slug)}" class="text-xs text-slate-400 hover:text-amber-500 hover:opacity-70 cursor-pointer">รายงานโพสต์นี้</button></div>
+  </div>
 
-  <section id="comments" class="mt-6 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4" data-comments-for="post:${esc(p.slug)}">
+  <section id="comments" class="mt-6 xl:mt-0 xl:sticky xl:top-20 xl:max-h-[calc(100dvh-6rem)] xl:overflow-y-auto rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4" data-comments-for="post:${esc(p.slug)}">
     <h2 class="font-bold">ความคิดเห็น (<span id="comment-count">${p.comment_count || 0}</span>)</h2>
     <div id="comment-box" class="mt-3"></div>
     <div id="comment-list" class="mt-4 space-y-4"></div>
   </section>
+  </div>
 
   ${more.length ? `<section class="mt-10" aria-labelledby="more-h">
     <h2 id="more-h" class="text-lg font-bold mb-4">โพสต์อื่น ๆ</h2>
-    <div class="space-y-6">${more.map((x) => postCard(x, origin)).join('\n')}</div>
+    <div class="nv-mas">${more.map((x) => postCard(x, origin)).join('\n')}</div>
   </section>` : ''}
 </main>`;
 
