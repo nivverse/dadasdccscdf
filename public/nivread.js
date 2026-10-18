@@ -275,14 +275,6 @@
     document.head.appendChild(st);
   }
 
-  // ---------- ฟีดแบบหลายคอลัมน์บนจอคอม (masonry) — มือถือเป็นคอลัมน์เดียว ----------
-  if (!document.getElementById('niv-mas')) {
-    const st = document.createElement('style');
-    st.id = 'niv-mas';
-    st.textContent = '.nv-mas{column-gap:1.5rem}.nv-mas>*{break-inside:avoid;margin-bottom:1.5rem}@media (min-width:1024px){.nv-mas{column-count:2}}@media (min-width:1536px){.nv-mas{column-count:3}}';
-    document.head.appendChild(st);
-  }
-
   // ---------- ฟอนต์ Josefin Sans สำหรับชื่อเว็บ ----------
   if (!document.getElementById('niv-font')) {
     const lk = document.createElement('link');
@@ -370,7 +362,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
     header.innerHTML = `
 <style id="niv-style">${CSS}</style>
 <div class="sticky top-0 z-30 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0d0d0d]/80 backdrop-blur-md">
-  <div class="max-w-[90rem] mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
     <a href="/posts" class="flex items-center gap-2 mr-auto sm:mr-0" aria-label="nivread">
       <img src="/img/nivreadfavon.png" alt="" width="32" height="32" class="w-8 h-8 rounded-lg object-contain">
       <span class="nv-brand text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">nivread</span>
