@@ -34,10 +34,6 @@ export async function onRequestGet({ request, env, params }) {
   const paragraphs = String(p.content).split(/\n{2,}/).map((t) => t.trim()).filter(Boolean)
     .map((t) => `<p class="leading-8 text-slate-800 dark:text-neutral-200">${esc(t).replace(/\n/g, '<br>')}</p>`).join('\n');
 
-  // โพสต์ล่าสุดอื่น ๆ — ลิงก์ภายในช่วยให้ Google เจอโพสต์ใหม่เร็วขึ้น
-  const latest = await api(env, '/api/blog/list?page=1&limit=6');
-  const more = (latest?.posts || []).filter((x) => x.slug !== p.slug).slice(0, 5);
-
   const jsonld = [
     {
       '@context': 'https://schema.org',
@@ -86,16 +82,13 @@ ${paragraphs}
   </article>
   <div class="mt-2 text-right"><button type="button" data-report-post="${esc(p.slug)}" class="text-xs text-slate-400 hover:text-amber-500 hover:opacity-70 cursor-pointer">รายงานโพสต์นี้</button></div>
 
-  <section id="comments" class="mt-6 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4" data-comments-for="post:${esc(p.slug)}">
+  <section id="comments" class="mt-6 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4" data-comments-for="post:${esc(p.slug)}" data-author="${esc(p.author_id || '')}">
     <h2 class="font-bold">ความคิดเห็น (<span id="comment-count">${p.comment_count || 0}</span>)</h2>
     <div id="comment-box" class="mt-3"></div>
     <div id="comment-list" class="mt-4 space-y-4"></div>
   </section>
 
-  ${more.length ? `<section class="mt-10" aria-labelledby="more-h">
-    <h2 id="more-h" class="text-lg font-bold mb-4">โพสต์อื่น ๆ</h2>
-    <div class="space-y-6">${more.map((x) => postCard(x, origin)).join('\n')}</div>
-  </section>` : ''}
+<script src="/comments.js" defer></script>
 </main>`;
 
   return htmlResponse(shell({
