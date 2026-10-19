@@ -133,7 +133,7 @@
       if (!next) return end();
       loading = true;
       try {
-        const r = await fetch(`/posts?page=${next}&partial=1`);
+        const r = await fetch(`${feed.dataset.base || '/posts'}?page=${next}&partial=1`);
         if (!r.ok) throw new Error();
         feed.insertAdjacentHTML('beforeend', await r.text());
         feed.dataset.nextPage = r.headers.get('X-Has-More') === '1' ? String(+next + 1) : '';

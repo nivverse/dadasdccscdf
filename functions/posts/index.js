@@ -1,5 +1,5 @@
 // functions/posts/index.js — หน้าฟีด /posts?page=N (SSR) และ ?partial=1 สำหรับเลื่อนโหลดเพิ่ม
-import { api, esc, postCard, shell, htmlResponse } from '../_lib/render.js';
+import { api, esc, postCard, shell, htmlResponse, categoryBar } from '../_lib/render.js';
 
 const PER_PAGE = 10;
 
@@ -9,7 +9,10 @@ export async function onRequestGet({ request, env }) {
   const page = Math.max(1, parseInt(url.searchParams.get('page'), 10) || 1);
   const partial = url.searchParams.get('partial') === '1';
 
-  const data = await api(env, `/api/blog/list?page=${page}&limit=${PER_PAGE}`);
+  const [data, cats] = await Promise.all([
+    api(env, `/api/blog/list?page=${page}&limit=${PER_PAGE}`),
+    partial ? null : api(env, '/api/blog/categories'),
+  ]);
   if (!data || data.error || !data.posts) {
     return htmlResponse('<!DOCTYPE html><meta charset="utf-8"><title>ระบบขัดข้อง</title><p>ไม่สามารถโหลดโพสต์ได้ กรุณาลองใหม่</p>', 503, 'no-store');
   }
@@ -70,6 +73,7 @@ export async function onRequestGet({ request, env }) {
 
   const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
   <h1 class="sr-only">โพสต์ล่าสุด nivread</h1>
+  ${categoryBar(cats?.categories)}
   <div id="composer" class="mb-6" data-composer></div>
   <div id="feed" class="space-y-6" data-next-page="${data.hasMore ? page + 1 : ''}">
 ${cards}

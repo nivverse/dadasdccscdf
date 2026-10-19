@@ -65,7 +65,7 @@
     const meta = el('div', 'min-w-0');
     const a2 = el('a', 'block font-semibold text-sm truncate hover:text-amber-500', p.display_name || p.author_id); a2.href = userUrl(p.author_id);
     const sub = el('div', 'text-xs text-slate-500 dark:text-neutral-400', ago(p.published_at));
-    if (p.category) sub.append(el('span', 'ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400', p.category));
+    if (p.category) { const ca = el('a', 'ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', p.category); ca.href = '/category/' + encodeURIComponent(p.category); sub.append(ca); }
     meta.append(a2, sub);
     head.append(a1, meta);
     if (session().userId && session().userId === p.author_id) {
@@ -414,6 +414,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
   // ---------- ไอคอน ----------
   const IC = {
     posts: '<path d="M4 4h13a1 1 0 011 1v14a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><path d="M8 8h6M8 12h6M8 16h4"/>',
+    tag: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
     write: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>',
     user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>',
@@ -438,6 +439,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
 
     const nav = [
       { href: '/posts', label: 'โพสต์ทั้งหมด', ic: 'posts', on: path === '/posts' || path.startsWith('/posts/') || path === '/' },
+      { href: '/categories', label: 'หมวดหมู่', ic: 'tag', on: path === '/categories' || path.startsWith('/category/') },
       { href: '/search', label: 'ค้นหา', ic: 'search', on: path === '/search' },
       ...(loggedIn ? [
         { href: '/write', label: 'เขียนโพสต์', ic: 'write', on: path === '/write' },
@@ -561,7 +563,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
   if (footer) {
     footer.innerHTML = `
 <div class="mt-12 border-t border-slate-200 dark:border-white/10 py-6 text-center text-xs text-slate-500 dark:text-neutral-400">
-  © ${new Date().getFullYear()} nivread · <a href="/posts" class="hover:text-amber-500">โพสต์ทั้งหมด</a> · <a href="/search" class="hover:text-amber-500">ค้นหา</a> · <a href="/write" class="hover:text-amber-500">เขียนโพสต์</a>
+  © ${new Date().getFullYear()} nivread · <a href="/posts" class="hover:text-amber-500">โพสต์ทั้งหมด</a> · <a href="/categories" class="hover:text-amber-500">หมวดหมู่</a> · <a href="/search" class="hover:text-amber-500">ค้นหา</a> · <a href="/write" class="hover:text-amber-500">เขียนโพสต์</a>
 </div>`;
   }
 })();

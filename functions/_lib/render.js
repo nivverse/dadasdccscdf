@@ -8,6 +8,25 @@ export const esc = (s) =>
 export const fmtDate = (ms) =>
   new Date(ms).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Bangkok' });
 
+export const catHref = (name) => `/category/${encodeURIComponent(name)}`;
+
+// แถบเลือกหมวดหมู่ (เลื่อนซ้ายขวาได้) — active = ชื่อหมวดที่เปิดอยู่ ('' = ทั้งหมด)
+export function categoryBar(cats, active = '') {
+  const list = (cats || []).slice(0, 24);
+  if (!list.length) return '';
+  const on = 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-transparent shadow-md shadow-amber-500/25';
+  const off = 'bg-white/85 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-neutral-300 hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-400';
+  const chip = (href, label, n, isOn) => `<a href="${href}"${isOn ? ' aria-current="page"' : ''} class="whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${isOn ? on : off}">${label}${n != null ? ` <span class="opacity-60 text-xs">${n}</span>` : ''}</a>`;
+  const act = String(active).toLowerCase();
+  return `<nav aria-label="หมวดหมู่" class="mb-5 -mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto" style="scrollbar-width:none">
+  <div class="flex gap-2 w-max sm:w-auto sm:flex-wrap">
+    ${chip('/posts', 'ทั้งหมด', null, !active)}
+    ${list.map((c) => chip(catHref(c.name), esc(c.name), c.n, String(c.name).toLowerCase() === act)).join('\n    ')}
+    <a href="/categories" class="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-amber-600 dark:text-amber-400 hover:opacity-70">ดูทุกหมวด →</a>
+  </div>
+</nav>`;
+}
+
 export function ago(ms) {
   const s = Math.max(1, ((Date.now() - ms) / 1000) | 0);
   if (s < 60) return 'เมื่อสักครู่';
@@ -55,7 +74,7 @@ function postHead(p) {
         : `<div class="font-semibold text-sm text-slate-900 dark:text-white truncate">${who}</div>`}
       <div class="text-xs text-slate-500 dark:text-neutral-400">
         <time datetime="${new Date(p.published_at).toISOString()}">${esc(ago(p.published_at))}</time>
-        ${p.category ? `<span class="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400">${esc(p.category)}</span>` : ''}
+        ${p.category ? `<a href="${catHref(p.category)}" class="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">${esc(p.category)}</a>` : ''}
       </div>
     </div>
     ${p.author_id && p.slug ? `<a href="/write?edit=${encodeURIComponent(p.slug)}" data-edit-post data-author="${esc(p.author_id)}" class="hidden ml-auto flex-shrink-0 w-9 h-9 place-items-center rounded-full text-slate-500 dark:text-neutral-400 hover:text-amber-500 hover:bg-amber-500/10 transition-colors" aria-label="แก้ไขโพสต์" title="แก้ไขโพสต์"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></a>` : ''}

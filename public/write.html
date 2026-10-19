@@ -40,8 +40,10 @@
     </div>
     <div>
       <label for="category" class="block text-sm font-medium mb-1.5">หมวดหมู่ <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
-      <input id="category" maxlength="40" placeholder="เช่น ข่าวอนิเมะ รีวิว"
+      <input id="category" maxlength="40" list="cat-list" autocomplete="off" placeholder="พิมพ์เอง หรือเลือกจากหมวดที่มีอยู่"
         class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+      <datalist id="cat-list"></datalist>
+      <div id="cat-chips" class="mt-2 flex flex-wrap gap-1.5"></div>
     </div>
     <div>
       <div class="flex justify-between items-end mb-1.5">
@@ -291,6 +293,21 @@
       [...$('post-form').elements].forEach((x) => { x.disabled = true; });
     } else msg('');
   }
+
+  // ---------- หมวดหมู่ที่เคยมีผู้ใช้ใส่ (แนะนำให้เลือก) ----------
+  (async () => {
+    try {
+      const r = await api('/api/blog/categories');
+      const cats = (r.ok && r.data.categories) || [];
+      $('cat-list').replaceChildren(...cats.map((c) => { const o = document.createElement('option'); o.value = c.name; return o; }));
+      cats.slice(0, 8).forEach((c) => {
+        const b = el('button', 'px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 transition', c.name);
+        b.type = 'button';
+        b.addEventListener('click', () => { $('category').value = c.name; });
+        $('cat-chips').append(b);
+      });
+    } catch {}
+  })();
 
   renderImages();
   renderVideos();

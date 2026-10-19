@@ -3,11 +3,14 @@ import { api, esc } from './_lib/render.js';
 
 export async function onRequestGet({ request, env }) {
   const origin = new URL(request.url).origin;
-  const data = await api(env, '/api/blog/slugs');
+  const [data, catData] = await Promise.all([api(env, '/api/blog/slugs'), api(env, '/api/blog/categories')]);
   const posts = data?.posts || [];
+  const cats = catData?.categories || [];
 
   const urls = [
     `<url><loc>${origin}/posts</loc>${posts[0] ? `<lastmod>${new Date(posts[0].updated_at).toISOString()}</lastmod>` : ''}<changefreq>hourly</changefreq><priority>0.8</priority></url>`,
+    `<url><loc>${origin}/categories</loc><changefreq>daily</changefreq><priority>0.5</priority></url>`,
+    ...cats.map((c) => `<url><loc>${esc(`${origin}/category/${encodeURIComponent(c.name)}`)}</loc><changefreq>daily</changefreq><priority>0.6</priority></url>`),
     ...posts.map((p) => `<url>
   <loc>${esc(`${origin}/posts/${p.slug}`)}</loc>
   <lastmod>${new Date(p.updated_at).toISOString()}</lastmod>${p.cover_url ? `
