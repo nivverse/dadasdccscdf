@@ -38,17 +38,10 @@
       <input id="title" required minlength="5" maxlength="120" placeholder="หัวข้อที่บอกได้ชัดว่าโพสต์นี้เกี่ยวกับอะไร"
         class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
     </div>
-    <div class="grid sm:grid-cols-2 gap-4">
-      <div>
-        <label for="category" class="block text-sm font-medium mb-1.5">หมวดหมู่ <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
-        <input id="category" maxlength="40" placeholder="เช่น ข่าวอนิเมะ รีวิว"
-          class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-      </div>
-      <div>
-        <label for="cover" class="block text-sm font-medium mb-1.5">ลิงก์รูปปก <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
-        <input id="cover" type="url" maxlength="500" placeholder="https://..."
-          class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-      </div>
+    <div>
+      <label for="category" class="block text-sm font-medium mb-1.5">หมวดหมู่ <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
+      <input id="category" maxlength="40" placeholder="เช่น ข่าวอนิเมะ รีวิว"
+        class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
     </div>
     <div>
       <div class="flex justify-between items-end mb-1.5">
@@ -58,6 +51,20 @@
       <textarea id="content" rows="14" required minlength="50" maxlength="20000" placeholder="เว้นบรรทัดว่างหนึ่งบรรทัดเพื่อขึ้นย่อหน้าใหม่"
         class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm leading-7 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"></textarea>
       <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">เนื้อหาเป็นข้อความล้วน ยาวอย่างน้อย 50 ตัวอักษร</p>
+    </div>
+
+    <div>
+      <div class="flex justify-between items-end mb-1.5">
+        <label for="img-input" class="block text-sm font-medium">รูปภาพ <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
+        <span id="img-count" class="text-xs text-slate-400">0 / 10</span>
+      </div>
+      <div class="flex gap-2">
+        <input id="img-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์รูป (https://...) ได้ครั้งละหลายลิงก์"
+          class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+        <button id="img-add" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition">เพิ่ม</button>
+      </div>
+      <p id="img-msg" class="text-xs mt-1 text-slate-500 dark:text-neutral-400" role="status">สูงสุด 10 รูป รูปแรกใช้เป็นภาพปกของโพสต์ รองรับทั้งแนวตั้งและแนวนอน</p>
+      <ul id="img-list" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2"></ul>
     </div>
 
     <div>
@@ -106,6 +113,50 @@
   $('content').addEventListener('input', () => { $('count').textContent = $('content').value.length + ' / 20000'; });
 
   // ---------- วิดีโอ YouTube (ช่องเดียว วางได้หลายลิงก์ สูงสุด 15) ----------
+  // ---------- รูปภาพ (ช่องเดียว วางได้หลายลิงก์ สูงสุด 10) ----------
+  const IMG_MAX = 10;
+  let images = [];
+  const imgMsg = (t, bad) => { const m = $('img-msg'); m.textContent = t; m.className = 'text-xs mt-1 ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
+  function renderImages() {
+    const ul = $('img-list'); ul.replaceChildren();
+    images.forEach((u, i) => {
+      const li = el('li', 'relative rounded-xl overflow-hidden bg-slate-200 dark:bg-black/40 border border-slate-200 dark:border-white/10 aspect-square group');
+      const im = el('img', 'w-full h-full object-cover'); im.src = u; im.alt = ''; im.loading = 'lazy'; im.referrerPolicy = 'no-referrer';
+      im.addEventListener('error', () => { im.classList.add('opacity-20'); });
+      const tag = el('span', 'absolute left-1.5 top-1.5 px-1.5 rounded-md bg-black/60 text-white text-[11px] font-semibold', i === 0 ? 'ปก' : String(i + 1));
+      const bar = el('div', 'absolute inset-x-0 bottom-0 flex justify-end gap-1 p-1 bg-gradient-to-t from-black/70 to-transparent');
+      const mk = (label, text, fn, dis) => { const b = el('button', 'w-7 h-7 rounded-lg text-sm text-white bg-black/40 hover:bg-amber-500 disabled:opacity-30 disabled:hover:bg-black/40', text); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label); b.disabled = !!dis; b.addEventListener('click', fn); return b; };
+      const swap = (a, b) => { [images[a], images[b]] = [images[b], images[a]]; renderImages(); };
+      bar.append(mk('เลื่อนไปก่อน', '←', () => swap(i, i - 1), i === 0), mk('เลื่อนไปหลัง', '→', () => swap(i, i + 1), i === images.length - 1), mk('ลบ', '✕', () => { images.splice(i, 1); renderImages(); imgMsg(''); }));
+      li.append(im, tag, bar); ul.append(li);
+    });
+    $('img-count').textContent = images.length + ' / ' + IMG_MAX;
+    $('img-input').disabled = $('img-add').disabled = images.length >= IMG_MAX;
+    if (images.length >= IMG_MAX) imgMsg('ครบ 10 รูปแล้ว');
+  }
+  function addImages() {
+    const parts = $('img-input').value.split(/[\s,]+/).filter(Boolean);
+    if (!parts.length) return;
+    let added = 0, bad = 0, dup = 0, over = 0;
+    for (const p of parts) {
+      if (!/^https:\/\/[^\s"'<>]{4,500}$/.test(p)) { bad++; continue; }
+      if (images.includes(p)) { dup++; continue; }
+      if (images.length >= IMG_MAX) { over++; continue; }
+      images.push(p); added++;
+    }
+    $('img-input').value = '';
+    renderImages();
+    const notes = [];
+    if (added) notes.push('เพิ่มแล้ว ' + added + ' รูป');
+    if (bad) notes.push(bad + ' ลิงก์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย https://)');
+    if (dup) notes.push(dup + ' ซ้ำ');
+    if (over) notes.push(over + ' เกินจำนวนสูงสุด');
+    if (notes.length) imgMsg(notes.join(' · '), bad || over);
+  }
+  $('img-add').addEventListener('click', addImages);
+  $('img-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addImages(); } });
+  $('img-input').addEventListener('paste', () => setTimeout(addImages, 0));
+
   const YT_MAX = 15;
   let videos = [];
   const ytId = (raw) => {
@@ -177,7 +228,7 @@
           ...(editSlug ? { slug: editSlug } : {}),
           title: $('title').value,
           category: $('category').value,
-          coverUrl: $('cover').value,
+          images,
           content: $('content').value,
           videos,
         },
@@ -195,6 +246,7 @@
         return;
       }
       $('post-form').reset();
+      images = []; renderImages(); imgMsg('สูงสุด 10 รูป รูปแรกใช้เป็นภาพปกของโพสต์ รองรับทั้งแนวตั้งและแนวนอน');
       videos = []; renderVideos(); ytMsg('รองรับ youtube.com/watch, youtu.be, shorts — สูงสุด 15 คลิป');
       $('count').textContent = '0 / 20000';
       if (r.data.status === 'published') {
@@ -227,7 +279,7 @@
     const p = r.data.post;
     $('title').value = p.title || '';
     $('category').value = p.category || '';
-    $('cover').value = p.cover_url || '';
+    images = Array.isArray(p.images) ? p.images.slice(0, IMG_MAX) : []; renderImages();
     $('content').value = p.content || '';
     videos = Array.isArray(p.videos) ? p.videos.slice(0, YT_MAX) : []; renderVideos();
     $('count').textContent = $('content').value.length + ' / 20000';
@@ -240,6 +292,7 @@
     } else msg('');
   }
 
+  renderImages();
   renderVideos();
   loadEdit();
 </script>

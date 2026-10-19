@@ -11,6 +11,13 @@
     return h;
   };
 
+  if (!document.getElementById('niv-likepop')) {
+    const st = document.createElement('style');
+    st.id = 'niv-likepop';
+    st.textContent = '@keyframes like-pop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}.like-pop svg{animation:like-pop .35s ease}@media (prefers-reduced-motion:reduce){.like-pop svg{animation:none}}';
+    document.head.appendChild(st);
+  }
+
   const toast = (msg) => {
     const t = document.createElement('div');
     t.textContent = msg;
@@ -52,7 +59,17 @@
       const uid = getUserId();
       if (!uid) { location.href = '/login?redirect=' + encodeURIComponent(location.pathname + location.search); return; }
       const slug = likeBtn.dataset.like;
-      likeBtn.disabled = true;
+      if (likeBtn.dataset.busy) return;
+      likeBtn.dataset.busy = '1';
+      // อัปเดตหน้าจอทันที (ไม่รอเซิร์ฟเวอร์) แล้วค่อยเทียบผลจริง ถ้าพลาดจะย้อนกลับ
+      const was = likeBtn.getAttribute('aria-pressed') === 'true';
+      const counters = [...document.querySelectorAll(`[data-like-count="${CSS.escape(slug)}"]`)];
+      const before = counters.map((n) => n.textContent);
+      const base = parseInt(before[0], 10) || 0;
+      paint(slug, !was);
+      counters.forEach((n) => (n.textContent = Math.max(0, base + (was ? -1 : 1))));
+      if (!was) { likeBtn.classList.add('like-pop'); setTimeout(() => likeBtn.classList.remove('like-pop'), 350); }
+      const revert = () => { paint(slug, was); counters.forEach((n, i) => (n.textContent = before[i])); };
       try {
         const r = await fetch(`${API}/api/blog/like`, {
           method: 'POST',
@@ -60,11 +77,11 @@
           body: JSON.stringify({ slug, userId: uid }),
         });
         const d = await r.json();
-        if (!d.success) return toast(d.error || 'ทำรายการไม่สำเร็จ');
+        if (!d.success) { revert(); return toast(d.error || 'ทำรายการไม่สำเร็จ'); }
         paint(slug, d.liked);
-        document.querySelectorAll(`[data-like-count="${CSS.escape(slug)}"]`).forEach((n) => (n.textContent = d.likeCount));
-      } catch { toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'); }
-      finally { likeBtn.disabled = false; }
+        counters.forEach((n) => (n.textContent = d.likeCount));
+      } catch { revert(); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'); }
+      finally { delete likeBtn.dataset.busy; }
       return;
     }
 

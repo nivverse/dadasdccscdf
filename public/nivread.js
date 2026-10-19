@@ -91,13 +91,11 @@
     }
     card.append(body);
 
+    const imgs = (Array.isArray(p.images) && p.images.length ? p.images : (p.cover_url ? [p.cover_url] : []));
+    const gal = galleryEl(imgs, p.title);
+    if (gal) card.append(gal);
     const vid = videoEl(p.videos, p.title, '/posts/' + p.slug);
     if (vid) card.append(vid);
-    else if (p.cover_url && /^https:\/\//.test(p.cover_url)) {
-      const ca = el('a'); ca.href = '/posts/' + p.slug; ca.tabIndex = -1;
-      ca.append(Object.assign(el('img', 'w-full aspect-video object-cover'), { src: p.cover_url, alt: p.title, loading: 'lazy', decoding: 'async' }));
-      card.append(ca);
-    }
     const foot = el('div', 'px-4 py-3 flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400');
     foot.append(el('span', '', '♥ ' + (p.like_count || 0)));
     const ca2 = el('a', 'hover:opacity-70', (p.comment_count || 0) + ' ความคิดเห็น'); ca2.href = '/posts/' + p.slug + '#comments';
@@ -151,6 +149,102 @@
 @media (max-width:480px){.vg{margin:0 .75rem 1.25rem}.vg-t{width:112px}.vg-play{width:68px;height:68px;margin:-34px 0 0 -34px}}
 @media (prefers-reduced-motion:reduce){.vg-frame,.vg-play img{animation:none}.vg-poster img.vg-img{transition:none}}
 `;
+
+
+  // ---------- แกลเลอรีรูปแบบ Facebook + ดูรูปเต็ม (lightbox) ----------
+  const IMG_OK = /^https:\/\/[^\s"'<>]{4,500}$/;
+  function galleryEl(list, title) {
+    const urls = (Array.isArray(list) ? list : []).filter((x) => IMG_OK.test(x)).slice(0, 10);
+    const n = urls.length;
+    if (!n) return null;
+    const root = el('div', 'gal');
+    const data = escHtml(JSON.stringify(urls)), alt = escHtml(title || '');
+    if (n === 1) {
+      root.innerHTML = '<div class="gal-s" data-imgs="' + data + '" data-i="0" role="button" tabindex="0" aria-label="ดูรูปเต็ม">' +
+        '<img class="bg" src="' + escHtml(urls[0]) + '" alt="" aria-hidden="true" loading="lazy" decoding="async">' +
+        '<img class="fg" src="' + escHtml(urls[0]) + '" alt="' + alt + '" loading="lazy" decoding="async"></div>';
+    } else {
+      root.innerHTML = '<div class="gal-g gal-' + Math.min(n, 5) + '" data-imgs="' + data + '">' + urls.slice(0, 5).map((u, i) => {
+        const more = i === 4 && n > 5;
+        return '<button type="button" class="gal-t' + (more ? ' gal-more' : '') + '" data-i="' + i + '"' + (more ? ' data-more="+' + (n - 5) + '"' : '') +
+          ' aria-label="ดูรูปที่ ' + (i + 1) + '"><img src="' + escHtml(u) + '" alt="' + alt + ' รูปที่ ' + (i + 1) + '" loading="lazy" decoding="async"></button>';
+      }).join('') + '</div>';
+    }
+    return root;
+  }
+
+  const GALCSS = `
+.gal{margin:.25rem 1rem .75rem}
+.gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:#0a0a0a;cursor:zoom-in}
+.gal-s .bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(26px) brightness(.5);pointer-events:none}
+.gal-s .fg{position:relative;display:block;width:auto;height:auto;max-width:100%;max-height:36rem;transition:transform .4s ease}
+.gal-s:hover .fg{transform:scale(1.015)}
+.gal-g{display:grid;gap:4px;border-radius:16px;overflow:hidden}
+.gal-t{position:relative;min-height:0;padding:0;border:0;background:#111;cursor:zoom-in;overflow:hidden}
+.gal-t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease,filter .3s}
+.gal-t:hover img{transform:scale(1.05);filter:brightness(1.08)}
+.gal-2{grid-template-columns:1fr 1fr;aspect-ratio:4/3}
+.gal-3{grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;aspect-ratio:4/3}
+.gal-3 .gal-t:first-child{grid-row:span 2}
+.gal-4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;aspect-ratio:1/1}
+.gal-5{grid-template-columns:repeat(6,1fr);grid-template-rows:3fr 2fr;aspect-ratio:1/1}
+.gal-5 .gal-t:nth-child(-n+2){grid-column:span 3}.gal-5 .gal-t:nth-child(n+3){grid-column:span 2}
+.gal-more::after{content:attr(data-more);position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff;font-size:1.9rem;font-weight:700;font-family:'Josefin Sans','Kanit',sans-serif}
+#niv-lb{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:lb-in .2s ease}
+@keyframes lb-in{from{opacity:0}to{opacity:1}}
+#niv-lb img{max-width:100vw;max-height:100dvh;object-fit:contain;padding:3.25rem .5rem;user-select:none;-webkit-user-drag:none;touch-action:pan-y}
+#niv-lb button{position:absolute;display:grid;place-items:center;width:44px;height:44px;border-radius:999px;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:1.3rem;cursor:pointer;transition:background .2s}
+#niv-lb button:hover{background:rgba(245,158,11,.6)}
+#niv-lb .x{top:.75rem;right:.75rem}#niv-lb .p{left:.75rem;top:50%;margin-top:-22px}#niv-lb .n{right:.75rem;top:50%;margin-top:-22px}
+#niv-lb .c{position:absolute;top:1.1rem;left:50%;transform:translateX(-50%);color:#e5e5e5;font-size:.85rem;font-variant-numeric:tabular-nums}
+@media (max-width:640px){#niv-lb .p,#niv-lb .n{display:none}}
+`;
+  if (!document.getElementById('niv-gal')) {
+    const st = document.createElement('style');
+    st.id = 'niv-gal';
+    st.textContent = GALCSS;
+    document.head.appendChild(st);
+
+    let lb = null, urls = [], idx = 0;
+    const show = () => {
+      lb.querySelector('img').src = urls[idx];
+      lb.querySelector('.c').textContent = urls.length > 1 ? (idx + 1) + ' / ' + urls.length : '';
+      lb.querySelectorAll('.p,.n').forEach((b) => (b.style.display = urls.length > 1 ? '' : 'none'));
+      const pre = new Image(); pre.src = urls[(idx + 1) % urls.length];
+    };
+    const step = (d) => { idx = (idx + d + urls.length) % urls.length; show(); };
+    const close = () => { if (!lb) return; lb.remove(); lb = null; document.documentElement.style.overflow = ''; document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape') close(); else if (e.key === 'ArrowRight') step(1); else if (e.key === 'ArrowLeft') step(-1); };
+    function openLb(list, i) {
+      urls = list; idx = i;
+      lb = el('div'); lb.id = 'niv-lb'; lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-modal', 'true'); lb.setAttribute('aria-label', 'ดูรูปภาพ');
+      lb.innerHTML = '<img alt=""><span class="c"></span><button class="x" type="button" aria-label="ปิด">✕</button><button class="p" type="button" aria-label="รูปก่อนหน้า">‹</button><button class="n" type="button" aria-label="รูปถัดไป">›</button>';
+      lb.addEventListener('click', (e) => {
+        if (e.target.closest('.x') || e.target === lb) return close();
+        if (e.target.closest('.p')) return step(-1);
+        if (e.target.closest('.n')) return step(1);
+      });
+      let sx = null;
+      lb.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
+      lb.addEventListener('touchend', (e) => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 50 && urls.length > 1) step(dx < 0 ? 1 : -1); });
+      document.body.append(lb);
+      document.documentElement.style.overflow = 'hidden';
+      document.addEventListener('keydown', onKey);
+      show();
+    }
+    document.addEventListener('click', (e) => {
+      const g = e.target.closest && e.target.closest('[data-imgs]');
+      if (!g) return;
+      let list; try { list = JSON.parse(g.getAttribute('data-imgs')); } catch { return; }
+      list = (Array.isArray(list) ? list : []).filter((x) => IMG_OK.test(x));
+      if (!list.length) return;
+      const t = e.target.closest('[data-i]');
+      openLb(list, Math.min(list.length - 1, parseInt(t ? t.getAttribute('data-i') : g.getAttribute('data-i'), 10) || 0));
+    });
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('gal-s')) { e.preventDefault(); e.target.click(); }
+    });
+  }
 
   // ---------- วิดีโอ YouTube (การ์ดในฟีด / หน้าโปรไฟล์ / ค้นหา) — ใช้ CSS ชุดเดียวกับหน้าโพสต์ ----------
   const YT_ID = /^[A-Za-z0-9_-]{11}$/;
@@ -265,7 +359,7 @@
     });
   }
 
-  window.NIV = { API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, ago, reportDialog, REASONS };
+  window.NIV = { API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS };
 
   // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
   if (!document.getElementById('niv-nozoom')) {

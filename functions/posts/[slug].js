@@ -1,6 +1,7 @@
 // functions/posts/[slug].js — หน้าโพสต์เดี่ยว /posts/<slug> (SSR + meta + JSON-LD)
 import { api, esc, fmtDate, shell, htmlResponse, postHead, postBar, postCard } from '../_lib/render.js';
 import { videoGallery, videoLd } from '../_lib/videos.js';
+import { imageGallery, postImages } from '../_lib/gallery.js';
 
 const stripText = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
@@ -42,7 +43,7 @@ export async function onRequestGet({ request, env, params }) {
       description: desc,
       url,
       mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-      image: p.cover_url ? [p.cover_url] : undefined,
+      image: postImages(p).length ? postImages(p) : undefined,
       datePublished: new Date(p.published_at).toISOString(),
       dateModified: new Date(p.updated_at || p.published_at).toISOString(),
       inLanguage: 'th',
@@ -73,7 +74,7 @@ export async function onRequestGet({ request, env, params }) {
       <h1 class="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
       <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">เผยแพร่ ${esc(fmtDate(p.published_at))}${p.updated_at - p.published_at > 86400000 ? ` · อัปเดต ${esc(fmtDate(p.updated_at))}` : ''}</p>
     </div>
-    ${p.cover_url ? `<img src="${esc(p.cover_url)}" alt="${esc(p.title)}" width="1200" height="675" fetchpriority="high" decoding="async" class="w-full aspect-video object-cover">` : ''}
+    ${imageGallery(postImages(p), p.title, true)}
     <div class="px-4 py-6 space-y-5 text-[15px]">
 ${paragraphs}
     </div>

@@ -1,5 +1,6 @@
 // functions/_lib/render.js — ตัวช่วยเรนเดอร์ HTML ฝั่งเซิร์ฟเวอร์ (Cloudflare Pages Functions)
 import { videoGallery } from './videos.js';
+import { imageGallery, postImages } from './gallery.js';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -83,7 +84,8 @@ export function postCard(p, origin, first = false) {
     ${p.excerpt ? `<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-3"><a href="${href}" class="block hover:text-amber-500 transition-colors">${esc(p.excerpt)}</a></p>` : ''}
     ${(p.content_len || 0) > 160 ? `<a href="${href}" class="inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500" aria-label="อ่านโพสต์ต่อ" title="อ่านโพสต์ต่อ">...</a>` : ''}
   </div>
-  ${(p.videos && p.videos.length) ? videoGallery(p.videos, p.title, true, first, href) : p.cover_url ? `<a href="${href}" tabindex="-1" aria-hidden="true"><img src="${esc(p.cover_url)}" alt="${esc(p.title)}" width="1200" height="675" ${first ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" class="w-full aspect-video object-cover"></a>` : ''}
+  ${imageGallery(postImages(p), p.title, first)}
+  ${(p.videos && p.videos.length) ? videoGallery(p.videos, p.title, true, first, href) : ''}
   ${postBar(p, origin)}
 </article>`;
 }
