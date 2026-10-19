@@ -84,8 +84,7 @@ export function postCard(p, origin, first = false) {
     ${p.excerpt ? `<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-3"><a href="${href}" class="block hover:text-amber-500 transition-colors">${esc(p.excerpt)}</a></p>` : ''}
     ${(p.content_len || 0) > 160 ? `<a href="${href}" class="inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500" aria-label="อ่านโพสต์ต่อ" title="อ่านโพสต์ต่อ">...</a>` : ''}
   </div>
-  ${imageGallery(postImages(p), p.title, first)}
-  ${(p.videos && p.videos.length) ? videoGallery(p.videos, p.title, true, first, href) : ''}
+  ${(p.videos && p.videos.length) ? videoGallery(p.videos, p.title, true, first, href) : imageGallery(postImages(p), p.title, first, href)}
   ${postBar(p, origin)}
 </article>`;
 }

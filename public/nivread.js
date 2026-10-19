@@ -92,10 +92,9 @@
     card.append(body);
 
     const imgs = (Array.isArray(p.images) && p.images.length ? p.images : (p.cover_url ? [p.cover_url] : []));
-    const gal = galleryEl(imgs, p.title);
-    if (gal) card.append(gal);
     const vid = videoEl(p.videos, p.title, '/posts/' + p.slug);
     if (vid) card.append(vid);
+    else { const gal = galleryEl(imgs, p.title, '/posts/' + p.slug); if (gal) card.append(gal); }
     const foot = el('div', 'px-4 py-3 flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400');
     foot.append(el('span', '', '♥ ' + (p.like_count || 0)));
     const ca2 = el('a', 'hover:opacity-70', (p.comment_count || 0) + ' ความคิดเห็น'); ca2.href = '/posts/' + p.slug + '#comments';
@@ -153,21 +152,25 @@
 
   // ---------- แกลเลอรีรูปแบบ Facebook + ดูรูปเต็ม (lightbox) ----------
   const IMG_OK = /^https:\/\/[^\s"'<>]{4,500}$/;
-  function galleryEl(list, title) {
+  function galleryEl(list, title, href) {
     const urls = (Array.isArray(list) ? list : []).filter((x) => IMG_OK.test(x)).slice(0, 10);
     const n = urls.length;
     if (!n) return null;
-    const root = el('div', 'gal');
+    const root = el('div', 'gal' + (href ? ' gal-l' : ''));
+    const feed = !!href;
     const data = escHtml(JSON.stringify(urls)), alt = escHtml(title || '');
     if (n === 1) {
-      root.innerHTML = '<div class="gal-s" data-imgs="' + data + '" data-i="0" role="button" tabindex="0" aria-label="ดูรูปเต็ม">' +
+      root.innerHTML = (feed ? '<a class="gal-s" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' : '<div class="gal-s" data-imgs="' + data + '" data-i="0" role="button" tabindex="0" aria-label="ดูรูปเต็ม">') +
         '<img class="bg" src="' + escHtml(urls[0]) + '" alt="" aria-hidden="true" loading="lazy" decoding="async">' +
-        '<img class="fg" src="' + escHtml(urls[0]) + '" alt="' + alt + '" loading="lazy" decoding="async"></div>';
+        '<img class="fg" src="' + escHtml(urls[0]) + '" alt="' + alt + '" loading="lazy" decoding="async">' + (feed ? '</a>' : '</div>');
     } else {
-      root.innerHTML = '<div class="gal-g gal-' + Math.min(n, 5) + '" data-imgs="' + data + '">' + urls.slice(0, 5).map((u, i) => {
+      root.innerHTML = '<div class="gal-g gal-' + Math.min(n, 5) + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.slice(0, 5).map((u, i) => {
         const more = i === 4 && n > 5;
-        return '<button type="button" class="gal-t' + (more ? ' gal-more' : '') + '" data-i="' + i + '"' + (more ? ' data-more="+' + (n - 5) + '"' : '') +
-          ' aria-label="ดูรูปที่ ' + (i + 1) + '"><img src="' + escHtml(u) + '" alt="' + alt + ' รูปที่ ' + (i + 1) + '" loading="lazy" decoding="async"></button>';
+        const im = '<img src="' + escHtml(u) + '" alt="' + alt + ' รูปที่ ' + (i + 1) + '" loading="lazy" decoding="async">';
+        const mo = more ? ' data-more="+' + (n - 5) + '"' : '';
+        return feed
+          ? '<a class="gal-t' + (more ? ' gal-more' : '') + '" href="' + escHtml(href) + '"' + mo + ' aria-label="เปิดโพสต์ ' + alt + '">' + im + '</a>'
+          : '<button type="button" class="gal-t' + (more ? ' gal-more' : '') + '" data-i="' + i + '"' + mo + ' aria-label="ดูรูปที่ ' + (i + 1) + '">' + im + '</button>';
       }).join('') + '</div>';
     }
     return root;
@@ -189,6 +192,7 @@
 .gal-4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;aspect-ratio:1/1}
 .gal-5{grid-template-columns:repeat(6,1fr);grid-template-rows:3fr 2fr;aspect-ratio:1/1}
 .gal-5 .gal-t:nth-child(-n+2){grid-column:span 3}.gal-5 .gal-t:nth-child(n+3){grid-column:span 2}
+.gal-l .gal-t,.gal-l .gal-s{cursor:pointer}
 .gal-more::after{content:attr(data-more);position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff;font-size:1.9rem;font-weight:700;font-family:'Josefin Sans','Kanit',sans-serif}
 #niv-lb{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:lb-in .2s ease}
 @keyframes lb-in{from{opacity:0}to{opacity:1}}
