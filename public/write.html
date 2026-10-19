@@ -40,9 +40,11 @@
     </div>
     <div>
       <label for="category" class="block text-sm font-medium mb-1.5">หมวดหมู่ <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
-      <input id="category" maxlength="40" list="cat-list" autocomplete="off" placeholder="พิมพ์เอง หรือเลือกจากหมวดที่มีอยู่"
-        class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-      <datalist id="cat-list"></datalist>
+      <div class="relative">
+        <input id="category" maxlength="40" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="cat-sug" placeholder="พิมพ์เอง หรือเลือกจากหมวดที่มีอยู่"
+          class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+        <ul id="cat-sug" role="listbox" class="hidden absolute left-0 right-0 top-full mt-1 z-30 max-h-64 overflow-y-auto rounded-xl bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/10 shadow-xl py-1"></ul>
+      </div>
       <div id="cat-chips" class="mt-2 flex flex-wrap gap-1.5"></div>
     </div>
     <div>
@@ -294,12 +296,61 @@
     } else msg('');
   }
 
-  // ---------- หมวดหมู่ที่เคยมีผู้ใช้ใส่ (แนะนำให้เลือก) ----------
+  // ---------- หมวดหมู่ที่เคยมีผู้ใช้ใส่ (พิมพ์แล้วแนะนำให้เลือก เช่น พิมพ์ ani → anime, การ์ → การ์ตูน) ----------
+  let allCats = [];
+  let sugIdx = -1;
+  const sug = $('cat-sug'), catIn = $('category');
+  const norm = (t) => String(t).toLowerCase().replace(/\s+/g, ' ').trim();
+  function hideSug() { sug.classList.add('hidden'); catIn.setAttribute('aria-expanded', 'false'); sugIdx = -1; }
+  function pickCat(name) { catIn.value = name; hideSug(); }
+  function showSug() {
+    const q = norm(catIn.value.replace(/^#+/, ''));
+    if (!q) return hideSug();
+    // ขึ้นต้นด้วยคำที่พิมพ์ก่อน แล้วค่อยตามด้วยที่มีคำนั้นอยู่ตรงกลาง
+    const starts = allCats.filter((c) => norm(c.name).startsWith(q));
+    const has = allCats.filter((c) => !norm(c.name).startsWith(q) && norm(c.name).includes(q));
+    const found = [...starts, ...has].slice(0, 8);
+    sug.replaceChildren();
+    found.forEach((c) => {
+      const li = el('li', 'flex items-center justify-between gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-amber-500/10 aria-selected:bg-amber-500/15');
+      li.setAttribute('role', 'option');
+      li.append(el('span', 'truncate', c.name), el('span', 'text-xs text-slate-400 shrink-0', c.n + ' โพสต์'));
+      li.addEventListener('mousedown', (e) => { e.preventDefault(); pickCat(c.name); });
+      sug.append(li);
+    });
+    const exact = allCats.some((c) => norm(c.name) === q);
+    if (!exact) {
+      const li = el('li', 'px-4 py-2 text-sm cursor-pointer text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 aria-selected:bg-amber-500/15');
+      li.setAttribute('role', 'option'); li.dataset.new = '1';
+      li.textContent = 'สร้างหมวดใหม่ "' + catIn.value.replace(/^#+/, '').trim() + '"';
+      li.addEventListener('mousedown', (e) => { e.preventDefault(); pickCat(catIn.value.replace(/^#+/, '').replace(/\s+/g, ' ').trim()); });
+      sug.append(li);
+    }
+    sugIdx = -1;
+    sug.classList.remove('hidden'); catIn.setAttribute('aria-expanded', 'true');
+  }
+  catIn.addEventListener('input', showSug);
+  catIn.addEventListener('focus', showSug);
+  catIn.addEventListener('blur', () => setTimeout(hideSug, 120));
+  catIn.addEventListener('keydown', (e) => {
+    const items = [...sug.children];
+    if (sug.classList.contains('hidden') || !items.length) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      sugIdx = (sugIdx + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+      items.forEach((li, i) => li.setAttribute('aria-selected', i === sugIdx ? 'true' : 'false'));
+      items[sugIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter' && sugIdx >= 0) {
+      e.preventDefault();
+      items[sugIdx].dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    } else if (e.key === 'Escape') hideSug();
+  });
+
   (async () => {
     try {
       const r = await api('/api/blog/categories');
       const cats = (r.ok && r.data.categories) || [];
-      $('cat-list').replaceChildren(...cats.map((c) => { const o = document.createElement('option'); o.value = c.name; return o; }));
+      allCats = cats;
       cats.slice(0, 8).forEach((c) => {
         const b = el('button', 'px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 transition', c.name);
         b.type = 'button';

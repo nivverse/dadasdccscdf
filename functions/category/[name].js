@@ -21,6 +21,12 @@ export async function onRequestGet({ request, env, params }) {
     return htmlResponse('<!DOCTYPE html><meta charset="utf-8"><title>ระบบขัดข้อง</title><p>ไม่สามารถโหลดโพสต์ได้ กรุณาลองใหม่</p>', 503, 'no-store');
   }
 
+  // ถ้า Worker ที่ deploy อยู่ยังเป็นเวอร์ชันเก่า (ไม่รู้จัก ?category=) จะส่งโพสต์ทุกหมวดกลับมา — ไม่แสดงผิดหมวดและไม่ให้ Google เก็บ
+  const want = name.toLowerCase();
+  if (name && data.posts.some((p) => String(p.category || '').toLowerCase() !== want)) {
+    return htmlResponse('<!DOCTYPE html><meta charset="utf-8"><meta name="robots" content="noindex"><title>ระบบกำลังอัปเดต</title><p>ระบบหมวดหมู่ยังไม่พร้อม (ต้อง deploy blog-api.js เวอร์ชันล่าสุดที่ Worker)</p>', 503, 'no-store');
+  }
+
   const cards = data.posts.map((p, i) => postCard(p, origin, page === 1 && i === 0)).join('\n');
   if (partial) {
     return new Response(cards, {
