@@ -41,7 +41,6 @@ export function videoGallery(ids, title, compact = false, eager = false, href = 
       <button type="button" class="vg-poster" data-id="${first}" aria-label="เล่นวิดีโอ">
         <img class="vg-img" src="${thumb(first)}" alt="${esc(title)}" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">
         <span class="vg-play"><img src="/img/nivreadfavon.png" alt=""></span>
-        <span class="vg-mark"><img src="/img/nivreadfavon.png" alt=""><span>nivread</span></span>
       </button>
     </div>
   </div></div>

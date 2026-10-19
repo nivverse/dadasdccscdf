@@ -80,7 +80,11 @@
     const h = el('h2', 'text-lg font-bold leading-snug');
     const ha = el('a', 'hover:text-amber-500 transition-colors', p.title); ha.href = '/posts/' + p.slug;
     h.append(ha); body.append(h);
-    if (p.excerpt) body.append(el('p', 'mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-3', p.excerpt));
+    if (p.excerpt) {
+      const ex = el('p', 'mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-3');
+      const exa = el('a', 'block hover:text-amber-500 transition-colors', p.excerpt); exa.href = '/posts/' + p.slug;
+      ex.append(exa); body.append(ex);
+    }
     if ((p.content_len || 0) > 160) {
       const more = el('a', 'inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500', '...'); more.href = '/posts/' + p.slug; more.setAttribute('aria-label', 'อ่านโพสต์ต่อ'); more.title = 'อ่านโพสต์ต่อ';
       body.append(more);
@@ -122,14 +126,10 @@
 .vg-poster img.vg-img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease,filter .3s}
 .vg-poster:hover img.vg-img{transform:scale(1.06);filter:brightness(1.08)}
 .vg-poster::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.55)),linear-gradient(0deg,rgba(0,0,0,.55),transparent 45%);pointer-events:none}
-.vg-play{position:absolute;left:50%;top:50%;z-index:1;width:78px;height:78px;margin:-39px 0 0 -39px;border-radius:999px;display:grid;place-items:center;background:radial-gradient(circle,#1c1c1c,#0a0a0a);border:2px solid rgba(251,191,36,.9);box-shadow:0 0 28px rgba(245,158,11,.65),inset 0 0 14px rgba(245,158,11,.25);transition:transform .25s}
-.vg-play img{width:46px;height:46px;border-radius:12px;object-fit:cover;filter:drop-shadow(0 0 8px rgba(251,191,36,.7))}
-.vg-play::before{content:"";position:absolute;inset:0;border-radius:inherit;border:2px solid rgba(251,191,36,.9);animation:vg-ping 1.8s ease-out infinite}
-@keyframes vg-ping{to{transform:scale(1.7);opacity:0}}
+.vg-play{position:absolute;left:50%;top:50%;z-index:1;width:84px;height:84px;margin:-42px 0 0 -42px;display:grid;place-items:center;transition:transform .25s}
+.vg-play img{width:100%;height:100%;object-fit:contain;background:none;border-radius:0;filter:drop-shadow(0 4px 14px rgba(0,0,0,.6)) drop-shadow(0 0 16px rgba(245,158,11,.75));animation:vg-beat 1.8s ease-in-out infinite}
+@keyframes vg-beat{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .vg-poster:hover .vg-play{transform:scale(1.12)}
-.vg-mark{position:absolute;right:.7rem;bottom:.6rem;z-index:1;display:flex;align-items:center;gap:.4rem;padding:.25rem .6rem .25rem .3rem;border-radius:999px;background:rgba(10,10,10,.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);pointer-events:none}
-.vg-mark img{width:20px;height:20px;border-radius:6px}
-.vg-mark span{font-family:'Josefin Sans',sans-serif;font-weight:700;letter-spacing:.12em;font-size:.78rem;color:#fff}
 .vg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-top:.9rem}
 @media (min-width:560px){.vg-grid{grid-template-columns:repeat(3,1fr)}}
 .vg-grid .vg-t{width:auto;opacity:.75;border-radius:14px}
@@ -148,8 +148,8 @@
 .vg-t img{width:100%;height:100%;object-fit:cover;display:block}
 .vg-t b{position:absolute;left:.35rem;bottom:.3rem;font-size:.68rem;font-weight:700;color:#fff;background:rgba(0,0,0,.65);border-radius:6px;padding:0 .35rem;font-variant-numeric:tabular-nums}
 .vg-t[aria-current="true"]{opacity:1;box-shadow:0 0 0 2px #f59e0b,0 8px 22px rgba(245,158,11,.45)}
-@media (max-width:480px){.vg{margin:0 .75rem 1.25rem}.vg-t{width:112px}.vg-play{width:64px;height:64px;margin:-32px 0 0 -32px}.vg-play img{width:38px;height:38px}}
-@media (prefers-reduced-motion:reduce){.vg-frame,.vg-play::before{animation:none}.vg-poster img.vg-img{transition:none}}
+@media (max-width:480px){.vg{margin:0 .75rem 1.25rem}.vg-t{width:112px}.vg-play{width:68px;height:68px;margin:-34px 0 0 -34px}}
+@media (prefers-reduced-motion:reduce){.vg-frame,.vg-play img{animation:none}.vg-poster img.vg-img{transition:none}}
 `;
 
   // ---------- วิดีโอ YouTube (การ์ดในฟีด / หน้าโปรไฟล์ / ค้นหา) — ใช้ CSS ชุดเดียวกับหน้าโพสต์ ----------
@@ -167,7 +167,7 @@
       '<div class="vg-stage"><button type="button" class="vg-poster" data-id="' + list[0] + '" aria-label="เล่นวิดีโอ">' +
       '<img class="vg-img" src="' + ytThumb(list[0]) + '" alt="" loading="lazy" decoding="async">' +
       '<span class="vg-play"><img src="/img/nivreadfavon.png" alt=""></span>' +
-      '<span class="vg-mark"><img src="/img/nivreadfavon.png" alt=""><span>nivread</span></span></button></div></div></div>';
+      '</button></div></div></div>';
     root.querySelector('.vg-img').alt = title || '';
     const more = root.querySelector('.vg-more'); if (more) more.href = href || '#';
     return root;
