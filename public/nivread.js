@@ -105,15 +105,12 @@
 
 
   const VGCSS = `
-@property --vg-a{syntax:'<angle>';initial-value:0deg;inherits:false}
 .vg{margin:0 1rem 1.5rem}
 .vg.vg-c{margin:0 0 .25rem;padding:0 1rem}
-.vg-c .vg-frame{box-shadow:0 10px 30px -14px rgba(245,158,11,.45)}
+.vg-frame{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
 .vg-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;font-weight:700}
 .vg-head .vg-dot{width:.5rem;height:.5rem;border-radius:999px;background:#f59e0b;box-shadow:0 0 12px #f59e0b}
-.vg-frame{padding:2px;border-radius:20px;background:linear-gradient(135deg,#f59e0b,#ea580c);background:conic-gradient(from var(--vg-a),#f59e0b,#ea580c,#7c2d12,#f59e0b);animation:vg-spin 8s linear infinite;box-shadow:0 18px 50px -18px rgba(245,158,11,.55)}
-@keyframes vg-spin{to{--vg-a:360deg}}
-.vg-in{border-radius:18px;overflow:hidden;background:#0a0a0a}
+.vg-in{background:#0a0a0a}
 .vg-bar{display:flex;align-items:center;gap:.6rem;padding:.5rem .85rem;background:linear-gradient(180deg,#171717,#0f0f0f);border-bottom:1px solid rgba(255,255,255,.07)}
 .vg-tag{font-size:.6rem;letter-spacing:.2em;color:#a3a3a3;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:.1rem .5rem}
 .vg-count{margin-left:auto;font-size:.75rem;color:#d4d4d4;font-variant-numeric:tabular-nums}
@@ -146,7 +143,7 @@
 .vg-t b{position:absolute;left:.35rem;bottom:.3rem;font-size:.68rem;font-weight:700;color:#fff;background:rgba(0,0,0,.65);border-radius:6px;padding:0 .35rem;font-variant-numeric:tabular-nums}
 .vg-t[aria-current="true"]{opacity:1;box-shadow:0 0 0 2px #f59e0b,0 8px 22px rgba(245,158,11,.45)}
 @media (max-width:480px){.vg{margin:0 .75rem 1.25rem}.vg-t{width:112px}.vg-play{width:68px;height:68px;margin:-34px 0 0 -34px}}
-@media (prefers-reduced-motion:reduce){.vg-frame,.vg-play img{animation:none}.vg-poster img.vg-img{transition:none}}
+@media (prefers-reduced-motion:reduce){.vg-play img{animation:none}.vg-poster img.vg-img{transition:none}}
 `;
 
 
