@@ -1,5 +1,5 @@
 // functions/category/[name].js — หน้ารวมโพสต์ตามหมวดหมู่ /category/<ชื่อหมวด>?page=N (SSR) และ ?partial=1 สำหรับเลื่อนโหลดเพิ่ม
-import { api, esc, postCard, shell, htmlResponse, categoryBar, catHref } from '../_lib/render.js';
+import { api, esc, postCard, shell, htmlResponse, catHref } from '../_lib/render.js';
 
 const PER_PAGE = 10;
 
@@ -39,7 +39,7 @@ export async function onRequestGet({ request, env, params }) {
     return htmlResponse(
       shell({
         origin, apiBase: env.API_BASE, path: base, title: 'ไม่พบหมวดหมู่ | nivread', desc: 'ไม่พบหมวดหมู่ที่ต้องการ', robots: 'noindex, follow',
-        body: `<main class="flex-1 max-w-2xl w-full mx-auto px-4 py-16 z-10 text-center"><h1 class="text-2xl font-bold">ไม่พบหมวดหมู่นี้</h1><p class="mt-2 text-slate-500 dark:text-neutral-400">หมวดหมู่นี้ยังไม่มีโพสต์</p><a href="/categories" class="inline-block mt-6 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-sm">ดูทุกหมวดหมู่</a></main>`,
+        body: `<main class="flex-1 max-w-2xl w-full mx-auto px-4 py-16 z-10 text-center"><h1 class="text-2xl font-bold">ไม่พบหมวดหมู่นี้</h1><p class="mt-2 text-slate-500 dark:text-neutral-400">หมวดหมู่นี้ยังไม่มีโพสต์</p><a href="/posts" class="inline-block mt-6 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-sm">กลับไปหน้าโพสต์</a></main>`,
       }),
       404, 'public, max-age=60'
     );
@@ -61,8 +61,7 @@ export async function onRequestGet({ request, env, params }) {
       '@context': 'https://schema.org', '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'nivread', item: origin + '/' },
-        { '@type': 'ListItem', position: 2, name: 'หมวดหมู่', item: origin + '/categories' },
-        { '@type': 'ListItem', position: 3, name: shownName, item: origin + base },
+        { '@type': 'ListItem', position: 2, name: shownName, item: origin + base },
       ],
     },
   ];
@@ -81,13 +80,12 @@ export async function onRequestGet({ request, env, params }) {
 
   const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
   <nav aria-label="breadcrumb" class="mb-3 text-xs text-slate-500 dark:text-neutral-400">
-    <a href="/posts" class="hover:text-amber-500">โพสต์</a> / <a href="/categories" class="hover:text-amber-500">หมวดหมู่</a>
+    <a href="/posts" class="hover:text-amber-500">โพสต์</a> / หมวดหมู่
   </nav>
   <div class="mb-5 rounded-2xl p-5 bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-transparent border border-amber-500/30">
     <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">${esc(shownName)}</h1>
     <p class="mt-1 text-sm text-slate-600 dark:text-neutral-400">${data.total} โพสต์ในหมวดนี้</p>
   </div>
-  ${categoryBar(cats?.categories, shownName)}
   <div id="feed" class="space-y-6" data-base="${esc(base)}" data-next-page="${data.hasMore ? page + 1 : ''}">
 ${cards}
   </div>

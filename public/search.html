@@ -34,6 +34,10 @@
     <button class="px-5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 cursor-pointer">ค้นหา</button>
   </form>
   <div id="status" class="mt-4 text-sm text-slate-500 dark:text-neutral-400" role="status"></div>
+  <section id="cats-sec" class="hidden mt-6" aria-labelledby="ch">
+    <h2 id="ch" class="text-sm font-bold text-slate-500 dark:text-neutral-400 mb-2">หมวดหมู่</h2>
+    <div id="cats" class="flex flex-wrap gap-2"></div>
+  </section>
   <section id="users-sec" class="hidden mt-6" aria-labelledby="uh">
     <h2 id="uh" class="text-sm font-bold text-slate-500 dark:text-neutral-400 mb-2">ผู้ใช้</h2>
     <div id="users" class="grid gap-2"></div>
@@ -56,11 +60,27 @@
   if (q.length < 2) { st.textContent = 'พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาโพสต์หรือไอดีผู้ใช้'; return; }
   document.title = `ค้นหา "${q}" | nivread`;
   st.textContent = 'กำลังค้นหา...';
-  const r = await api('/api/blog/search?q=' + encodeURIComponent(q));
+  const [r, cr] = await Promise.all([
+    api('/api/blog/search?q=' + encodeURIComponent(q)),
+    api('/api/blog/categories').catch(() => ({ ok: false, data: {} })),
+  ]);
   if (!r.ok) { st.textContent = r.data.error || 'ค้นหาไม่สำเร็จ กรุณาลองใหม่'; return; }
   const { users = [], posts = [] } = r.data;
-  if (!users.length && !posts.length) { st.textContent = `ไม่พบผลลัพธ์สำหรับ "${q}"`; return; }
-  st.textContent = `พบ ${users.length} ผู้ใช้ และ ${posts.length} โพสต์`;
+
+  // หมวดหมู่: แสดงเฉพาะที่ตรงกับคำที่พิมพ์ (ไม่แสดงรายการทั้งหมด)
+  const ql = q.toLowerCase().replace(/\s+/g, ' ');
+  const cats = ((cr.ok && cr.data.categories) || []).filter((c) => String(c.name).toLowerCase().includes(ql)).slice(0, 12);
+  if (cats.length) {
+    $('cats-sec').classList.remove('hidden');
+    for (const c of cats) {
+      const a = el('a', 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', c.name);
+      a.href = '/category/' + encodeURIComponent(c.name);
+      a.append(el('span', 'text-xs opacity-60', c.n));
+      $('cats').append(a);
+    }
+  }
+  if (!users.length && !posts.length && !cats.length) { st.textContent = `ไม่พบผลลัพธ์สำหรับ "${q}"`; return; }
+  st.textContent = `พบ ${cats.length} หมวดหมู่ ${users.length} ผู้ใช้ และ ${posts.length} โพสต์`;
 
   if (users.length) {
     $('users-sec').classList.remove('hidden');

@@ -439,7 +439,6 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
 
     const nav = [
       { href: '/posts', label: 'โพสต์ทั้งหมด', ic: 'posts', on: path === '/posts' || path.startsWith('/posts/') || path === '/' },
-      { href: '/categories', label: 'หมวดหมู่', ic: 'tag', on: path === '/categories' || path.startsWith('/category/') },
       { href: '/search', label: 'ค้นหา', ic: 'search', on: path === '/search' },
       ...(loggedIn ? [
         { href: '/write', label: 'เขียนโพสต์', ic: 'write', on: path === '/write' },
@@ -563,7 +562,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
   if (footer) {
     footer.innerHTML = `
 <div class="mt-12 border-t border-slate-200 dark:border-white/10 py-6 text-center text-xs text-slate-500 dark:text-neutral-400">
-  © ${new Date().getFullYear()} nivread · <a href="/posts" class="hover:text-amber-500">โพสต์ทั้งหมด</a> · <a href="/categories" class="hover:text-amber-500">หมวดหมู่</a> · <a href="/search" class="hover:text-amber-500">ค้นหา</a> · <a href="/write" class="hover:text-amber-500">เขียนโพสต์</a>
+  © ${new Date().getFullYear()} nivread · <a href="/posts" class="hover:text-amber-500">โพสต์ทั้งหมด</a> · <a href="/search" class="hover:text-amber-500">ค้นหา</a> · <a href="/write" class="hover:text-amber-500">เขียนโพสต์</a>
 </div>`;
   }
 })();
