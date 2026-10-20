@@ -79,7 +79,7 @@ export const FBCSS = `.fb{cursor:pointer;font-weight:600;transition:color .2s,ba
 .fb-pill[aria-pressed=true]{background:transparent;color:#64748b;border:1px solid rgba(148,163,184,.55);box-shadow:none}
 .fb-chip{padding:.3rem .8rem;border-radius:999px;font-size:.8rem;color:#d97706;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
 .fb-chip[aria-pressed=true]{color:#fff;border-color:transparent;background:linear-gradient(to right,#f59e0b,#f97316)}
-.fb-plus{display:inline-block;padding:0 .3rem;border:0;background:none;font-size:1.25rem;font-weight:700;line-height:1;color:#d97706;vertical-align:middle}
+.fb-plus{display:inline-flex;align-items:center;justify-content:center;height:1.5rem;padding:0 .2rem;margin-left:.1rem;border:0;background:none;font-size:1.6rem;font-weight:500;line-height:1;color:#d97706;flex-shrink:0}
 .fb-plus:hover{color:#f59e0b}
 .fb[disabled]{opacity:.6;cursor:default}`;
 
