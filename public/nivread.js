@@ -68,6 +68,8 @@
 .fb-pill[aria-pressed=true]{background:transparent;color:#64748b;border:1px solid rgba(148,163,184,.55);box-shadow:none}
 .fb-chip{padding:.3rem .8rem;border-radius:999px;font-size:.8rem;color:#d97706;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
 .fb-chip[aria-pressed=true]{color:#fff;border-color:transparent;background:linear-gradient(to right,#f59e0b,#f97316)}
+.fb-plus{width:1.4rem;height:1.4rem;display:inline-grid;place-items:center;border-radius:999px;font-size:1rem;line-height:1;color:#d97706;background:rgba(245,158,11,.14);vertical-align:middle;margin-left:.25rem}
+.fb-plus:hover{background:rgba(245,158,11,.3)}
 .fb[disabled]{opacity:.6;cursor:default}`;
   if (!document.getElementById('niv-fb')) {
     const st = document.createElement('style'); st.id = 'niv-fb'; st.textContent = FBCSS; document.head.appendChild(st);
@@ -75,7 +77,8 @@
 
   const F = { users: new Set(), cats: new Set(), loading: null };
   const fbBtn = (type, target, variant = 'link', name = '') => {
-    const b = el('button', 'fb fb-' + variant, 'ติดตาม');
+    const b = el('button', 'fb fb-' + variant, variant === 'plus' ? '+' : 'ติดตาม');
+    if (variant === 'plus') { b.title = 'ติดตาม'; b.setAttribute('aria-label', 'ติดตาม ' + (name || target)); }
     b.type = 'button'; b.dataset.followType = type; b.dataset.followTarget = target;
     if (name) b.dataset.followName = name;
     b.setAttribute('aria-pressed', 'false');
@@ -88,8 +91,9 @@
     root.querySelectorAll('[data-follow-type]').forEach((b) => {
       const type = b.dataset.followType, t = b.dataset.followTarget;
       if (type === 'user' && me && t === me) { b.hidden = true; return; } // ติดตามตัวเองไม่ได้
-      b.hidden = false;
       const on = fSet(type).has(fKey(type, t));
+      if (b.classList.contains('fb-plus')) { b.hidden = on; b.setAttribute('aria-pressed', on ? 'true' : 'false'); if (!b.textContent) b.textContent = '+'; return; } // ปุ่ม + ในฟีด: กดแล้วหายไป
+      b.hidden = false;
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
       const label = b.classList.contains('fb-chip')
         ? (on ? '✓ ' : '+ ') + (b.dataset.followName || t)
@@ -167,9 +171,9 @@
     const meta = el('div', 'min-w-0');
     const nameRow = el('div', 'flex items-center gap-1 min-w-0');
     const a2 = el('a', 'font-semibold text-sm truncate hover:text-amber-500', p.display_name || p.author_id); a2.href = userUrl(p.author_id);
-    nameRow.append(a2, fbBtn('user', p.author_id));
+    nameRow.append(a2, fbBtn('user', p.author_id, 'plus', p.display_name || p.author_id));
     const sub = el('div', 'text-xs text-slate-500 dark:text-neutral-400', ago(p.published_at));
-    if (p.category) { const ca = el('a', 'ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', p.category); ca.href = '/category/' + encodeURIComponent(p.category); sub.append(ca); }
+    if (p.category) { const ca = el('a', 'ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', p.category); ca.href = '/category/' + encodeURIComponent(p.category); sub.append(ca, fbBtn('category', p.category, 'plus')); }
     meta.append(nameRow, sub);
     head.append(a1, meta);
     if (session().userId && session().userId === p.author_id) {

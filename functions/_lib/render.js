@@ -65,7 +65,7 @@ export function avatar(p, size = 'w-11 h-11') {
 
 // ปุ่มติดตาม (ผู้ใช้/หมวดหมู่) — สถานะ/คลิกจัดการโดย /nivread.js ทั้งเว็บ (variant: link | pill | chip)
 export function followBtn(type, target, variant = 'link', label = '') {
-  return `<button type="button" class="fb fb-${variant}" data-follow-type="${type}" data-follow-target="${esc(target)}"${label ? ` data-follow-name="${esc(label)}"` : ''} aria-pressed="false">ติดตาม</button>`;
+  return `<button type="button" class="fb fb-${variant}" data-follow-type="${type}" data-follow-target="${esc(target)}"${label ? ` data-follow-name="${esc(label)}"` : ''} aria-pressed="false"${variant === 'plus' ? ` title="ติดตาม" aria-label="ติดตาม ${esc(label || target)}"` : ''}>${variant === 'plus' ? '+' : 'ติดตาม'}</button>`;
 }
 
 // CSS ปุ่มติดตาม (ฝังใน <head> กันปุ่มกระพริบก่อนโหลด nivread.js — ชุดเดียวกับใน nivread.js)
@@ -79,6 +79,8 @@ export const FBCSS = `.fb{cursor:pointer;font-weight:600;transition:color .2s,ba
 .fb-pill[aria-pressed=true]{background:transparent;color:#64748b;border:1px solid rgba(148,163,184,.55);box-shadow:none}
 .fb-chip{padding:.3rem .8rem;border-radius:999px;font-size:.8rem;color:#d97706;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
 .fb-chip[aria-pressed=true]{color:#fff;border-color:transparent;background:linear-gradient(to right,#f59e0b,#f97316)}
+.fb-plus{width:1.4rem;height:1.4rem;display:inline-grid;place-items:center;border-radius:999px;font-size:1rem;line-height:1;color:#d97706;background:rgba(245,158,11,.14);vertical-align:middle;margin-left:.25rem}
+.fb-plus:hover{background:rgba(245,158,11,.3)}
 .fb[disabled]{opacity:.6;cursor:default}`;
 
 function postHead(p) {
@@ -88,11 +90,11 @@ function postHead(p) {
     ${profile ? `<a href="${profile}" class="flex-shrink-0" aria-label="โปรไฟล์ ${who}">${avatar(p)}</a>` : avatar(p)}
     <div class="min-w-0">
       ${profile
-        ? `<div class="flex items-center gap-1 min-w-0"><a href="${profile}" class="font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a>${followBtn('user', p.author_id)}</div>`
+        ? `<div class="flex items-center gap-1 min-w-0"><a href="${profile}" class="font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a>${followBtn('user', p.author_id, 'plus', p.display_name || p.author_id)}</div>`
         : `<div class="font-semibold text-sm text-slate-900 dark:text-white truncate">${who}</div>`}
       <div class="text-xs text-slate-500 dark:text-neutral-400">
         <time datetime="${new Date(p.published_at).toISOString()}">${esc(ago(p.published_at))}</time>
-        ${p.category ? `<a href="${catHref(p.category)}" class="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">${esc(p.category)}</a>` : ''}
+        ${p.category ? `<a href="${catHref(p.category)}" class="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">${esc(p.category)}</a>${followBtn('category', p.category, 'plus')}` : ''}
       </div>
     </div>
     ${p.author_id && p.slug ? `<a href="/write?edit=${encodeURIComponent(p.slug)}" data-edit-post data-author="${esc(p.author_id)}" class="hidden ml-auto flex-shrink-0 w-9 h-9 place-items-center rounded-full text-slate-500 dark:text-neutral-400 hover:text-amber-500 hover:bg-amber-500/10 transition-colors" aria-label="แก้ไขโพสต์" title="แก้ไขโพสต์"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></a>` : ''}
