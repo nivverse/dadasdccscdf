@@ -488,6 +488,12 @@
 
   // ---------- CSS ของเมนูข้าง ----------
   const CSS = `
+#niv-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:stretch;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom);background:rgba(255,255,255,.92);border-top:1px solid rgba(148,163,184,.3);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.dark #niv-tabbar{background:rgba(13,13,13,.92);border-top-color:rgba(255,255,255,.1)}
+#niv-tabbar .tb{flex:1;height:3.5rem;display:grid;place-items:center;color:#64748b;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.dark #niv-tabbar .tb{color:#a3a3a3}
+#niv-tabbar .tb.on{color:#f59e0b}
+@media (max-width:639px){body{padding-bottom:calc(3.5rem + env(safe-area-inset-bottom))}}
 #niv-drawer{position:fixed;inset:0;z-index:50;visibility:hidden;pointer-events:none;transition:visibility 0s linear .3s}
 #niv-drawer.is-open{visibility:visible;pointer-events:auto;transition:visibility 0s}
 #niv-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);opacity:0;transition:opacity .3s ease}
@@ -575,16 +581,26 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
     </a>
     <div class="hidden sm:block flex-1 max-w-md mx-auto">${searchBox('niv-q')}</div>
     <nav class="flex items-center gap-1.5" aria-label="เมนูด่วน">
-      <a href="/search" class="sm:hidden w-10 h-10 grid place-items-center rounded-xl text-slate-700 dark:text-neutral-200 hover:bg-slate-200/70 dark:hover:bg-white/10" aria-label="ค้นหา">${svg('search', 'w-5 h-5')}</a>
+      <a href="/search" class="hidden w-10 h-10 place-items-center rounded-xl text-slate-700 dark:text-neutral-200 hover:bg-slate-200/70 dark:hover:bg-white/10" aria-label="ค้นหา">${svg('search', 'w-5 h-5')}</a>
       ${loggedIn
         ? `<a href="/write" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110">${svg('write', 'w-4 h-4')}เขียนโพสต์</a>`
         : `<a href="/login?redirect=${here}" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110">เข้าสู่ระบบ</a>`}
-      <button id="niv-burger" type="button" class="w-10 h-10 grid place-items-center rounded-xl text-slate-700 dark:text-neutral-200 hover:text-amber-500 hover:bg-slate-200/70 dark:hover:bg-white/10 cursor-pointer" aria-label="เมนู" aria-expanded="false" aria-controls="niv-drawer">
+      <button id="niv-burger" type="button" class="hidden sm:grid w-10 h-10 place-items-center rounded-xl text-slate-700 dark:text-neutral-200 hover:text-amber-500 hover:bg-slate-200/70 dark:hover:bg-white/10 cursor-pointer" aria-label="เมนู" aria-expanded="false" aria-controls="niv-drawer">
         <span class="nv-burger" aria-hidden="true"><i></i><i></i><i></i></span>
       </button>
     </nav>
   </div>
 </div>
+
+<nav id="niv-tabbar" class="sm:hidden" aria-label="เมนูหลัก">
+  ${[
+    { href: '/', label: 'หน้าแรก', ic: 'home', on: path === '/' },
+    { href: '/posts', label: 'โพสต์ทั้งหมด', ic: 'posts', on: path === '/posts' || path.startsWith('/posts/') },
+    { href: loggedIn ? userUrl(s.userId) : '/login?redirect=' + here, label: 'โปรไฟล์', ic: 'user', on: loggedIn && path === '/user' && params.get('id') === s.userId },
+    { href: '/search', label: 'ค้นหา', ic: 'search', on: path === '/search' },
+  ].map((t) => `<a href="${t.href}" class="tb${t.on ? ' on' : ''}" aria-label="${t.label}"${t.on ? ' aria-current="page"' : ''}>${svg(t.ic, 'w-6 h-6')}</a>`).join('')}
+  <button id="niv-burger-m" type="button" class="tb" aria-label="เมนู" aria-expanded="false" aria-controls="niv-drawer"><span class="nv-burger" aria-hidden="true"><i></i><i></i><i></i></span></button>
+</nav>
 
 <div id="niv-drawer" aria-hidden="true">
   <div id="niv-backdrop"></div>
@@ -622,9 +638,11 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
       drawer.classList.toggle('is-open', open);
       drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
       burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      document.getElementById('niv-burger-m')?.setAttribute('aria-expanded', open ? 'true' : 'false');
       document.documentElement.style.overflow = open ? 'hidden' : '';
     };
     burger.addEventListener('click', () => setOpen(!drawer.classList.contains('is-open')));
+    document.getElementById('niv-burger-m')?.addEventListener('click', () => setOpen(!drawer.classList.contains('is-open')));
     document.getElementById('niv-backdrop').addEventListener('click', () => setOpen(false));
     document.getElementById('niv-close').addEventListener('click', () => setOpen(false));
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
