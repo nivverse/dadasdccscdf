@@ -493,6 +493,7 @@
 #niv-tabbar .tb{flex:1;height:3.5rem;display:grid;place-items:center;color:#64748b;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .dark #niv-tabbar .tb{color:#a3a3a3}
 #niv-tabbar .tb.on{color:#f59e0b}
+@media (min-width:640px){#niv-tabbar{display:none}}
 @media (max-width:639px){body{padding-bottom:calc(3.5rem + env(safe-area-inset-bottom))}}
 #niv-drawer{position:fixed;inset:0;z-index:50;visibility:hidden;pointer-events:none;transition:visibility 0s linear .3s}
 #niv-drawer.is-open{visibility:visible;pointer-events:auto;transition:visibility 0s}
