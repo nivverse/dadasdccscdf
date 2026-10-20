@@ -154,5 +154,6 @@
     if (b && window.NIV) window.NIV.reportDialog('post', b.dataset.reportPost);
   });
 
+  window.NIV_refreshFeed = loadLiked; // ให้ /home-feed.js เรียกหลังเติมโพสต์ (ระบายไลก์ + ปุ่มแก้ไข)
   loadLiked();
 })();

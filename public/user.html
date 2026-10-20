@@ -40,6 +40,8 @@
       <div class="mt-4 flex gap-6 text-sm">
         <div><span id="n-posts" class="text-lg font-extrabold text-amber-500">-</span> <span class="text-slate-500 dark:text-neutral-400">โพสต์</span></div>
         <div><span id="n-likes" class="text-lg font-extrabold">-</span> <span class="text-slate-500 dark:text-neutral-400">ไลก์ที่ได้รับ</span></div>
+        <button type="button" id="b-followers" class="cursor-pointer hover:opacity-70"><span id="n-followers" class="text-lg font-extrabold">-</span> <span class="text-slate-500 dark:text-neutral-400">ผู้ติดตาม</span></button>
+        <button type="button" id="b-following" class="cursor-pointer hover:opacity-70"><span id="n-following" class="text-lg font-extrabold">-</span> <span class="text-slate-500 dark:text-neutral-400">กำลังติดตาม</span></button>
       </div>
     </div>
   </section>
@@ -72,7 +74,48 @@
   $('n-posts').textContent = (stats.posts || 0).toLocaleString('th-TH');
   $('n-likes').textContent = (stats.likes || 0).toLocaleString('th-TH');
   if (own) $('edit').classList.remove('hidden');
-  else { $('report').classList.remove('hidden'); $('report').addEventListener('click', () => NIV.reportDialog('user', user.id)); }
+  else {
+    $('report').classList.remove('hidden'); $('report').addEventListener('click', () => NIV.reportDialog('user', user.id));
+    const fb = NIV.fbBtn('user', user.id, 'pill');
+    $('report').before(fb); NIV.paintFollows();
+  }
+
+  // ---- ผู้ติดตาม / กำลังติดตาม ----
+  $('n-followers').textContent = (stats.followers || 0).toLocaleString('th-TH');
+  $('n-followers').dataset.followerCount = 'user:' + user.id;
+  $('n-following').textContent = (stats.following || 0).toLocaleString('th-TH');
+  async function showFollows(kind) {
+    const wrap = el('div', 'fixed inset-0 z-50 grid place-items-center p-4 bg-black/60');
+    const box = el('div', 'w-full max-w-sm max-h-[80vh] overflow-y-auto rounded-2xl bg-white dark:bg-[#161616] border border-slate-200 dark:border-white/10 shadow-xl p-4');
+    const head = el('div', 'flex items-center justify-between mb-3');
+    head.append(el('h2', 'font-bold', kind === 'followers' ? 'ผู้ติดตาม' : 'กำลังติดตาม'));
+    const x = el('button', 'w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'ปิด');
+    head.append(x);
+    const list = el('div', 'space-y-3', 'กำลังโหลด...');
+    box.append(head, list); wrap.append(box); document.body.append(wrap);
+    const close = () => wrap.remove();
+    x.addEventListener('click', close);
+    wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
+    const d = await api(`/api/blog/follows?id=${encodeURIComponent(user.id)}&kind=${kind}`);
+    list.replaceChildren();
+    if (!d.ok) { list.textContent = d.data.error || 'โหลดไม่สำเร็จ'; return; }
+    const cats = d.data.categories || [];
+    if (cats.length) {
+      const row = el('div', 'flex flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/10');
+      for (const c of cats) { const a = el('a', 'px-3 py-1 rounded-full text-sm bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400', c); a.href = '/category/' + encodeURIComponent(c); row.append(a); }
+      list.append(row);
+    }
+    if (!d.data.users.length && !cats.length) list.textContent = kind === 'followers' ? 'ยังไม่มีผู้ติดตาม' : 'ยังไม่ได้ติดตามใคร';
+    for (const u of d.data.users) {
+      const row = el('div', 'flex items-center gap-3');
+      const a = el('a', 'flex items-center gap-3 min-w-0 flex-1'); a.href = NIV.userUrl(u.id);
+      a.append(avatarEl(u, 'w-10 h-10'), el('span', 'font-semibold text-sm truncate', u.display_name));
+      row.append(a, NIV.fbBtn('user', u.id, 'link')); list.append(row);
+    }
+    NIV.paintFollows(list);
+  }
+  $('b-followers').addEventListener('click', () => showFollows('followers'));
+  $('b-following').addEventListener('click', () => showFollows('following'));
 
   // ---- ไอคอนถังขยะ (ลบโพสต์ของตัวเอง) ----
   const trash = (card, slug) => {

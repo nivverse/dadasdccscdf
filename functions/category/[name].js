@@ -1,5 +1,5 @@
 // functions/category/[name].js — หน้ารวมโพสต์ตามหมวดหมู่ /category/<ชื่อหมวด>?page=N (SSR) และ ?partial=1 สำหรับเลื่อนโหลดเพิ่ม
-import { api, esc, postCard, shell, htmlResponse, catHref } from '../_lib/render.js';
+import { api, esc, postCard, shell, htmlResponse, catHref, followBtn } from '../_lib/render.js';
 
 const PER_PAGE = 10;
 
@@ -13,9 +13,10 @@ export async function onRequestGet({ request, env, params }) {
   const partial = url.searchParams.get('partial') === '1';
   const base = catHref(name);
 
-  const [data, cats] = await Promise.all([
+  const [data, cats, fc] = await Promise.all([
     api(env, `/api/blog/list?page=${page}&limit=${PER_PAGE}&category=${encodeURIComponent(name)}`),
     partial ? null : api(env, '/api/blog/categories'),
+    partial ? null : api(env, `/api/blog/follow-count?category=${encodeURIComponent(name)}`),
   ]);
   if (!data || data.error || !data.posts) {
     return htmlResponse('<!DOCTYPE html><meta charset="utf-8"><title>ระบบขัดข้อง</title><p>ไม่สามารถโหลดโพสต์ได้ กรุณาลองใหม่</p>', 503, 'no-store');
@@ -83,8 +84,13 @@ export async function onRequestGet({ request, env, params }) {
     <a href="/posts" class="hover:text-amber-500">โพสต์</a> / หมวดหมู่
   </nav>
   <div class="mb-5 rounded-2xl p-5 bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-transparent border border-amber-500/30">
-    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">${esc(shownName)}</h1>
-    <p class="mt-1 text-sm text-slate-600 dark:text-neutral-400">${data.total} โพสต์ในหมวดนี้</p>
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight break-words">${esc(shownName)}</h1>
+        <p class="mt-1 text-sm text-slate-600 dark:text-neutral-400">${data.total} โพสต์ · <span data-follower-count="category:${esc(shownName.toLowerCase())}">${Number(fc?.followers) || 0}</span> ผู้ติดตาม</p>
+      </div>
+      <div class="flex-shrink-0 pt-1">${followBtn('category', shownName, 'pill')}</div>
+    </div>
   </div>
   <div id="feed" class="space-y-6" data-base="${esc(base)}" data-next-page="${data.hasMore ? page + 1 : ''}">
 ${cards}
