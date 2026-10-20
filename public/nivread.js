@@ -9,7 +9,7 @@
   const logout = () => {
     ['token', 'userId', 'userEmail', 'userName', 'userAvatar'].forEach((k) => { try { localStorage.removeItem(k); } catch {} });
     try { window.google?.accounts?.id?.disableAutoSelect(); } catch {}
-    location.href = '/posts';
+    location.href = '/';
   };
   const userUrl = (id) => '/user?id=' + encodeURIComponent(id);
   const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -56,6 +56,108 @@
     return new Date(ms).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
+  // ---------- ปุ่มติดตาม (ผู้ใช้ / หมวดหมู่) ใช้ร่วมกันทั้งเว็บ ----------
+  // ปุ่มใดก็ตามที่มี data-follow-type + data-follow-target จะถูกระบายสถานะและกดได้เอง (รวมปุ่มที่เพิ่มเข้ามาภายหลัง)
+  const FBCSS = `.fb{cursor:pointer;font-weight:600;transition:color .2s,background .2s,border-color .2s,opacity .2s;white-space:nowrap}
+.fb[hidden]{display:none}
+.fb-link{font-size:.75rem;color:#d97706;padding:.1rem .45rem;border-radius:999px}
+.fb-link:hover{background:rgba(245,158,11,.14)}
+.fb-link[aria-pressed=true]{color:#94a3b8;font-weight:500}
+.fb-pill{padding:.5rem 1.1rem;border-radius:.75rem;font-size:.875rem;color:#fff;background:linear-gradient(to right,#f59e0b,#f97316);box-shadow:0 6px 16px -6px rgba(245,158,11,.55)}
+.fb-pill:hover{filter:brightness(1.08)}
+.fb-pill[aria-pressed=true]{background:transparent;color:#64748b;border:1px solid rgba(148,163,184,.55);box-shadow:none}
+.fb-chip{padding:.3rem .8rem;border-radius:999px;font-size:.8rem;color:#d97706;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
+.fb-chip[aria-pressed=true]{color:#fff;border-color:transparent;background:linear-gradient(to right,#f59e0b,#f97316)}
+.fb[disabled]{opacity:.6;cursor:default}`;
+  if (!document.getElementById('niv-fb')) {
+    const st = document.createElement('style'); st.id = 'niv-fb'; st.textContent = FBCSS; document.head.appendChild(st);
+  }
+
+  const F = { users: new Set(), cats: new Set(), loading: null };
+  const fbBtn = (type, target, variant = 'link', name = '') => {
+    const b = el('button', 'fb fb-' + variant, 'ติดตาม');
+    b.type = 'button'; b.dataset.followType = type; b.dataset.followTarget = target;
+    if (name) b.dataset.followName = name;
+    b.setAttribute('aria-pressed', 'false');
+    return b;
+  };
+  const fKey = (type, t) => (type === 'user' ? String(t) : String(t).toLowerCase());
+  const fSet = (type) => (type === 'user' ? F.users : F.cats);
+  function paintFollows(root = document) {
+    const me = session().userId;
+    root.querySelectorAll('[data-follow-type]').forEach((b) => {
+      const type = b.dataset.followType, t = b.dataset.followTarget;
+      if (type === 'user' && me && t === me) { b.hidden = true; return; } // ติดตามตัวเองไม่ได้
+      b.hidden = false;
+      const on = fSet(type).has(fKey(type, t));
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      const label = b.classList.contains('fb-chip')
+        ? (on ? '✓ ' : '+ ') + (b.dataset.followName || t)
+        : (on ? 'กำลังติดตาม' : 'ติดตาม');
+      if (b.textContent !== label) b.textContent = label;
+    });
+  }
+  function loadFollows() {
+    const s = session();
+    if (!s.token || !s.userId) return Promise.resolve();
+    if (!F.loading) {
+      F.loading = api('/api/blog/following?userId=' + encodeURIComponent(s.userId)).then((r) => {
+        if (r.ok) {
+          F.users = new Set(r.data.users || []);
+          F.cats = new Set((r.data.categories || []).map((x) => String(x).toLowerCase()));
+        }
+        paintFollows();
+      }).catch(() => {});
+    }
+    return F.loading;
+  }
+  const countEls = (type, key) => [...document.querySelectorAll('[data-follower-count]')].filter((n) => n.dataset.followerCount === type + ':' + key);
+  const setCount = (type, key, v) => countEls(type, key).forEach((n) => { n.textContent = Math.max(0, v).toLocaleString('th-TH'); });
+  const bumpCount = (type, key, d) => countEls(type, key).forEach((n) => { n.textContent = Math.max(0, (parseInt(String(n.textContent).replace(/[^\d]/g, ''), 10) || 0) + d).toLocaleString('th-TH'); });
+
+  function toast(msg) {
+    const t = el('div', 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg', msg);
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2200);
+  }
+
+  document.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-follow-type]');
+    if (!b) return;
+    e.preventDefault();
+    const s = session();
+    if (!s.token || !s.userId) { location.href = '/login?redirect=' + encodeURIComponent(location.pathname + location.search); return; }
+    if (b.dataset.busy) return;
+    const type = b.dataset.followType, target = b.dataset.followTarget, key = fKey(type, target);
+    await loadFollows();
+    const set = fSet(type);
+    const was = set.has(key);
+    // อัปเดตหน้าจอทันที แล้วค่อยเทียบผลจริง ถ้าพลาดจะย้อนกลับ
+    if (was) set.delete(key); else set.add(key);
+    paintFollows(); bumpCount(type, key, was ? -1 : 1);
+    b.dataset.busy = '1';
+    const revert = () => { if (was) set.add(key); else set.delete(key); paintFollows(); bumpCount(type, key, was ? 1 : -1); };
+    try {
+      const r = await api('/api/blog/follow', { method: 'POST', body: { userId: s.userId, type, target } });
+      if (!r.ok) { revert(); toast(r.data.error || 'ทำรายการไม่สำเร็จ'); }
+      else {
+        if (r.data.following) set.add(key); else set.delete(key);
+        paintFollows(); setCount(type, key, r.data.followers || 0);
+      }
+    } catch { revert(); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'); }
+    finally { delete b.dataset.busy; }
+  });
+
+  // ปุ่มที่ถูกเพิ่มเข้าหน้าภายหลัง (เลื่อนโหลดเพิ่ม / การ์ดที่เรนเดอร์ฝั่งเบราว์เซอร์) ระบายสถานะให้อัตโนมัติ
+  let paintQueued = false;
+  new MutationObserver(() => {
+    if (paintQueued) return;
+    paintQueued = true;
+    requestAnimationFrame(() => { paintQueued = false; paintFollows(); });
+  }).observe(document.documentElement, { childList: true, subtree: true });
+  paintFollows();
+  loadFollows();
+
   // การ์ดโพสต์สำหรับหน้าที่เรนเดอร์ฝั่งเบราว์เซอร์ (ค้นหา / โปรไฟล์ผู้ใช้) — หน้าฟีดหลักเรนเดอร์ฝั่งเซิร์ฟเวอร์เพื่อ SEO
   function postCardEl(p) {
     const card = el('article', 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden');
@@ -63,10 +165,12 @@
     const who = { id: p.author_id, display_name: p.display_name, avatar_url: p.avatar_url };
     const a1 = el('a', 'flex-shrink-0'); a1.href = userUrl(p.author_id); a1.append(avatarEl(who, 'w-11 h-11')); a1.setAttribute('aria-label', 'โปรไฟล์ ' + (p.display_name || p.author_id));
     const meta = el('div', 'min-w-0');
-    const a2 = el('a', 'block font-semibold text-sm truncate hover:text-amber-500', p.display_name || p.author_id); a2.href = userUrl(p.author_id);
+    const nameRow = el('div', 'flex items-center gap-1 min-w-0');
+    const a2 = el('a', 'font-semibold text-sm truncate hover:text-amber-500', p.display_name || p.author_id); a2.href = userUrl(p.author_id);
+    nameRow.append(a2, fbBtn('user', p.author_id));
     const sub = el('div', 'text-xs text-slate-500 dark:text-neutral-400', ago(p.published_at));
     if (p.category) { const ca = el('a', 'ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', p.category); ca.href = '/category/' + encodeURIComponent(p.category); sub.append(ca); }
-    meta.append(a2, sub);
+    meta.append(nameRow, sub);
     head.append(a1, meta);
     if (session().userId && session().userId === p.author_id) {
       const pen = el('a', 'ml-auto flex-shrink-0 w-9 h-9 grid place-items-center rounded-full text-slate-500 dark:text-neutral-400 hover:text-amber-500 hover:bg-amber-500/10 transition-colors');
@@ -360,7 +464,7 @@
     });
   }
 
-  window.NIV = { API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS };
+  window.NIV = { API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast };
 
   // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
   if (!document.getElementById('niv-nozoom')) {
@@ -413,6 +517,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
 
   // ---------- ไอคอน ----------
   const IC = {
+    home: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
     posts: '<path d="M4 4h13a1 1 0 011 1v14a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><path d="M8 8h6M8 12h6M8 16h4"/>',
     tag: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
@@ -438,7 +543,8 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
     const q0 = path === '/search' ? (params.get('q') || '') : '';
 
     const nav = [
-      { href: '/posts', label: 'โพสต์ทั้งหมด', ic: 'posts', on: path === '/posts' || path.startsWith('/posts/') || path === '/' },
+      { href: '/', label: 'หน้าแรก', ic: 'home', on: path === '/' },
+      { href: '/posts', label: 'โพสต์ทั้งหมด', ic: 'posts', on: path === '/posts' || path.startsWith('/posts/') },
       { href: '/search', label: 'ค้นหา', ic: 'search', on: path === '/search' },
       ...(loggedIn ? [
         { href: '/write', label: 'เขียนโพสต์', ic: 'write', on: path === '/write' },
@@ -459,7 +565,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
 <style id="niv-style">${CSS}</style>
 <div class="sticky top-0 z-30 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0d0d0d]/80 backdrop-blur-md">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
-    <a href="/posts" class="flex items-center gap-2 mr-auto sm:mr-0" aria-label="nivread">
+    <a href="/" class="flex items-center gap-2 mr-auto sm:mr-0" aria-label="nivread">
       <img src="/img/nivreadfavon.png" alt="" width="32" height="32" class="w-8 h-8 rounded-lg object-contain">
       <span class="nv-brand text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">nivread</span>
     </a>
@@ -562,7 +668,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
   if (footer) {
     footer.innerHTML = `
 <div class="mt-12 border-t border-slate-200 dark:border-white/10 py-6 text-center text-xs text-slate-500 dark:text-neutral-400">
-  © ${new Date().getFullYear()} nivread · <a href="/posts" class="hover:text-amber-500">โพสต์ทั้งหมด</a> · <a href="/search" class="hover:text-amber-500">ค้นหา</a> · <a href="/write" class="hover:text-amber-500">เขียนโพสต์</a>
+  © ${new Date().getFullYear()} nivread · <a href="/" class="hover:text-amber-500">หน้าแรก</a> · <a href="/posts" class="hover:text-amber-500">โพสต์ทั้งหมด</a> · <a href="/search" class="hover:text-amber-500">ค้นหา</a> · <a href="/write" class="hover:text-amber-500">เขียนโพสต์</a>
 </div>`;
   }
 })();

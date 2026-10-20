@@ -63,6 +63,24 @@ export function avatar(p, size = 'w-11 h-11') {
     : `<div class="${size} rounded-full bg-gradient-to-br from-amber-500 to-orange-500 grid place-items-center text-white font-bold" aria-hidden="true">${esc(name.charAt(0).toUpperCase())}</div>`;
 }
 
+// ปุ่มติดตาม (ผู้ใช้/หมวดหมู่) — สถานะ/คลิกจัดการโดย /nivread.js ทั้งเว็บ (variant: link | pill | chip)
+export function followBtn(type, target, variant = 'link', label = '') {
+  return `<button type="button" class="fb fb-${variant}" data-follow-type="${type}" data-follow-target="${esc(target)}"${label ? ` data-follow-name="${esc(label)}"` : ''} aria-pressed="false">ติดตาม</button>`;
+}
+
+// CSS ปุ่มติดตาม (ฝังใน <head> กันปุ่มกระพริบก่อนโหลด nivread.js — ชุดเดียวกับใน nivread.js)
+export const FBCSS = `.fb{cursor:pointer;font-weight:600;transition:color .2s,background .2s,border-color .2s,opacity .2s;white-space:nowrap}
+.fb[hidden]{display:none}
+.fb-link{font-size:.75rem;color:#d97706;padding:.1rem .45rem;border-radius:999px}
+.fb-link:hover{background:rgba(245,158,11,.14)}
+.fb-link[aria-pressed=true]{color:#94a3b8;font-weight:500}
+.fb-pill{padding:.5rem 1.1rem;border-radius:.75rem;font-size:.875rem;color:#fff;background:linear-gradient(to right,#f59e0b,#f97316);box-shadow:0 6px 16px -6px rgba(245,158,11,.55)}
+.fb-pill:hover{filter:brightness(1.08)}
+.fb-pill[aria-pressed=true]{background:transparent;color:#64748b;border:1px solid rgba(148,163,184,.55);box-shadow:none}
+.fb-chip{padding:.3rem .8rem;border-radius:999px;font-size:.8rem;color:#d97706;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
+.fb-chip[aria-pressed=true]{color:#fff;border-color:transparent;background:linear-gradient(to right,#f59e0b,#f97316)}
+.fb[disabled]{opacity:.6;cursor:default}`;
+
 function postHead(p) {
   const profile = p.author_id ? `/user?id=${encodeURIComponent(p.author_id)}` : '';
   const who = esc(p.display_name || 'nivread');
@@ -70,7 +88,7 @@ function postHead(p) {
     ${profile ? `<a href="${profile}" class="flex-shrink-0" aria-label="โปรไฟล์ ${who}">${avatar(p)}</a>` : avatar(p)}
     <div class="min-w-0">
       ${profile
-        ? `<a href="${profile}" class="block font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a>`
+        ? `<div class="flex items-center gap-1 min-w-0"><a href="${profile}" class="font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a>${followBtn('user', p.author_id)}</div>`
         : `<div class="font-semibold text-sm text-slate-900 dark:text-white truncate">${who}</div>`}
       <div class="text-xs text-slate-500 dark:text-neutral-400">
         <time datetime="${new Date(p.published_at).toISOString()}">${esc(ago(p.published_at))}</time>
@@ -151,6 +169,7 @@ ${ld}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{font-family:'Kanit',sans-serif}</style>
+<style id="niv-fb">${FBCSS}</style>
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white transition-colors duration-300 min-h-screen flex flex-col relative overflow-x-hidden">
 <div class="fixed inset-0 pointer-events-none z-0">
