@@ -68,8 +68,8 @@
 .fb-pill[aria-pressed=true]{background:transparent;color:#64748b;border:1px solid rgba(148,163,184,.55);box-shadow:none}
 .fb-chip{padding:.3rem .8rem;border-radius:999px;font-size:.8rem;color:#d97706;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
 .fb-chip[aria-pressed=true]{color:#fff;border-color:transparent;background:linear-gradient(to right,#f59e0b,#f97316)}
-.fb-plus{width:1.4rem;height:1.4rem;display:inline-grid;place-items:center;border-radius:999px;font-size:1rem;line-height:1;color:#d97706;background:rgba(245,158,11,.14);vertical-align:middle;margin-left:.25rem}
-.fb-plus:hover{background:rgba(245,158,11,.3)}
+.fb-plus{display:inline-block;padding:0 .3rem;border:0;background:none;font-size:1.25rem;font-weight:700;line-height:1;color:#d97706;vertical-align:middle}
+.fb-plus:hover{color:#f59e0b}
 .fb[disabled]{opacity:.6;cursor:default}`;
   if (!document.getElementById('niv-fb')) {
     const st = document.createElement('style'); st.id = 'niv-fb'; st.textContent = FBCSS; document.head.appendChild(st);
@@ -173,7 +173,7 @@
     const a2 = el('a', 'font-semibold text-sm truncate hover:text-amber-500', p.display_name || p.author_id); a2.href = userUrl(p.author_id);
     nameRow.append(a2, fbBtn('user', p.author_id, 'plus', p.display_name || p.author_id));
     const sub = el('div', 'text-xs text-slate-500 dark:text-neutral-400', ago(p.published_at));
-    if (p.category) { const ca = el('a', 'ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', p.category); ca.href = '/category/' + encodeURIComponent(p.category); sub.append(ca, fbBtn('category', p.category, 'plus')); }
+    if (p.category) { const ca = el('a', 'ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', p.category); ca.href = '/category/' + encodeURIComponent(p.category); sub.append(ca); }
     meta.append(nameRow, sub);
     head.append(a1, meta);
     if (session().userId && session().userId === p.author_id) {
