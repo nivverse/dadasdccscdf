@@ -2,7 +2,7 @@
 //  • ทุกคน/Google: SSR โพสต์ล่าสุด (มี canonical ของตัวเอง) + กล่องชวนกดติดตาม
 //  • สมาชิกที่ติดตามอะไรไว้: /home-feed.js สลับเป็นฟีดจากผู้ใช้/หมวดที่ติดตาม (เรนเดอร์ HTML จากเซิร์ฟเวอร์ผ่าน ?feed=1)
 //  • ?partial=1 = ชิ้นส่วนโพสต์ล่าสุดสำหรับเลื่อนโหลดเพิ่ม
-import { api, esc, postCard, shell, htmlResponse, followBtn, catHref } from './_lib/render.js';
+import { api, postCard, shell, htmlResponse } from './_lib/render.js';
 
 const PER_PAGE = 10;
 
@@ -37,10 +37,7 @@ export async function onRequestGet({ request, env }) {
   }
 
   const partial = url.searchParams.get('partial') === '1';
-  const [data, cats] = await Promise.all([
-    api(env, `/api/blog/list?page=${page}&limit=${PER_PAGE}`),
-    partial ? null : api(env, '/api/blog/categories'),
-  ]);
+  const data = await api(env, `/api/blog/list?page=${page}&limit=${PER_PAGE}`);
   if (!data || data.error || !data.posts) {
     return htmlResponse('<!DOCTYPE html><meta charset="utf-8"><title>ระบบขัดข้อง</title><p>ไม่สามารถโหลดโพสต์ได้ กรุณาลองใหม่</p>', 503, 'no-store');
   }
@@ -87,19 +84,9 @@ export async function onRequestGet({ request, env }) {
     ${data.hasMore ? `<a rel="next" href="/?page=${page + 1}" class="${btn} bg-gradient-to-r from-amber-500 to-orange-500 text-white transition-all shadow-md shadow-amber-500/25">ถัดไป</a>` : ''}
   </nav>`;
 
-  const topCats = (cats?.categories || []).slice(0, 10);
-  const prompt = page === 1 ? `<section id="follow-prompt" class="mb-6 rounded-2xl p-5 bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-transparent border border-amber-500/30">
-    <h2 class="text-lg font-bold">ทำให้หน้าแรกเป็นของคุณ</h2>
-    <p class="mt-1 text-sm text-slate-600 dark:text-neutral-400">กดติดตามผู้เขียนหรือหมวดหมู่ที่สนใจ โพสต์ใหม่จะมารวมกันที่หน้านี้</p>
-    ${topCats.length ? `<div class="mt-3 flex flex-wrap gap-2">${topCats.map((c) => followBtn('category', c.name, 'chip', c.name)).join('')}</div>` : ''}
-    <p class="mt-3 text-sm"><a href="/search" class="font-semibold text-amber-600 dark:text-amber-400 hover:opacity-70">ค้นหาผู้เขียนที่น่าสนใจ →</a>
-      ${topCats.length ? ` <span class="text-slate-400">·</span> ${topCats.slice(0, 3).map((c) => `<a href="${catHref(c.name)}" class="text-slate-500 dark:text-neutral-400 hover:text-amber-500">${esc(c.name)}</a>`).join(' · ')}` : ''}</p>
-  </section>` : '';
-
   const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
   <h1 class="sr-only">nivread — ฟีดบทความและโพสต์ล่าสุด</h1>
   <div id="composer" class="mb-6" data-composer></div>
-  ${prompt}
   <div id="my-feed" class="hidden">
     <div class="mb-4 flex items-center justify-between text-sm">
       <h2 class="font-bold text-base">ฟีดของคุณ</h2>

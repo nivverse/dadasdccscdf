@@ -90,7 +90,7 @@ function postHead(p) {
     ${profile ? `<a href="${profile}" class="flex-shrink-0" aria-label="โปรไฟล์ ${who}">${avatar(p)}</a>` : avatar(p)}
     <div class="min-w-0">
       ${profile
-        ? `<div class="flex items-center gap-1 min-w-0"><a href="${profile}" class="font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a>${followBtn('user', p.author_id, 'plus', p.display_name || p.author_id)}</div>`
+        ? `<div class="flex items-center gap-1 min-w-0"><a href="${profile}" class="font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a></div>`
         : `<div class="font-semibold text-sm text-slate-900 dark:text-white truncate">${who}</div>`}
       <div class="text-xs text-slate-500 dark:text-neutral-400">
         <time datetime="${new Date(p.published_at).toISOString()}">${esc(ago(p.published_at))}</time>
