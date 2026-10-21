@@ -498,34 +498,34 @@
   // ---------- Progress bar วิ่งตามขอบกรอบวิดีโอ (.uv = วิดีโออัปโหลดเอง ทั้ง SSR และการ์ดฝั่งเบราว์เซอร์) ----------
   // ถ้า JS ไม่ทำงาน จะยังเหลือ controls เดิมของเบราว์เซอร์ (ลบทิ้งตอน enhance เท่านั้น)
   if (!document.getElementById('niv-bp')) {
-    const BP_R = 18, BP_SW = 4, BP_PAD = 7;
+    const BP_R = 18, BP_SW = 2, BP_PAD = 5;
     const bpStyle = document.createElement('style');
     bpStyle.id = 'niv-bp';
     bpStyle.textContent = `
 .uv.bp{position:relative;padding:${BP_PAD}px;border-radius:${BP_R}px;background:#0b1020;cursor:pointer;touch-action:manipulation;outline:none}
-.uv.bp video{display:block;width:100%;border-radius:${BP_R - BP_PAD + 4}px;background:#000}
-.uv.bp:focus-visible{box-shadow:0 0 0 2px #818cf8}
+.uv.bp video{display:block;width:100%;border-radius:${BP_R - BP_PAD}px;background:#000}
+.uv.bp:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .bp-svg rect{fill:none}
-.bp-track{stroke:rgba(255,255,255,.14);stroke-width:${BP_SW}}
-.bp-fill{stroke-width:${BP_SW};stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(129,140,248,.7));transition:stroke-width .15s}
+.bp-track{stroke:rgba(255,255,255,.12);stroke-width:${BP_SW}}
+.bp-fill{stroke:#f59e0b;stroke-width:${BP_SW};stroke-linecap:round;transition:stroke-width .15s}
 .bp-hit{stroke:transparent;stroke-width:${BP_PAD * 2 + 6};pointer-events:stroke;cursor:pointer;touch-action:none}
-.bp-knob{fill:#fff;stroke:#818cf8;stroke-width:2;opacity:0;transition:opacity .15s,r .15s;filter:drop-shadow(0 0 5px rgba(129,140,248,.9))}
-.uv.bp:hover .bp-knob,.uv.bp.bp-drag .bp-knob,.uv.bp:focus-visible .bp-knob{opacity:1}
-.uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:${BP_SW + 2}}
-.uv.bp.bp-drag .bp-knob{r:8}
+.uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:${BP_SW + 1}}
 .bp-play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;display:grid;place-items:center;opacity:0;transform:scale(.85);transition:.2s;pointer-events:none}
 .uv.bp.bp-paused .bp-play{opacity:1;transform:none;pointer-events:auto}
 .bp-play::before{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:4px}
 .bp-bar{position:absolute;left:${BP_PAD + 10}px;bottom:${BP_PAD + 10}px;display:flex;gap:8px;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:600 12px/1.4 ui-monospace,monospace;opacity:0;transition:opacity .2s}
 .uv.bp:hover .bp-bar,.uv.bp.bp-paused .bp-bar,.uv.bp:focus-visible .bp-bar{opacity:1}
-.bp-mute{all:unset;cursor:pointer;font-size:13px}
-@media (hover:none){.bp-bar,.bp-knob{opacity:1}}
-@media (prefers-reduced-motion:reduce){.bp-fill,.bp-knob,.bp-play,.bp-bar{transition:none}}`;
+.bp-mute{all:unset;cursor:pointer;display:grid;place-items:center;width:18px;height:18px;border-radius:4px}
+.bp-mute:focus-visible{box-shadow:0 0 0 2px #f59e0b}
+.bp-mute svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (hover:none){.bp-bar{opacity:1}}
+@media (prefers-reduced-motion:reduce){.bp-fill,.bp-play,.bp-bar{transition:none}}`;
     if (!document.getElementById("niv-css")) document.head.appendChild(bpStyle); // หน้า SSR โหลด /niv.css แล้ว
 
+    const IC_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>';
+    const IC_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></svg>';
     const fmtT = (s) => (isFinite(s) ? Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0') : '0:00');
-    let bpUid = 0;
 
     // ตำแหน่งเมาส์ (x,y ภายในกรอบ) → สัดส่วนบนเส้นรอบกรอบมุมโค้ง (เริ่มบนซ้าย วนตามเข็มนาฬิกา)
     function bpFrac(x, y, w, h, r) {
@@ -554,15 +554,12 @@
       box.tabIndex = 0;
       box.setAttribute('role', 'group');
       box.setAttribute('aria-label', v.getAttribute('aria-label') || 'วิดีโอ');
-      const id = 'bpg' + ++bpUid;
       box.insertAdjacentHTML('beforeend',
-        '<svg class="bp-svg" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1">' +
-        '<stop offset="0" stop-color="#22d3ee"/><stop offset=".5" stop-color="#818cf8"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs>' +
-        '<rect class="bp-track"/><rect class="bp-fill" stroke="url(#' + id + ')"/><rect class="bp-hit"/><circle class="bp-knob" r="6"/></svg>' +
+        '<svg class="bp-svg" aria-hidden="true"><rect class="bp-track"/><rect class="bp-fill"/><rect class="bp-hit"/></svg>' +
         '<button class="bp-play" type="button" aria-label="เล่น"></button>' +
         '<div class="bp-bar"><span class="bp-time">0:00</span><button class="bp-mute" type="button" aria-label="เสียง"></button></div>');
       const svg = box.querySelector('.bp-svg'), rects = svg.querySelectorAll('rect');
-      const fill = box.querySelector('.bp-fill'), knob = box.querySelector('.bp-knob'), hit = box.querySelector('.bp-hit');
+      const fill = box.querySelector('.bp-fill'), hit = box.querySelector('.bp-hit');
       const time = box.querySelector('.bp-time'), mute = box.querySelector('.bp-mute');
       const I = BP_SW / 2 + 2;
       let len = 1, W = 0, H = 0, drag = false, raf = 0;
@@ -570,7 +567,6 @@
       function draw() {
         const f = v.duration ? v.currentTime / v.duration : 0;
         fill.style.strokeDasharray = f * len + ' ' + len;
-        try { const p = fill.getPointAtLength(f * len); knob.setAttribute('cx', p.x); knob.setAttribute('cy', p.y); } catch {}
         time.textContent = fmtT(v.currentTime) + ' / ' + fmtT(v.duration);
       }
       function layout() {
@@ -607,7 +603,11 @@
       };
       box.addEventListener('click', (e) => { if (!e.target.closest('.bp-bar,.bp-hit')) toggle(); });
       mute.addEventListener('click', (e) => { e.stopPropagation(); v.muted = !v.muted; });
-      const syncUi = () => { box.classList.toggle('bp-paused', v.paused); mute.textContent = v.muted ? '🔇' : '🔊'; };
+      const syncUi = () => {
+        box.classList.toggle('bp-paused', v.paused);
+        mute.innerHTML = v.muted ? IC_OFF : IC_ON;
+        mute.setAttribute('aria-label', v.muted ? 'เปิดเสียง' : 'ปิดเสียง');
+      };
       // วนอัปเดตเฉพาะตอนกำลังเล่น (ไม่กิน CPU ตอนหยุด/อยู่นอกจอ)
       const tick = () => { draw(); raf = v.paused ? 0 : requestAnimationFrame(tick); };
       v.addEventListener('play', () => { syncUi(); if (!raf) raf = requestAnimationFrame(tick); });

@@ -97,24 +97,23 @@
 .fb-plus:hover{color:#f59e0b}
 .fb[disabled]{opacity:.6;cursor:default}
 
-/* ---- เครื่องเล่นวิดีโอ: progress bar วิ่งตามขอบกรอบ (.uv.bp) — ค่า border-radius 18px ต้องตรงกับ BP_R ใน nivread.js ---- */
-.uv.bp{position:relative;padding:7px;border-radius:18px;background:#0b1020;cursor:pointer;touch-action:manipulation;outline:none}
-.uv.bp video{display:block;width:100%;border-radius:15px;background:#000}
-.uv.bp:focus-visible{box-shadow:0 0 0 2px #818cf8}
+/* ---- เครื่องเล่นวิดีโอ: progress bar วิ่งตามขอบกรอบ (.uv.bp) — border-radius 18px ต้องตรงกับ BP_R ใน nivread.js ---- */
+.uv.bp{position:relative;padding:5px;border-radius:18px;background:#0b1020;cursor:pointer;touch-action:manipulation;outline:none}
+.uv.bp video{display:block;width:100%;border-radius:13px;background:#000}
+.uv.bp:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .bp-svg rect{fill:none}
-.bp-track{stroke:rgba(255,255,255,.14);stroke-width:4}
-.bp-fill{stroke-width:4;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(129,140,248,.7));transition:stroke-width .15s}
-.bp-hit{stroke:transparent;stroke-width:20;pointer-events:stroke;cursor:pointer;touch-action:none}
-.bp-knob{fill:#fff;stroke:#818cf8;stroke-width:2;opacity:0;transition:opacity .15s,r .15s;filter:drop-shadow(0 0 5px rgba(129,140,248,.9))}
-.uv.bp:hover .bp-knob,.uv.bp.bp-drag .bp-knob,.uv.bp:focus-visible .bp-knob{opacity:1}
-.uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:6}
-.uv.bp.bp-drag .bp-knob{r:8}
+.bp-track{stroke:rgba(255,255,255,.12);stroke-width:2}
+.bp-fill{stroke:#f59e0b;stroke-width:2;stroke-linecap:round;transition:stroke-width .15s}
+.bp-hit{stroke:transparent;stroke-width:16;pointer-events:stroke;cursor:pointer;touch-action:none}
+.uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:3}
 .bp-play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;display:grid;place-items:center;opacity:0;transform:scale(.85);transition:.2s;pointer-events:none}
 .uv.bp.bp-paused .bp-play{opacity:1;transform:none;pointer-events:auto}
 .bp-play::before{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:4px}
-.bp-bar{position:absolute;left:17px;bottom:17px;display:flex;gap:8px;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:600 12px/1.4 ui-monospace,monospace;opacity:0;transition:opacity .2s}
+.bp-bar{position:absolute;left:15px;bottom:15px;display:flex;gap:8px;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:600 12px/1.4 ui-monospace,monospace;opacity:0;transition:opacity .2s}
 .uv.bp:hover .bp-bar,.uv.bp.bp-paused .bp-bar,.uv.bp:focus-visible .bp-bar{opacity:1}
-.bp-mute{all:unset;cursor:pointer;font-size:13px}
-@media (hover:none){.bp-bar,.bp-knob{opacity:1}}
-@media (prefers-reduced-motion:reduce){.bp-fill,.bp-knob,.bp-play,.bp-bar{transition:none}}
+.bp-mute{all:unset;cursor:pointer;display:grid;place-items:center;width:18px;height:18px;border-radius:4px}
+.bp-mute:focus-visible{box-shadow:0 0 0 2px #f59e0b}
+.bp-mute svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (hover:none){.bp-bar{opacity:1}}
+@media (prefers-reduced-motion:reduce){.bp-fill,.bp-play,.bp-bar{transition:none}}
