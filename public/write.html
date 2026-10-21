@@ -70,7 +70,7 @@
 
       <div id="pn-img" class="hidden mt-3">
         <div class="flex gap-2">
-          <input id="img-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์รูปหรือ GIF (https://...) ได้ครั้งละหลายลิงก์" aria-label="ลิงก์รูปหรือ GIF" class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+          <input id="img-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์รูปหรือ GIF (GIF จาก GIPHY / Tenor) ได้ครั้งละหลายลิงก์" aria-label="ลิงก์รูปหรือ GIF" class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
           <button id="img-add" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">เพิ่ม</button>
         </div>
       </div>
@@ -149,9 +149,10 @@
   function addImages() {
     const parts = $('img-input').value.split(/[\s,]+/).filter(Boolean);
     if (!parts.length) return;
-    let added = 0, bad = 0, dup = 0, over = 0;
+    let added = 0, bad = 0, dup = 0, over = 0, gifBad = 0;
     for (const p of parts) {
       if (!/^https:\/\/[^\s"'<>]{4,500}$/.test(p)) { bad++; continue; }
+      if (/\.gif$/i.test(p.split(/[?#]/)[0]) && !/^https:\/\/([a-z0-9-]+\.)*(giphy|tenor)\.com\//i.test(p)) { gifBad++; continue; }
       if (images.includes(p)) { dup++; continue; }
       if (images.length >= IMG_MAX) { over++; continue; }
       images.push(p); added++;
@@ -161,9 +162,10 @@
     const notes = [];
     if (added) notes.push('เพิ่มแล้ว ' + added + ' รูป');
     if (bad) notes.push(bad + ' ลิงก์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย https://)');
+    if (gifBad) notes.push(gifBad + ' GIF ไม่ได้มาจาก GIPHY / Tenor');
     if (dup) notes.push(dup + ' ซ้ำ');
     if (over) notes.push(over + ' เกินจำนวนสูงสุด');
-    if (notes.length) imgMsg(notes.join(' · '), bad || over);
+    if (notes.length) imgMsg(notes.join(' · '), bad || over || gifBad);
   }
   // ---------- อัปโหลดรูป: บีบในเบราว์เซอร์ (WebP, ด้านยาวสุด 1600px) แล้วค่อยส่งขึ้น R2 ----------
   const TARGET = 480 * 1024;
@@ -201,6 +203,28 @@
     }
     return best;
   }
+  // ด่านแรกในเบราว์เซอร์: ตรวจภาพลามกด้วย nsfwjs (โหลดครั้งแรกตอนกดอัปโหลด ถ้าโหลด/ตรวจไม่ได้จะข้ามไป — ด่านจริงอยู่ที่เซิร์ฟเวอร์)
+  const loadScript = (src) => new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+  let nsfwP = null;
+  const nsfwModel = () => nsfwP || (nsfwP = (async () => {
+    const B = 'https://cdn.jsdelivr.net/npm/nsfwjs@4.2.1/dist/';
+    await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js');
+    await loadScript(B + 'models/mobilenet_v2/model.min.js');
+    await loadScript(B + 'models/mobilenet_v2/group1-shard1of1.min.js');
+    await loadScript(B + 'browser/nsfwjs.min.js');
+    return await window.nsfwjs.load();
+  })().catch(() => null));
+  async function looksNsfw(blob) {
+    try {
+      const m = await Promise.race([nsfwModel(), new Promise((r) => setTimeout(() => r(null), 12000))]);
+      if (!m) return false;
+      const url = URL.createObjectURL(blob), im = new Image();
+      im.src = url; await im.decode();
+      const pr = await m.classify(im); URL.revokeObjectURL(url);
+      const g = (n) => (pr.find((x) => x.className === n) || {}).probability || 0;
+      return g('Porn') >= 0.6 || g('Hentai') >= 0.75;
+    } catch { return false; }
+  }
   async function uploadFiles(files) {
     if (uploading) return;
     const list = [...files];
@@ -215,6 +239,7 @@
       try {
         const blob = await compress(f);
         if (blob.size > 1400000) throw new Error('big');
+        if (await looksNsfw(blob)) { notes.push(f.name + ' ไม่ผ่านการตรวจสอบเนื้อหา (ไม่อนุญาตภาพลามก)'); bad = true; continue; }
         const r = await fetch(NIV.API + '/api/blog/upload?userId=' + encodeURIComponent(s.userId), {
           method: 'POST', headers: { Authorization: 'Bearer ' + s.token, 'Content-Type': blob.type }, body: blob,
         });
@@ -227,7 +252,7 @@
     if (done) notes.unshift('อัปโหลดแล้ว ' + done + ' รูป');
     imgMsg(notes.join(' · ') || 'ไม่มีรูปที่อัปโหลด', bad);
   }
-  $('img-up').addEventListener('click', () => $('img-file').click());
+  $('img-up').addEventListener('click', () => { nsfwModel(); $('img-file').click(); }); // เริ่มโหลดโมเดลตรวจภาพรอไว้
   $('img-file').addEventListener('change', (e) => { const f = e.target.files; uploadFiles(f).finally(() => { e.target.value = ''; }); });
 
   const toggle = (btn, pn, focus) => {

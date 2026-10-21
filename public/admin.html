@@ -82,6 +82,7 @@
     top.append(el('span', 'px-2 py-0.5 rounded-full border text-xs ' + tc, tl));
     top.append(el('span', 'text-xs font-semibold text-amber-600 dark:text-amber-400', g.count + ' รายงาน'));
     top.append(el('span', 'text-xs text-slate-500 dark:text-neutral-400', ago(g.last_at)));
+    if (g.preview && g.preview.hidden) top.append(el('span', 'px-2 py-0.5 rounded-full text-xs bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400', 'ซ่อนอยู่'));
     c.append(top);
 
     // เนื้อหาที่ถูกรายงาน (ใช้ textContent เสมอ กัน XSS)
@@ -122,6 +123,25 @@
         del.type = 'button';
         del.addEventListener('click', () => { if (confirm('ลบ' + tl + 'นี้ถาวรใช่ไหม?')) resolve(g, 'delete', c); });
         act.append(del);
+      }
+      const ownerId = g.type === 'user' ? g.target : (pv && pv.owner_id);
+      if (ownerId) {
+        const banned = !!(pv && pv.owner_banned);
+        const bb = el('button', 'px-4 py-2 rounded-xl border border-rose-500/50 text-rose-600 dark:text-rose-400 text-sm font-semibold hover:bg-rose-500/10 disabled:opacity-60 cursor-pointer', banned ? 'ปลดแบนผู้ใช้' : 'แบนผู้ใช้');
+        bb.type = 'button';
+        bb.addEventListener('click', async () => {
+          if (!banned) { var reason = prompt('เหตุผลที่แบน @' + ownerId + ' (ไม่บังคับ) — โพสต์ทั้งหมดของผู้ใช้จะถูกซ่อน และโพสต์/คอมเมนต์/อัปโหลดไม่ได้', ''); if (reason === null) return; }
+          else if (!confirm('ปลดแบน @' + ownerId + ' และคืนโพสต์ที่ถูกซ่อนจากการแบน?')) return;
+          bb.disabled = true;
+          const r = await api('/api/blog/ban', { method: 'POST', body: { userId: s.userId, target: ownerId, action: banned ? 'unban' : 'ban', reason: reason || '' } });
+          bb.disabled = false;
+          if (!r.ok) return say(r.data.error || 'ทำรายการไม่สำเร็จ', 'err');
+          say(banned ? 'ปลดแบนแล้ว' : 'แบนแล้ว (ซ่อนโพสต์ ' + (r.data.posts || 0) + ' รายการ)', 'ok');
+          if (pv) pv.owner_banned = !banned;
+          bb.textContent = banned ? 'แบนผู้ใช้' : 'ปลดแบนผู้ใช้';
+          load && load();
+        });
+        act.append(bb);
       }
       const ok = el('button', 'px-4 py-2 rounded-xl border border-slate-300 dark:border-white/15 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-60 cursor-pointer', g.type === 'user' || !pv ? 'ปิดเรื่อง' : 'ไม่พบความผิด');
       ok.type = 'button';
