@@ -399,7 +399,7 @@
   const UP_RE = /^https:\/\/[^\s"'<>]{4,300}\/api\/blog\/vid\/v\/[A-Za-z0-9._~%-]{1,180}\/[a-z0-9]{6,40}\.(mp4|webm)$/;
   const upPoster = (u) => u.replace(/\.(mp4|webm)$/, '.jpg');
   function uvEl(u, title) {
-    const d = el('div', 'uv'); const v = document.createElement('video');
+    const d = el('div', 'uv bp'); const v = document.createElement('video');
     v.controls = true; 
     v.playsInline = true; 
     v.autoplay = true;   // <--- เพิ่มสั่งเล่นอัตโนมัติ
@@ -470,7 +470,7 @@
       entries.forEach((entry) => {
         const video = entry.target;
         if (entry.isIntersecting) {
-          video.play().catch(() => {});
+          if (!video.dataset.up) video.play().catch(() => {}); // ผู้ใช้กดหยุดเองแล้ว = ไม่เล่นให้ใหม่
         } else {
           video.pause();
         }
@@ -493,6 +493,143 @@
     }
     
     new MutationObserver(observeVideos).observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  // ---------- Progress bar วิ่งตามขอบกรอบวิดีโอ (.uv = วิดีโออัปโหลดเอง ทั้ง SSR และการ์ดฝั่งเบราว์เซอร์) ----------
+  // ถ้า JS ไม่ทำงาน จะยังเหลือ controls เดิมของเบราว์เซอร์ (ลบทิ้งตอน enhance เท่านั้น)
+  if (!document.getElementById('niv-bp')) {
+    const BP_R = 18, BP_SW = 4, BP_PAD = 7;
+    const bpStyle = document.createElement('style');
+    bpStyle.id = 'niv-bp';
+    bpStyle.textContent = `
+.uv.bp{position:relative;padding:${BP_PAD}px;border-radius:${BP_R}px;background:#0b1020;cursor:pointer;touch-action:manipulation;outline:none}
+.uv.bp video{display:block;width:100%;border-radius:${BP_R - BP_PAD + 4}px;background:#000}
+.uv.bp:focus-visible{box-shadow:0 0 0 2px #818cf8}
+.bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.bp-svg rect{fill:none}
+.bp-track{stroke:rgba(255,255,255,.14);stroke-width:${BP_SW}}
+.bp-fill{stroke-width:${BP_SW};stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(129,140,248,.7));transition:stroke-width .15s}
+.bp-hit{stroke:transparent;stroke-width:${BP_PAD * 2 + 6};pointer-events:stroke;cursor:pointer;touch-action:none}
+.bp-knob{fill:#fff;stroke:#818cf8;stroke-width:2;opacity:0;transition:opacity .15s,r .15s;filter:drop-shadow(0 0 5px rgba(129,140,248,.9))}
+.uv.bp:hover .bp-knob,.uv.bp.bp-drag .bp-knob,.uv.bp:focus-visible .bp-knob{opacity:1}
+.uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:${BP_SW + 2}}
+.uv.bp.bp-drag .bp-knob{r:8}
+.bp-play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;display:grid;place-items:center;opacity:0;transform:scale(.85);transition:.2s;pointer-events:none}
+.uv.bp.bp-paused .bp-play{opacity:1;transform:none;pointer-events:auto}
+.bp-play::before{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:4px}
+.bp-bar{position:absolute;left:${BP_PAD + 10}px;bottom:${BP_PAD + 10}px;display:flex;gap:8px;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:600 12px/1.4 ui-monospace,monospace;opacity:0;transition:opacity .2s}
+.uv.bp:hover .bp-bar,.uv.bp.bp-paused .bp-bar,.uv.bp:focus-visible .bp-bar{opacity:1}
+.bp-mute{all:unset;cursor:pointer;font-size:13px}
+@media (hover:none){.bp-bar,.bp-knob{opacity:1}}
+@media (prefers-reduced-motion:reduce){.bp-fill,.bp-knob,.bp-play,.bp-bar{transition:none}}`;
+    if (!document.getElementById("niv-css")) document.head.appendChild(bpStyle); // หน้า SSR โหลด /niv.css แล้ว
+
+    const fmtT = (s) => (isFinite(s) ? Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0') : '0:00');
+    let bpUid = 0;
+
+    // ตำแหน่งเมาส์ (x,y ภายในกรอบ) → สัดส่วนบนเส้นรอบกรอบมุมโค้ง (เริ่มบนซ้าย วนตามเข็มนาฬิกา)
+    function bpFrac(x, y, w, h, r) {
+      const s = w - 2 * r, t = h - 2 * r, a = (Math.PI * r) / 2, L = 2 * s + 2 * t + 4 * a;
+      let d;
+      if (x > w - r && y < r) d = s + (Math.atan2(y - r, x - (w - r)) + Math.PI / 2) * r;
+      else if (x > w - r && y > h - r) d = s + a + t + Math.atan2(y - (h - r), x - (w - r)) * r;
+      else if (x < r && y > h - r) d = 2 * s + 2 * a + t + (Math.atan2(y - (h - r), x - r) - Math.PI / 2) * r;
+      else if (x < r && y < r) d = 2 * s + 3 * a + 2 * t + (Math.atan2(y - r, x - r) + Math.PI) * r;
+      else {
+        const m = Math.min(y, w - x, h - y, x);
+        if (m === y) d = x - r;
+        else if (m === w - x) d = s + a + (y - r);
+        else if (m === h - y) d = s + 2 * a + t + (w - r - x);
+        else d = 2 * s + 3 * a + t + (h - r - y);
+      }
+      return Math.min(1, Math.max(0, d / L));
+    }
+
+    function bpEnhance(box) {
+      const v = box.querySelector('video');
+      if (!v || box.dataset.bp) return;
+      box.dataset.bp = '1';
+      v.removeAttribute('controls');
+      box.classList.add('bp');
+      box.tabIndex = 0;
+      box.setAttribute('role', 'group');
+      box.setAttribute('aria-label', v.getAttribute('aria-label') || 'วิดีโอ');
+      const id = 'bpg' + ++bpUid;
+      box.insertAdjacentHTML('beforeend',
+        '<svg class="bp-svg" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="#22d3ee"/><stop offset=".5" stop-color="#818cf8"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs>' +
+        '<rect class="bp-track"/><rect class="bp-fill" stroke="url(#' + id + ')"/><rect class="bp-hit"/><circle class="bp-knob" r="6"/></svg>' +
+        '<button class="bp-play" type="button" aria-label="เล่น"></button>' +
+        '<div class="bp-bar"><span class="bp-time">0:00</span><button class="bp-mute" type="button" aria-label="เสียง"></button></div>');
+      const svg = box.querySelector('.bp-svg'), rects = svg.querySelectorAll('rect');
+      const fill = box.querySelector('.bp-fill'), knob = box.querySelector('.bp-knob'), hit = box.querySelector('.bp-hit');
+      const time = box.querySelector('.bp-time'), mute = box.querySelector('.bp-mute');
+      const I = BP_SW / 2 + 2;
+      let len = 1, W = 0, H = 0, drag = false, raf = 0;
+
+      function draw() {
+        const f = v.duration ? v.currentTime / v.duration : 0;
+        fill.style.strokeDasharray = f * len + ' ' + len;
+        try { const p = fill.getPointAtLength(f * len); knob.setAttribute('cx', p.x); knob.setAttribute('cy', p.y); } catch {}
+        time.textContent = fmtT(v.currentTime) + ' / ' + fmtT(v.duration);
+      }
+      function layout() {
+        W = box.clientWidth; H = box.clientHeight;
+        if (!W || !H) return;
+        svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+        rects.forEach((r) => {
+          r.setAttribute('x', I); r.setAttribute('y', I);
+          r.setAttribute('width', Math.max(0, W - 2 * I)); r.setAttribute('height', Math.max(0, H - 2 * I));
+          r.setAttribute('rx', BP_R - I);
+        });
+        len = fill.getTotalLength() || 1;
+        draw();
+      }
+      function seekFrom(e) {
+        const b = svg.getBoundingClientRect();
+        const f = bpFrac(e.clientX - b.left - I, e.clientY - b.top - I, W - 2 * I, H - 2 * I, BP_R - I);
+        if (isFinite(v.duration)) v.currentTime = f * v.duration;
+        draw();
+      }
+      hit.addEventListener('pointerdown', (e) => {
+        e.stopPropagation(); drag = true; box.classList.add('bp-drag');
+        hit.setPointerCapture(e.pointerId); seekFrom(e);
+      });
+      hit.addEventListener('pointermove', (e) => { if (drag) seekFrom(e); });
+      const endDrag = () => { drag = false; box.classList.remove('bp-drag'); };
+      hit.addEventListener('pointerup', endDrag);
+      hit.addEventListener('pointercancel', endDrag);
+
+      // คลิกวิดีโอ = เล่น/หยุด (จำว่าผู้ใช้หยุดเอง เพื่อไม่ให้ตัวเล่นอัตโนมัติตอนเลื่อนกลับมาเล่นซ้ำ)
+      const toggle = () => {
+        if (v.paused) { delete v.dataset.up; v.play().catch(() => {}); }
+        else { v.dataset.up = '1'; v.pause(); }
+      };
+      box.addEventListener('click', (e) => { if (!e.target.closest('.bp-bar,.bp-hit')) toggle(); });
+      mute.addEventListener('click', (e) => { e.stopPropagation(); v.muted = !v.muted; });
+      const syncUi = () => { box.classList.toggle('bp-paused', v.paused); mute.textContent = v.muted ? '🔇' : '🔊'; };
+      // วนอัปเดตเฉพาะตอนกำลังเล่น (ไม่กิน CPU ตอนหยุด/อยู่นอกจอ)
+      const tick = () => { draw(); raf = v.paused ? 0 : requestAnimationFrame(tick); };
+      v.addEventListener('play', () => { syncUi(); if (!raf) raf = requestAnimationFrame(tick); });
+      ['pause', 'volumechange', 'loadedmetadata'].forEach((n) => v.addEventListener(n, syncUi));
+      ['timeupdate', 'seeked', 'loadedmetadata', 'durationchange'].forEach((n) => v.addEventListener(n, draw));
+      box.addEventListener('keydown', (e) => {
+        if (e.target !== box) return;
+        if (e.key === 'ArrowRight') v.currentTime += 5;
+        else if (e.key === 'ArrowLeft') v.currentTime -= 5;
+        else if (e.key === ' ') toggle();
+        else return;
+        e.preventDefault();
+      });
+      new ResizeObserver(layout).observe(box);
+      layout(); syncUi();
+      if (!v.paused && !raf) raf = requestAnimationFrame(tick);
+    }
+
+    const bpScan = () => document.querySelectorAll('.uv:not([data-bp])').forEach(bpEnhance);
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bpScan);
+    else bpScan();
+    new MutationObserver(bpScan).observe(document.documentElement, { childList: true, subtree: true });
   }
 
   // ---------- กล่องรายงาน (โพสต์ / ความคิดเห็น / ผู้ใช้) ----------

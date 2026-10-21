@@ -14,7 +14,7 @@ export function cleanIds(list) {
   return (Array.isArray(list) ? list : []).filter((x) => YT_ID.test(x) || UP_RE.test(String(x))).slice(0, 15);
 }
 
-const uvBlock = (u, title, eager) => `<div class="uv"><video controls playsinline autoplay muted loop preload="metadata" poster="${esc(posterOf(u))}" src="${esc(u)}" aria-label="${esc(title)}"></video></div>`;
+const uvBlock = (u, title, eager) => `<div class="uv bp"><video controls playsinline autoplay muted loop preload="metadata" poster="${esc(posterOf(u))}" src="${esc(u)}" aria-label="${esc(title)}"></video></div>`;
 
 export function videoLd(ids, { title, desc, uploadDate }) {
   return cleanIds(ids).map((id, i) => ({
