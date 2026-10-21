@@ -470,7 +470,7 @@
       entries.forEach((entry) => {
         const video = entry.target;
         if (entry.isIntersecting) {
-          if (!video.dataset.up) video.play().catch(() => {}); // ผู้ใช้กดหยุดเองแล้ว = ไม่เล่นให้ใหม่
+          if (!video.dataset.up) video.play().catch(() => { if (!video.muted) { video.muted = true; video.play().catch(() => {}); } }); // ผู้ใช้กดหยุดเองแล้ว = ไม่เล่นให้ใหม่ · เล่นแบบมีเสียงไม่ได้ = ถอยเป็นปิดเสียง
         } else {
           video.pause();
         }
@@ -527,6 +527,23 @@
     const IC_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></svg>';
     const fmtT = (s) => (isFinite(s) ? Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0') : '0:00');
 
+    // เสียงกลาง: เปิดเสียงคลิปใดคลิปหนึ่ง = เปิดทุกคลิป (และปิดก็ปิดทุกคลิป) จำค่าไว้ใน localStorage
+    let bpMuted = ls('niv_vsound') !== '1';
+    const bpActive = () => !!(navigator.userActivation && navigator.userActivation.hasBeenActive);
+    const bpSetAllMuted = (m) => {
+      bpMuted = m; lsSet('niv_vsound', m ? '0' : '1');
+      document.querySelectorAll('.uv video').forEach((x) => { x.muted = m; });
+    };
+    // เปิดหน้าใหม่แล้วเบราว์เซอร์ยังไม่ให้เล่นเสียงจนกว่าผู้ใช้จะแตะ → แตะครั้งแรกแล้วค่อยเปิดเสียงให้ทุกคลิป
+    if (!bpMuted && !bpActive()) {
+      const evs = ['pointerdown', 'keydown', 'touchstart'];
+      const onFirst = () => {
+        evs.forEach((n) => removeEventListener(n, onFirst, true));
+        if (!bpMuted) document.querySelectorAll('.uv video').forEach((x) => { x.muted = false; });
+      };
+      evs.forEach((n) => addEventListener(n, onFirst, { capture: true, passive: true }));
+    }
+
     // ตำแหน่งเมาส์ (x,y ภายในกรอบ) → สัดส่วนบนเส้นรอบกรอบมุมโค้ง (เริ่มบนซ้าย วนตามเข็มนาฬิกา)
     function bpFrac(x, y, w, h, r) {
       const s = w - 2 * r, t = h - 2 * r, a = (Math.PI * r) / 2, L = 2 * s + 2 * t + 4 * a;
@@ -550,6 +567,7 @@
       if (!v || box.dataset.bp) return;
       box.dataset.bp = '1';
       v.removeAttribute('controls');
+      if (!bpMuted && bpActive()) v.muted = false;
       box.classList.add('bp');
       box.tabIndex = 0;
       box.setAttribute('role', 'group');
@@ -598,11 +616,11 @@
 
       // คลิกวิดีโอ = เล่น/หยุด (จำว่าผู้ใช้หยุดเอง เพื่อไม่ให้ตัวเล่นอัตโนมัติตอนเลื่อนกลับมาเล่นซ้ำ)
       const toggle = () => {
-        if (v.paused) { delete v.dataset.up; v.play().catch(() => {}); }
+        if (v.paused) { delete v.dataset.up; v.play().catch(() => { if (!v.muted) { v.muted = true; v.play().catch(() => {}); } }); }
         else { v.dataset.up = '1'; v.pause(); }
       };
       box.addEventListener('click', (e) => { if (!e.target.closest('.bp-bar,.bp-hit')) toggle(); });
-      mute.addEventListener('click', (e) => { e.stopPropagation(); v.muted = !v.muted; });
+      mute.addEventListener('click', (e) => { e.stopPropagation(); bpSetAllMuted(!v.muted); });
       const syncUi = () => {
         box.classList.toggle('bp-paused', v.paused);
         mute.innerHTML = v.muted ? IC_OFF : IC_ON;
