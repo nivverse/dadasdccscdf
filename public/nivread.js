@@ -75,6 +75,30 @@
     const st = document.createElement('style'); st.id = 'niv-fb'; st.textContent = FBCSS; document.head.appendChild(st);
   }
 
+  // ---------- skeleton โหลด (แทนข้อความ "กำลังโหลด...") ----------
+  const SKCSS = `.sk-b{position:relative;overflow:hidden;background:#ecece7;border-radius:12px}
+.dark .sk-b{background:rgba(255,255,255,.07)}
+.sk-b::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);animation:sk-sh 1.4s ease-in-out infinite}
+.dark .sk-b::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent)}
+@keyframes sk-sh{100%{transform:translateX(100%)}}
+.sk-card{border-radius:16px;overflow:hidden;padding:1rem;border:1px solid rgba(148,163,184,.25);background:rgba(255,255,255,.6)}
+.dark .sk-card{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+@media (prefers-reduced-motion:reduce){.sk-b::after{animation:none}}`;
+  if (!document.getElementById('niv-sk')) {
+    const st = document.createElement('style'); st.id = 'niv-sk'; st.textContent = SKCSS; document.head.appendChild(st);
+  }
+  const skB = (cls) => `<div class="sk-b ${cls}"></div>`;
+  // kind: 'card' = โพสต์ในฟีด, 'comment' = ความคิดเห็น
+  const skelHtml = (n = 3, kind = 'card') => Array.from({ length: n }, (_, i) => kind === 'comment'
+    ? `<div class="flex gap-3">${skB('w-9 h-9 !rounded-full flex-shrink-0')}<div class="flex-1 space-y-2">${skB('h-3 w-1/3')}${skB('h-3 w-full')}${skB('h-3 w-2/3')}</div></div>`
+    : `<div class="sk-card"><div class="flex items-center gap-3">${skB('w-11 h-11 !rounded-full flex-shrink-0')}<div class="flex-1 space-y-2">${skB('h-3 w-1/3')}${skB('h-3 w-1/5')}</div></div>
+<div class="mt-4 space-y-2">${skB('h-4 w-4/5')}${skB('h-3 w-full')}${skB('h-3 w-3/5')}</div>${i % 2 === 0 ? skB('mt-4 w-full aspect-[4/3]') : ''}</div>`).join('');
+  const skel = (n = 3, kind = 'card') => {
+    const d = el('div', kind === 'comment' ? 'space-y-5' : 'space-y-6');
+    d.setAttribute('aria-hidden', 'true'); d.dataset.skel = '1'; d.innerHTML = skelHtml(n, kind);
+    return d;
+  };
+
   const F = { users: new Set(), cats: new Set(), loading: null };
   const fbBtn = (type, target, variant = 'link', name = '') => {
     const b = el('button', 'fb fb-' + variant, variant === 'plus' ? '+' : 'ติดตาม');
@@ -468,7 +492,7 @@
     });
   }
 
-  window.NIV = { API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast };
+  window.NIV = { skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast };
 
   // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
   if (!document.getElementById('niv-nozoom')) {

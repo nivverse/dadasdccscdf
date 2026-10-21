@@ -11,6 +11,10 @@
   const get = (page) => fetch(url(page), { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
   const refresh = () => { window.NIV_refreshFeed && window.NIV_refreshFeed(); };
 
+  // รอผลฟีด: ซ่อนโพสต์สาธารณะชั่วคราวแล้วโชว์ skeleton (ถ้าไม่ได้ติดตามใคร/พลาด จะคืนหน้าเดิม)
+  const skel = window.NIV && NIV.skel ? NIV.skel(3) : null;
+  if (skel) { $('public-feed').classList.add('hidden'); $('follow-prompt')?.classList.add('hidden'); $('public-feed').before(skel); }
+  const restore = () => { skel && skel.remove(); $('public-feed').classList.remove('hidden'); $('follow-prompt')?.classList.remove('hidden'); };
   let next = '';
   let loading = false;
   let io = null;
@@ -20,6 +24,7 @@
   async function more() {
     if (loading || !next) return;
     loading = true;
+    const sk = window.NIV && NIV.skel ? NIV.skel(2) : null; if (sk) list.after(sk);
     try {
       const r = await get(next);
       if (!r.ok) throw new Error();
@@ -27,17 +32,16 @@
       next = r.headers.get('X-Has-More') === '1' ? String(+next + 1) : '';
       refresh();
       if (!next) end();
-    } catch {} finally { loading = false; }
+    } catch {} finally { loading = false; sk && sk.remove(); }
   }
 
   (async () => {
     try {
       const r = await get(1);
-      if (!r.ok) return;                                       // token หมดอายุ ฯลฯ → คงหน้าสาธารณะ
-      if ((parseInt(r.headers.get('X-Follow-Count'), 10) || 0) === 0) return; // ยังไม่ติดตามใคร → โชว์กล่องชวนติดตาม
+      if (!r.ok) return restore();                             // token หมดอายุ ฯลฯ → คงหน้าสาธารณะ
+      if ((parseInt(r.headers.get('X-Follow-Count'), 10) || 0) === 0) return restore(); // ยังไม่ติดตามใคร → โชว์โพสต์ล่าสุด
       const html = await r.text();
-      $('follow-prompt')?.classList.add('hidden');
-      $('public-feed').classList.add('hidden');
+      skel && skel.remove();
       $('my-feed').classList.remove('hidden');
       if (!html.trim()) { $('my-feed-empty').classList.remove('hidden'); $('my-feed-sentinel').classList.add('hidden'); return; }
       list.insertAdjacentHTML('beforeend', html);
@@ -48,6 +52,6 @@
         io = new IntersectionObserver((en) => { if (en[0].isIntersecting) more(); }, { rootMargin: '600px' });
         io.observe($('my-feed-sentinel'));
       }
-    } catch {}
+    } catch { restore(); }
   })();
 })();

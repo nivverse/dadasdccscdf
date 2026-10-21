@@ -132,6 +132,7 @@
       const next = feed.dataset.nextPage;
       if (!next) return end();
       loading = true;
+      const sk = window.NIV && NIV.skel ? NIV.skel(2) : null; if (sk) feed.after(sk);
       try {
         const r = await fetch(`${feed.dataset.base || '/posts'}?page=${next}&partial=1`);
         if (!r.ok) throw new Error();
@@ -140,7 +141,7 @@
         loadLiked();
         if (!feed.dataset.nextPage) end();
       } catch { toast('โหลดโพสต์เพิ่มไม่สำเร็จ'); }
-      finally { loading = false; }
+      finally { loading = false; sk && sk.remove(); }
     }, { rootMargin: '600px' });
 
     if (!feed.dataset.nextPage) end(); else io.observe(sentinel);

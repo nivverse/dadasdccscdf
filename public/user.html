@@ -93,7 +93,7 @@
     head.append(el('h2', 'font-bold', kind === 'followers' ? 'ผู้ติดตาม' : 'กำลังติดตาม'));
     const x = el('button', 'w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'ปิด');
     head.append(x);
-    const list = el('div', 'space-y-3', 'กำลังโหลด...');
+    const list = el('div', 'space-y-3'); list.innerHTML = Array.from({ length: 4 }, () => '<div class="flex items-center gap-3"><div class="sk-b w-10 h-10 !rounded-full"></div><div class="sk-b h-3 w-1/2"></div></div>').join('');
     box.append(head, list); wrap.append(box); document.body.append(wrap);
     const close = () => wrap.remove();
     x.addEventListener('click', close);
@@ -158,9 +158,10 @@
   async function loadLiked() {
     if (likedLoaded) return;
     likedLoaded = true;
-    $('status').textContent = 'กำลังโหลด...';
-    const l = await api('/api/blog/liked-posts?userId=' + encodeURIComponent(user.id));
     $('status').textContent = '';
+    const sk = NIV.skel(2); $('liked').before(sk);
+    const l = await api('/api/blog/liked-posts?userId=' + encodeURIComponent(user.id));
+    sk.remove();
     if (!l.ok) { likedLoaded = false; $('status').textContent = l.data.error || 'โหลดรายการไม่สำเร็จ'; return; }
     if (!l.data.posts.length) { $('status').textContent = 'ยังไม่ได้กดถูกใจโพสต์ไหนเลย'; return; }
     for (const p of l.data.posts) $('liked').append(postCardEl(p));

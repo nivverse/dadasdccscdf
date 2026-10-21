@@ -452,7 +452,7 @@
   list.after(moreWrap);
 
   // ---------- โหลดข้อมูล ----------
-  list.replaceChildren(el('p', 'text-sm text-slate-500 dark:text-neutral-400', 'กำลังโหลดความคิดเห็น...'));
+  list.replaceChildren(window.NIV && NIV.skel ? NIV.skel(3, 'comment') : el('p', 'text-sm text-slate-500 dark:text-neutral-400', 'กำลังโหลดความคิดเห็น...'));
   (async () => {
     const [r, me, lk] = await Promise.all([
       api('/api/blog/comments?slug=' + encodeURIComponent(slug)),

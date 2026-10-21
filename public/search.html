@@ -59,11 +59,13 @@
   const st = $('status');
   if (q.length < 2) { st.textContent = 'พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาโพสต์หรือไอดีผู้ใช้'; return; }
   document.title = `ค้นหา "${q}" | nivread`;
-  st.textContent = 'กำลังค้นหา...';
+  st.textContent = '';
+  const sk = NIV.skel(3); st.after(sk);
   const [r, cr] = await Promise.all([
     api('/api/blog/search?q=' + encodeURIComponent(q)),
     api('/api/blog/categories').catch(() => ({ ok: false, data: {} })),
   ]);
+  sk.remove();
   if (!r.ok) { st.textContent = r.data.error || 'ค้นหาไม่สำเร็จ กรุณาลองใหม่'; return; }
   const { users = [], posts = [] } = r.data;
 
