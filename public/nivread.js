@@ -461,6 +461,40 @@
     });
   }
 
+  if (!document.getElementById('niv-video-observer')) {
+    const observerStyle = document.createElement('style');
+    observerStyle.id = 'niv-video-observer';
+    document.head.appendChild(observerStyle);
+
+    const videoObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
+    }, { threshold: 0.5 });
+
+    const observeVideos = () => {
+      document.querySelectorAll('video[autoplay]').forEach((v) => {
+        if (!v.dataset.observed) {
+          v.dataset.observed = 'true';
+          videoObserver.observe(v);
+        }
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', observeVideos);
+    } else {
+      observeVideos();
+    }
+    
+    new MutationObserver(observeVideos).observe(document.documentElement, { childList: true, subtree: true });
+  }
+
   // ---------- กล่องรายงาน (โพสต์ / ความคิดเห็น / ผู้ใช้) ----------
   const REASONS = {
     spam: 'สแปม / โฆษณา',
