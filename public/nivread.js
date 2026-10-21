@@ -502,25 +502,29 @@
     const bpStyle = document.createElement('style');
     bpStyle.id = 'niv-bp';
     bpStyle.textContent = `
-.uv.bp{position:relative;padding:${BP_PAD}px;border-radius:${BP_R}px;background:#0b1020;cursor:pointer;touch-action:manipulation;outline:none}
+.uv.bp{position:relative;padding:${BP_PAD}px;border-radius:${BP_R}px;background:#0b1020;cursor:pointer;touch-action:manipulation;outline:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.uv.bp video{-webkit-touch-callout:none}
 .uv.bp video{display:block;width:100%;border-radius:${BP_R - BP_PAD}px;background:#000}
 .uv.bp:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .bp-svg rect{fill:none}
-.bp-track{stroke:rgba(255,255,255,.12);stroke-width:${BP_SW}}
-.bp-fill{stroke:#f59e0b;stroke-width:${BP_SW};stroke-linecap:round;transition:stroke-width .15s}
+.bp-track{stroke:rgba(255,255,255,.08);stroke-width:${BP_SW}}
+.bp-fill{stroke:#f59e0b;stroke-opacity:.55;stroke-width:${BP_SW};stroke-linecap:round;transition:stroke-width .15s,stroke-opacity .15s}
 .bp-hit{stroke:transparent;stroke-width:${BP_PAD * 2 + 6};pointer-events:stroke;cursor:pointer;touch-action:none}
-.uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:${BP_SW + 1}}
+.uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:${BP_SW + 1};stroke-opacity:.85}
 .bp-play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;display:grid;place-items:center;opacity:0;transform:scale(.85);transition:.2s;pointer-events:none}
 .uv.bp.bp-paused .bp-play{opacity:1;transform:none;pointer-events:auto}
 .bp-play::before{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:4px}
 .bp-bar{position:absolute;left:${BP_PAD + 10}px;bottom:${BP_PAD + 10}px;display:flex;gap:8px;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:600 12px/1.4 ui-monospace,monospace;opacity:0;transition:opacity .2s}
 .uv.bp:hover .bp-bar,.uv.bp.bp-paused .bp-bar,.uv.bp:focus-visible .bp-bar{opacity:1}
+.bp-fast-tag{position:absolute;top:${BP_PAD + 10}px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:700 12px/1.4 ui-monospace,monospace;opacity:0;pointer-events:none;transition:opacity .15s}
+.uv.bp.bp-fast .bp-fast-tag{opacity:1}
+.bp-fast-tag svg{width:14px;height:14px;fill:#f59e0b}
 .bp-mute{all:unset;cursor:pointer;display:grid;place-items:center;width:18px;height:18px;border-radius:4px}
 .bp-mute:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-mute svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 @media (hover:none){.bp-bar{opacity:1}}
-@media (prefers-reduced-motion:reduce){.bp-fill,.bp-play,.bp-bar{transition:none}}`;
+@media (prefers-reduced-motion:reduce){.bp-fill,.bp-play,.bp-bar,.bp-fast-tag{transition:none}}`;
     if (!document.getElementById("niv-css")) document.head.appendChild(bpStyle); // หน้า SSR โหลด /niv.css แล้ว
 
     const IC_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>';
@@ -574,6 +578,7 @@
       box.setAttribute('aria-label', v.getAttribute('aria-label') || 'วิดีโอ');
       box.insertAdjacentHTML('beforeend',
         '<svg class="bp-svg" aria-hidden="true"><rect class="bp-track"/><rect class="bp-fill"/><rect class="bp-hit"/></svg>' +
+        '<div class="bp-fast-tag" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m13 19 9-7-9-7z"/><path d="m2 19 9-7-9-7z"/></svg>2x</div>' +
         '<button class="bp-play" type="button" aria-label="เล่น"></button>' +
         '<div class="bp-bar"><span class="bp-time">0:00</span><button class="bp-mute" type="button" aria-label="เสียง"></button></div>');
       const svg = box.querySelector('.bp-svg'), rects = svg.querySelectorAll('rect');
@@ -619,10 +624,29 @@
         if (v.paused) { delete v.dataset.up; v.play().catch(() => { if (!v.muted) { v.muted = true; v.play().catch(() => {}); } }); }
         else { v.dataset.up = '1'; v.pause(); }
       };
-      box.addEventListener('click', (e) => { if (!e.target.closest('.bp-bar,.bp-hit')) toggle(); });
+      let holdT = 0, held = false;
+      const endHold = () => {
+        clearTimeout(holdT);
+        if (box.classList.contains('bp-fast')) { v.playbackRate = 1; box.classList.remove('bp-fast'); }
+      };
+      box.addEventListener('pointerdown', (e) => {
+        held = false; clearTimeout(holdT);
+        if (e.button > 0 || e.target.closest('.bp-bar,.bp-hit,.bp-play')) return;
+        holdT = setTimeout(() => {
+          if (v.paused) return;
+          held = true; v.playbackRate = 2; box.classList.add('bp-fast');
+        }, 350);
+      });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach((n) => box.addEventListener(n, endHold));
+      box.addEventListener('contextmenu', (e) => { if (held) e.preventDefault(); }); // กดค้างบนมือถือ ไม่ให้เมนูโผล่
+      box.addEventListener('click', (e) => {
+        if (held) { held = false; return; }
+        if (!e.target.closest('.bp-bar,.bp-hit')) toggle();
+      });
       mute.addEventListener('click', (e) => { e.stopPropagation(); bpSetAllMuted(!v.muted); });
       const syncUi = () => {
         box.classList.toggle('bp-paused', v.paused);
+        if (v.paused) { v.playbackRate = 1; box.classList.remove('bp-fast'); }
         mute.innerHTML = v.muted ? IC_OFF : IC_ON;
         mute.setAttribute('aria-label', v.muted ? 'เปิดเสียง' : 'ปิดเสียง');
       };
