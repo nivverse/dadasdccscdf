@@ -57,37 +57,33 @@
     </div>
 
     <div>
-      <div class="flex justify-between items-end mb-1.5">
-        <label for="img-input" class="block text-sm font-medium">รูปภาพ <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
-        <span id="img-count" class="text-xs text-slate-400">0 / 10</span>
+      <div class="block text-sm font-medium mb-2">เพิ่มในโพสต์ <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></div>
+      <input id="img-file" type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden">
+      <div class="flex items-center gap-3">
+        <button id="img-up" type="button" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="อัปโหลดรูป (สูงสุด 3 รูป)" aria-label="อัปโหลดรูป">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span id="up-count" class="text-[11px] leading-none text-slate-400">0 / 3</span></button>
+        <button id="tg-img" type="button" aria-pressed="false" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="ลิงก์รูปหรือ GIF" aria-label="ลิงก์รูปหรือ GIF">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.5-1.5"/></svg><span id="img-count" class="text-[11px] leading-none text-slate-400">0 / 10</span></button>
+        <button id="tg-yt" type="button" aria-pressed="false" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="วิดีโอ YouTube" aria-label="วิดีโอ YouTube">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.5v5l4.5-2.5z"/></svg><span id="yt-count" class="text-[11px] leading-none text-slate-400">0 / 15</span></button>
       </div>
-      <div class="flex gap-2">
-        <input id="img-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์รูป (https://...) ได้ครั้งละหลายลิงก์"
-          class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-        <button id="img-add" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition">เพิ่ม</button>
-      </div>
-      <div class="mt-2 flex items-center gap-3">
-        <input id="img-file" type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden">
-        <button id="img-up" type="button" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition disabled:opacity-40 cursor-pointer">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>อัปโหลดรูป</button>
-        <span id="up-count" class="text-xs text-slate-400">0 / 3</span>
-        <span class="text-xs text-slate-400">GIF ให้วางเป็นลิงก์</span>
-      </div>
-      <p id="img-msg" class="text-xs mt-1 text-slate-500 dark:text-neutral-400" role="status">สูงสุด 10 รูป รูปแรกใช้เป็นภาพปกของโพสต์ รองรับทั้งแนวตั้งและแนวนอน</p>
-      <ul id="img-list" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2"></ul>
-    </div>
 
-    <div>
-      <div class="flex justify-between items-end mb-1.5">
-        <label for="yt-input" class="block text-sm font-medium">วิดีโอ YouTube <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></label>
-        <span id="yt-count" class="text-xs text-slate-400">0 / 15</span>
+      <div id="pn-img" class="hidden mt-3">
+        <div class="flex gap-2">
+          <input id="img-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์รูปหรือ GIF (https://...) ได้ครั้งละหลายลิงก์" aria-label="ลิงก์รูปหรือ GIF" class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+          <button id="img-add" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">เพิ่ม</button>
+        </div>
       </div>
-      <div class="flex gap-2">
-        <input id="yt-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์ YouTube ได้ครั้งละหลายลิงก์"
-          class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-        <button id="yt-add" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition">เพิ่ม</button>
+      <div id="pn-yt" class="hidden mt-3">
+        <div class="flex gap-2">
+          <input id="yt-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์ YouTube ได้ครั้งละหลายลิงก์" aria-label="ลิงก์ YouTube" class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+          <button id="yt-add" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">เพิ่ม</button>
+        </div>
       </div>
-      <p id="yt-msg" class="text-xs mt-1 text-slate-500 dark:text-neutral-400" role="status">รองรับ youtube.com/watch, youtu.be, shorts — สูงสุด 15 คลิป</p>
+
+      <p id="img-msg" class="text-xs mt-2 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
+      <p id="yt-msg" class="text-xs mt-1 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
+      <ul id="img-list" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2"></ul>
       <ul id="yt-list" class="mt-3 space-y-2"></ul>
     </div>
 
@@ -234,6 +230,15 @@
   $('img-up').addEventListener('click', () => $('img-file').click());
   $('img-file').addEventListener('change', (e) => { const f = e.target.files; uploadFiles(f).finally(() => { e.target.value = ''; }); });
 
+  const toggle = (btn, pn, focus) => {
+    const open = $(pn).classList.contains('hidden');
+    $(pn).classList.toggle('hidden', !open);
+    $(btn).setAttribute('aria-pressed', open ? 'true' : 'false');
+    if (open) $(focus).focus();
+  };
+  $('tg-img').addEventListener('click', () => toggle('tg-img', 'pn-img', 'img-input'));
+  $('tg-yt').addEventListener('click', () => toggle('tg-yt', 'pn-yt', 'yt-input'));
+
   $('img-add').addEventListener('click', addImages);
   $('img-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addImages(); } });
   $('img-input').addEventListener('paste', () => setTimeout(addImages, 0));
@@ -327,10 +332,11 @@
         return;
       }
       $('post-form').reset();
-      images = []; renderImages(); imgMsg('สูงสุด 10 รูป รูปแรกใช้เป็นภาพปกของโพสต์ รองรับทั้งแนวตั้งและแนวนอน');
-      videos = []; renderVideos(); ytMsg('รองรับ youtube.com/watch, youtu.be, shorts — สูงสุด 15 คลิป');
+      images = []; renderImages(); imgMsg('');
+      videos = []; renderVideos(); ytMsg('');
       $('count').textContent = '0 / 20000';
-      if (r.data.status === 'published') {
+      if (r.data.status === 'published') { location.href = '/posts?r=' + Date.now(); return; } // ไปหน้าโพสต์ (?r= กันแคชเก่า ให้เห็นโพสต์ใหม่ทันที)
+      if (false) {
         const m = msg('', 'ok');
         const a = el('a', 'font-semibold', 'เปิดดูโพสต์');
         a.href = '/posts/' + r.data.slug;
