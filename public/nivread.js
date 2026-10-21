@@ -400,7 +400,15 @@
   const upPoster = (u) => u.replace(/\.(mp4|webm)$/, '.jpg');
   function uvEl(u, title) {
     const d = el('div', 'uv'); const v = document.createElement('video');
-    v.controls = true; v.playsInline = true; v.preload = 'none'; v.poster = upPoster(u); v.src = u; v.setAttribute('aria-label', title || 'วิดีโอ');
+    v.controls = true; 
+    v.playsInline = true; 
+    v.autoplay = true;   // <--- เพิ่มสั่งเล่นอัตโนมัติ
+    v.muted = true;      // <--- จำเป็นต้องปิดเสียงเพื่อให้เบราว์เซอร์ยอมเล่นออโต
+    v.loop = true;       // <--- เล่นวนซ้ำ
+    v.preload = 'metadata'; // <--- โหลดข้อมูลส่วนหัวมาเตรียมไว้ล่วงหน้า
+    v.poster = upPoster(u); 
+    v.src = u; 
+    v.setAttribute('aria-label', title || 'วิดีโอ');
     d.append(v); return d;
   }
   function videoEl(ids, title, href) {
