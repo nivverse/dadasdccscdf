@@ -1,5 +1,8 @@
 /* /niv.css — CSS กลางของหน้า SSR (แกลเลอรีรูป, เครื่องเล่นวิดีโอ, skeleton, ปุ่มติดตาม) โหลดใน <head> กันรูปหลุดกรอบก่อน JS ทำงาน */
 
+.uv video{display:block;width:100%;height:auto;max-height:36rem;background:#000;border-radius:16px;object-fit:contain}
+.uv+.uv{margin-top:.75rem}
+.vg-more-u{display:inline-block;margin-top:.5rem;font-size:.8rem;color:#d97706}
 .vg{margin:0 1rem 1.5rem}
 .vg.vg-c{margin:0 0 .25rem;padding:0 1rem}
 .vg-frame{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}

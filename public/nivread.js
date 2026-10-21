@@ -237,6 +237,9 @@
 
 
   const VGCSS = `
+.uv video{display:block;width:100%;height:auto;max-height:36rem;background:#000;border-radius:16px;object-fit:contain}
+.uv+.uv{margin-top:.75rem}
+.vg-more-u{display:inline-block;margin-top:.5rem;font-size:.8rem;color:#d97706}
 .vg{margin:0 1rem 1.5rem}
 .vg.vg-c{margin:0 0 .25rem;padding:0 1rem}
 .vg-frame{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
@@ -393,9 +396,21 @@
   // ---------- วิดีโอ YouTube (การ์ดในฟีด / หน้าโปรไฟล์ / ค้นหา) — ใช้ CSS ชุดเดียวกับหน้าโพสต์ ----------
   const YT_ID = /^[A-Za-z0-9_-]{11}$/;
   const ytThumb = (id) => 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg';
+  const UP_RE = /^https:\/\/[^\s"'<>]{4,300}\/api\/blog\/vid\/v\/[A-Za-z0-9._~%-]{1,180}\/[a-z0-9]{6,40}\.(mp4|webm)$/;
+  const upPoster = (u) => u.replace(/\.(mp4|webm)$/, '.jpg');
+  function uvEl(u, title) {
+    const d = el('div', 'uv'); const v = document.createElement('video');
+    v.controls = true; v.playsInline = true; v.preload = 'none'; v.poster = upPoster(u); v.src = u; v.setAttribute('aria-label', title || 'วิดีโอ');
+    d.append(v); return d;
+  }
   function videoEl(ids, title, href) {
-    const list = (Array.isArray(ids) ? ids : []).filter((x) => YT_ID.test(x)).slice(0, 15);
+    const list = (Array.isArray(ids) ? ids : []).filter((x) => YT_ID.test(x) || UP_RE.test(String(x))).slice(0, 15);
     if (!list.length) return null;
+    if (UP_RE.test(list[0])) {
+      const root = el('section', 'vg vg-c'); root.setAttribute('aria-label', 'วิดีโอ'); root.append(uvEl(list[0], title));
+      if (list.length > 1) { const m = el('a', 'vg-more vg-more-u', 'ดูทั้งหมด ' + list.length + ' คลิป'); m.href = href || '#'; root.append(m); }
+      return root;
+    }
     const root = el('section', 'vg vg-c');
     root.dataset.title = title || '';
     root.setAttribute('aria-label', 'วิดีโอ');

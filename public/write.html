@@ -66,6 +66,9 @@
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.5-1.5"/></svg><span id="img-count" class="text-[11px] leading-none text-slate-400">0 / 10</span></button>
         <button id="tg-yt" type="button" aria-pressed="false" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="วิดีโอ YouTube" aria-label="วิดีโอ YouTube">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.5v5l4.5-2.5z"/></svg><span id="yt-count" class="text-[11px] leading-none text-slate-400">0 / 15</span></button>
+        <button id="vid-up" type="button" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10 hidden" title="อัปโหลดวิดีโอ (ไม่เกิน 30 วินาที)" aria-label="อัปโหลดวิดีโอ">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg><span id="vid-count" class="text-[11px] leading-none text-slate-400">0 / 2</span></button>
+        <input id="vid-file" type="file" accept="video/*" class="hidden">
       </div>
 
       <div id="pn-img" class="hidden mt-3">
@@ -270,6 +273,8 @@
 
   const YT_MAX = 15;
   let videos = [];
+  const VID_UP_MAX = 2, VID_SEC = 30;
+  let vidBusy = false;
   const ytId = (raw) => {
     const t = String(raw || '').trim();
     if (/^[A-Za-z0-9_-]{11}$/.test(t)) return t;
@@ -284,13 +289,14 @@
     return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
   };
   const ytMsg = (t, bad) => { const m = $('yt-msg'); m.textContent = t; m.className = 'text-xs mt-1 ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
+  const isVidUp = (u) => /\/api\/blog\/vid\/v\//.test(String(u));
   function renderVideos() {
     const ul = $('yt-list'); ul.replaceChildren();
     videos.forEach((id, i) => {
       const li = el('li', 'flex items-center gap-3 p-2 rounded-xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10');
-      const img = el('img', 'w-24 aspect-video rounded-lg object-cover shrink-0 bg-black'); img.src = 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg'; img.alt = ''; img.loading = 'lazy';
+      const img = el('img', 'w-24 aspect-video rounded-lg object-cover shrink-0 bg-black'); img.src = isVidUp(id) ? id.replace(/\.(mp4|webm)$/, '.jpg') : 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg'; if (isVidUp(id)) img.referrerPolicy = 'no-referrer-when-downgrade'; img.alt = ''; img.loading = 'lazy';
       const info = el('div', 'min-w-0 flex-1');
-      info.append(el('div', 'text-sm font-semibold', 'วิดีโอที่ ' + (i + 1)), el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', 'youtu.be/' + id));
+      info.append(el('div', 'text-sm font-semibold', 'วิดีโอที่ ' + (i + 1)), el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', isVidUp(id) ? 'วิดีโอที่อัปโหลด' : 'youtu.be/' + id));
       const mk = (label, text, fn, dis) => { const b = el('button', 'w-8 h-8 rounded-lg text-sm text-slate-500 dark:text-neutral-300 hover:bg-amber-500/15 hover:text-amber-500 disabled:opacity-30 disabled:hover:bg-transparent', text); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label); b.disabled = !!dis; b.addEventListener('click', fn); return b; };
       const swap = (a, b) => { [videos[a], videos[b]] = [videos[b], videos[a]]; renderVideos(); };
       li.append(img, info,
@@ -300,6 +306,8 @@
       ul.append(li);
     });
     $('yt-count').textContent = videos.length + ' / ' + YT_MAX;
+    $('vid-count').textContent = videos.filter(isVidUp).length + ' / ' + VID_UP_MAX;
+    $('vid-up').disabled = vidBusy || videos.filter(isVidUp).length >= VID_UP_MAX || videos.length >= YT_MAX;
     $('yt-input').disabled = $('yt-add').disabled = videos.length >= YT_MAX;
     if (videos.length >= YT_MAX) ytMsg('ครบ 15 คลิปแล้ว');
   }
@@ -326,6 +334,102 @@
   $('yt-add').addEventListener('click', addVideos);
   $('yt-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addVideos(); } });
   $('yt-input').addEventListener('paste', () => setTimeout(addVideos, 0));
+
+
+  // ---------- อัปโหลดวิดีโอ (เฉพาะบัญชีที่แอดมินอนุญาต · ไม่เกิน 30 วินาที · บีบในเบราว์เซอร์ก่อนส่ง) ----------
+  api('/api/blog/me?userId=' + encodeURIComponent(s.userId)).then((r) => {
+    if (r.ok && r.data.canVideo) { $('vid-up').classList.remove('hidden'); renderVideos(); }
+  }).catch(() => {});
+  const waitEv = (t, ok, bad = 'error') => new Promise((res, rej) => { t.addEventListener(ok, res, { once: true }); t.addEventListener(bad, () => rej(new Error('media')), { once: true }); });
+  const jpegOf = (src, w, h, maxW) => new Promise((res) => {
+    const k = Math.min(1, maxW / w), c = document.createElement('canvas');
+    c.width = Math.max(2, Math.round(w * k)); c.height = Math.max(2, Math.round(h * k));
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    c.toBlob(res, 'image/jpeg', 0.75);
+  });
+  // เล่นวิดีโอลง canvas แล้วอัดใหม่ด้วย MediaRecorder (ย่อด้านยาวสุด 1280px, ~2.2Mbps) — ใช้เวลาเท่าความยาวคลิป
+  async function compressVideo(file, onProg) {
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) throw new Error('unsupported');
+    const objUrl = URL.createObjectURL(file);
+    const v = document.createElement('video');
+    v.playsInline = true; v.preload = 'auto'; v.src = objUrl;
+    let ac = null, rec = null;
+    try {
+      await waitEv(v, 'loadedmetadata');
+      if (!isFinite(v.duration)) { v.currentTime = 1e7; await waitEv(v, 'timeupdate'); v.currentTime = 0; } // ไฟล์ที่ไม่มีข้อมูลความยาว (เช่น WebM จากตัวอัด) ให้เบราว์เซอร์คำนวณเอง
+      const dur = v.duration;
+      if (!isFinite(dur) || dur <= 0) throw new Error('media');
+      if (dur > VID_SEC + 0.5) throw new Error('long');
+      const k = Math.min(1, 1280 / Math.max(v.videoWidth, v.videoHeight));
+      const W = Math.max(2, Math.round(v.videoWidth * k / 2) * 2), H = Math.max(2, Math.round(v.videoHeight * k / 2) * 2);
+      const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      const ctx = cv.getContext('2d');
+      const stream = cv.captureStream(30);
+      try {
+        ac = new (window.AudioContext || window.webkitAudioContext)(); await ac.resume();
+        const dest = ac.createMediaStreamDestination();
+        ac.createMediaElementSource(v).connect(dest); // ไม่ต่อลำโพง = ไม่มีเสียงดังขณะบีบ
+        dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+      } catch {}
+      const mime = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
+        .find((m) => MediaRecorder.isTypeSupported(m));
+      if (!mime) throw new Error('unsupported');
+      const vbps = Math.max(600000, Math.min(2200000, Math.floor((11e6 * 8 / Math.max(dur, 1)) * 0.9) - 100000));
+      rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: vbps, audioBitsPerSecond: 96000 });
+      const chunks = []; rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+      const stopped = new Promise((res) => { rec.onstop = res; });
+      const marks = [Math.min(0.5, dur * 0.05), dur * 0.5, dur * 0.9], frames = [];
+      let last = performance.now();
+      const draw = async () => {
+        ctx.drawImage(v, 0, 0, W, H);
+        last = performance.now();
+        onProg && onProg(Math.min(1, v.currentTime / dur));
+        while (marks.length && v.currentTime >= marks[0]) { marks.shift(); const f = await jpegOf(cv, W, H, 960); if (f) frames.push(f); }
+      };
+      const loop = () => { if (v.ended || v.paused && v.currentTime >= dur) return; draw(); (v.requestVideoFrameCallback ? v.requestVideoFrameCallback.bind(v) : requestAnimationFrame)(loop); };
+      rec.start(1000);
+      await v.play();
+      loop();
+      await Promise.race([
+        waitEv(v, 'ended'),
+        new Promise((_, rej) => { const t = setInterval(() => { if (performance.now() - last > 15000) { clearInterval(t); rej(new Error('stall')); } if (v.ended) clearInterval(t); }, 1000); }),
+      ]);
+      await draw();
+      if (!frames.length) { const f = await jpegOf(cv, W, H, 960); if (f) frames.push(f); }
+      if (rec.state !== 'inactive') rec.stop();
+      await stopped;
+      const blob = new Blob(chunks, { type: mime.split(';')[0] });
+      return { blob, frames, duration: dur };
+    } finally {
+      try { if (rec && rec.state !== 'inactive') rec.stop(); } catch {}
+      try { v.pause(); } catch {}
+      if (ac) ac.close().catch(() => {});
+      URL.revokeObjectURL(objUrl);
+    }
+  }
+  $('vid-up').addEventListener('click', () => $('vid-file').click());
+  $('vid-file').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f || vidBusy) return;
+    if (!/^video\//.test(f.type)) return ytMsg('เลือกไฟล์วิดีโอเท่านั้น', true);
+    vidBusy = true; renderVideos();
+    try {
+      const { blob, frames, duration } = await compressVideo(f, (p) => ytMsg('กำลังบีบวิดีโอ ' + Math.round(p * 100) + '% (ห้ามปิดหน้านี้)'));
+      if (blob.size > 12e6) throw new Error('big');
+      ytMsg('กำลังอัปโหลด ' + (blob.size / 1048576).toFixed(1) + ' MB ...');
+      const fd = new FormData();
+      fd.append('video', blob, 'v.' + (blob.type.includes('mp4') ? 'mp4' : 'webm'));
+      fd.append('duration', String(Math.min(duration, 30.9).toFixed(2)));
+      frames.slice(0, 3).forEach((fr, i) => fd.append('frame', fr, 'f' + i + '.jpg'));
+      const r = await fetch(NIV.API + '/api/blog/video-upload?userId=' + encodeURIComponent(s.userId), { method: 'POST', headers: { Authorization: 'Bearer ' + s.token }, body: fd });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.success) { ytMsg(d.error || 'อัปโหลดวิดีโอไม่สำเร็จ', true); if (r.status === 401) needLogin(); }
+      else { videos.push(d.url); ytMsg('อัปโหลดวิดีโอแล้ว'); }
+    } catch (err) {
+      const m = String(err && err.message);
+      ytMsg(m === 'long' ? 'วิดีโอยาวเกิน 30 วินาที' : m === 'big' ? 'บีบแล้วไฟล์ยังใหญ่เกินไป ลองคลิปที่สั้นลง' : m === 'unsupported' ? 'เบราว์เซอร์นี้ยังบีบวิดีโอไม่ได้ (ลองใช้ Chrome หรือ Safari รุ่นใหม่)' : 'ประมวลผลวิดีโอไม่ได้ (ไฟล์อาจเสียหรือรูปแบบไม่รองรับ)', true);
+    } finally { vidBusy = false; renderVideos(); }
+  });
 
   $('post-form').addEventListener('submit', async (e) => {
     e.preventDefault();

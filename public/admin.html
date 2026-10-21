@@ -35,6 +35,7 @@
   <nav class="mt-5 flex border-b border-slate-200 dark:border-white/10" aria-label="สถานะรายงาน">
     <button type="button" data-tab="open" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">รอตรวจสอบ <span id="open-n" class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs hidden"></span></button>
     <button type="button" data-tab="done" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">ตรวจแล้ว</button>
+    <button type="button" data-tab="video" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">สิทธิ์วิดีโอ</button>
   </nav>
 
   <div id="message" class="mt-4 text-sm font-medium min-h-[1.25rem]" role="status"></div>
@@ -52,7 +53,7 @@
   const TYPE = { post: ['โพสต์', 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30'],
                  comment: ['ความคิดเห็น', 'bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30'],
                  user: ['ผู้ใช้', 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'] };
-  let tab = location.hash === '#done' ? 'done' : 'open';
+  let tab = location.hash === '#done' ? 'done' : location.hash === '#video' ? 'video' : 'open';
 
   const say = (t, kind) => {
     const m = $('message');
@@ -161,10 +162,62 @@
     $('open-n').classList.toggle('hidden', !n);
   }
 
+  // ---------- สิทธิ์อัปโหลดวิดีโอ (แอดมินเลือกบัญชีที่อัปโหลดวิดีโอได้) ----------
+  async function loadVideoPerms() {
+    say('กำลังโหลด...');
+    const r = await api('/api/blog/video-users?userId=' + encodeURIComponent(s.userId));
+    if (r.status === 401) { NIV.logout(); return; }
+    if (r.status === 403) return say('เฉพาะแอดมินเท่านั้น', 'err');
+    if (r.status === 404) return say('Worker ยังไม่ได้อัปเดต กรุณา deploy blog-api.js ใหม่', 'err');
+    if (!r.ok) return say(r.data.error || 'โหลดรายการไม่สำเร็จ', 'err');
+    say('');
+    const box = el('div', 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4 sm:p-5');
+    box.append(el('h2', 'font-bold', 'บัญชีที่อัปโหลดวิดีโอได้'), el('p', 'text-xs text-slate-500 dark:text-neutral-400 mt-1', 'วิดีโอยาวไม่เกิน 30 วินาที อัปโหลดได้เฉพาะบัญชีในรายการนี้ (แอดมินอัปโหลดได้เสมอ)'));
+    const form = el('form', 'mt-3 flex gap-2');
+    const inp = el('input', 'min-w-0 flex-1 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500');
+    inp.placeholder = 'ไอดีผู้ใช้ (username)'; inp.maxLength = 60; inp.autocomplete = 'off'; inp.setAttribute('aria-label', 'ไอดีผู้ใช้');
+    const add = el('button', 'shrink-0 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold cursor-pointer', 'อนุญาต'); add.type = 'submit';
+    form.append(inp, add);
+    const ul = el('ul', 'mt-4 space-y-2');
+    const row = (u) => {
+      const li = el('li', 'flex items-center gap-3');
+      const a = el('a', 'flex items-center gap-3 min-w-0 flex-1'); a.href = userUrl(u.id);
+      a.append(NIV.avatarEl(u, 'w-9 h-9'), el('span', 'text-sm font-semibold truncate', u.display_name + ' '), el('span', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + u.id));
+      const rm = el('button', 'px-3 py-1.5 rounded-lg text-xs border border-rose-500/50 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 cursor-pointer', 'ถอนสิทธิ์'); rm.type = 'button';
+      rm.addEventListener('click', async () => {
+        rm.disabled = true;
+        const d = await api('/api/blog/video-perm', { method: 'POST', body: { userId: s.userId, target: u.id, allow: false } });
+        if (!d.ok) { rm.disabled = false; return say(d.data.error || 'ทำรายการไม่สำเร็จ', 'err'); }
+        li.remove(); say('ถอนสิทธิ์ @' + u.id + ' แล้ว', 'ok');
+        if (!ul.children.length) ul.append(empty());
+      });
+      li.append(a, rm); return li;
+    };
+    const empty = () => el('li', 'text-sm text-slate-500 dark:text-neutral-400', 'ยังไม่มีบัญชีที่ได้รับอนุญาต');
+    r.data.users.forEach((u) => ul.append(row(u)));
+    if (!r.data.users.length) ul.append(empty());
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = inp.value.trim().replace(/^@/, '');
+      if (!id) return;
+      add.disabled = true;
+      const d = await api('/api/blog/video-perm', { method: 'POST', body: { userId: s.userId, target: id, allow: true } });
+      add.disabled = false;
+      if (!d.ok) return say(d.data.error || 'ทำรายการไม่สำเร็จ', 'err');
+      inp.value = '';
+      if ([...ul.children].some((x) => x.querySelector && x.querySelector('a[href$="' + encodeURIComponent(d.data.user.id) + '"]'))) return say('บัญชีนี้ได้รับอนุญาตอยู่แล้ว', 'ok');
+      if (ul.firstChild && !ul.firstChild.querySelector('a')) ul.firstChild.remove();
+      ul.prepend(row(d.data.user)); say('อนุญาต @' + d.data.user.id + ' แล้ว', 'ok');
+    });
+    box.append(form, ul);
+    $('list').append(box);
+  }
+
   async function load() {
     document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('tab-on', t.dataset.tab === tab));
-    say('กำลังโหลด...');
     $('list').replaceChildren();
+    if (tab === 'video') return loadVideoPerms();
+    say('กำลังโหลด...');
     const r = await api('/api/blog/reports?userId=' + encodeURIComponent(s.userId) + '&status=' + tab);
     if (r.status === 401) { NIV.logout(); return; }
     if (r.status === 403) {
