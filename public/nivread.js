@@ -321,6 +321,11 @@
 .gal-4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;aspect-ratio:1/1}
 .gal-5{grid-template-columns:repeat(6,1fr);grid-template-rows:3fr 2fr;aspect-ratio:1/1}
 .gal-5 .gal-t:nth-child(-n+2){grid-column:span 3}.gal-5 .gal-t:nth-child(n+3){grid-column:span 2}
+.gal-s:not(.ok){min-height:11rem}
+.gal-s:not(.ok)::before,.gal-t:not(.ok)::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#e4e4de 25%,#f2f2ed 50%,#e4e4de 75%) 0 0/200% 100%;animation:gal-sh 1.3s linear infinite}
+.dark .gal-s:not(.ok)::before,.dark .gal-t:not(.ok)::before{background:linear-gradient(90deg,#1a1a1a 25%,#262626 50%,#1a1a1a 75%) 0 0/200% 100%}
+@keyframes gal-sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.gal-s:not(.ok)::before,.gal-t:not(.ok)::before{animation:none}}
 .gal-l .gal-t,.gal-l .gal-s{cursor:pointer}
 .gal-more::after{content:attr(data-more);position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff;font-size:1.9rem;font-weight:700;font-family:'Josefin Sans','Kanit',sans-serif}
 #niv-lb{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:lb-in .2s ease}
@@ -336,7 +341,13 @@
     const st = document.createElement('style');
     st.id = 'niv-gal';
     st.textContent = GALCSS;
-    document.head.appendChild(st);
+    if (!document.getElementById('niv-css')) document.head.appendChild(st); // หน้า SSR โหลด /niv.css ใน <head> แล้ว
+
+    // รูปโหลดเสร็จ/พลาด → เอา skeleton ออก
+    const markOk = (img) => { const c = img.closest && img.closest('.gal-s,.gal-t'); if (c) c.classList.add('ok'); };
+    document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') markOk(e.target); }, true);
+    document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') markOk(e.target); }, true);
+    document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) markOk(im); });
 
     let lb = null, urls = [], idx = 0;
     const show = () => {
@@ -404,7 +415,7 @@
     const st = document.createElement('style');
     st.id = 'niv-vg';
     st.textContent = VGCSS;
-    document.head.appendChild(st);
+    if (!document.getElementById('niv-css')) document.head.appendChild(st);
     document.addEventListener('click', (e) => {
       const root = e.target.closest && e.target.closest('.vg'); if (!root) return;
       const p = e.target.closest('.vg-poster'), t = e.target.closest('.vg-t');

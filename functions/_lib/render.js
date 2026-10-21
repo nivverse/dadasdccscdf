@@ -171,7 +171,7 @@ ${ld}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{font-family:'Kanit',sans-serif}</style>
-<style id="niv-fb">${FBCSS}</style>
+<link id="niv-css" rel="stylesheet" href="/niv.css">
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white transition-colors duration-300 min-h-screen flex flex-col relative overflow-x-hidden">
 <div class="fixed inset-0 pointer-events-none z-0">
