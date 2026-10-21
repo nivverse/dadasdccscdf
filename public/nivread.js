@@ -507,9 +507,9 @@
 .uv.bp video{display:block;width:100%;border-radius:${BP_R - BP_PAD}px;background:#000}
 .uv.bp:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.bp-svg rect{fill:none}
+.bp-svg rect,.bp-svg path{fill:none}
 .bp-track{stroke:rgba(255,255,255,.08);stroke-width:${BP_SW}}
-.bp-fill{stroke:#f59e0b;stroke-opacity:.55;stroke-width:${BP_SW};stroke-linecap:round;transition:stroke-width .15s,stroke-opacity .15s}
+.bp-fill{stroke:#f59e0b;stroke-opacity:.55;stroke-width:${BP_SW};stroke-linecap:butt;transition:stroke-width .15s,stroke-opacity .15s}
 .bp-hit{stroke:transparent;stroke-width:${BP_PAD * 2 + 6};pointer-events:stroke;cursor:pointer;touch-action:none}
 .uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:${BP_SW + 1};stroke-opacity:.85}
 .bp-play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;display:grid;place-items:center;opacity:0;transform:scale(.85);transition:.2s;pointer-events:none}
@@ -563,7 +563,8 @@
         else if (m === h - y) d = s + 2 * a + t + (w - r - x);
         else d = 2 * s + 3 * a + t + (h - r - y);
       }
-      return Math.min(1, Math.max(0, d / L));
+      const dc = (d + a / 2) % L; // ระยะตามเข็มจากกึ่งกลางมุมซ้ายบน
+      return Math.min(1, Math.max(0, 1 - Math.abs(1 - (2 * dc) / L)));
     }
 
     function bpEnhance(box) {
@@ -577,19 +578,19 @@
       box.setAttribute('role', 'group');
       box.setAttribute('aria-label', v.getAttribute('aria-label') || 'วิดีโอ');
       box.insertAdjacentHTML('beforeend',
-        '<svg class="bp-svg" aria-hidden="true"><rect class="bp-track"/><rect class="bp-fill"/><rect class="bp-hit"/></svg>' +
+        '<svg class="bp-svg" aria-hidden="true"><rect class="bp-track"/><path class="bp-fill"/><path class="bp-fill"/><rect class="bp-hit"/></svg>' +
         '<div class="bp-fast-tag" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m13 19 9-7-9-7z"/><path d="m2 19 9-7-9-7z"/></svg>2x</div>' +
         '<button class="bp-play" type="button" aria-label="เล่น"></button>' +
         '<div class="bp-bar"><span class="bp-time">0:00</span><button class="bp-mute" type="button" aria-label="เสียง"></button></div>');
-      const svg = box.querySelector('.bp-svg'), rects = svg.querySelectorAll('rect');
-      const fill = box.querySelector('.bp-fill'), hit = box.querySelector('.bp-hit');
+      const svg = box.querySelector('.bp-svg'), rects = svg.querySelectorAll('rect'), fills = svg.querySelectorAll('.bp-fill');
+      const hit = box.querySelector('.bp-hit');
       const time = box.querySelector('.bp-time'), mute = box.querySelector('.bp-mute');
       const I = BP_SW / 2 + 2;
       let len = 1, W = 0, H = 0, drag = false, raf = 0;
 
       function draw() {
         const f = v.duration ? v.currentTime / v.duration : 0;
-        fill.style.strokeDasharray = f * len + ' ' + len;
+        fills.forEach((p) => { p.style.strokeDasharray = f * len + ' ' + len; p.style.opacity = f > 0 ? '' : '0'; });
         time.textContent = fmtT(v.currentTime) + ' / ' + fmtT(v.duration);
       }
       function layout() {
@@ -601,7 +602,12 @@
           r.setAttribute('width', Math.max(0, W - 2 * I)); r.setAttribute('height', Math.max(0, H - 2 * I));
           r.setAttribute('rx', BP_R - I);
         });
-        len = fill.getTotalLength() || 1;
+        // แขน A: ซ้ายบน → ขอบบน → ขอบขวา → ขวาล่าง · แขน B: ซ้ายบน → ขอบซ้าย → ขอบล่าง → ขวาล่าง (ยาวเท่ากัน มาบรรจบที่ขวาล่าง)
+        const x0 = I, y0 = I, w = W - 2 * I, h = H - 2 * I, r = BP_R - I, o = r * (1 - Math.SQRT1_2);
+        const mx = x0 + o, my = y0 + o, ex = x0 + w - o, ey = y0 + h - o;
+        fills[0].setAttribute('d', `M${mx} ${my}A${r} ${r} 0 0 1 ${x0 + r} ${y0}H${x0 + w - r}A${r} ${r} 0 0 1 ${x0 + w} ${y0 + r}V${y0 + h - r}A${r} ${r} 0 0 1 ${ex} ${ey}`);
+        fills[1].setAttribute('d', `M${mx} ${my}A${r} ${r} 0 0 0 ${x0} ${y0 + r}V${y0 + h - r}A${r} ${r} 0 0 0 ${x0 + r} ${y0 + h}H${x0 + w - r}A${r} ${r} 0 0 0 ${ex} ${ey}`);
+        len = fills[0].getTotalLength() || 1;
         draw();
       }
       function seekFrom(e) {

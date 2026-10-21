@@ -103,9 +103,9 @@
 .uv.bp video{display:block;width:100%;border-radius:13px;background:#000}
 .uv.bp:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.bp-svg rect{fill:none}
+.bp-svg rect,.bp-svg path{fill:none}
 .bp-track{stroke:rgba(255,255,255,.08);stroke-width:2}
-.bp-fill{stroke:#f59e0b;stroke-opacity:.55;stroke-width:2;stroke-linecap:round;transition:stroke-width .15s,stroke-opacity .15s}
+.bp-fill{stroke:#f59e0b;stroke-opacity:.55;stroke-width:2;stroke-linecap:butt;transition:stroke-width .15s,stroke-opacity .15s}
 .bp-hit{stroke:transparent;stroke-width:16;pointer-events:stroke;cursor:pointer;touch-action:none}
 .uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:3;stroke-opacity:.85}
 .bp-play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;display:grid;place-items:center;opacity:0;transform:scale(.85);transition:.2s;pointer-events:none}
