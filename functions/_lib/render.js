@@ -118,7 +118,7 @@ function postBar(p, origin) {
 // การ์ดโพสต์ในฟีด (สไตล์ Facebook) — ลิงก์ <a href> จริงทุกโพสต์ให้ Google ตามเก็บได้
 export function postCard(p, origin, first = false) {
   const href = `/posts/${p.slug}`;
-  return `<article class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
+  return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
   ${postHead(p)}
   <div class="px-4 pb-3">
     <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-snug"><a href="${href}" class="hover:text-amber-500 transition-colors">${esc(p.title)}</a></h2>

@@ -189,6 +189,7 @@
   // การ์ดโพสต์สำหรับหน้าที่เรนเดอร์ฝั่งเบราว์เซอร์ (ค้นหา / โปรไฟล์ผู้ใช้) — หน้าฟีดหลักเรนเดอร์ฝั่งเซิร์ฟเวอร์เพื่อ SEO
   function postCardEl(p) {
     const card = el('article', 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden');
+    card.dataset.viewSlug = p.slug;
     const head = el('div', 'flex items-center gap-3 p-4');
     const who = { id: p.author_id, display_name: p.display_name, avatar_url: p.avatar_url };
     const a1 = el('a', 'flex-shrink-0'); a1.href = userUrl(p.author_id); a1.append(avatarEl(who, 'w-11 h-11')); a1.setAttribute('aria-label', 'โปรไฟล์ ' + (p.display_name || p.author_id));
@@ -746,23 +747,68 @@
     });
   }
 
-  // ---------- นับยอดวิวแบบประหยัด request ----------
-  // เรียก NIV.countView(slug) ครั้งเดียวในหน้าโพสต์: ยิงเมื่ออยู่หน้านั้น 5 วิและแท็บมองเห็นอยู่, จำไว้ 6 ชม. ต่อ slug (เปิดซ้ำ/รีเฟรช = ไม่ยิง)
-  // sendBeacon + text/plain = simple request ไม่มี CORS preflight (ลดอีก 1 request ต่อครั้ง)
-  function countView(slug) {
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(slug || '')) || slug.length > 80) return;
-    const key = 'niv_v_' + slug;
-    if (Date.now() - (parseInt(ls(key), 10) || 0) < 6 * 3600 * 1000) return;
-    setTimeout(() => {
-      if (document.visibilityState !== 'visible') return;
-      if (Date.now() - (parseInt(ls(key), 10) || 0) < 6 * 3600 * 1000) return; // อีกแท็บเพิ่งนับไปแล้ว
-      lsSet(key, String(Date.now()));
-      const body = new Blob([JSON.stringify({ slug })], { type: 'text/plain' });
+  // ---------- นับยอดวิวแบบประหยัด request (ตัวเลขเดียว: เห็นการ์ดในฟีด หรือเปิดหน้าโพสต์ ก็นับครั้งเดียวต่อ 6 ชม.) ----------
+  // • หน้าโพสต์: NIV.countView(slug) = อยู่หน้านั้น 5 วิ (แท็บมองเห็น) แล้วนับ
+  // • ฟีด/ค้นหา/โปรไฟล์: การ์ดที่มี data-view-slug โผล่ในจอ ≥50% (หรือกินจอเกินครึ่ง) ค้างอยู่ 1.5 วิ แล้วนับ
+  // • ทุกอย่างเข้าคิวเดียว ส่งเป็น beacon เดียวรวมหลาย slug (สูงสุด 20) ทุก ~10 วิ และตอนออกจากหน้า · ใช้คีย์ niv_v_<slug> ร่วมกัน กันนับซ้ำ
+  // • sendBeacon + text/plain = simple request ไม่มี CORS preflight · ไม่แตะ videoObserver (คนละหน้าที่ คนละ observer)
+  const VIEW_TTL = 6 * 3600 * 1000, VIEW_BATCH = 20, VIEW_EVERY = 10000, VIEW_DWELL = 1500;
+  const SLUG_OK = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  const viewQ = new Set();
+  let viewTimer = 0;
+  const viewFresh = (slug) => Date.now() - (parseInt(ls('niv_v_' + slug), 10) || 0) >= VIEW_TTL;
+  function viewFlush() {
+    clearTimeout(viewTimer); viewTimer = 0;
+    while (viewQ.size) {
+      const slugs = [...viewQ].slice(0, VIEW_BATCH);
+      slugs.forEach((x) => viewQ.delete(x));
+      const body = new Blob([JSON.stringify({ slugs })], { type: 'text/plain' });
       const url = API + '/api/blog/view';
       let ok = false;
       try { ok = !!(navigator.sendBeacon && navigator.sendBeacon(url, body)); } catch {}
       if (!ok) fetch(url, { method: 'POST', body, keepalive: true }).catch(() => {});
-    }, 5000);
+    }
+  }
+  function viewQueue(slug) {
+    slug = String(slug || '');
+    if (!SLUG_OK.test(slug) || slug.length > 80 || !viewFresh(slug)) return;
+    lsSet('niv_v_' + slug, String(Date.now())); // ตีตราตอนเข้าคิว กันการ์ดเดิม/แท็บอื่นเข้าคิวซ้ำ
+    viewQ.add(slug);
+    if (viewQ.size >= VIEW_BATCH) viewFlush();
+    else if (!viewTimer) viewTimer = setTimeout(viewFlush, VIEW_EVERY);
+  }
+  function countView(slug) { // หน้าโพสต์เดี่ยว
+    if (!SLUG_OK.test(String(slug || '')) || !viewFresh(slug)) return;
+    setTimeout(() => { if (document.visibilityState === 'visible') { viewQueue(slug); viewFlush(); } }, 5000);
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') viewFlush(); });
+  addEventListener('pagehide', viewFlush);
+
+  if ('IntersectionObserver' in window && !document.getElementById('niv-view-observer')) {
+    const mark = document.createElement('meta'); mark.id = 'niv-view-observer'; document.head.appendChild(mark);
+    const dwell = new Map(); // การ์ด -> timer
+    const cardObserver = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        const card = e.target;
+        const seen = e.isIntersecting && (e.intersectionRatio >= 0.5 || e.intersectionRect.height >= innerHeight * 0.5); // การ์ดสูงกว่าจอ: ขอแค่กินจอเกินครึ่ง
+        if (seen && !dwell.has(card)) {
+          dwell.set(card, setTimeout(() => {
+            dwell.delete(card);
+            if (document.visibilityState !== 'visible') return;
+            cardObserver.unobserve(card);
+            viewQueue(card.dataset.viewSlug);
+          }, VIEW_DWELL));
+        } else if (!seen && dwell.has(card)) { clearTimeout(dwell.get(card)); dwell.delete(card); } // เลื่อนผ่านเร็ว ๆ = ไม่นับ
+      }
+    }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+    const scanCards = () => document.querySelectorAll('[data-view-slug]:not([data-vw])').forEach((c) => {
+      c.dataset.vw = '1';
+      if (SLUG_OK.test(c.dataset.viewSlug || '') && viewFresh(c.dataset.viewSlug)) cardObserver.observe(c); // เคยนับใน 6 ชม. = ไม่ต้องสังเกต
+    });
+    let scanQueued = false;
+    new MutationObserver(() => { if (scanQueued) return; scanQueued = true; requestAnimationFrame(() => { scanQueued = false; scanCards(); }); })
+      .observe(document.documentElement, { childList: true, subtree: true }); // การ์ดที่เพิ่มทีหลัง (เลื่อนโหลดเพิ่ม / ค้นหา / โปรไฟล์)
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scanCards); else scanCards();
   }
 
   window.NIV = { skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView };
