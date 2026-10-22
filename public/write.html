@@ -273,6 +273,7 @@
 
   const YT_MAX = 15;
   let videos = [];
+  let savedVideos = new Set(); // วิดีโอที่บันทึกอยู่ในโพสต์แล้ว (โหมดแก้ไข) — เซิร์ฟเวอร์ลบให้ตอนกดบันทึก
   const VID_UP_MAX = 2, VID_SEC = 30;
   let vidBusy = false;
   const ytId = (raw) => {
@@ -290,6 +291,8 @@
   };
   const ytMsg = (t, bad) => { const m = $('yt-msg'); m.textContent = t; m.className = 'text-xs mt-1 ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
   const isVidUp = (u) => /\/api\/blog\/vid\/v\//.test(String(u));
+  // วิดีโอที่เพิ่งอัปโหลดแล้วกด ✕ ก่อนบันทึกโพสต์ → สั่งลบจาก R2 ทันที (เดิมแค่ตัดออกจากรายการ ไฟล์จึงค้างใน R2 ตลอด)
+  const discardVideo = (u) => { api('/api/blog/video-discard', { method: 'POST', body: { userId: s.userId, url: u } }).catch(() => {}); };
   function renderVideos() {
     const ul = $('yt-list'); ul.replaceChildren();
     videos.forEach((id, i) => {
@@ -302,7 +305,7 @@
       li.append(img, info,
         mk('เลื่อนขึ้น', '↑', () => swap(i, i - 1), i === 0),
         mk('เลื่อนลง', '↓', () => swap(i, i + 1), i === videos.length - 1),
-        mk('ลบ', '✕', () => { videos.splice(i, 1); renderVideos(); ytMsg(''); }));
+        mk('ลบ', '✕', () => { const gone = videos[i]; videos.splice(i, 1); renderVideos(); ytMsg(''); if (isVidUp(gone) && !savedVideos.has(gone)) discardVideo(gone); }));
       ul.append(li);
     });
     $('yt-count').textContent = videos.length + ' / ' + YT_MAX;
@@ -505,7 +508,7 @@
     $('category').value = p.category || '';
     images = Array.isArray(p.images) ? p.images.slice(0, IMG_MAX) : []; renderImages();
     $('content').value = p.content || '';
-    videos = Array.isArray(p.videos) ? p.videos.slice(0, YT_MAX) : []; renderVideos();
+    videos = Array.isArray(p.videos) ? p.videos.slice(0, YT_MAX) : []; savedVideos = new Set(videos); renderVideos();
     $('count').textContent = $('content').value.length + ' / 20000';
     const left = r.data.edits_left;
     $('page-sub').textContent = left == null ? 'แอดมินแก้ไขได้ไม่จำกัด' : `แก้ไขโพสต์ได้ไม่เกิน 2 ครั้ง — เหลืออีก ${left} ครั้ง`;
