@@ -5,8 +5,8 @@ import { esc } from './render.js';
 const YT_ID = /^[A-Za-z0-9_-]{11}$/;
 const thumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
-// วิดีโออัปโหลดเอง = URL ของ /api/blog/vid/... (mp4/webm) · โปสเตอร์ = ไฟล์ .jpg ชื่อเดียวกัน
-const UP_RE = /^https:\/\/[^\s"'<>]{4,300}\/api\/blog\/vid\/v\/[A-Za-z0-9._~%-]{1,180}\/[a-z0-9]{6,40}\.(mp4|webm)$/;
+// วิดีโออัปโหลดเอง = URL ของ /api/blog/vid/... หรือโดเมน R2 (mp4/webm) · โปสเตอร์ = ไฟล์ .jpg ชื่อเดียวกัน
+const UP_RE = /^https:\/\/[^\s"'<>]{4,300}\/(?:api\/blog\/vid\/)?v\/[A-Za-z0-9._~%-]{1,180}\/[a-z0-9]{6,40}\.(mp4|webm)$/; // /api/blog/vid/<key> (ผ่าน Worker) หรือ /<key> (โดเมน R2)
 export const isUp = (x) => UP_RE.test(String(x));
 const posterOf = (u) => u.replace(/\.(mp4|webm)$/, '.jpg');
 
@@ -14,7 +14,7 @@ export function cleanIds(list) {
   return (Array.isArray(list) ? list : []).filter((x) => YT_ID.test(x) || UP_RE.test(String(x))).slice(0, 15);
 }
 
-const uvBlock = (u, title, eager) => `<div class="uv bp"><video controls playsinline autoplay muted loop preload="metadata" poster="${esc(posterOf(u))}" src="${esc(u)}" aria-label="${esc(title)}"></video></div>`;
+const uvBlock = (u, title, eager) => `<div class="uv bp"><video controls playsinline muted loop preload="none" poster="${esc(posterOf(u))}" src="${esc(u)}" aria-label="${esc(title)}"></video></div>`;
 
 export function videoLd(ids, { title, desc, uploadDate }) {
   return cleanIds(ids).map((id, i) => ({

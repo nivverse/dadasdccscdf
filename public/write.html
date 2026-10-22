@@ -290,7 +290,7 @@
     return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
   };
   const ytMsg = (t, bad) => { const m = $('yt-msg'); m.textContent = t; m.className = 'text-xs mt-1 ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
-  const isVidUp = (u) => /\/api\/blog\/vid\/v\//.test(String(u));
+  const isVidUp = (u) => /\/v\/[A-Za-z0-9._~%-]+\/[a-z0-9]{6,40}\.(?:mp4|webm)$/.test(String(u));
   // วิดีโอที่เพิ่งอัปโหลดแล้วกด ✕ ก่อนบันทึกโพสต์ → สั่งลบจาก R2 ทันที (เดิมแค่ตัดออกจากรายการ ไฟล์จึงค้างใน R2 ตลอด)
   const discardVideo = (u) => { api('/api/blog/video-discard', { method: 'POST', body: { userId: s.userId, url: u } }).catch(() => {}); };
   function renderVideos() {

@@ -396,16 +396,16 @@
   // ---------- วิดีโอ YouTube (การ์ดในฟีด / หน้าโปรไฟล์ / ค้นหา) — ใช้ CSS ชุดเดียวกับหน้าโพสต์ ----------
   const YT_ID = /^[A-Za-z0-9_-]{11}$/;
   const ytThumb = (id) => 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg';
-  const UP_RE = /^https:\/\/[^\s"'<>]{4,300}\/api\/blog\/vid\/v\/[A-Za-z0-9._~%-]{1,180}\/[a-z0-9]{6,40}\.(mp4|webm)$/;
+  const UP_RE = /^https:\/\/[^\s"'<>]{4,300}\/(?:api\/blog\/vid\/)?v\/[A-Za-z0-9._~%-]{1,180}\/[a-z0-9]{6,40}\.(mp4|webm)$/; // /api/blog/vid/<key> (ผ่าน Worker) หรือ /<key> (โดเมน R2)
   const upPoster = (u) => u.replace(/\.(mp4|webm)$/, '.jpg');
   function uvEl(u, title) {
     const d = el('div', 'uv bp'); const v = document.createElement('video');
     v.controls = true; 
     v.playsInline = true; 
-    v.autoplay = true;   // <--- เพิ่มสั่งเล่นอัตโนมัติ
+    // ไม่ใส่ autoplay: ให้ IntersectionObserver (ด้านล่าง) สั่งเล่นตอนการ์ดเข้าจอเท่านั้น การ์ดที่ยังไม่ถึงจะไม่โหลดไฟล์วิดีโอ (ประหยัด request ของ Worker/R2)
     v.muted = true;      // <--- จำเป็นต้องปิดเสียงเพื่อให้เบราว์เซอร์ยอมเล่นออโต
     v.loop = true;       // <--- เล่นวนซ้ำ
-    v.preload = 'metadata'; // <--- โหลดข้อมูลส่วนหัวมาเตรียมไว้ล่วงหน้า
+    v.preload = 'none';     // โหลดแค่ poster ไฟล์วิดีโอจะถูกขอเมื่อเริ่มเล่นจริง
     v.poster = upPoster(u); 
     v.src = u; 
     v.setAttribute('aria-label', title || 'วิดีโอ');
@@ -478,7 +478,7 @@
     }, { threshold: 0.5 });
 
     const observeVideos = () => {
-      document.querySelectorAll('video[autoplay]').forEach((v) => {
+      document.querySelectorAll('.uv video').forEach((v) => {
         if (!v.dataset.observed) {
           v.dataset.observed = 'true';
           videoObserver.observe(v);
