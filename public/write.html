@@ -374,7 +374,11 @@
       const mime = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
         .find((m) => MediaRecorder.isTypeSupported(m));
       if (!mime) throw new Error('unsupported');
-      const vbps = Math.max(600000, Math.min(2200000, Math.floor((11e6 * 8 / Math.max(dur, 1)) * 0.9) - 100000));
+      // เป้า bitrate = ค่าต่ำสุดของ: (1) ที่ความละเอียดนี้ควรใช้ (~0.06 bit/พิกเซล/เฟรม) (2) 70% ของต้นฉบับ (ให้เล็กลงจริง) (3) เพดานไม่ให้ไฟล์เกิน 11MB
+      const srcBps = file.size * 8 / Math.max(dur, 1);
+      const bppBps = W * H * 30 * 0.06;
+      const fitBps = Math.floor((11e6 * 8 / Math.max(dur, 1)) * 0.9) - 100000;
+      const vbps = Math.floor(Math.max(400000, Math.min(2200000, bppBps, srcBps * 0.7, fitBps)));
       rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: vbps, audioBitsPerSecond: 96000 });
       const chunks = []; rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
       const stopped = new Promise((res) => { rec.onstop = res; });
@@ -399,6 +403,8 @@
       if (rec.state !== 'inactive') rec.stop();
       await stopped;
       const blob = new Blob(chunks, { type: mime.split(';')[0] });
+      console.info('[compressVideo]', { mime, size: W + 'x' + H, dur: +dur.toFixed(1), srcMB: +(file.size / 1048576).toFixed(2), outMB: +(blob.size / 1048576).toFixed(2),
+        srcMbps: +(file.size * 8 / dur / 1e6).toFixed(2), targetMbps: +(vbps / 1e6).toFixed(2), outMbps: +(blob.size * 8 / dur / 1e6).toFixed(2) });
       return { blob, frames, duration: dur };
     } finally {
       try { if (rec && rec.state !== 'inactive') rec.stop(); } catch {}
@@ -414,7 +420,9 @@
     if (!/^video\//.test(f.type)) return ytMsg('เลือกไฟล์วิดีโอเท่านั้น', true);
     vidBusy = true; renderVideos();
     try {
-      const { blob, frames, duration } = await compressVideo(f, (p) => ytMsg('กำลังบีบวิดีโอ ' + Math.round(p * 100) + '% (ห้ามปิดหน้านี้)'));
+      const { blob: recBlob, frames, duration } = await compressVideo(f, (p) => ytMsg('กำลังบีบวิดีโอ ' + Math.round(p * 100) + '% (ห้ามปิดหน้านี้)'));
+      // ผลบีบอัดไม่เล็กกว่าต้นฉบับ (และต้นฉบับเป็น mp4/webm อยู่แล้ว) → ใช้ต้นฉบับ ไม่ให้ไฟล์ใหญ่ขึ้น
+      const blob = (/^video\/(mp4|webm)$/.test(f.type) && f.size < recBlob.size) ? f : recBlob;
       if (blob.size > 12e6) throw new Error('big');
       ytMsg('กำลังอัปโหลด ' + (blob.size / 1048576).toFixed(1) + ' MB ...');
       const fd = new FormData();
