@@ -229,6 +229,7 @@
     else { const gal = galleryEl(imgs, p.title, '/posts/' + p.slug); if (gal) card.append(gal); }
     const foot = el('div', 'px-4 py-3 flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400');
     foot.append(el('span', '', '♥ ' + (p.like_count || 0)));
+    if (p.view_count != null) foot.append(el('span', '', '👁 ' + Number(p.view_count || 0).toLocaleString('th-TH')));
     const ca2 = el('a', 'hover:opacity-70', (p.comment_count || 0) + ' ความคิดเห็น'); ca2.href = '/posts/' + p.slug + '#comments';
     foot.append(ca2);
     card.append(foot);
@@ -745,7 +746,26 @@
     });
   }
 
-  window.NIV = { skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast };
+  // ---------- นับยอดวิวแบบประหยัด request ----------
+  // เรียก NIV.countView(slug) ครั้งเดียวในหน้าโพสต์: ยิงเมื่ออยู่หน้านั้น 5 วิและแท็บมองเห็นอยู่, จำไว้ 6 ชม. ต่อ slug (เปิดซ้ำ/รีเฟรช = ไม่ยิง)
+  // sendBeacon + text/plain = simple request ไม่มี CORS preflight (ลดอีก 1 request ต่อครั้ง)
+  function countView(slug) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(slug || '')) || slug.length > 80) return;
+    const key = 'niv_v_' + slug;
+    if (Date.now() - (parseInt(ls(key), 10) || 0) < 6 * 3600 * 1000) return;
+    setTimeout(() => {
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - (parseInt(ls(key), 10) || 0) < 6 * 3600 * 1000) return; // อีกแท็บเพิ่งนับไปแล้ว
+      lsSet(key, String(Date.now()));
+      const body = new Blob([JSON.stringify({ slug })], { type: 'text/plain' });
+      const url = API + '/api/blog/view';
+      let ok = false;
+      try { ok = !!(navigator.sendBeacon && navigator.sendBeacon(url, body)); } catch {}
+      if (!ok) fetch(url, { method: 'POST', body, keepalive: true }).catch(() => {});
+    }, 5000);
+  }
+
+  window.NIV = { skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView };
 
   // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
   if (!document.getElementById('niv-nozoom')) {

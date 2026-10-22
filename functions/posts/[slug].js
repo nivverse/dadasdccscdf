@@ -90,6 +90,7 @@ ${paragraphs}
   </section>
 
 <script src="/comments.js" defer></script>
+<script>document.addEventListener('DOMContentLoaded',function(){if(window.NIV&&NIV.countView)NIV.countView(${JSON.stringify(p.slug).replace(/</g, '\\u003c')});});</script>
 </main>`;
 
   return htmlResponse(shell({
