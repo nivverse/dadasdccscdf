@@ -757,6 +757,23 @@
   const viewQ = new Set();
   let viewTimer = 0;
   const viewFresh = (slug) => Date.now() - (parseInt(ls('niv_v_' + slug), 10) || 0) >= VIEW_TTL;
+  // ความสนใจ (ใช้จัดฟีดหน้าแรกแบบ "รู้ใจ"): เก็บ slug ล่าสุดที่ผู้ใช้ค้างอ่านจริง ไว้ในเครื่องเท่านั้น (ไม่เขียน D1) อายุ 30 วัน สูงสุด 12 โพสต์
+  const INT_KEY = 'niv_int', INT_MAX = 12;
+  function interestList() {
+    try {
+      const a = JSON.parse(ls(INT_KEY) || '[]'), cut = Date.now() - 30 * 86400000;
+      return Array.isArray(a) ? a.filter((x) => x && SLUG_OK.test(String(x.s || '')) && x.t > cut) : [];
+    } catch { return []; }
+  }
+  function recordInterest(slug) {
+    slug = String(slug || '');
+    if (!SLUG_OK.test(slug) || slug.length > 80) return;
+    const a = interestList().filter((x) => x.s !== slug);
+    a.unshift({ s: slug, t: Date.now() });
+    lsSet(INT_KEY, JSON.stringify(a.slice(0, INT_MAX)));
+  }
+  const interestParam = () => interestList().map((x) => x.s).join(','); // ใหม่สุดก่อน — ส่งเป็น ?i= ไปกับคำขอฟีดหน้าแรก
+
   function viewFlush() {
     clearTimeout(viewTimer); viewTimer = 0;
     while (viewQ.size) {
@@ -778,32 +795,36 @@
     else if (!viewTimer) viewTimer = setTimeout(viewFlush, VIEW_EVERY);
   }
   function countView(slug) { // หน้าโพสต์เดี่ยว
-    if (!SLUG_OK.test(String(slug || '')) || !viewFresh(slug)) return;
-    setTimeout(() => { if (document.visibilityState === 'visible') { viewQueue(slug); viewFlush(); } }, 5000);
+    if (!SLUG_OK.test(String(slug || ''))) return;
+    setTimeout(() => {
+      if (document.visibilityState !== 'visible') return;
+      recordInterest(slug);
+      if (viewFresh(slug)) { viewQueue(slug); viewFlush(); }
+    }, 5000);
   }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') viewFlush(); });
   addEventListener('pagehide', viewFlush);
 
   if ('IntersectionObserver' in window && !document.getElementById('niv-view-observer')) {
     const mark = document.createElement('meta'); mark.id = 'niv-view-observer'; document.head.appendChild(mark);
-    const dwell = new Map(); // การ์ด -> timer
+    const dwell = new Map(); // การ์ด -> { v: ตัวจับเวลานับวิว, i: ตัวจับเวลาความสนใจ }
+    const INTEREST_DWELL = 4000; // ค้างที่การ์ดนานกว่านี้ = สนใจ (ใช้จัดฟีด "รู้ใจ")
+    const stop = (card) => { const d = dwell.get(card); if (d) { clearTimeout(d.v); clearTimeout(d.i); dwell.delete(card); } };
     const cardObserver = new IntersectionObserver((entries) => {
       for (const e of entries) {
         const card = e.target;
         const seen = e.isIntersecting && (e.intersectionRatio >= 0.5 || e.intersectionRect.height >= innerHeight * 0.5); // การ์ดสูงกว่าจอ: ขอแค่กินจอเกินครึ่ง
         if (seen && !dwell.has(card)) {
-          dwell.set(card, setTimeout(() => {
-            dwell.delete(card);
-            if (document.visibilityState !== 'visible') return;
-            cardObserver.unobserve(card);
-            viewQueue(card.dataset.viewSlug);
-          }, VIEW_DWELL));
-        } else if (!seen && dwell.has(card)) { clearTimeout(dwell.get(card)); dwell.delete(card); } // เลื่อนผ่านเร็ว ๆ = ไม่นับ
+          const slug = card.dataset.viewSlug, d = {};
+          if (viewFresh(slug)) d.v = setTimeout(() => { if (document.visibilityState === 'visible') viewQueue(slug); }, VIEW_DWELL);
+          d.i = setTimeout(() => { dwell.delete(card); cardObserver.unobserve(card); if (document.visibilityState === 'visible') recordInterest(slug); }, INTEREST_DWELL);
+          dwell.set(card, d);
+        } else if (!seen && dwell.has(card)) stop(card); // เลื่อนผ่านเร็ว ๆ = ไม่นับ ไม่ถือว่าสนใจ
       }
     }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
     const scanCards = () => document.querySelectorAll('[data-view-slug]:not([data-vw])').forEach((c) => {
       c.dataset.vw = '1';
-      if (SLUG_OK.test(c.dataset.viewSlug || '') && viewFresh(c.dataset.viewSlug)) cardObserver.observe(c); // เคยนับใน 6 ชม. = ไม่ต้องสังเกต
+      if (SLUG_OK.test(c.dataset.viewSlug || '')) cardObserver.observe(c);
     });
     let scanQueued = false;
     new MutationObserver(() => { if (scanQueued) return; scanQueued = true; requestAnimationFrame(() => { scanQueued = false; scanCards(); }); })
@@ -811,7 +832,7 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scanCards); else scanCards();
   }
 
-  window.NIV = { skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView };
+  window.NIV = { skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam };
 
   // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
   if (!document.getElementById('niv-nozoom')) {

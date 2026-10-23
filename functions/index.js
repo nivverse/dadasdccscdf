@@ -18,12 +18,19 @@ export async function onRequestGet({ request, env }) {
     const noStore = { 'Cache-Control': 'private, no-store' };
     if (!userId || !auth) return new Response('', { status: 401, headers: noStore });
     const base = String(env.API_BASE || '').replace(/\/+$/, '');
-    let d = null, status = 0;
-    try {
-      const r = await fetch(`${base}/api/blog/feed?userId=${encodeURIComponent(userId)}&page=${page}&limit=${PER_PAGE}`, { headers: { Authorization: auth } });
-      status = r.status;
-      d = await r.json();
-    } catch {}
+    // i = slug ของโพสต์ที่ผู้ใช้ค้างอ่านล่าสุด (เบราว์เซอร์ส่งมาจาก NIV.interestParam()) ใช้สร้างฟีด "รู้ใจ"
+    const interest = String(url.searchParams.get('i') || '').replace(/[^a-z0-9,-]/g, '').slice(0, 1000);
+    const ask = async (path) => {
+      try {
+        const r = await fetch(`${base}${path}`, { headers: { Authorization: auth } });
+        let j = null; try { j = await r.json(); } catch {}
+        return { status: r.status, d: j };
+      } catch { return { status: 0, d: null }; }
+    };
+    let { status, d } = await ask(`/api/blog/for-you?userId=${encodeURIComponent(userId)}&page=${page}&limit=${PER_PAGE}${interest ? '&i=' + encodeURIComponent(interest) : ''}`);
+    if ((!d || !d.success) && status !== 401) { // for-you ยังไม่พร้อม/ล้มเหลว → ใช้ฟีดตามผู้ติดตามแบบเดิม
+      ({ status, d } = await ask(`/api/blog/feed?userId=${encodeURIComponent(userId)}&page=${page}&limit=${PER_PAGE}`));
+    }
     if (!d || !d.success) return new Response('', { status: status === 401 ? 401 : 502, headers: noStore });
     const html = (d.posts || []).map((p) => postCard(p, origin, false)).join('\n');
     return new Response(html, {
