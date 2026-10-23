@@ -62,12 +62,12 @@
       <div class="flex items-center gap-3">
         <button id="img-up" type="button" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="อัปโหลดรูป (สูงสุด 3 รูป)" aria-label="อัปโหลดรูป">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span id="up-count" class="text-[11px] leading-none text-slate-400">0 / 3</span></button>
-        <button id="tg-img" type="button" aria-pressed="false" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="ลิงก์รูปหรือ GIF" aria-label="ลิงก์รูปหรือ GIF">
+        <button id="tg-img" type="button" aria-pressed="false" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10 hidden" title="ลิงก์รูปหรือ GIF" aria-label="ลิงก์รูปหรือ GIF">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.5-1.5"/></svg><span id="img-count" class="text-[11px] leading-none text-slate-400">0 / 10</span></button>
-        <button id="tg-yt" type="button" aria-pressed="false" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="วิดีโอ YouTube" aria-label="วิดีโอ YouTube">
+        <button id="tg-yt" type="button" aria-pressed="false" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10 hidden" title="วิดีโอ YouTube" aria-label="วิดีโอ YouTube">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.5v5l4.5-2.5z"/></svg><span id="yt-count" class="text-[11px] leading-none text-slate-400">0 / 15</span></button>
         <button id="vid-up" type="button" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10 hidden" title="อัปโหลดวิดีโอ (ไม่เกิน 30 วินาที)" aria-label="อัปโหลดวิดีโอ">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg><span id="vid-count" class="text-[11px] leading-none text-slate-400">0 / 2</span></button>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg><span id="vid-count" class="text-[11px] leading-none text-slate-400">0 / 1</span></button>
         <input id="vid-file" type="file" accept="video/*" class="hidden">
       </div>
 
@@ -127,7 +127,8 @@
   let images = [];
   const UP_MAX = 3;
   let uploading = false;
-  const isUp = (u) => u.includes('/api/blog/img/u/');
+  // รูปที่อัปโหลดเอง: แบบเดิม …/api/blog/img/u/<key> หรือแบบใหม่จากโดเมน CDN …/u/<ผู้ใช้>/<ไฟล์>.webp|jpg|png (ใช้นับโควตาในหน้าจอเท่านั้น ฝั่งเซิร์ฟเวอร์ตรวจจริงอีกชั้น)
+  const isUp = (u) => u.includes('/api/blog/img/u/') || /^https:\/\/[^/\s]+\/u\/[A-Za-z0-9._~%-]+\/[a-z0-9]{6,40}\.(?:webp|jpg|png)$/.test(u);
   const upCount = () => images.filter(isUp).length;
   const imgMsg = (t, bad) => { const m = $('img-msg'); m.textContent = t; m.className = 'text-xs mt-1 ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
   function renderImages() {
@@ -274,7 +275,7 @@
   const YT_MAX = 15;
   let videos = [];
   let savedVideos = new Set(); // วิดีโอที่บันทึกอยู่ในโพสต์แล้ว (โหมดแก้ไข) — เซิร์ฟเวอร์ลบให้ตอนกดบันทึก
-  const VID_UP_MAX = 2, VID_SEC = 30;
+  const VID_UP_MAX = 1, VID_SEC = 30;
   let vidBusy = false;
   const ytId = (raw) => {
     const t = String(raw || '').trim();
@@ -339,9 +340,11 @@
   $('yt-input').addEventListener('paste', () => setTimeout(addVideos, 0));
 
 
-  // ---------- อัปโหลดวิดีโอ (เฉพาะบัญชีที่แอดมินอนุญาต · ไม่เกิน 30 วินาที · บีบในเบราว์เซอร์ก่อนส่ง) ----------
+  // ---------- อัปโหลดวิดีโอ 1 คลิป/โพสต์ + ช่องลิงก์รูป/GIF/YouTube (เฉพาะบัญชีที่แอดมินอนุญาต · วิดีโอไม่เกิน 30 วินาที · บีบในเบราว์เซอร์ก่อนส่ง) ----------
   api('/api/blog/me?userId=' + encodeURIComponent(s.userId)).then((r) => {
     if (r.ok && r.data.canVideo) { $('vid-up').classList.remove('hidden'); renderVideos(); }
+    // ใส่ลิงก์รูป/GIF และลิงก์ YouTube ได้เฉพาะบัญชีที่แอดมินอนุญาต (สิทธิ์เดียวกับอัปโหลดวิดีโอ) — คนอื่นไม่เห็นช่องลิงก์ แต่ยังอัปโหลดรูปจากเครื่องได้
+    if (r.ok && (r.data.canLinks !== undefined ? r.data.canLinks : r.data.canVideo)) { $('tg-img').classList.remove('hidden'); $('tg-yt').classList.remove('hidden'); }
   }).catch(() => {});
   const waitEv = (t, ok, bad = 'error') => new Promise((res, rej) => { t.addEventListener(ok, res, { once: true }); t.addEventListener(bad, () => rej(new Error('media')), { once: true }); });
   const jpegOf = (src, w, h, maxW) => new Promise((res) => {
