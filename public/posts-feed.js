@@ -34,10 +34,22 @@
       b.querySelector('svg')?.setAttribute('fill', liked ? 'currentColor' : 'none');
     });
   };
+  // ปุ่มรีโพสต์: สีเขียวเมื่อรีโพสต์แล้ว
+  const paintRepost = (slug, on) => {
+    document.querySelectorAll(`[data-repost="${CSS.escape(slug)}"]`).forEach((b) => {
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.classList.toggle('text-emerald-500', on);
+      if (!b.disabled) b.title = on ? 'ยกเลิกรีโพสต์' : 'รีโพสต์';
+    });
+  };
   // ปุ่มดินสอแก้ไขโพสต์: เห็นเฉพาะเจ้าของโพสต์
   const revealEdit = () => {
     const uid = getUserId();
     if (!uid) return;
+    // รีโพสต์โพสต์ของตัวเองไม่ได้ (เซิร์ฟเวอร์ตรวจอีกชั้น)
+    document.querySelectorAll('[data-repost]').forEach((b) => {
+      if (b.dataset.author === uid) { b.disabled = true; b.classList.add('opacity-40', 'cursor-not-allowed'); b.title = 'รีโพสต์โพสต์ของตัวเองไม่ได้'; }
+    });
     document.querySelectorAll('[data-edit-post]').forEach((a) => {
       if (a.dataset.author === uid) { a.classList.remove('hidden'); a.classList.add('grid'); }
     });
@@ -50,6 +62,7 @@
       const r = await fetch(`${API}/api/blog/liked?userId=${encodeURIComponent(uid)}`);
       const d = await r.json();
       (d.slugs || []).forEach((s) => paint(s, true));
+      (d.reposted || []).forEach((s) => paintRepost(s, true));
     } catch {}
   };
 
@@ -82,6 +95,33 @@
         counters.forEach((n) => (n.textContent = d.likeCount));
       } catch { revert(); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'); }
       finally { delete likeBtn.dataset.busy; }
+      return;
+    }
+
+    const rpBtn = e.target.closest('[data-repost]');
+    if (rpBtn) {
+      const uid = getUserId();
+      if (!uid) { location.href = '/login?redirect=' + encodeURIComponent(location.pathname + location.search); return; }
+      if (rpBtn.disabled || rpBtn.dataset.busy) return;
+      rpBtn.dataset.busy = '1';
+      const slug = rpBtn.dataset.repost;
+      // อัปเดตหน้าจอทันทีแล้วค่อยเทียบผลจริง ถ้าพลาดจะย้อนกลับ (แบบเดียวกับไลก์)
+      const was = rpBtn.getAttribute('aria-pressed') === 'true';
+      const counters = [...document.querySelectorAll(`[data-repost-count="${CSS.escape(slug)}"]`)];
+      const before = counters.map((n) => n.textContent);
+      const base = parseInt(before[0], 10) || 0;
+      paintRepost(slug, !was);
+      counters.forEach((n) => (n.textContent = Math.max(0, base + (was ? -1 : 1))));
+      const revert = () => { paintRepost(slug, was); counters.forEach((n, i) => (n.textContent = before[i])); };
+      try {
+        const r = await fetch(`${API}/api/blog/repost`, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ slug, userId: uid }) });
+        const d = await r.json();
+        if (!d.success) { revert(); return toast(d.error || 'ทำรายการไม่สำเร็จ'); }
+        paintRepost(slug, d.reposted);
+        counters.forEach((n) => (n.textContent = d.repostCount));
+        toast(d.reposted ? 'รีโพสต์แล้ว — แสดงในโปรไฟล์ของคุณ' : 'ยกเลิกรีโพสต์แล้ว');
+      } catch { revert(); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'); }
+      finally { delete rpBtn.dataset.busy; }
       return;
     }
 

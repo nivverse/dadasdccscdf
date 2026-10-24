@@ -241,6 +241,7 @@
     else { const gal = galleryEl(imgs, p.title, '/posts/' + p.slug); if (gal) card.append(gal); }
     const foot = el('div', 'px-4 py-3 flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400');
     foot.append(el('span', '', '♥ ' + (p.like_count || 0)));
+    if (p.repost_count != null) foot.append(el('span', '', '🔁 ' + (p.repost_count || 0)));
     if (p.view_count != null) foot.append(el('span', '', '👁 ' + Number(p.view_count || 0).toLocaleString('th-TH')));
     const ca2 = el('a', 'hover:opacity-70', (p.comment_count || 0) + ' ความคิดเห็น'); ca2.href = '/posts/' + p.slug + '#comments';
     foot.append(ca2);
