@@ -177,12 +177,23 @@
   });
 
   // ปุ่มที่ถูกเพิ่มเข้าหน้าภายหลัง (เลื่อนโหลดเพิ่ม / การ์ดที่เรนเดอร์ฝั่งเบราว์เซอร์) ระบายสถานะให้อัตโนมัติ
-  let paintQueued = false;
-  new MutationObserver(() => {
-    if (paintQueued) return;
-    paintQueued = true;
-    requestAnimationFrame(() => { paintQueued = false; paintFollows(); });
-  }).observe(document.documentElement, { childList: true, subtree: true });
+  // ตัวเฝ้า DOM ตัวเดียวของทั้งหน้า สำหรับงานสแกน "โหนดใหม่" ทุกชนิด (ปุ่มติดตาม / วิดีโอ / แถบความคืบหน้า / นับวิว)
+  // เดิมแต่ละงานมี MutationObserver ของตัวเอง และถูกปลุกทุกเฟรมจากตัวเลขเวลาของวิดีโอที่กำลังเล่น → querySelectorAll ทั้งเอกสารซ้ำ ๆ ยิ่งเลื่อนโหลดโพสต์เพิ่มยิ่งหนัก
+  // ตอนนี้: ทำงานเฉพาะเมื่อมี "Element ใหม่" เข้ามาใน DOM จริง ๆ และรวมเป็นรอบละเฟรม
+  const domScans = [];
+  let domScanQueued = false;
+  const runDomScans = () => { domScanQueued = false; domScans.forEach((fn) => { try { fn(); } catch {} }); };
+  function onNewNodes(fn) {
+    domScans.push(fn);
+    if (domScans.length > 1) return;
+    new MutationObserver((recs) => {
+      if (domScanQueued) return;
+      for (const m of recs) {
+        for (const x of m.addedNodes) if (x.nodeType === 1) { domScanQueued = true; requestAnimationFrame(runDomScans); return; }
+      }
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  }
+  onNewNodes(paintFollows);
   paintFollows();
   loadFollows();
 
@@ -463,38 +474,92 @@
     });
   }
 
+  // ---------- ตัวเล่นวิดีโออัตโนมัติในฟีด (.uv video) ----------
+  // • เล่นทีละคลิป: เลือกคลิปที่อยู่ใกล้กลางจอที่สุดในกลุ่มที่เห็น ≥50% และ "รอให้นิ่ง 300ms" ก่อนเริ่ม → เลื่อนเร็วไม่สั่งโหลดรัวทุกคลิปที่ผ่าน
+  // • คลิปที่ออกจากจอถูกหยุดทันที · คลิปที่ไกลเกิน ~1.5 จอ ถูกปล่อย (เอา src ออก + load()) คืนตัวถอดรหัส/บัฟเฟอร์/แบนด์วิดท์ แล้วคืน src เมื่อกลับมาใกล้
+  // • ผู้ใช้กดหยุดเอง (dataset.up) = ไม่เล่นให้ใหม่ · แท็บถูกซ่อน = หยุด
   if (!document.getElementById('niv-video-observer')) {
     const observerStyle = document.createElement('style');
     observerStyle.id = 'niv-video-observer';
     document.head.appendChild(observerStyle);
 
-    const videoObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const video = entry.target;
-        if (entry.isIntersecting) {
-          if (!video.dataset.up) video.play().catch(() => { if (!video.muted) { video.muted = true; video.play().catch(() => {}); } }); // ผู้ใช้กดหยุดเองแล้ว = ไม่เล่นให้ใหม่ · เล่นแบบมีเสียงไม่ได้ = ถอยเป็นปิดเสียง
-        } else {
-          video.pause();
-        }
+    const PICK_DELAY = 300, FAR_MARGIN = '150% 0px';
+    const seenVideos = new Set();   // คลิปที่เห็น ≥ 50% ตอนนี้
+    let current = null;             // คลิปที่กำลังเล่นอยู่ (มีได้คลิปเดียว)
+    let pickT = 0;
+    const setSrc = (v) => { if (!v.getAttribute('src') && v.dataset.src) v.setAttribute('src', v.dataset.src); };
+    const playIt = (v) => { setSrc(v); v.play().catch(() => { if (!v.muted) { v.muted = true; v.play().catch(() => {}); } }); }; // เล่นแบบมีเสียงไม่ได้ = ถอยเป็นปิดเสียง
+    const schedulePick = () => { clearTimeout(pickT); pickT = setTimeout(pick, PICK_DELAY); };
+
+    function pick() {
+      pickT = 0;
+      if (document.visibilityState !== 'visible') return;
+      const mid = innerHeight / 2;
+      let best = null, bestD = Infinity;
+      seenVideos.forEach((v) => {
+        if (!v.isConnected) { seenVideos.delete(v); return; }
+        if (v.dataset.up) return; // ผู้ใช้กดหยุดเองแล้ว
+        const r = v.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - mid);
+        if (d < bestD) { bestD = d; best = v; }
       });
-    }, { threshold: 0.5 });
+      if (!best || (best === current && !best.paused)) return;
+      playIt(best);
+    }
+
+    // เล่นทีละคลิป: คลิปใดเริ่มเล่น (อัตโนมัติ หรือผู้ใช้กดเอง) → หยุดคลิปก่อนหน้า (เหตุการณ์ media ไม่ bubble จึงดักตอน capture)
+    document.addEventListener('play', (e) => {
+      const v = e.target;
+      if (!(v instanceof HTMLVideoElement) || !v.closest('.uv')) return;
+      if (current && current !== v && !current.paused) current.pause();
+      current = v;
+    }, true);
+    // ขนาดจริงของคลิปรู้แล้ว → ล็อกอัตราส่วนไว้ กันความสูงกระโดดตอนโหลดเสร็จ / ตอนปล่อยคลิป
+    document.addEventListener('loadedmetadata', (e) => {
+      const v = e.target;
+      if (v instanceof HTMLVideoElement && v.videoWidth && v.videoHeight && v.closest('.uv')) v.style.aspectRatio = v.videoWidth + ' / ' + v.videoHeight;
+    }, true);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') { if (current && !current.paused) current.pause(); }
+      else if (seenVideos.size) schedulePick();
+    });
+
+    const near = new IntersectionObserver((entries) => {
+      let changed = false;
+      for (const e of entries) {
+        const v = e.target;
+        const seen = e.isIntersecting && (e.intersectionRatio >= 0.5 || e.intersectionRect.height >= innerHeight * 0.5); // คลิปสูงกว่าจอ: ขอแค่กินจอเกินครึ่ง
+        if (seen) { if (!seenVideos.has(v)) { seenVideos.add(v); changed = true; } }
+        else if (seenVideos.delete(v)) { changed = true; if (!v.paused) v.pause(); if (v === current) current = null; }
+      }
+      if (changed) schedulePick(); // รีเซ็ตทุกครั้งที่กลุ่มที่เห็นเปลี่ยน = ต้องนิ่งครบ 300ms ถึงเริ่มเล่น
+    }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+
+    function release(v) {
+      if (!v.paused) v.pause();
+      if (v === current) current = null;
+      if (v.videoWidth && v.videoHeight) v.style.aspectRatio = v.videoWidth + ' / ' + v.videoHeight; // รักษาความสูงเดิม ไม่ให้หน้ากระโดด
+      v.removeAttribute('src');
+      v.load(); // ยกเลิกการดาวน์โหลดที่ค้าง + คืนตัวถอดรหัส/บัฟเฟอร์ (โปสเตอร์ยังอยู่)
+    }
+    const far = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        const v = e.target;
+        if (e.isIntersecting) setSrc(v); // กลับมาใกล้จอ (preload=none จึงยังไม่โหลดจนกว่าจะสั่งเล่น)
+        else if (v.dataset.src && (v.readyState > 0 || v.networkState === 2)) release(v); // ไกลจอและเคยโหลด/กำลังโหลด → ปล่อย
+      }
+    }, { rootMargin: FAR_MARGIN, threshold: 0 });
 
     const observeVideos = () => {
-      document.querySelectorAll('.uv video').forEach((v) => {
-        if (!v.dataset.observed) {
-          v.dataset.observed = 'true';
-          videoObserver.observe(v);
-        }
+      document.querySelectorAll('.uv video:not([data-observed])').forEach((v) => {
+        v.dataset.observed = 'true';
+        if (v.getAttribute('src')) v.dataset.src = v.getAttribute('src'); // จำ src ไว้คืนหลังถูกปล่อย
+        near.observe(v);
+        far.observe(v);
       });
     };
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', observeVideos);
-    } else {
-      observeVideos();
-    }
-    
-    new MutationObserver(observeVideos).observe(document.documentElement, { childList: true, subtree: true });
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observeVideos);
+    else observeVideos();
+    onNewNodes(observeVideos);
   }
 
   // ---------- Progress bar วิ่งตามขอบกรอบวิดีโอ (.uv = วิดีโออัปโหลดเอง ทั้ง SSR และการ์ดฝั่งเบราว์เซอร์) ----------
@@ -514,12 +579,12 @@
 .bp-fill{stroke:#f59e0b;stroke-opacity:.55;stroke-width:${BP_SW};stroke-linecap:butt;transition:stroke-width .15s,stroke-opacity .15s}
 .bp-hit{stroke:transparent;stroke-width:${BP_PAD * 2 + 6};pointer-events:stroke;cursor:pointer;touch-action:none}
 .uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:${BP_SW + 1};stroke-opacity:.85}
-.bp-play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;display:grid;place-items:center;opacity:0;transform:scale(.85);transition:.2s;pointer-events:none}
+.bp-play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:rgba(15,23,42,.72);cursor:pointer;display:grid;place-items:center;opacity:0;transform:scale(.85);transition:.2s;pointer-events:none}
 .uv.bp.bp-paused .bp-play{opacity:1;transform:none;pointer-events:auto}
 .bp-play::before{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:4px}
-.bp-bar{position:absolute;left:${BP_PAD + 10}px;bottom:${BP_PAD + 10}px;display:flex;gap:8px;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:600 12px/1.4 ui-monospace,monospace;opacity:0;transition:opacity .2s}
+.bp-bar{position:absolute;left:${BP_PAD + 10}px;bottom:${BP_PAD + 10}px;display:flex;gap:8px;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;font:600 12px/1.4 ui-monospace,monospace;opacity:0;transition:opacity .2s}
 .uv.bp:hover .bp-bar,.uv.bp.bp-paused .bp-bar,.uv.bp:focus-visible .bp-bar{opacity:1}
-.bp-fast-tag{position:absolute;top:${BP_PAD + 10}px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:700 12px/1.4 ui-monospace,monospace;opacity:0;pointer-events:none;transition:opacity .15s}
+.bp-fast-tag{position:absolute;top:${BP_PAD + 10}px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;font:700 12px/1.4 ui-monospace,monospace;opacity:0;pointer-events:none;transition:opacity .15s}
 .uv.bp.bp-fast .bp-fast-tag{opacity:1}
 .bp-fast-tag svg{width:14px;height:14px;fill:#f59e0b}
 .bp-mute{all:unset;cursor:pointer;display:grid;place-items:center;width:18px;height:18px;border-radius:4px}
@@ -528,6 +593,12 @@
 @media (hover:none){.bp-bar{opacity:1}}
 @media (prefers-reduced-motion:reduce){.bp-fill,.bp-play,.bp-bar,.bp-fast-tag{transition:none}}`;
     if (!document.getElementById("niv-css")) document.head.appendChild(bpStyle); // หน้า SSR โหลด /niv.css แล้ว
+    // หน้า SSR ใช้ CSS จาก /niv.css (ที่ยังมี backdrop-filter) → ทับด้วยกฎเบาแทน: เบลอทับวิดีโอที่กำลังเล่นทุกเฟรมหนักมากบนมือถือ ใช้พื้นทึบกึ่งโปร่งแทน
+    if (!document.getElementById('niv-bp-lite')) {
+      const lite = document.createElement('style'); lite.id = 'niv-bp-lite';
+      lite.textContent = '.bp-play,.bp-bar,.bp-fast-tag{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:rgba(15,23,42,.72)}';
+      document.head.appendChild(lite);
+    }
 
     const IC_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>';
     const IC_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></svg>';
@@ -569,6 +640,12 @@
       return Math.min(1, Math.max(0, 1 - Math.abs(1 - (2 * dc) / L)));
     }
 
+    // ResizeObserver ตัวเดียวสำหรับทุกกรอบ: อ่านขนาดทั้งหมดก่อน แล้วค่อยเขียน (กัน layout thrashing ตอนมีหลายคลิปเข้ามาพร้อมกัน)
+    const bpRO = new ResizeObserver((entries) => {
+      const sizes = entries.map((e) => [e.target, e.target.clientWidth, e.target.clientHeight]);
+      sizes.forEach(([b, w, h]) => b._bpLayout && b._bpLayout(w, h));
+    });
+
     function bpEnhance(box) {
       const v = box.querySelector('video');
       if (!v || box.dataset.bp) return;
@@ -590,13 +667,23 @@
       const I = BP_SW / 2 + 2;
       let len = 1, W = 0, H = 0, drag = false, raf = 0;
 
+      let lastD = -1, lastKey = '', lastM = null;
       function draw() {
-        const f = v.duration ? v.currentTime / v.duration : 0;
-        fills.forEach((p) => { p.style.strokeDasharray = f * len + ' ' + len; p.style.opacity = f > 0 ? '' : '0'; });
-        time.textContent = fmtT(v.currentTime) + ' / ' + fmtT(v.duration);
+        const f = isFinite(v.duration) && v.duration ? v.currentTime / v.duration : 0;
+        const d = f * len;
+        if (Math.abs(d - lastD) > 0.8) { // ขยับไม่ถึง ~1 พิกเซล ไม่ต้องเขียนสไตล์ซ้ำ (เส้นรอบกรอบยาวหลายร้อยพิกเซล สายตาแยกไม่ออก)
+          lastD = d;
+          fills.forEach((p) => { p.style.strokeDasharray = d + ' ' + len; p.style.opacity = f > 0 ? '' : '0'; });
+        }
+        const key = (v.currentTime | 0) + '/' + (isFinite(v.duration) ? v.duration | 0 : -1);
+        if (key !== lastKey) { // เปลี่ยนวินาทีละครั้ง และเขียนผ่าน nodeValue (characterData) → ไม่ปลุกตัวเฝ้า DOM แบบ childList ทุกเฟรมเหมือนเดิม
+          lastKey = key;
+          const t = fmtT(v.currentTime) + ' / ' + fmtT(v.duration);
+          if (time.firstChild) time.firstChild.nodeValue = t; else time.textContent = t;
+        }
       }
-      function layout() {
-        W = box.clientWidth; H = box.clientHeight;
+      function layout(w0, h0) {
+        W = w0; H = h0;
         if (!W || !H) return;
         svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
         rects.forEach((r) => {
@@ -609,9 +696,12 @@
         const mx = x0 + o, my = y0 + o, ex = x0 + w - o, ey = y0 + h - o;
         fills[0].setAttribute('d', `M${mx} ${my}A${r} ${r} 0 0 1 ${x0 + r} ${y0}H${x0 + w - r}A${r} ${r} 0 0 1 ${x0 + w} ${y0 + r}V${y0 + h - r}A${r} ${r} 0 0 1 ${ex} ${ey}`);
         fills[1].setAttribute('d', `M${mx} ${my}A${r} ${r} 0 0 0 ${x0} ${y0 + r}V${y0 + h - r}A${r} ${r} 0 0 0 ${x0 + r} ${y0 + h}H${x0 + w - r}A${r} ${r} 0 0 0 ${ex} ${ey}`);
-        len = fills[0].getTotalLength() || 1;
-        draw();
+        // ความยาวแขนข้างละ = (w−2r) + (h−2r) + πr — คำนวณเองแทน getTotalLength() ที่บังคับให้เบราว์เซอร์คำนวณเลย์เอาต์ซ้ำทุกกล่อง
+        len = (W - 2 * I) + (H - 2 * I) - 4 * (BP_R - I) + Math.PI * (BP_R - I);
+        if (!(len > 1)) len = 1;
+        lastD = -1; draw();
       }
+      box._bpLayout = layout;
       function seekFrom(e) {
         const b = svg.getBoundingClientRect();
         const f = bpFrac(e.clientX - b.left - I, e.clientY - b.top - I, W - 2 * I, H - 2 * I, BP_R - I);
@@ -655,8 +745,11 @@
       const syncUi = () => {
         box.classList.toggle('bp-paused', v.paused);
         if (v.paused) { v.playbackRate = 1; box.classList.remove('bp-fast'); }
-        mute.innerHTML = v.muted ? IC_OFF : IC_ON;
-        mute.setAttribute('aria-label', v.muted ? 'เปิดเสียง' : 'ปิดเสียง');
+        if (lastM !== v.muted) { // เขียน DOM เฉพาะตอนสถานะเสียงเปลี่ยนจริง
+          lastM = v.muted;
+          mute.innerHTML = v.muted ? IC_OFF : IC_ON;
+          mute.setAttribute('aria-label', v.muted ? 'เปิดเสียง' : 'ปิดเสียง');
+        }
       };
       // วนอัปเดตเฉพาะตอนกำลังเล่น (ไม่กิน CPU ตอนหยุด/อยู่นอกจอ)
       const tick = () => { draw(); raf = v.paused ? 0 : requestAnimationFrame(tick); };
@@ -671,15 +764,15 @@
         else return;
         e.preventDefault();
       });
-      new ResizeObserver(layout).observe(box);
-      layout(); syncUi();
+      bpRO.observe(box); // layout() จะถูกเรียกจาก ResizeObserver ตอนกรอบมีขนาด (ไม่อ่านขนาดในลูปสแกน)
+      syncUi();
       if (!v.paused && !raf) raf = requestAnimationFrame(tick);
     }
 
     const bpScan = () => document.querySelectorAll('.uv:not([data-bp])').forEach(bpEnhance);
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bpScan);
     else bpScan();
-    new MutationObserver(bpScan).observe(document.documentElement, { childList: true, subtree: true });
+    onNewNodes(bpScan);
   }
 
   // ---------- กล่องรายงาน (โพสต์ / ความคิดเห็น / ผู้ใช้) ----------
@@ -826,9 +919,7 @@
       c.dataset.vw = '1';
       if (SLUG_OK.test(c.dataset.viewSlug || '')) cardObserver.observe(c);
     });
-    let scanQueued = false;
-    new MutationObserver(() => { if (scanQueued) return; scanQueued = true; requestAnimationFrame(() => { scanQueued = false; scanCards(); }); })
-      .observe(document.documentElement, { childList: true, subtree: true }); // การ์ดที่เพิ่มทีหลัง (เลื่อนโหลดเพิ่ม / ค้นหา / โปรไฟล์)
+    onNewNodes(scanCards); // การ์ดที่เพิ่มทีหลัง (เลื่อนโหลดเพิ่ม / ค้นหา / โปรไฟล์)
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scanCards); else scanCards();
   }
 
