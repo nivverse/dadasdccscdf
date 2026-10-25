@@ -924,7 +924,66 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scanCards); else scanCards();
   }
 
-  window.NIV = { skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam };
+  // ---------- รีโพสต์: สไตล์/แอนิเมชันที่ใช้ร่วมกันทุกหน้า (ฟีด SSR / โปรไฟล์ / เมนู / ชีตเขียนข้อความ) ----------
+  const RPCSS = `
+.rp-bar{height:2px;background:linear-gradient(90deg,transparent,#10b981,#34d399,transparent);background-size:200% 100%;animation:rp-sweep 5s linear infinite;opacity:.85}
+@keyframes rp-sweep{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.rp-badge{position:absolute;right:-4px;bottom:-4px;width:18px;height:18px;border-radius:999px;background:#10b981;color:#fff;display:grid;place-items:center;box-shadow:0 0 0 2px #fff}
+.dark .rp-badge{box-shadow:0 0 0 2px #121212}
+.rp-badge svg{width:10px;height:10px}
+.rp-note{position:relative;padding-left:2.1rem!important}
+.rp-note::before{content:"\\201C";position:absolute;left:.85rem;top:.45rem;font:700 1.9rem/1 Georgia,serif;color:#10b981;opacity:.75}
+@keyframes rp-in{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+.rp-card{animation:rp-in .35s ease-out both}
+.rp-spin svg{animation:rp-spin .6s cubic-bezier(.3,1.4,.5,1)}
+@keyframes rp-spin{0%{transform:rotate(0) scale(1)}60%{transform:rotate(360deg) scale(1.35)}100%{transform:rotate(360deg) scale(1)}}
+.rp-spin-rev svg{animation:rp-spin-rev .35s ease}
+@keyframes rp-spin-rev{0%{transform:rotate(0)}100%{transform:rotate(-360deg)}}
+.rp-ring{position:relative}
+.rp-ring::after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:0 0 0 0 rgba(16,185,129,.55);animation:rp-ring .65s ease-out forwards;pointer-events:none}
+@keyframes rp-ring{to{box-shadow:0 0 0 14px rgba(16,185,129,0)}}
+.rp-bump{display:inline-block;animation:rp-bump .42s ease}
+@keyframes rp-bump{0%{transform:none}35%{transform:translateY(-7px) scale(1.3);color:#10b981}100%{transform:none}}
+.rp-plus{position:fixed;z-index:80;pointer-events:none;font-weight:800;font-size:1.05rem;color:#10b981;animation:rp-plus .95s ease-out forwards;text-shadow:0 1px 10px rgba(16,185,129,.55)}
+@keyframes rp-plus{0%{opacity:0;transform:translate(-50%,0) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-52px) scale(1.2)}}
+.rp-flash{animation:rp-flash 1s ease-out}
+@keyframes rp-flash{0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}100%{box-shadow:0 0 0 18px rgba(16,185,129,0)}}
+.rp-back{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);animation:rp-fade .18s ease-out both}
+@keyframes rp-fade{from{opacity:0}to{opacity:1}}
+.rp-menu{position:fixed;z-index:71;width:16rem;transform-origin:var(--ox,50%) var(--oy,100%);animation:rp-pop .2s cubic-bezier(.2,1.25,.4,1) both}
+@keyframes rp-pop{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:none}}
+.rp-sheet{position:fixed;z-index:71;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;animation:rp-up .3s cubic-bezier(.2,1,.3,1) both}
+@keyframes rp-up{from{transform:translateY(100%)}to{transform:none}}
+@media (min-width:640px){.rp-sheet{left:50%;right:auto;bottom:auto;top:12vh;width:min(32rem,92vw);animation:rp-dialog .26s cubic-bezier(.2,1,.3,1) both}@keyframes rp-dialog{from{opacity:0;transform:translateX(-50%) translateY(16px) scale(.97)}to{opacity:1;transform:translateX(-50%)}}.rp-sheet{transform:translateX(-50%)}}
+.rp-sheet .rp-chip{transition:transform .15s,background .15s}.rp-sheet .rp-chip:active{transform:scale(.93)}
+.rp-go{background-image:linear-gradient(110deg,#10b981 30%,#34d399 50%,#10b981 70%);background-size:220% 100%;animation:rp-shine 3.2s linear infinite}
+@keyframes rp-shine{0%{background-position:120% 0}100%{background-position:-120% 0}}
+@media (prefers-reduced-motion:reduce){.rp-card,.rp-bar,.rp-spin svg,.rp-spin-rev svg,.rp-ring::after,.rp-bump,.rp-plus,.rp-flash,.rp-back,.rp-menu,.rp-sheet,.rp-go{animation:none!important}}
+`;
+  if (!document.getElementById('niv-repost-css')) {
+    const rst = document.createElement('style'); rst.id = 'niv-repost-css'; rst.textContent = RPCSS; document.head.appendChild(rst);
+  }
+  // หัวรีโพสต์ฝั่งเบราว์เซอร์ (โปรไฟล์ ฯลฯ) — หน้าตาเดียวกับ repostWrap() ใน render.js
+  // r = { by_id, by_name, by_avatar, at, note, others }
+  function repostWrap(card, r) {
+    const wrap = el('div', 'rp-card rounded-2xl border border-emerald-500/25 bg-gradient-to-b from-emerald-500/[0.07] to-transparent overflow-hidden shadow-sm');
+    wrap.append(el('div', 'rp-bar'));
+    const head = el('div', 'flex items-center gap-2.5 px-4 pt-3');
+    const a = el('a', 'relative flex-shrink-0'); a.href = userUrl(r.by_id); a.setAttribute('aria-label', 'โปรไฟล์ ' + (r.by_name || r.by_id));
+    a.append(avatarEl({ id: r.by_id, display_name: r.by_name, avatar_url: r.by_avatar }, 'w-9 h-9'));
+    const badge = el('span', 'rp-badge'); badge.setAttribute('aria-hidden', 'true');
+    badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>';
+    a.append(badge);
+    const t = el('div', 'min-w-0 text-sm text-slate-600 dark:text-neutral-300 leading-tight');
+    const nm = el('a', 'font-semibold text-slate-900 dark:text-white hover:text-amber-500', r.by_name || r.by_id); nm.href = userUrl(r.by_id);
+    t.append(nm, document.createTextNode(' รีโพสต์' + (r.others > 0 ? ' และอีก ' + r.others + ' คน' : '') + ' '), el('span', 'text-xs text-slate-400 dark:text-neutral-500', '· ' + ago(r.at)));
+    head.append(a, t); wrap.append(head);
+    if (r.note) wrap.append(el('p', 'rp-note px-4 pt-2 text-[15px] leading-relaxed text-slate-800 dark:text-neutral-100 whitespace-pre-line break-words', r.note));
+    const inner = el('div', 'p-3'); inner.append(card); wrap.append(inner);
+    return wrap;
+  }
+
+  window.NIV = { skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam, repostWrap };
 
   // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
   if (!document.getElementById('niv-nozoom')) {

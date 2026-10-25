@@ -172,12 +172,6 @@
   // ---- แท็บรีโพสต์ (เปิดให้ทุกคนเห็น — ไม่ต้องล็อกอิน) ----
   let rpPage = 0, rpLoading = false, rpHasMore = false;
   const rpEmpty = own ? 'ยังไม่ได้รีโพสต์โพสต์ไหนเลย' : 'ผู้ใช้นี้ยังไม่มีรีโพสต์';
-  const rpBanner = (ms) => {
-    const d = el('div', 'px-4 pt-3 flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400');
-    d.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>';
-    d.append(document.createTextNode(' ' + user.display_name + ' รีโพสต์ · ' + NIV.ago(ms)));
-    return d;
-  };
   async function loadReposts() {
     if (rpLoading) return;
     rpLoading = true;
@@ -188,7 +182,9 @@
     sk && sk.remove(); rpLoading = false;
     if (!rr.ok) { $('status').textContent = rr.data.error || 'โหลดรายการไม่สำเร็จ'; return; }
     rpPage++;
-    for (const p of rr.data.posts) { const c = postCardEl(p); c.prepend(rpBanner(p.reposted_at)); $('reposted').append(c); }
+    for (const p of rr.data.posts) {
+      $('reposted').append(NIV.repostWrap(postCardEl(p), { by_id: user.id, by_name: user.display_name, by_avatar: user.avatar_url, at: p.reposted_at, note: p.repost_note }));
+    }
     rpHasMore = !!rr.data.hasMore;
     if (!$('reposted').children.length) $('status').textContent = rpEmpty;
     $('rp-more').classList.toggle('hidden', !rpHasMore);

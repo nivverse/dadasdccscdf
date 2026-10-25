@@ -32,7 +32,7 @@ export async function onRequestGet({ request, env }) {
       ({ status, d } = await ask(`/api/blog/feed?userId=${encodeURIComponent(userId)}&page=${page}&limit=${PER_PAGE}`));
     }
     if (!d || !d.success) return new Response('', { status: status === 401 ? 401 : 502, headers: noStore });
-    const html = (d.posts || []).map((p) => postCard(p, origin, false)).join('\n');
+    const html = (d.posts || []).map((p) => postCard(p, origin, false, userId)).join('\n');
     return new Response(html, {
       headers: {
         'Content-Type': 'text/html; charset=utf-8',

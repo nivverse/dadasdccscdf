@@ -117,8 +117,31 @@ function postBar(p, origin) {
     </div>`;
 }
 
+// รีโพสต์: ห่อการ์ดต้นฉบับด้วยหัว "ใครรีโพสต์" + ข้อความของผู้รีโพสต์ (ถ้ามี) — หน้าตาเดียวกับ NIV.repostWrap() ฝั่งเบราว์เซอร์ใน nivread.js
+// p.repost = { by, by_name, by_avatar, at, note, others } · viewerId = ผู้ที่กำลังดู (ถ้าเป็นเจ้าของโพสต์ จะขึ้นว่า "รีโพสต์โพสต์ของคุณ")
+export function repostWrap(p, innerHtml, viewerId = '') {
+  const r = p.repost;
+  if (!r || !r.by) return innerHtml;
+  const who = esc(r.by_name || r.by);
+  const profile = `/user?id=${encodeURIComponent(r.by)}`;
+  const what = viewerId && p.author_id === viewerId ? 'รีโพสต์โพสต์ของคุณ' : 'รีโพสต์';
+  const more = r.others > 0 ? ` และอีก ${Number(r.others)} คน` : '';
+  return `<div class="rp-card rounded-2xl border border-emerald-500/25 bg-gradient-to-b from-emerald-500/[0.07] to-transparent overflow-hidden shadow-sm">
+  <div class="rp-bar"></div>
+  <div class="flex items-center gap-2.5 px-4 pt-3">
+    <a href="${profile}" class="relative flex-shrink-0" aria-label="โปรไฟล์ ${who}">${avatar({ display_name: r.by_name || r.by, avatar_url: r.by_avatar }, 'w-9 h-9')}<span class="rp-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON.repost}</svg></span></a>
+    <div class="min-w-0 text-sm text-slate-600 dark:text-neutral-300 leading-tight"><a href="${profile}" class="font-semibold text-slate-900 dark:text-white hover:text-amber-500">${who}</a> ${what}${more} <span class="text-xs text-slate-400 dark:text-neutral-500">· ${esc(ago(r.at))}</span></div>
+  </div>
+  ${r.note ? `<p class="rp-note px-4 pt-2 text-[15px] leading-relaxed text-slate-800 dark:text-neutral-100 whitespace-pre-line break-words">${esc(r.note)}</p>` : ''}
+  <div class="p-3">${innerHtml}</div>
+</div>`;
+}
+
 // การ์ดโพสต์ในฟีด (สไตล์ Facebook) — ลิงก์ <a href> จริงทุกโพสต์ให้ Google ตามเก็บได้
-export function postCard(p, origin, first = false) {
+export function postCard(p, origin, first = false, viewerId = '') {
+  return repostWrap(p, cardHtml(p, origin, first), viewerId);
+}
+function cardHtml(p, origin, first = false) {
   const href = `/posts/${p.slug}`;
   return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
   ${postHead(p)}
