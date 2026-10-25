@@ -17,9 +17,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>body{font-family:'Kanit',sans-serif}.tab-on{color:#f59e0b!important;border-color:#f59e0b!important}</style>
+<style>body{font-family:'Kanit',sans-serif}.tab-on{color:#f59e0b!important;border-color:#f59e0b!important}body.pending main{display:none}</style>
 </head>
-<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+<body class="pending bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
 
 <div class="fixed inset-0 pointer-events-none z-0">
   <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
@@ -48,7 +48,7 @@
 <script>
   const { session, api, el, userUrl, ago, REASONS } = NIV;
   const s = session();
-  if (!s.token || !s.userId) location.replace('/login?redirect=/admin');
+  if (!s.token || !s.userId) location.replace('/');
 
   const $ = (id) => document.getElementById(id);
   const TYPE = { post: ['โพสต์', 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30'],
@@ -225,11 +225,7 @@
     say('กำลังโหลด...');
     const r = await api('/api/blog/reports?userId=' + encodeURIComponent(s.userId) + '&status=' + tab);
     if (r.status === 401) { NIV.logout(); return; }
-    if (r.status === 403) {
-      const me = await api('/api/blog/me?userId=' + encodeURIComponent(s.userId));
-      const who = me.ok ? `${me.data.user.email || '(ไม่มีอีเมล)'} (@${me.data.user.id})` : '@' + s.userId;
-      return say('บัญชีนี้ไม่ใช่แอดมิน — ตอนนี้ล็อกอินเป็น ' + who + ' ให้ล็อกอินด้วยบัญชี fnnzart@gmail.com', 'err');
-    }
+    if (r.status === 403) { location.replace('/'); return; }
     if (r.status === 404) return say('Worker ยังไม่ได้อัปเดต (ไม่พบระบบรายงาน) กรุณา deploy blog-api.js ใหม่', 'err');
     if (!r.ok) return say(r.data.error || 'โหลดรายการไม่สำเร็จ', 'err');
     say('');
@@ -244,8 +240,17 @@
     history.replaceState(null, '', '#' + tab);
     load();
   }));
-  load();
-  if (tab !== 'open') refreshCount();
+  // ต้องผ่านการตรวจสิทธิ์แอดมินจากเซิร์ฟเวอร์ก่อน จึงจะแสดงหน้านี้ — ไม่ใช่แอดมินกลับหน้าแรกเงียบๆ
+  // (หน้านี้เป็นไฟล์ static ซ่อนฝั่งเบราว์เซอร์ได้แค่หน้าตา ส่วนข้อมูลจริงถูกป้องกันที่ API ซึ่งตอบ 403 ถ้าไม่ใช่แอดมินอยู่แล้ว)
+  (async () => {
+    if (!s.token || !s.userId) return;
+    const me = await api('/api/blog/me?userId=' + encodeURIComponent(s.userId));
+    if (me.status === 401) { NIV.logout(); return; }
+    if (!me.ok || !me.data.isAdmin) { location.replace('/'); return; }
+    document.body.classList.remove('pending');
+    load();
+    if (tab !== 'open') refreshCount();
+  })();
 </script>
 </body>
 </html>
