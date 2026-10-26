@@ -126,7 +126,7 @@ export function repostWrap(p, innerHtml, viewerId = '') {
   const profile = `/user?id=${encodeURIComponent(r.by)}`;
   const what = viewerId && p.author_id === viewerId ? 'รีโพสต์โพสต์ของคุณ' : 'รีโพสต์';
   const more = r.others > 0 ? ` และอีก ${Number(r.others)} คน` : '';
-  return `<div class="rp-card rounded-2xl border border-emerald-500/25 bg-gradient-to-b from-emerald-500/[0.07] to-transparent overflow-hidden shadow-sm">
+  return `<div class="rp-card rounded-2xl border border-orange-500/25 bg-gradient-to-b from-orange-500/[0.07] to-transparent overflow-hidden shadow-sm">
   <div class="rp-bar"></div>
   <div class="flex items-center gap-2.5 px-4 pt-3">
     <a href="${profile}" class="relative flex-shrink-0" aria-label="โปรไฟล์ ${who}">${avatar({ display_name: r.by_name || r.by, avatar_url: r.by_avatar }, 'w-9 h-9')}<span class="rp-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON.repost}</svg></span></a>

@@ -38,7 +38,7 @@
   const paintRepost = (slug, on) => {
     document.querySelectorAll(`[data-repost="${CSS.escape(slug)}"]`).forEach((b) => {
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      b.classList.toggle('text-emerald-500', on);
+      b.classList.toggle('text-orange-500', on);
       if (!b.disabled) b.title = on ? 'ยกเลิกรีโพสต์' : 'รีโพสต์';
     });
   };
@@ -131,7 +131,7 @@
   const toastAction = (msg, label, fn) => {                 // ข้อความแจ้งพร้อมปุ่ม "เลิกทำ" 5 วินาที
     const t = mk('div', 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 pl-4 pr-2 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg');
     t.append(mk('span', '', msg));
-    const b = mk('button', 'px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white font-semibold cursor-pointer', label); b.type = 'button';
+    const b = mk('button', 'px-3 py-1 rounded-lg bg-orange-500 hover:bg-orange-400 text-white font-semibold cursor-pointer', label); b.type = 'button';
     b.addEventListener('click', () => { t.remove(); fn(); });
     t.append(b); document.body.appendChild(t); setTimeout(() => t.remove(), 5000);
   };
@@ -218,7 +218,7 @@
     if (narrow) menu.append(mk('div', 'mx-auto mb-3 h-1 w-10 rounded-full bg-slate-300 dark:bg-white/20'));
     const item = (iconHtml, title, sub, fn, tone) => {
       const b = mk('button', 'w-full flex items-center gap-3 text-left px-3 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer'); b.type = 'button'; b.setAttribute('role', 'menuitem');
-      const ic = mk('span', 'flex-shrink-0 w-9 h-9 grid place-items-center rounded-full ' + (tone || 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400')); ic.innerHTML = iconHtml;
+      const ic = mk('span', 'flex-shrink-0 w-9 h-9 grid place-items-center rounded-full ' + (tone || 'bg-orange-500/10 text-orange-600 dark:text-orange-400')); ic.innerHTML = iconHtml;
       const tx = mk('span', 'min-w-0'); tx.append(mk('span', 'block text-sm font-semibold text-slate-900 dark:text-white', title), mk('span', 'block text-xs text-slate-500 dark:text-neutral-400', sub));
       b.append(ic, tx); b.addEventListener('click', () => { close(); fn(); });
       return b;
@@ -232,9 +232,9 @@
     };
     if (!on) {
       menu.append(item(RP_ICON, 'รีโพสต์', 'แชร์ให้ผู้ติดตามของคุณทันที', () => doRepost(btn, slug, '')));
-      menu.append(item(PEN_ICON, 'รีโพสต์พร้อมข้อความ', 'เพิ่มความเห็นของคุณ (ไม่เกิน ' + NOTE_MAX + ' ตัวอักษร)', () => goNote(false), 'bg-amber-500/10 text-amber-600 dark:text-amber-400'));
+      menu.append(item(PEN_ICON, 'รีโพสต์พร้อมข้อความ', 'เพิ่มความเห็นของคุณ (ไม่เกิน ' + NOTE_MAX + ' ตัวอักษร)', () => goNote(false), 'bg-slate-500/10 text-slate-600 dark:text-slate-300'));
     } else {
-      menu.append(item(PEN_ICON, 'เพิ่ม / แก้ไขข้อความ', 'ปรับความเห็นที่แนบกับรีโพสต์นี้', () => goNote(true), 'bg-amber-500/10 text-amber-600 dark:text-amber-400'));
+      menu.append(item(PEN_ICON, 'เพิ่ม / แก้ไขข้อความ', 'ปรับความเห็นที่แนบกับรีโพสต์นี้', () => goNote(true), 'bg-slate-500/10 text-slate-600 dark:text-slate-300'));
       menu.append(item(UNDO_ICON, 'ยกเลิกรีโพสต์', 'ลบออกจากโปรไฟล์และฟีดของผู้ติดตาม', () => doUndo(btn, slug), 'bg-rose-500/10 text-rose-500'));
     }
     if (!narrow) {                                           // ป๊อปอัป: วางใกล้ปุ่ม และขยายออกจากจุดที่กด
@@ -257,20 +257,20 @@
     const sheet = mk('div', 'rp-sheet rounded-t-3xl sm:rounded-3xl bg-white dark:bg-[#161616] border border-slate-200 dark:border-white/10 shadow-2xl');
     sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', 'รีโพสต์พร้อมข้อความ');
     const head = mk('div', 'flex items-center justify-between px-5 pt-4 pb-2');
-    const ttl = mk('div', 'flex items-center gap-2 font-bold text-slate-900 dark:text-white'); const ti = mk('span', 'text-emerald-500'); ti.innerHTML = RP_ICON; ttl.append(ti, mk('span', '', editing ? 'แก้ไขข้อความรีโพสต์' : 'รีโพสต์พร้อมข้อความ'));
+    const ttl = mk('div', 'flex items-center gap-2 font-bold text-slate-900 dark:text-white'); const ti = mk('span', 'text-orange-500'); ti.innerHTML = RP_ICON; ttl.append(ti, mk('span', '', editing ? 'แก้ไขข้อความรีโพสต์' : 'รีโพสต์พร้อมข้อความ'));
     const x = mk('button', 'w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'ปิด');
     head.append(ttl, x);
 
     const body = mk('div', 'px-5 pb-2');
-    const ta = mk('textarea', 'w-full resize-none rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-emerald-500/70 focus:outline-none px-4 py-3 text-[15px] leading-relaxed text-slate-900 dark:text-white placeholder:text-slate-400 transition-colors');
+    const ta = mk('textarea', 'w-full resize-none rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-orange-500/70 focus:outline-none px-4 py-3 text-[15px] leading-relaxed text-slate-900 dark:text-white placeholder:text-slate-400 transition-colors');
     ta.rows = 3; ta.placeholder = 'เพิ่มความเห็นของคุณ… (เว้นว่างไว้ก็ได้)'; ta.value = note; ta.setAttribute('aria-label', 'ข้อความรีโพสต์');
     const chips = mk('div', 'mt-2 flex flex-wrap gap-2');
     ['🔥 ต้องอ่านเลย', '😂 ฮาจัด', '🤔 น่าคิด', '👏 เห็นด้วย', '😭 ซึ้ง'].forEach((c) => {
-      const b = mk('button', 'rp-chip px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 cursor-pointer', c); b.type = 'button';
+      const b = mk('button', 'rp-chip px-3 py-1 rounded-full text-xs font-medium bg-orange-500/10 text-orange-700 dark:text-orange-300 hover:bg-orange-500/20 cursor-pointer', c); b.type = 'button';
       b.addEventListener('click', () => { ta.value = ta.value && !/\s$/.test(ta.value) ? ta.value + ' ' + c : ta.value + c; sync(); try { ta.focus(); } catch {} });
       chips.append(b);
     });
-    const prev = mk('div', 'mt-3 rounded-2xl border border-slate-200 dark:border-white/10 border-l-4 border-l-emerald-500 bg-white/60 dark:bg-white/[0.03] px-4 py-3');
+    const prev = mk('div', 'mt-3 rounded-2xl border border-slate-200 dark:border-white/10 border-l-4 border-l-orange-500 bg-white/60 dark:bg-white/[0.03] px-4 py-3');
     if (pv.author) prev.append(mk('div', 'text-xs font-semibold text-slate-500 dark:text-neutral-400', pv.author));
     if (pv.title) prev.append(mk('div', 'mt-0.5 text-sm font-bold text-slate-900 dark:text-white line-clamp-2', pv.title));
     if (pv.excerpt) prev.append(mk('div', 'mt-1 text-xs text-slate-600 dark:text-neutral-300 line-clamp-2', pv.excerpt));
@@ -281,14 +281,14 @@
     const ring = mk('span', 'inline-block w-6 h-6'); const left = mk('span', 'tabular-nums'); meter.append(ring, left);
     const btns = mk('div', 'flex items-center gap-2');
     const cancel = mk('button', 'px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer', 'ยกเลิก'); cancel.type = 'button';
-    const go = mk('button', 'rp-go px-5 py-2 rounded-xl text-sm font-bold text-white shadow-md shadow-emerald-500/30 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed', editing ? 'บันทึก' : 'รีโพสต์'); go.type = 'button';
+    const go = mk('button', 'rp-go px-5 py-2 rounded-xl text-sm font-bold text-white shadow-md shadow-orange-500/30 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed', editing ? 'บันทึก' : 'รีโพสต์'); go.type = 'button';
     btns.append(cancel, go); foot.append(meter, btns);
     sheet.append(head, body, foot);
 
     let busy = false;
     function sync() {                                       // วงนับตัวอักษร: เขียว → เหลือง (เหลือ ≤ 40) → แดง (เกิน)
       const n = cpLen(ta.value), rest = NOTE_MAX - n, frac = Math.min(1, n / NOTE_MAX);
-      const col = rest < 0 ? '#f43f5e' : rest <= 40 ? '#f59e0b' : '#10b981', C = 62.83;
+      const col = rest < 0 ? '#f43f5e' : rest <= 40 ? '#eab308' : '#f97316', C = 62.83;
       ring.innerHTML = `<svg viewBox="0 0 24 24" class="w-6 h-6 -rotate-90"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-opacity=".15" stroke-width="3"/><circle cx="12" cy="12" r="10" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${(C * (1 - frac)).toFixed(2)}"/></svg>`;
       left.textContent = rest <= 40 ? String(rest) : '';
       left.style.color = rest < 0 ? '#f43f5e' : '';
