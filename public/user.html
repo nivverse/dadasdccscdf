@@ -28,7 +28,7 @@
 <header id="main-header" class="z-20"></header>
 <main class="flex-1 z-10 w-full max-w-2xl mx-auto px-4 sm:px-6 py-6">
   <section id="card" class="rounded-3xl overflow-hidden bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm">
-    <div class="h-28 sm:h-36 bg-gradient-to-br from-amber-500/60 via-orange-500/50 to-red-500/40"></div>
+    <div class="relative h-28 sm:h-36 overflow-hidden bg-gradient-to-br from-amber-500/60 via-orange-500/50 to-red-500/40"><img id="cover-img" src="" alt="ภาพปก" class="absolute inset-0 w-full h-full object-cover hidden"></div>
     <div class="px-5 pb-5">
       <div class="flex items-end justify-between gap-3">
         <div id="av" class="flex-shrink-0 -mt-12 rounded-full ring-4 ring-white dark:ring-[#121212] w-24 h-24 bg-slate-200 dark:bg-white/10"></div>
@@ -73,6 +73,7 @@
 
   document.title = `${user.display_name} (@${user.id}) | nivread`;
   $('av').replaceChildren(avatarEl(user, 'w-24 h-24'));
+  if (user.cover_url && /^https?:\/\//.test(user.cover_url)) { const ci = $('cover-img'); ci.src = user.cover_url; ci.classList.remove('hidden'); }
   $('name').textContent = user.display_name;
   $('uid').textContent = '@' + user.id;
   $('n-posts').textContent = (stats.posts || 0).toLocaleString('th-TH');
