@@ -45,7 +45,7 @@
   <div class="lg:grid lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-6 lg:items-start">
 
     <aside class="glass-card rounded-3xl overflow-hidden lg:sticky lg:top-20">
-      <div class="relative h-28 overflow-hidden bg-gradient-to-br from-amber-500/60 via-orange-500/50 to-red-500/40"><img id="cover-img" src="" alt="ภาพปก" class="absolute inset-0 w-full h-full object-cover hidden"></div>
+      <div id="cover-slot" class="h-28 bg-gradient-to-br from-amber-500/60 via-orange-500/50 to-red-500/40"></div>
       <div class="px-5 pb-6">
         <div class="relative -mt-12 w-24 h-24">
           <img id="avatar-img" src="" alt="รูปโปรไฟล์" class="w-24 h-24 rounded-full object-cover ring-4 ring-white dark:ring-[#121212] shadow-lg hidden">
@@ -132,6 +132,7 @@
 
 <div id="main-footer" class="z-10"></div>
 <script src="/nivread.js"></script>
+<script src="/profile-extras.js"></script>
 <script>
 (() => {
   const { session, api, el } = NIV;
@@ -158,11 +159,6 @@
     if (url && /^https?:\/\//.test(url)) { img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); }
     else { img.classList.add('hidden'); ph.classList.remove('hidden'); ph.textContent = (name || uid || 'n').charAt(0).toUpperCase(); }
   }
-  function renderCover(url) {
-    const img = $('cover-img');
-    if (url && /^https?:\/\//.test(url)) { img.src = url; img.classList.remove('hidden'); }
-    else { img.removeAttribute('src'); img.classList.add('hidden'); }
-  }
   function renderIdentity(name) {
     $('p-name').textContent = name || uid;
     $('p-user').textContent = '@' + uid;
@@ -180,7 +176,6 @@
     $('f-email').value = u.email || '';
     renderIdentity(u.display_name);
     renderAvatar(u.avatar_url, u.display_name);
-    renderCover(u.cover_url);
     isG = !!u.is_google_account;
     if (isG) { $('pw-form').classList.add('hidden'); $('g-note').classList.remove('hidden'); }
     try { localStorage.setItem('userEmail', u.email || ''); localStorage.setItem('userName', u.display_name || ''); } catch {}
@@ -248,6 +243,17 @@
       NIV.logout();
     } catch (e) { showErr('ลบบัญชีไม่สำเร็จ: ' + e.message); cBtn.disabled = false; cBtn.textContent = 'ลบบัญชีถาวร'; }
   };
+
+  // ---------- อัปโหลดรูปโปรไฟล์ / ภาพปก (โค้ดกลางเดียวกับ fnnz) ----------
+  ProfileImage.init({
+    userId: uid,
+    apiBase: NIV.API,
+    getToken: () => session().token || '',
+    theme: 'amber',
+    coverSlot: $('cover-slot'),
+    avatarImg: $('avatar-img'),
+    avatarPh: $('avatar-ph')
+  });
 })();
 </script>
 </body>
