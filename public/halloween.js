@@ -6,7 +6,7 @@
 
   const html = document.documentElement;
   const KEY = 'halloween';                       // 'off' = ผู้ใช้ปิดธีมเอง
-  const DARK_TC = '#0b0713', LIGHT_TC = '#efe9f8';
+  const DARK_TC = '#110a05', LIGHT_TC = '#fff5ea';
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const getPref = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
@@ -36,10 +36,11 @@
 <ellipse class="body" cx="22" cy="42" rx="17" ry="24"/><ellipse class="body" cx="58" cy="42" rx="17" ry="24"/>
 <ellipse class="body" cx="40" cy="40" rx="21" ry="27"/>
 <path class="rib" d="M40 13C33 25 33 55 40 67M22 20C14 32 14 52 22 64M58 20C66 32 66 52 58 64"/>
-<g class="face"><path d="M26 31L35 38 24 40ZM54 31L45 38 56 40Z"/><path d="M24 50L30 47 35 53 40 47 45 53 50 47 56 50C52 60 28 60 24 50Z"/></g>
+<g class="lit"><ellipse cx="40" cy="46" rx="22" ry="14" fill="url(#hw-glow)"/><g class="face"><path d="M26 31L35 38 24 40ZM54 31L45 38 56 40Z"/><path d="M24 50L30 47 35 53 40 47 45 53 50 47 56 50C52 60 28 60 24 50Z"/></g></g>
 </svg>`;
   const DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<linearGradient id="hw-pk-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b21b6"/><stop offset="1" stop-color="#2e1065"/></linearGradient>
+<linearGradient id="hw-pk-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
+<radialGradient id="hw-glow"><stop offset="0" stop-color="#fbbf24" stop-opacity=".85"/><stop offset="1" stop-color="#f59e0b" stop-opacity="0"/></radialGradient>
 </defs></svg>`;
 
   // ---------- สร้างตัวตกแต่ง (ครั้งเดียว ตอนเปิดธีมครั้งแรก) ----------
@@ -58,11 +59,16 @@
     webs.innerHTML = WEB.replace('%S', 'l') + WEB.replace('%S', 'r');
     wrap.appendChild(webs);
 
+    // แสงอุ่นพื้นหลัง (layer fixed เดียว ไม่ repaint ตอนเลื่อน)
+    const glow = document.createElement('div');
+    glow.className = 'hw-glow';
+    wrap.appendChild(glow);
+
     if (!reduce) {
       const bats = document.createElement('div');
       bats.className = 'hw-bats';
       // [ความสูง%, ขนาดpx, ระยะเวลาs, หน่วงs, กลับทิศ]
-      [[12, 34, 26, 1, 0], [26, 26, 32, 9, 1], [8, 22, 38, 17, 0], [38, 30, 29, 22, 1]].forEach(([y, s, d, t, r]) => {
+      [[12, 34, 28, 1, 0], [30, 26, 34, 14, 1]].forEach(([y, s, d, t, r]) => {
         const b = document.createElement('div');
         b.className = 'hw-bat' + (r ? ' rev' : '');
         b.style.cssText = `--y:${y}%;--s:${s}px;--d:${d}s;--t:${t}s`;
