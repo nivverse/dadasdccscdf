@@ -1,131 +1,227 @@
-// public/halloween.js — ตัวตกแต่งธีมฮาโลวีน (ใยแมงมุม ค้างคาว ฟักทอง) + ปุ่มเปิด/ปิดธีมในเมนูข้าง
-// โหลดโดย nivread.js เฉพาะช่วงเทศกาล (หรือ ?hw=1 ตอนทดสอบ) — สไตล์อยู่ใน /halloween.css
-(() => {
-  if (window.__hw) return;
-  window.__hw = true;
+// functions/_lib/render.js — ตัวช่วยเรนเดอร์ HTML ฝั่งเซิร์ฟเวอร์ (Cloudflare Pages Functions)
+import { videoGallery } from './videos.js';
+import { imageGallery, postImages } from './gallery.js';
 
-  const html = document.documentElement;
-  const KEY = 'halloween';                       // 'off' = ผู้ใช้ปิดธีมเอง
-  const DARK_TC = '#110a05', LIGHT_TC = '#fff5ea';
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+export const esc = (s) =>
+  String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  const getPref = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
-  const setPref = (v) => { try { localStorage.setItem(KEY, v); } catch {} };
+export const fmtDate = (ms) =>
+  new Date(ms).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Bangkok' });
 
-  // ---------- theme-color (แถบเบราว์เซอร์มือถือ) ----------
-  let tc = document.querySelector('meta[name="theme-color"]');
-  const origTc = tc ? tc.getAttribute('content') : '#0d0d0d';
-  const syncThemeColor = () => {
-    const on = html.classList.contains('halloween');
-    if (!tc) {
-      if (!on) return;
-      tc = document.createElement('meta'); tc.name = 'theme-color'; document.head.appendChild(tc);
-    }
-    tc.setAttribute('content', on ? (html.classList.contains('dark') ? DARK_TC : LIGHT_TC) : origTc);
-  };
+export const catHref = (name) => `/category/${encodeURIComponent(name)}`;
 
-  // ---------- SVG ----------
-  // ใยแมงมุมมุมบนซ้าย (ฝั่งขวาใช้ scaleX(-1) ใน CSS): เส้นรัศมี + เส้นโค้งขวาง
-  const WEB = `<svg class="hw-web hw-web-%S" viewBox="0 0 100 100" aria-hidden="true">
-<path d="M0 0L100 0M0 0L92 34M0 0L70 70M0 0L34 92M0 0L0 100"/>
-<path d="M30 0Q26 26 0 30M52 0Q46 46 0 52M76 0Q66 66 0 76M98 0Q84 84 0 98"/>
-</svg>`;
-  const BAT = `<svg viewBox="0 0 64 32" aria-hidden="true"><path d="M32 10C30 10 29 8 28 5L27 9C24 7 20 6 15 8 10 10 5 14 1 19 6 18 9 18 12 20 14 18 17 17 20 18 22 19 24 22 26 25 28 24 30 22 32 21 34 22 36 24 38 25 40 22 42 19 44 18 47 17 50 18 52 20 55 18 58 18 63 19 59 14 54 10 49 8 44 6 40 7 37 9L36 5C35 8 34 10 32 10Z"/></svg>`;
-  const PUMPKIN = `<svg viewBox="0 0 80 70" aria-hidden="true">
-<path class="stem" d="M37 12C37 6 39 3 43 1 42 6 44 9 46 12Z"/>
-<ellipse class="body" cx="22" cy="42" rx="17" ry="24"/><ellipse class="body" cx="58" cy="42" rx="17" ry="24"/>
-<ellipse class="body" cx="40" cy="40" rx="21" ry="27"/>
-<path class="rib" d="M40 13C33 25 33 55 40 67M22 20C14 32 14 52 22 64M58 20C66 32 66 52 58 64"/>
-<g class="lit"><ellipse cx="40" cy="46" rx="22" ry="14" fill="url(#hw-glow)"/><g class="face"><path d="M26 31L35 38 24 40ZM54 31L45 38 56 40Z"/><path d="M24 50L30 47 35 53 40 47 45 53 50 47 56 50C52 60 28 60 24 50Z"/></g></g>
-</svg>`;
-  const DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<linearGradient id="hw-pk-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
-<radialGradient id="hw-glow"><stop offset="0" stop-color="#fbbf24" stop-opacity=".85"/><stop offset="1" stop-color="#f59e0b" stop-opacity="0"/></radialGradient>
-</defs></svg>`;
+// แถบเลือกหมวดหมู่ (เลื่อนซ้ายขวาได้) — active = ชื่อหมวดที่เปิดอยู่ ('' = ทั้งหมด)
+export function categoryBar(cats, active = '') {
+  const list = (cats || []).slice(0, 24);
+  if (!list.length) return '';
+  const on = 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-transparent shadow-md shadow-amber-500/25';
+  const off = 'bg-white/85 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-neutral-300 hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-400';
+  const chip = (href, label, n, isOn) => `<a href="${href}"${isOn ? ' aria-current="page"' : ''} class="whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${isOn ? on : off}">${label}${n != null ? ` <span class="opacity-60 text-xs">${n}</span>` : ''}</a>`;
+  const act = String(active).toLowerCase();
+  return `<nav aria-label="หมวดหมู่" class="mb-5 -mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto" style="scrollbar-width:none">
+  <div class="flex gap-2 w-max sm:w-auto sm:flex-wrap">
+    ${chip('/posts', 'ทั้งหมด', null, !active)}
+    ${list.map((c) => chip(catHref(c.name), esc(c.name), c.n, String(c.name).toLowerCase() === act)).join('\n    ')}
+    <a href="/categories" class="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-amber-600 dark:text-amber-400 hover:opacity-70">ดูทุกหมวด →</a>
+  </div>
+</nav>`;
+}
 
-  // ---------- สร้างตัวตกแต่ง (ครั้งเดียว ตอนเปิดธีมครั้งแรก) ----------
-  let built = false;
-  function build() {
-    if (built) return;
-    built = true;
+export function ago(ms) {
+  const s = Math.max(1, ((Date.now() - ms) / 1000) | 0);
+  if (s < 60) return 'เมื่อสักครู่';
+  const m = (s / 60) | 0; if (m < 60) return `${m} นาทีที่แล้ว`;
+  const h = (m / 60) | 0; if (h < 24) return `${h} ชั่วโมงที่แล้ว`;
+  const d = (h / 24) | 0; if (d < 7) return `${d} วันที่แล้ว`;
+  return fmtDate(ms);
+}
 
-    const wrap = document.createElement('div');
-    wrap.className = 'hw-deco';
-    wrap.setAttribute('aria-hidden', 'true');
-
-    // ใยแมงมุมอยู่ที่ต้นเอกสาร (absolute) — ใส่ใน body ที่ไม่ต้องเป็น relative ก็ยึดมุมบนของหน้า
-    const webs = document.createElement('div');
-    webs.style.cssText = 'position:absolute;top:0;left:0;right:0;height:0;pointer-events:none';
-    webs.innerHTML = WEB.replace('%S', 'l') + WEB.replace('%S', 'r');
-    wrap.appendChild(webs);
-
-    // แสงอุ่นพื้นหลัง (layer fixed เดียว ไม่ repaint ตอนเลื่อน)
-    const glow = document.createElement('div');
-    glow.className = 'hw-glow';
-    wrap.appendChild(glow);
-
-    if (!reduce) {
-      const bats = document.createElement('div');
-      bats.className = 'hw-bats';
-      // [ความสูง%, ขนาดpx, ระยะเวลาs, หน่วงs, กลับทิศ]
-      [[12, 34, 28, 1, 0], [30, 26, 34, 14, 1]].forEach(([y, s, d, t, r]) => {
-        const b = document.createElement('div');
-        b.className = 'hw-bat' + (r ? ' rev' : '');
-        b.style.cssText = `--y:${y}%;--s:${s}px;--d:${d}s;--t:${t}s`;
-        b.innerHTML = BAT;
-        bats.appendChild(b);
-      });
-      wrap.appendChild(bats);
-    }
-    document.body.appendChild(wrap);
-
-    // ฟักทองเหนือท้ายหน้า (footer ถูกเติมโดย nivread.js ก่อนสคริปต์นี้ทำงาน)
-    const footer = document.getElementById('main-footer');
-    if (footer) {
-      const pk = document.createElement('div');
-      pk.className = 'hw-deco hw-pk';
-      pk.setAttribute('aria-hidden', 'true');
-      pk.innerHTML = DEFS + PUMPKIN + PUMPKIN + PUMPKIN;
-      footer.insertBefore(pk, footer.firstChild);
-    }
+export async function api(env, path) {
+  const base = String(env.API_BASE || '').replace(/\/+$/, '');
+  if (!base) return { error: 'API_BASE not set' };
+  try {
+    const r = await fetch(base + path, { cf: { cacheTtl: 60, cacheEverything: true } });
+    if (r.status === 404) return { notFound: true };
+    if (!r.ok) return { error: `api ${r.status}` };
+    return await r.json();
+  } catch (e) {
+    return { error: String(e.message || e) };
   }
+}
 
-  // ---------- เปิด/ปิดธีม ----------
-  function apply(on) {
-    html.classList.toggle('halloween', on);
-    if (on) build();
-    syncThemeColor();
-    const btn = document.getElementById('hw-toggle');
-    if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
+const ICON = {
+  heart: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>',
+  chat: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>',
+  repost: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 1l4 4-4 4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 11V9a4 4 0 014-4h14"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 23l-4-4 4-4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13v2a4 4 0 01-4 4H3"/>',
+  eye: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>',
+  share: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>',
+};
+const icon = (n) => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
 
-  // ปุ่มในเมนูข้าง วางต่อจากปุ่มสลับโหมดสี
-  function mountToggle() {
-    const anchor = document.getElementById('niv-theme');
-    if (!anchor || document.getElementById('hw-toggle')) return;
-    const b = document.createElement('button');
-    b.id = 'hw-toggle';
-    b.type = 'button';
-    b.className = 'nv-link nv-in cursor-pointer';
-    b.style.setProperty('--i', '1.5');
-    b.setAttribute('aria-label', 'เปิดหรือปิดธีมฮาโลวีน');
-    b.setAttribute('aria-pressed', html.classList.contains('halloween') ? 'true' : 'false');
-    b.innerHTML = `<svg class="block w-[1.15rem] h-[1.15rem] flex-none" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 00-7 7v11l2.5-2 2 2 2.5-2 2.5 2 2-2 2.5 2V10a7 7 0 00-7-7z"/><circle cx="9.5" cy="10.5" r=".8"/><circle cx="14.5" cy="10.5" r=".8"/></svg><span>ธีมฮาโลวีน</span><span class="hw-state"><span class="hw-on">เปิด</span><span class="hw-off">ปิด</span></span>`;
-    b.addEventListener('click', () => {
-      const on = !html.classList.contains('halloween');
-      setPref(on ? 'on' : 'off');
-      apply(on);
-    });
-    anchor.insertAdjacentElement('afterend', b);
-  }
+export function avatar(p, size = 'w-11 h-11') {
+  const name = p.display_name || 'nivread';
+  return p.avatar_url
+    ? `<img src="${esc(p.avatar_url)}" alt="${esc(name)}" width="44" height="44" loading="lazy" referrerpolicy="no-referrer" class="${size} rounded-full object-cover ring-2 ring-amber-500/40">`
+    : `<div class="${size} rounded-full bg-gradient-to-br from-amber-500 to-orange-500 grid place-items-center text-white font-bold" aria-hidden="true">${esc(name.charAt(0).toUpperCase())}</div>`;
+}
 
-  // สลับโหมดมืด/สว่าง → theme-color ต้องเปลี่ยนตาม
-  new MutationObserver(syncThemeColor).observe(html, { attributes: true, attributeFilter: ['class'] });
+// ปุ่มติดตาม (ผู้ใช้/หมวดหมู่) — สถานะ/คลิกจัดการโดย /nivread.js ทั้งเว็บ (variant: link | pill | chip)
+export function followBtn(type, target, variant = 'link', label = '') {
+  return `<button type="button" class="fb fb-${variant}" data-follow-type="${type}" data-follow-target="${esc(target)}"${label ? ` data-follow-name="${esc(label)}"` : ''} aria-pressed="false"${variant === 'plus' ? ` title="ติดตาม" aria-label="ติดตาม ${esc(label || target)}"` : ''}>${variant === 'plus' ? '+' : 'ติดตาม'}</button>`;
+}
 
-  const init = () => {
-    mountToggle();
-    // nivread.js ตัดสินใจเรื่องคลาสไว้แล้ว (ช่วงวันที่ + ค่าที่ผู้ใช้ปิดเอง) — ที่นี่แค่สร้างของตกแต่งตามนั้น
-    apply(html.classList.contains('halloween') && getPref() !== 'off');
-  };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-})();
+// CSS ปุ่มติดตาม (ฝังใน <head> กันปุ่มกระพริบก่อนโหลด nivread.js — ชุดเดียวกับใน nivread.js)
+export const FBCSS = `.fb{cursor:pointer;font-weight:600;transition:color .2s,background .2s,border-color .2s,opacity .2s;white-space:nowrap}
+.fb[hidden]{display:none}
+.fb-link{font-size:.75rem;color:#d97706;padding:.1rem .45rem;border-radius:999px}
+.fb-link:hover{background:rgba(245,158,11,.14)}
+.fb-link[aria-pressed=true]{color:#94a3b8;font-weight:500}
+.fb-pill{padding:.5rem 1.1rem;border-radius:.75rem;font-size:.875rem;color:#fff;background:linear-gradient(to right,#f59e0b,#f97316);box-shadow:0 6px 16px -6px rgba(245,158,11,.55)}
+.fb-pill:hover{filter:brightness(1.08)}
+.fb-pill[aria-pressed=true]{background:transparent;color:#64748b;border:1px solid rgba(148,163,184,.55);box-shadow:none}
+.fb-chip{padding:.3rem .8rem;border-radius:999px;font-size:.8rem;color:#d97706;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
+.fb-chip[aria-pressed=true]{color:#fff;border-color:transparent;background:linear-gradient(to right,#f59e0b,#f97316)}
+.fb-plus{display:inline-flex;align-items:center;justify-content:center;height:1.5rem;padding:0 .2rem;margin-left:.1rem;border:0;background:none;font-size:1.6rem;font-weight:500;line-height:1;color:#d97706;flex-shrink:0}
+.fb-plus:hover{color:#f59e0b}
+.fb[disabled]{opacity:.6;cursor:default}`;
+
+function postHead(p) {
+  const profile = p.author_id ? `/user?id=${encodeURIComponent(p.author_id)}` : '';
+  const who = esc(p.display_name || 'nivread');
+  return `<div class="flex items-center gap-3 p-4">
+    ${profile ? `<a href="${profile}" class="flex-shrink-0" aria-label="โปรไฟล์ ${who}">${avatar(p)}</a>` : avatar(p)}
+    <div class="min-w-0">
+      ${profile
+        ? `<div class="flex items-center gap-1 min-w-0"><a href="${profile}" class="font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a></div>`
+        : `<div class="font-semibold text-sm text-slate-900 dark:text-white truncate">${who}</div>`}
+      <div class="text-xs text-slate-500 dark:text-neutral-400">
+        <time datetime="${new Date(p.published_at).toISOString()}">${esc(ago(p.published_at))}</time>
+        ${p.category ? `<a href="${catHref(p.category)}" class="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">${esc(p.category)}</a>` : ''}
+      </div>
+    </div>
+    ${p.author_id && p.slug ? `<a href="/write?edit=${encodeURIComponent(p.slug)}" data-edit-post data-author="${esc(p.author_id)}" class="hidden ml-auto flex-shrink-0 w-9 h-9 place-items-center rounded-full text-slate-500 dark:text-neutral-400 hover:text-amber-500 hover:bg-amber-500/10 transition-colors" aria-label="แก้ไขโพสต์" title="แก้ไขโพสต์"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></a>` : ''}
+  </div>`;
+}
+
+function postBar(p, origin) {
+  const href = `/posts/${p.slug}`;
+  const btn = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 transition-colors';
+  return `<div class="px-3 py-2 flex items-center justify-between border-t border-slate-200 dark:border-white/10">
+      <div class="flex items-center gap-1">
+        <button type="button" data-like="${esc(p.slug)}" class="${btn}" aria-pressed="false" aria-label="ถูกใจ" title="ถูกใจ">${icon('heart')}<span data-like-count="${esc(p.slug)}" class="tabular-nums">${p.like_count || 0}</span></button>
+        <a href="${href}#comments" class="${btn}" aria-label="ความคิดเห็น" title="ความคิดเห็น">${icon('chat')}<span class="tabular-nums">${p.comment_count || 0}</span></a>
+        <button type="button" data-repost="${esc(p.slug)}" data-author="${esc(p.author_id || '')}" class="${btn}" aria-pressed="false" aria-label="รีโพสต์" title="รีโพสต์">${icon('repost')}<span data-repost-count="${esc(p.slug)}" class="tabular-nums">${p.repost_count || 0}</span></button>
+        ${p.view_count != null ? `<span class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-500 dark:text-neutral-400" title="ยอดวิว" aria-label="ยอดวิว ${Number(p.view_count || 0)}">${icon('eye')}<span class="tabular-nums">${Number(p.view_count || 0).toLocaleString('th-TH')}</span></span>` : ''}
+      </div>
+      <button type="button" data-share data-url="${esc(origin + href)}" data-title="${esc(p.title)}" class="${btn}" aria-label="แชร์" title="แชร์">${icon('share')}</button>
+    </div>`;
+}
+
+// รีโพสต์: ห่อการ์ดต้นฉบับด้วยหัว "ใครรีโพสต์" + ข้อความของผู้รีโพสต์ (ถ้ามี) — หน้าตาเดียวกับ NIV.repostWrap() ฝั่งเบราว์เซอร์ใน nivread.js
+// p.repost = { by, by_name, by_avatar, at, note, others } · viewerId = ผู้ที่กำลังดู (ถ้าเป็นเจ้าของโพสต์ จะขึ้นว่า "รีโพสต์โพสต์ของคุณ")
+export function repostWrap(p, innerHtml, viewerId = '') {
+  const r = p.repost;
+  if (!r || !r.by) return innerHtml;
+  const who = esc(r.by_name || r.by);
+  const profile = `/user?id=${encodeURIComponent(r.by)}`;
+  const what = viewerId && p.author_id === viewerId ? 'รีโพสต์โพสต์ของคุณ' : 'รีโพสต์';
+  const more = r.others > 0 ? ` และอีก ${Number(r.others)} คน` : '';
+  return `<div class="rp-card rounded-2xl border border-orange-500/25 bg-gradient-to-b from-orange-500/[0.07] to-transparent overflow-hidden shadow-sm">
+  <div class="rp-bar"></div>
+  <div class="flex items-center gap-2.5 px-4 pt-3">
+    <a href="${profile}" class="relative flex-shrink-0" aria-label="โปรไฟล์ ${who}">${avatar({ display_name: r.by_name || r.by, avatar_url: r.by_avatar }, 'w-9 h-9')}<span class="rp-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON.repost}</svg></span></a>
+    <div class="min-w-0 text-sm text-slate-600 dark:text-neutral-300 leading-tight"><a href="${profile}" class="font-semibold text-slate-900 dark:text-white hover:text-amber-500">${who}</a> ${what}${more} <span class="text-xs text-slate-400 dark:text-neutral-500">· ${esc(ago(r.at))}</span></div>
+  </div>
+  ${r.note ? `<p class="rp-note px-4 pt-2 text-[15px] leading-relaxed text-slate-800 dark:text-neutral-100 whitespace-pre-line break-words">${esc(r.note)}</p>` : ''}
+  <div class="p-3">${innerHtml}</div>
+</div>`;
+}
+
+// การ์ดโพสต์ในฟีด (สไตล์ Facebook) — ลิงก์ <a href> จริงทุกโพสต์ให้ Google ตามเก็บได้
+export function postCard(p, origin, first = false, viewerId = '') {
+  return repostWrap(p, cardHtml(p, origin, first), viewerId);
+}
+function cardHtml(p, origin, first = false) {
+  const href = `/posts/${p.slug}`;
+  return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
+  ${postHead(p)}
+  <div class="px-4 pb-3">
+    <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-snug"><a href="${href}" class="hover:text-amber-500 transition-colors">${esc(p.title)}</a></h2>
+    ${p.excerpt ? `<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-3"><a href="${href}" class="block hover:text-amber-500 transition-colors">${esc(p.excerpt)}</a></p>` : ''}
+    ${(p.content_len || 0) > 160 ? `<a href="${href}" class="inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500" aria-label="อ่านโพสต์ต่อ" title="อ่านโพสต์ต่อ">...</a>` : ''}
+  </div>
+  ${(p.videos && p.videos.length) ? videoGallery(p.videos, p.title, true, first, href) : imageGallery(postImages(p), p.title, first, href)}
+  ${postBar(p, origin)}
+</article>`;
+}
+
+export { postBar, postHead };
+
+// ธีมฮาโลวีน: เปิดเองเฉพาะช่วงเทศกาล (เวลาไทย, รวมวันแรกและวันสุดท้าย, ใช้ซ้ำทุกปี)
+// ช่วงวันที่ต้องตรงกับ HW_FROM / HW_TO ใน public/nivread.js
+const HW_FROM = '10-20', HW_TO = '11-01';
+export function halloweenOn(now = Date.now()) {
+  const md = new Date(now + 7 * 3600e3).toISOString().slice(5, 10);
+  return HW_FROM <= HW_TO ? md >= HW_FROM && md <= HW_TO : md >= HW_FROM || md <= HW_TO;
+}
+
+export function shell({ origin, apiBase, path, title, desc, image, jsonld = [], body, robots = 'index, follow, max-image-preview:large', type = 'website', head = '' }) {
+  const canonical = origin + path;
+  const hw = halloweenOn();
+  const img = image || `${origin}/og-image.jpg`;
+  const ld = jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`).join('\n');
+  return `<!DOCTYPE html>
+<html lang="th" class="dark${hw ? ' halloween' : ''}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(desc)}">
+<meta name="robots" content="${robots}">
+<meta name="author" content="nivread">
+<link rel="canonical" href="${esc(canonical)}">
+<link rel="icon" href="/img/nivreadfavon.png" type="image/png">
+<link rel="apple-touch-icon" href="/img/nivreadfavon.png">
+<meta name="theme-color" content="${hw ? '#110a05' : '#0d0d0d'}">
+<meta name="api-base" content="${esc(apiBase)}">
+<meta property="og:site_name" content="nivread">
+<meta property="og:type" content="${type}">
+<meta property="og:url" content="${esc(canonical)}">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:image" content="${esc(img)}">
+<meta property="og:locale" content="th_TH">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(desc)}">
+<meta name="twitter:image" content="${esc(img)}">
+${head}
+${ld}
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');${hw ? "\n  try { if (localStorage.getItem('halloween') === 'off') document.documentElement.classList.remove('halloween'); } catch (e) {}" : ''}
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Kanit',sans-serif}</style>
+<link id="niv-css" rel="stylesheet" href="/niv.css">${hw ? '\n<link id="hw-css" rel="stylesheet" href="/halloween.css">' : ''}
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white transition-colors duration-300 min-h-screen flex flex-col relative overflow-x-hidden">
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+<header id="main-header" class="z-20"></header>
+${body}
+<div id="main-footer" class="z-10"></div>
+<script src="/nivread.js"></script>
+<script src="/posts-feed.js" defer></script>
+</body>
+</html>`;
+}
+
+export const htmlResponse = (html, status = 200, cache = 'public, max-age=0, s-maxage=300, stale-while-revalidate=600') =>
+  new Response(html, { status, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': cache } });
