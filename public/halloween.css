@@ -1,67 +1,65 @@
-/* /halloween.css — ธีมฮาโลวีนแนวลึกลับ (ม่วงดำ ใยแมงมุม แสงหรี่)
-   ทุกกฎขึ้นต้นด้วย html.halloween จึงมีผลเฉพาะตอนเปิดธีมเท่านั้น — ถอดคลาสออกแล้วเว็บกลับเป็นปกติ ไม่ต้องคืนค่าใด ๆ
-   ไม่แก้ niv.css: กฎที่ทับใช้ specificity สูงกว่า (html.halloween + selector เดิม) */
+/* /halloween.css — ธีมฮาโลวีนโทนส้ม เรียบง่าย เบาเครื่อง (ส้มฟักทอง ใยแมงมุม ค้างคาว แสงเทียน)
+   ทุกกฎขึ้นต้นด้วย html.halloween จึงมีผลเฉพาะตอนเปิดธีมเท่านั้น — ถอดคลาสออกแล้วเว็บกลับเป็นปกติ
+   ไม่แก้ niv.css: กฎที่ทับใช้ specificity สูงกว่า (html.halloween + selector เดิม)
+   ปรับให้ลื่น: ไม่ใช้ background-attachment:fixed, ไม่มี filter/drop-shadow ที่เคลื่อนไหว, animate เฉพาะ transform/opacity */
 
 /* ---------- ตัวแปรสี ---------- */
 html.halloween{
-  --hw-bg:#f1ecf9;
-  --hw-txt:#6d28d9;          /* สีตัวอักษรเน้น (เดิม amber-600) */
-  --hw-txt-h:#7c3aed;        /* ตอน hover */
-  --hw-rgb:124 58 237;       /* สีหลักแบบ r g b ไว้ทำความโปร่งใส */
-  --hw-g1:#6d28d9;           /* ไล่สีปุ่ม: ต้น → กลาง → ปลาย */
-  --hw-g2:#8b5cf6;
-  --hw-g3:#c026d3;
-  --hw-b1:#6d28d9;           /* ไล่สีชื่อเว็บ (nivread) */
-  --hw-b2:#7c3aed;
-  --hw-b3:#c026d3;
-  --hw-line:rgb(124 58 237 / .22);
-  --hw-web:#4c1d95;          /* เส้นใยแมงมุม */
-  --hw-bat:#2e1065;
-  accent-color:#7c3aed;
+  --hw-bg:#fff5ea;
+  --hw-txt:#c2410c;
+  --hw-txt-h:#ea580c;
+  --hw-rgb:249 115 22;       /* ส้มหลักแบบ r g b */
+  --hw-g1:#ea580c;
+  --hw-g2:#f97316;
+  --hw-g3:#f59e0b;
+  --hw-b1:#c2410c;
+  --hw-b2:#ea580c;
+  --hw-b3:#f59e0b;
+  --hw-line:rgb(249 115 22 / .25);
+  --hw-web:#9a3412;
+  --hw-bat:#431407;
+  accent-color:#f97316;
   color-scheme:light;
 }
 html.halloween.dark{
-  --hw-bg:#0b0713;
-  --hw-txt:#c4b5fd;
-  --hw-txt-h:#ddd6fe;
-  --hw-rgb:139 92 246;
-  --hw-g1:#6d28d9;
-  --hw-g2:#8b5cf6;
-  --hw-g3:#c026d3;
-  --hw-b1:#a78bfa;
-  --hw-b2:#c084fc;
-  --hw-b3:#f0abfc;
-  --hw-line:rgb(139 92 246 / .22);
-  --hw-web:#c4b5fd;
-  --hw-bat:#000;
+  --hw-bg:#110a05;
+  --hw-txt:#fdba74;
+  --hw-txt-h:#fed7aa;
+  --hw-rgb:251 146 60;
+  --hw-g1:#ea580c;
+  --hw-g2:#f97316;
+  --hw-g3:#f59e0b;
+  --hw-b1:#fdba74;
+  --hw-b2:#fb923c;
+  --hw-b3:#fbbf24;
+  --hw-line:rgb(251 146 60 / .22);
+  --hw-web:#fdba74;
+  --hw-bat:#7c2d12;
   color-scheme:dark;
 }
 
-/* ---------- พื้นหลัง: ม่วงเกือบดำ + แสงหรี่ที่ขอบ ---------- */
+/* ---------- พื้นหลัง: สีเรียบ + แสงอุ่นที่ขอบ (วาดบน layer fixed ของ JS ไม่ repaint ตอนเลื่อน) ---------- */
 html.halloween body{background-color:var(--hw-bg)!important}
-html.halloween.dark body{
-  background-image:
-    radial-gradient(900px 520px at 50% -12%,rgb(124 58 237 / .20),transparent 70%),
-    radial-gradient(700px 420px at 100% 100%,rgb(88 28 135 / .28),transparent 70%);
-  background-attachment:fixed;
-}
-html.halloween:not(.dark) body{
-  background-image:radial-gradient(900px 520px at 50% -12%,rgb(167 139 250 / .28),transparent 70%);
-  background-attachment:fixed;
-}
-/* ก้อนแสงเบลอสองก้อนของหน้า SSR: เปลี่ยนจากส้มเป็นม่วง และให้ "หายใจ" ช้า ๆ เหมือนแสงเทียน */
-html.halloween body>.fixed.inset-0.pointer-events-none>div{animation:hw-breathe 7s ease-in-out infinite}
-html.halloween body>.fixed.inset-0.pointer-events-none>div:first-child{background:rgb(109 40 217 / .34)!important}
-html.halloween body>.fixed.inset-0.pointer-events-none>div:nth-child(2){background:rgb(162 28 175 / .26)!important;animation-delay:-3.5s}
-@keyframes hw-breathe{0%,100%{opacity:.55}45%{opacity:1}60%{opacity:.8}}
+.hw-glow{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(800px 480px at 50% -10%,rgb(251 146 60 / .22),transparent 70%),
+    radial-gradient(600px 400px at 100% 100%,rgb(234 88 12 / .16),transparent 70%)}
+html.halloween.dark .hw-glow{
+  background:
+    radial-gradient(800px 480px at 50% -10%,rgb(234 88 12 / .22),transparent 70%),
+    radial-gradient(600px 400px at 100% 100%,rgb(194 65 12 / .22),transparent 70%)}
 
-html.halloween ::selection{background:rgb(139 92 246 / .45);color:#fff}
-html.halloween{scrollbar-color:#4c1d95 transparent}
+/* ก้อนแสงเบลอของหน้า SSR: แค่เปลี่ยนเป็นส้ม ไม่ animate (เบลอ + animate = กระตุก) */
+html.halloween body>.fixed.inset-0.pointer-events-none>div:first-child{background:rgb(234 88 12 / .28)!important}
+html.halloween body>.fixed.inset-0.pointer-events-none>div:nth-child(2){background:rgb(245 158 11 / .2)!important}
 
-/* ---------- ปุ่ม/ไล่สี Tailwind (เฉพาะ token ที่ไม่มี prefix เช่น hover: จึงไม่ค้างเป็นสีม่วงตลอด) ---------- */
+html.halloween ::selection{background:rgb(249 115 22 / .45);color:#fff}
+html.halloween{scrollbar-color:#c2410c transparent}
+
+/* ---------- ปุ่ม/ไล่สี Tailwind ---------- */
 html.halloween :is([class^="from-amber-"],[class*=" from-amber-"],[class^="from-orange-"],[class*=" from-orange-"]){
   --tw-gradient-from:var(--hw-g1) var(--tw-gradient-from-position)!important;
-  --tw-gradient-to:rgb(109 40 217 / 0) var(--tw-gradient-to-position)!important;
+  --tw-gradient-to:rgb(234 88 12 / 0) var(--tw-gradient-to-position)!important;
   --tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)!important;
 }
 html.halloween :is([class^="via-amber-"],[class*=" via-amber-"],[class^="via-orange-"],[class*=" via-orange-"]){
@@ -75,26 +73,26 @@ html.halloween .nv-brand{background-image:linear-gradient(to right,var(--hw-b1),
 /* ตัวอักษร / เส้นขอบ / พื้นหลังโปร่ง / เงา / วงแหวนโฟกัส */
 html.halloween :is([class^="text-amber-"],[class*=" text-amber-"],[class^="text-orange-"],[class*=" text-orange-"]){color:var(--hw-txt)!important}
 html.halloween :is([class*="hover:text-amber-"],[class*="hover:text-orange-"]):hover{color:var(--hw-txt-h)!important}
-html.halloween :is([class^="border-amber-"],[class*=" border-amber-"],[class^="border-orange-"],[class*=" border-orange-"]){border-color:rgb(139 92 246 / .4)!important}
-html.halloween :is([class*="hover:border-amber-"],[class*="focus:border-amber-"]):is(:hover,:focus){border-color:rgb(167 139 250 / .85)!important}
+html.halloween :is([class^="border-amber-"],[class*=" border-amber-"],[class^="border-orange-"],[class*=" border-orange-"]){border-color:rgb(249 115 22 / .4)!important}
+html.halloween :is([class*="hover:border-amber-"],[class*="focus:border-amber-"]):is(:hover,:focus){border-color:rgb(251 146 60 / .85)!important}
 html.halloween :is([class^="bg-amber-"],[class*=" bg-amber-"],[class^="bg-orange-"],[class*=" bg-orange-"]){background-color:rgb(var(--hw-rgb) / .14)!important}
 html.halloween :is([class*="hover:bg-amber-"],[class*="hover:bg-orange-"]):hover{background-color:rgb(var(--hw-rgb) / .24)!important}
 html.halloween :is([class^="shadow-amber-"],[class*=" shadow-amber-"],[class^="shadow-orange-"],[class*=" shadow-orange-"]){--tw-shadow-color:rgb(var(--hw-rgb) / .38)!important}
-html.halloween :is([class*="ring-amber-"],[class*="ring-orange-"]){--tw-ring-color:rgb(167 139 250 / .45)!important}
-html.halloween :is([class^="accent-amber-"],[class*=" accent-amber-"]){accent-color:#8b5cf6!important}
+html.halloween :is([class*="ring-amber-"],[class*="ring-orange-"]){--tw-ring-color:rgb(251 146 60 / .5)!important}
+html.halloween :is([class^="accent-amber-"],[class*=" accent-amber-"]){accent-color:#f97316!important}
 
-/* ---------- แถบบน / แถบล่างมือถือ / เมนูข้าง (CSS ของ nivread.js) ---------- */
+/* ---------- แถบบน / แถบล่างมือถือ / เมนูข้าง ---------- */
 html.halloween #main-header .sticky{border-bottom-color:var(--hw-line)!important}
-html.halloween.dark #main-header .sticky{background-color:rgb(11 7 19 / .82)!important}
-html.halloween:not(.dark) #main-header .sticky{background-color:rgb(246 242 252 / .85)!important}
-html.halloween.dark #niv-tabbar{background:rgb(11 7 19 / .94);border-top-color:rgb(139 92 246 / .25)}
-html.halloween #niv-tabbar .tb.on{color:#a78bfa}
-html.halloween #niv-drawer aside{background:radial-gradient(120% 55% at 100% 0%,rgb(124 58 237 / .2),transparent 60%),rgba(255,255,255,.88)}
-html.halloween.dark #niv-drawer aside{background:radial-gradient(120% 55% at 100% 0%,rgb(124 58 237 / .26),transparent 60%),rgb(14 9 24 / .9)}
-html.halloween .nv-link.is-active{background:rgb(var(--hw-rgb) / .14);color:#6d28d9}
-html.halloween.dark .nv-link.is-active{background:rgb(var(--hw-rgb) / .24);color:#c4b5fd}
+html.halloween.dark #main-header .sticky{background-color:rgb(17 10 5 / .85)!important}
+html.halloween:not(.dark) #main-header .sticky{background-color:rgb(255 247 237 / .88)!important}
+html.halloween.dark #niv-tabbar{background:rgb(17 10 5 / .95);border-top-color:rgb(249 115 22 / .25)}
+html.halloween #niv-tabbar .tb.on{color:#fb923c}
+html.halloween #niv-drawer aside{background:linear-gradient(180deg,rgb(249 115 22 / .12),transparent 40%),rgba(255,255,255,.92)}
+html.halloween.dark #niv-drawer aside{background:linear-gradient(180deg,rgb(249 115 22 / .16),transparent 40%),rgb(20 12 6 / .94)}
+html.halloween .nv-link.is-active{background:rgb(var(--hw-rgb) / .14);color:#c2410c}
+html.halloween.dark .nv-link.is-active{background:rgb(var(--hw-rgb) / .24);color:#fdba74}
 
-/* ---------- ปุ่มติดตาม / แกลเลอรี / เครื่องเล่นวิดีโอ (CSS ใน niv.css และ nivread.js) ---------- */
+/* ---------- ปุ่มติดตาม / แกลเลอรี / เครื่องเล่นวิดีโอ ---------- */
 html.halloween .fb-link,html.halloween .vg-more-u{color:var(--hw-txt)}
 html.halloween .fb-link:hover{background:rgb(var(--hw-rgb) / .16)}
 html.halloween .fb-pill,html.halloween .fb-chip[aria-pressed=true]{background:linear-gradient(to right,var(--hw-g1),var(--hw-g3));box-shadow:0 6px 16px -6px rgb(var(--hw-rgb) / .6)}
@@ -103,77 +101,79 @@ html.halloween .fb-chip{color:var(--hw-txt);border-color:rgb(var(--hw-rgb) / .45
 html.halloween .fb-chip[aria-pressed=true]{color:#fff;border-color:transparent}
 html.halloween .fb-plus{color:var(--hw-txt)}
 html.halloween .fb-plus:hover{color:var(--hw-txt-h)}
-html.halloween .vg-head .vg-dot{background:#a78bfa;box-shadow:0 0 12px #8b5cf6}
-html.halloween .vg-more{color:#ddd6fe;border-color:rgb(167 139 250 / .5);background:rgb(var(--hw-rgb) / .14)}
+html.halloween .vg-head .vg-dot{background:#fb923c;box-shadow:0 0 10px #f97316}
+html.halloween .vg-more{color:#fed7aa;border-color:rgb(251 146 60 / .5);background:rgb(var(--hw-rgb) / .14)}
 html.halloween .vg-more:hover{background:rgb(var(--hw-rgb) / .3)}
-html.halloween .vg-eq s{background:#c4b5fd}
-html.halloween .vg-strip{scrollbar-color:#7c3aed55 transparent}
-html.halloween .vg-t[aria-current="true"]{box-shadow:0 0 0 2px #8b5cf6,0 8px 22px rgb(var(--hw-rgb) / .5)}
-html.halloween .vg-play img{filter:drop-shadow(0 4px 14px rgba(0,0,0,.6)) drop-shadow(0 0 16px rgb(var(--hw-rgb) / .8))}
-html.halloween .uv.bp:focus-visible,html.halloween .bp-mute:focus-visible{box-shadow:0 0 0 2px #8b5cf6}
-html.halloween .bp-fill{stroke:#a78bfa}
-html.halloween .bp-fast-tag svg{fill:#a78bfa}
+html.halloween .vg-eq s{background:#fdba74}
+html.halloween .vg-strip{scrollbar-color:#ea580c66 transparent}
+html.halloween .vg-t[aria-current="true"]{box-shadow:0 0 0 2px #f97316,0 6px 16px rgb(var(--hw-rgb) / .45)}
+html.halloween .uv.bp:focus-visible,html.halloween .bp-mute:focus-visible{box-shadow:0 0 0 2px #f97316}
+html.halloween .bp-fill{stroke:#fb923c}
+html.halloween .bp-fast-tag svg{fill:#fb923c}
 html.halloween #niv-lb button:hover{background:rgb(var(--hw-rgb) / .65)}
 
-/* ---------- ตัวตกแต่ง (สร้างโดย /halloween.js) — ซ่อนทันทีเมื่อปิดธีม ---------- */
+/* ---------- ตัวตกแต่ง (สร้างโดย /halloween.js) ---------- */
 .hw-deco{display:none}
 html.halloween .hw-deco{display:block}
 
-/* ใยแมงมุมมุมบนซ้าย/ขวา: absolute ที่ต้นหน้า เลื่อนหน้าแล้วหายไปเอง ไม่บังแถบบนที่ sticky */
-.hw-web{position:absolute;top:0;z-index:31;width:clamp(72px,14vw,150px);height:auto;color:var(--hw-web);opacity:.55;pointer-events:none}
+/* ใยแมงมุมมุมบน: absolute ที่ต้นหน้า เลื่อนแล้วหายไปเอง */
+.hw-web{position:absolute;top:0;z-index:31;width:clamp(72px,14vw,150px);height:auto;color:var(--hw-web);opacity:.5;pointer-events:none}
 .hw-web-l{left:0}
 .hw-web-r{right:0;transform:scaleX(-1)}
 .hw-web path{fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:round}
 
-/* ค้างคาวบิน: fixed ใต้เมนูข้าง (z 50) และ lightbox (z 80) กดทะลุได้ */
-.hw-bats{position:fixed;inset:0;z-index:25;overflow:hidden;pointer-events:none}
+/* ค้างคาวบิน: 2 ตัว ใช้ transform/opacity อย่างเดียว ไม่มี filter */
+.hw-bats{position:fixed;inset:0;z-index:25;overflow:hidden;pointer-events:none;contain:strict}
 .hw-bat{position:absolute;left:0;top:var(--y,20%);width:var(--s,34px);height:auto;color:var(--hw-bat);opacity:0;
-  filter:drop-shadow(0 0 6px rgb(139 92 246 / .7));will-change:transform;
-  animation:hw-fly var(--d,24s) linear var(--t,0s) infinite}
-html.halloween.dark .hw-bat{color:#1a1030}
-.hw-bat svg{display:block;width:100%;height:auto;fill:currentColor;transform-origin:50% 60%;animation:hw-flap .32s ease-in-out infinite alternate}
+  will-change:transform,opacity;animation:hw-fly var(--d,24s) linear var(--t,0s) infinite}
+.hw-bat svg{display:block;width:100%;height:auto;fill:currentColor;transform-origin:50% 60%;animation:hw-flap .4s ease-in-out infinite alternate}
 @keyframes hw-fly{
   0%{transform:translate3d(-12vw,0,0);opacity:0}
-  4%{opacity:.95}
-  25%{transform:translate3d(22vw,-5vh,0)}
-  50%{transform:translate3d(52vw,4vh,0)}
-  75%{transform:translate3d(80vw,-4vh,0)}
-  96%{opacity:.95}
-  100%{transform:translate3d(112vw,2vh,0);opacity:0}
+  5%{opacity:.9}
+  50%{transform:translate3d(52vw,5vh,0)}
+  95%{opacity:.9}
+  100%{transform:translate3d(112vw,-2vh,0);opacity:0}
 }
-@keyframes hw-flap{from{transform:scaleY(1)}to{transform:scaleY(.45)}}
+@keyframes hw-flap{from{transform:scaleY(1)}to{transform:scaleY(.5)}}
 .hw-bat.rev{animation-name:hw-fly-rev}
 @keyframes hw-fly-rev{
   0%{transform:translate3d(112vw,0,0) scaleX(-1);opacity:0}
-  4%{opacity:.95}
+  5%{opacity:.9}
   50%{transform:translate3d(48vw,5vh,0) scaleX(-1)}
-  96%{opacity:.95}
+  95%{opacity:.9}
   100%{transform:translate3d(-12vw,-3vh,0) scaleX(-1);opacity:0}
 }
 
-/* ฟักทองเหนือท้ายหน้า: ตัวสีม่วงเข้ม หน้ากลวงเรืองแสงเทียนกะพริบ */
+/* ฟักทองเหนือท้ายหน้า: ส้มสด หน้ากลวงเรืองแสงเทียน (กะพริบด้วย opacity อย่างเดียว) */
 html.halloween .hw-pk{display:flex;justify-content:center;align-items:flex-end;gap:.9rem;margin:2rem 0 -1.5rem;pointer-events:none}
-.hw-pk svg{display:block;height:auto;overflow:visible}
+.hw-pk svg{display:block;height:auto;overflow:visible;transform-origin:50% 100%}
 .hw-pk svg:nth-child(1){width:46px}
 .hw-pk svg:nth-child(2){width:62px}
 .hw-pk svg:nth-child(3){width:40px}
 .hw-pk .body{fill:url(#hw-pk-g)}
-.hw-pk .rib{fill:none;stroke:#1e0b3a;stroke-width:1.2;opacity:.8}
-.hw-pk .stem{fill:#14532d}
-.hw-pk .face{fill:#fbbf24;filter:drop-shadow(0 0 5px #f59e0b) drop-shadow(0 0 12px rgb(245 158 11 / .55));animation:hw-candle 3.1s ease-in-out infinite}
-.hw-pk svg:nth-child(2) .face{animation-delay:-1.1s}
-.hw-pk svg:nth-child(3) .face{animation-delay:-2s}
-@keyframes hw-candle{0%,100%{opacity:.95}18%{opacity:.6}32%{opacity:1}55%{opacity:.72}70%{opacity:.98}85%{opacity:.8}}
+.hw-pk .rib{fill:none;stroke:#9a3412;stroke-width:1.2;opacity:.75}
+.hw-pk .stem{fill:#166534}
+.hw-pk .face{fill:#fef3c7}
+.hw-pk .lit{animation:hw-candle 3.2s ease-in-out infinite}
+.hw-pk svg:nth-child(2) .lit{animation-delay:-1.1s}
+.hw-pk svg:nth-child(3) .lit{animation-delay:-2s}
+@keyframes hw-candle{0%,100%{opacity:1}20%{opacity:.7}35%{opacity:1}60%{opacity:.8}80%{opacity:.95}}
+/* ลูกเล่น: ฟักทองโยกเบา ๆ ช้า ๆ */
+.hw-pk svg{animation:hw-sway 6s ease-in-out infinite}
+.hw-pk svg:nth-child(2){animation-delay:-2s}
+.hw-pk svg:nth-child(3){animation-delay:-4s}
+@keyframes hw-sway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
 
 /* ปุ่มเปิด/ปิดธีมในเมนูข้าง */
 #hw-toggle .hw-state{margin-left:auto;font-size:.72rem;font-weight:600;padding:.1rem .55rem;border-radius:999px;border:1px solid rgba(148,163,184,.5);color:#64748b}
-html.halloween #hw-toggle .hw-state{color:#ddd6fe;border-color:rgb(167 139 250 / .55);background:rgb(var(--hw-rgb) / .2)}
+html.halloween #hw-toggle .hw-state{color:#c2410c;border-color:rgb(251 146 60 / .6);background:rgb(var(--hw-rgb) / .16)}
+html.halloween.dark #hw-toggle .hw-state{color:#fed7aa}
 #hw-toggle .hw-on{display:none}
 html.halloween #hw-toggle .hw-on{display:inline}
 html.halloween #hw-toggle .hw-off{display:none}
 
-/* เคารพผู้ที่ลดการเคลื่อนไหว: ไม่มีค้างคาว ไม่กะพริบ ไม่หายใจ */
+/* เคารพผู้ที่ลดการเคลื่อนไหว */
 @media (prefers-reduced-motion:reduce){
   .hw-bats{display:none}
-  html.halloween body>.fixed.inset-0.pointer-events-none>div,.hw-pk .face{animation:none}
+  .hw-pk .lit,.hw-pk svg{animation:none}
 }
