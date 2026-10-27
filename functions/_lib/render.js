@@ -157,12 +157,21 @@ function cardHtml(p, origin, first = false) {
 
 export { postBar, postHead };
 
+// ธีมฮาโลวีน: เปิดเองเฉพาะช่วงเทศกาล (เวลาไทย, รวมวันแรกและวันสุดท้าย, ใช้ซ้ำทุกปี)
+// ช่วงวันที่ต้องตรงกับ HW_FROM / HW_TO ใน public/nivread.js
+const HW_FROM = '10-20', HW_TO = '11-01';
+export function halloweenOn(now = Date.now()) {
+  const md = new Date(now + 7 * 3600e3).toISOString().slice(5, 10);
+  return HW_FROM <= HW_TO ? md >= HW_FROM && md <= HW_TO : md >= HW_FROM || md <= HW_TO;
+}
+
 export function shell({ origin, apiBase, path, title, desc, image, jsonld = [], body, robots = 'index, follow, max-image-preview:large', type = 'website', head = '' }) {
   const canonical = origin + path;
+  const hw = halloweenOn();
   const img = image || `${origin}/og-image.jpg`;
   const ld = jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`).join('\n');
   return `<!DOCTYPE html>
-<html lang="th" class="dark">
+<html lang="th" class="dark${hw ? ' halloween' : ''}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -173,7 +182,7 @@ export function shell({ origin, apiBase, path, title, desc, image, jsonld = [], 
 <link rel="canonical" href="${esc(canonical)}">
 <link rel="icon" href="/img/nivreadfavon.png" type="image/png">
 <link rel="apple-touch-icon" href="/img/nivreadfavon.png">
-<meta name="theme-color" content="#0d0d0d">
+<meta name="theme-color" content="${hw ? '#0b0713' : '#0d0d0d'}">
 <meta name="api-base" content="${esc(apiBase)}">
 <meta property="og:site_name" content="nivread">
 <meta property="og:type" content="${type}">
@@ -190,7 +199,7 @@ ${head}
 ${ld}
 <script>
   if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
-  else document.documentElement.classList.add('dark');
+  else document.documentElement.classList.add('dark');${hw ? "\n  try { if (localStorage.getItem('halloween') === 'off') document.documentElement.classList.remove('halloween'); } catch (e) {}" : ''}
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config = { darkMode: 'class' }</script>
@@ -198,7 +207,7 @@ ${ld}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{font-family:'Kanit',sans-serif}</style>
-<link id="niv-css" rel="stylesheet" href="/niv.css">
+<link id="niv-css" rel="stylesheet" href="/niv.css">${hw ? '\n<link id="hw-css" rel="stylesheet" href="/halloween.css">' : ''}
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white transition-colors duration-300 min-h-screen flex flex-col relative overflow-x-hidden">
 <div class="fixed inset-0 pointer-events-none z-0">
