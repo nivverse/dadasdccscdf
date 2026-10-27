@@ -3,6 +3,31 @@
 (() => {
   const API = 'https://api.fnnz.art';
 
+  // ---------- ธีมฮาโลวีน: เปิดเองเฉพาะช่วงเทศกาล (เวลาไทย, รวมวันแรกและวันสุดท้าย, ใช้ซ้ำทุกปี) ----------
+  // ช่วงวันที่ต้องตรงกับ HW_FROM / HW_TO ใน functions/_lib/render.js — ทดสอบนอกช่วงได้ด้วย ?hw=1 (จำไว้ตลอดแท็บ), ?hw=0 เพื่อเลิกทดสอบ
+  {
+    const HW_FROM = '10-20', HW_TO = '11-01';
+    const md = new Date(Date.now() + 7 * 36e5).toISOString().slice(5, 10);
+    let season = HW_FROM <= HW_TO ? md >= HW_FROM && md <= HW_TO : md >= HW_FROM || md <= HW_TO;
+    let off = false;
+    try {
+      if (/[?&]hw=1(&|$)/.test(location.search)) sessionStorage.setItem('hw-preview', '1');
+      if (/[?&]hw=0(&|$)/.test(location.search)) sessionStorage.removeItem('hw-preview');
+      season = season || sessionStorage.getItem('hw-preview') === '1';
+      off = localStorage.getItem('halloween') === 'off'; // ผู้ใช้กดปิดธีมเอง
+    } catch {}
+    // ตั้งคลาสให้ตรงความจริงเสมอ: หน้า SSR ที่แคชไว้ข้ามวันที่ขอบช่วงก็ถูกแก้ตรงนี้
+    document.documentElement.classList.toggle('halloween', season && !off);
+    if (season) {
+      if (!document.getElementById('hw-css')) {
+        const l = document.createElement('link'); l.id = 'hw-css'; l.rel = 'stylesheet'; l.href = '/halloween.css';
+        document.head.appendChild(l);
+      }
+      const j = document.createElement('script'); j.src = '/halloween.js'; j.async = true; // ทำงานหลัง header/footer สร้างเสร็จ
+      document.head.appendChild(j);
+    }
+  }
+
   const ls = (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
   const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
   const session = () => ({ token: ls('token'), userId: ls('userId'), name: ls('userName'), avatar: ls('userAvatar') });

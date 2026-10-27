@@ -182,7 +182,7 @@ export function shell({ origin, apiBase, path, title, desc, image, jsonld = [], 
 <link rel="canonical" href="${esc(canonical)}">
 <link rel="icon" href="/img/nivreadfavon.png" type="image/png">
 <link rel="apple-touch-icon" href="/img/nivreadfavon.png">
-<meta name="theme-color" content="${hw ? '#110a05' : '#0d0d0d'}">
+<meta name="theme-color" content="${hw ? '#0b0713' : '#0d0d0d'}">
 <meta name="api-base" content="${esc(apiBase)}">
 <meta property="og:site_name" content="nivread">
 <meta property="og:type" content="${type}">
