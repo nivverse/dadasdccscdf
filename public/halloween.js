@@ -1,4 +1,4 @@
-// public/halloween.js — ตัวตกแต่งธีมฮาโลวีน (ใยแมงมุม ค้างคาว ฟักทอง) + ปุ่มเปิด/ปิดธีมในเมนูข้าง
+// public/halloween.js — ตัวตกแต่งธีมฮาโลวีน (ใยแมงมุม ผี ฟักทอง) + ปุ่มเปิด/ปิดธีมในเมนูข้าง
 // โหลดโดย nivread.js เฉพาะช่วงเทศกาล (หรือ ?hw=1 ตอนทดสอบ) — สไตล์อยู่ใน /halloween.css
 (() => {
   if (window.__hw) return;
@@ -30,7 +30,8 @@
 <path d="M0 0L100 0M0 0L92 34M0 0L70 70M0 0L34 92M0 0L0 100"/>
 <path d="M30 0Q26 26 0 30M52 0Q46 46 0 52M76 0Q66 66 0 76M98 0Q84 84 0 98"/>
 </svg>`;
-  const BAT = `<svg viewBox="0 0 64 32" aria-hidden="true"><path d="M32 10C30 10 29 8 28 5L27 9C24 7 20 6 15 8 10 10 5 14 1 19 6 18 9 18 12 20 14 18 17 17 20 18 22 19 24 22 26 25 28 24 30 22 32 21 34 22 36 24 38 25 40 22 42 19 44 18 47 17 50 18 52 20 55 18 58 18 63 19 59 14 54 10 49 8 44 6 40 7 37 9L36 5C35 8 34 10 32 10Z"/></svg>`;
+  // ผีลอย (โครงจาก "Little Halloween" ของ khadkamhn) — รูปร่าง/สีทั้งหมดอยู่ใน halloween.css
+  const GHOST = `<div class="hw-gm"><div class="hw-g-head"><div class="hw-g-skull"><div class="hw-g-eyes"><div class="hw-g-eye l"></div><div class="hw-g-eye r"></div></div></div></div><div class="hw-g-body"></div><div class="hw-g-legs"></div></div>`;
   const PUMPKIN = `<svg viewBox="0 0 80 70" aria-hidden="true">
 <path class="stem" d="M37 12C37 6 39 3 43 1 42 6 44 9 46 12Z"/>
 <ellipse class="body" cx="22" cy="42" rx="17" ry="24"/><ellipse class="body" cx="58" cy="42" rx="17" ry="24"/>
@@ -65,17 +66,17 @@
     wrap.appendChild(glow);
 
     if (!reduce) {
-      const bats = document.createElement('div');
-      bats.className = 'hw-bats';
-      // [ความสูง%, ขนาดpx, ระยะเวลาs, หน่วงs, กลับทิศ]
-      [[12, 34, 28, 1, 0], [30, 26, 34, 14, 1]].forEach(([y, s, d, t, r]) => {
-        const b = document.createElement('div');
-        b.className = 'hw-bat' + (r ? ' rev' : '');
-        b.style.cssText = `--y:${y}%;--s:${s}px;--d:${d}s;--t:${t}s`;
-        b.innerHTML = BAT;
-        bats.appendChild(b);
+      const ghosts = document.createElement('div');
+      ghosts.className = 'hw-ghosts';
+      // [ความสูง%, ขนาด(เท่า), ระยะเวลาs, หน่วงs, กลับทิศ]
+      [[14, 1.7, 30, 1, 0], [34, 1.3, 38, 15, 1]].forEach(([y, s, d, t, r]) => {
+        const g = document.createElement('div');
+        g.className = 'hw-ghost' + (r ? ' rev' : '');
+        g.style.cssText = `--y:${y}%;--s:${s};--d:${d}s;--t:${t}s`;
+        g.innerHTML = GHOST;
+        ghosts.appendChild(g);
       });
-      wrap.appendChild(bats);
+      wrap.appendChild(ghosts);
     }
     document.body.appendChild(wrap);
 
