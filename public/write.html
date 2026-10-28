@@ -69,6 +69,8 @@
         <button id="vid-up" type="button" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10 hidden" title="อัปโหลดวิดีโอ (ไม่เกิน 30 วินาที)" aria-label="อัปโหลดวิดีโอ">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg><span id="vid-count" class="text-[11px] leading-none text-slate-400">0 / 1</span></button>
         <input id="vid-file" type="file" accept="video/*" class="hidden">
+        <button id="tg-lock" type="button" aria-pressed="false" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="กล่องล็อก (ซ่อนข้อความจนกว่าจะปลดล็อก)" aria-label="กล่องล็อก">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><span id="lock-count" class="text-[11px] leading-none text-slate-400">0 / 5</span></button>
       </div>
 
       <div id="pn-img" class="hidden mt-3">
@@ -83,6 +85,27 @@
           <button id="yt-add" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">เพิ่ม</button>
         </div>
       </div>
+
+      <div id="pn-lock" class="hidden mt-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+        <p class="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">กล่องจะถูกวางตรงตำแหน่งเคอร์เซอร์ในเนื้อหา ผู้อ่านเห็นแค่ป้ายบนกล่อง ข้อความข้างในซ่อนอยู่จนกว่าจะปลดล็อก เช่น เขียนว่า “แจกโค้ดส่วนลด กดรับง่ายๆ แค่ติดตามเรา” แล้ววางกล่องต่อท้าย</p>
+        <input id="lk-label" maxlength="80" autocomplete="off" placeholder="ป้ายบนกล่อง เช่น 🎁 โค้ดส่วนลด" aria-label="ป้ายบนกล่อง" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+        <textarea id="lk-secret" rows="3" maxlength="500" placeholder="ข้อความที่ซ่อน เช่น โค้ดส่วนลด FNNZ20 หรือลิงก์ที่จะแจก" aria-label="ข้อความที่ซ่อน" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"></textarea>
+        <div id="lk-modes" role="group" aria-label="วิธีปลดล็อก" class="grid grid-cols-3 gap-2">
+          <button type="button" data-mode="follow" aria-pressed="true" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ติดตามเรา</button>
+          <button type="button" data-mode="pin" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">รหัส 4 หลัก</button>
+          <button type="button" data-mode="time" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ตั้งเวลา</button>
+        </div>
+        <div id="lk-pin-w" class="hidden"><input id="lk-pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="รหัสตัวเลข 4 หลัก" aria-label="รหัสปลดล็อก 4 หลัก" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 tracking-[0.4em]"></div>
+        <div id="lk-time-w" class="hidden"><input id="lk-time" type="datetime-local" aria-label="วันและเวลาที่จะปลดล็อก" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"></div>
+        <p id="lk-hint" class="text-xs text-slate-500 dark:text-neutral-400"></p>
+        <p class="text-xs text-slate-500 dark:text-neutral-400">อย่าใส่รหัสผ่านหรือข้อมูลส่วนตัวในกล่อง — ใครผ่านเงื่อนไขก็เห็นข้อความได้</p>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="lk-add" type="button" class="px-4 py-2.5 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">เพิ่มกล่องในเนื้อหา</button>
+          <button id="lk-cancel" type="button" class="hidden px-3 py-2.5 text-sm text-slate-500 dark:text-neutral-400 hover:opacity-70 cursor-pointer">ยกเลิกการแก้ไขกล่อง</button>
+        </div>
+        <p id="lk-msg" class="text-xs empty:hidden" role="status"></p>
+      </div>
+      <ul id="lock-list" class="mt-3 space-y-2"></ul>
 
       <p id="img-msg" class="text-xs mt-2 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
       <p id="yt-msg" class="text-xs mt-1 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
@@ -445,8 +468,125 @@
     } finally { vidBusy = false; renderVideos(); }
   });
 
+  // ---------- กล่องล็อก: ซ่อนข้อความจนกว่าผู้อ่านจะปลดล็อก (ติดตาม / รหัส 4 หลัก / ตั้งเวลา) ----------
+  // ในเนื้อหาเก็บแค่ตัวคั่น [[lock:k1]] · ข้อความที่ซ่อนส่งแยกไปเก็บฝั่งเซิร์ฟเวอร์ (ไม่อยู่ในเนื้อหาโพสต์)
+  const LOCK_MAX = 5;
+  const LOCK_MARK = /\[\[lock:(k[1-9])\]\]/g;
+  const LK_MODE = { follow: 'ติดตามเรา', pin: 'รหัส 4 หลัก', time: 'ตั้งเวลา' };
+  const LK_HINT = {
+    follow: 'ผู้อ่านต้องเข้าสู่ระบบและติดตามคุณก่อนจึงเห็นข้อความ (กดปุ่มในกล่องแล้วติดตามได้ทันที)',
+    pin: 'ผู้อ่านต้องกรอกรหัสตัวเลข 4 หลักที่คุณตั้ง — บอกรหัสในเนื้อหาหรือช่องทางอื่นของคุณ',
+    time: 'ข้อความเปิดให้ทุกคนเห็นเมื่อถึงเวลาที่ตั้ง (ตามเวลาในเครื่องของคุณ)',
+  };
+  let locks = [];                 // { key, label, secret, mode, pin, hasPin, unlockAt }
+  let lkMode = 'follow', lkEditing = '';
+  const lkMsg = (t, bad) => { const m = $('lk-msg'); m.textContent = t || ''; m.className = 'text-xs empty:hidden ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
+  const p2 = (n) => String(n).padStart(2, '0');
+  const toLocalInput = (ms) => { const d = new Date(ms); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + 'T' + p2(d.getHours()) + ':' + p2(d.getMinutes()); };
+  const fmtWhen = (ms) => new Date(ms).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+  const marksIn = () => new Set([...$('content').value.matchAll(LOCK_MARK)].map((m) => m[1]));
+  function setLkMode(m) {
+    lkMode = m;
+    document.querySelectorAll('#lk-modes button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === m ? 'true' : 'false'));
+    $('lk-pin-w').classList.toggle('hidden', m !== 'pin');
+    $('lk-time-w').classList.toggle('hidden', m !== 'time');
+    $('lk-hint').textContent = LK_HINT[m];
+    if (m === 'time') $('lk-time').min = toLocalInput(Date.now());
+    const old = locks.find((l) => l.key === lkEditing);
+    $('lk-pin').placeholder = old && old.mode === 'pin' && old.hasPin ? 'เว้นว่าง = ใช้รหัสเดิม' : 'รหัสตัวเลข 4 หลัก';
+  }
+  function insertMark(key) {
+    const ta = $('content'), pos = ta.selectionStart == null ? ta.value.length : ta.selectionStart;
+    const before = ta.value.slice(0, pos), after = ta.value.slice(pos);
+    const ins = (before && !before.endsWith('\n') ? '\n' : '') + '[[lock:' + key + ']]' + (after && !after.startsWith('\n') ? '\n' : '');
+    ta.value = before + ins + after;
+    const c = (before + ins).length; ta.focus(); ta.setSelectionRange(c, c);
+    $('count').textContent = ta.value.length + ' / 20000';
+  }
+  function resetLkForm() {
+    lkEditing = ''; $('lk-label').value = ''; $('lk-secret').value = ''; $('lk-pin').value = ''; $('lk-time').value = '';
+    $('lk-add').textContent = 'เพิ่มกล่องในเนื้อหา'; $('lk-cancel').classList.add('hidden'); setLkMode('follow');
+  }
+  function renderLocks() {
+    const ul = $('lock-list'); ul.replaceChildren();
+    const used = marksIn();
+    locks.forEach((l) => {
+      const li = el('li', 'flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10');
+      const info = el('div', 'min-w-0 flex-1');
+      const sub = l.mode === 'follow' ? 'ปลดล็อกเมื่อติดตามเรา' : l.mode === 'pin' ? 'ปลดล็อกด้วยรหัส 4 หลัก' : 'ปลดล็อก ' + fmtWhen(l.unlockAt);
+      info.append(el('div', 'text-sm font-semibold truncate', '🔒 ' + l.label), el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', sub + (used.has(l.key) ? '' : ' · ยังไม่ได้วางในเนื้อหา')));
+      const mk = (label, text, fn) => { const b = el('button', 'px-2.5 h-8 rounded-lg text-xs text-slate-500 dark:text-neutral-300 hover:bg-amber-500/15 hover:text-amber-500 cursor-pointer', text); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label); b.addEventListener('click', fn); return b; };
+      li.append(info,
+        mk('วางกล่องที่ตำแหน่งเคอร์เซอร์', 'วาง', () => { insertMark(l.key); renderLocks(); }),
+        mk('แก้ไขกล่อง', 'แก้ไข', () => {
+          lkEditing = l.key; $('lk-label').value = l.label; $('lk-secret').value = l.secret; $('lk-pin').value = '';
+          $('lk-time').value = l.unlockAt ? toLocalInput(l.unlockAt) : '';
+          $('lk-add').textContent = 'บันทึกกล่อง'; $('lk-cancel').classList.remove('hidden'); setLkMode(l.mode); lkMsg('');
+          if ($('pn-lock').classList.contains('hidden')) toggle('tg-lock', 'pn-lock', 'lk-label'); else $('lk-label').focus();
+        }),
+        mk('ลบกล่อง', '✕', () => {
+          locks = locks.filter((x) => x.key !== l.key);
+          $('content').value = $('content').value.split('[[lock:' + l.key + ']]').join('');
+          $('count').textContent = $('content').value.length + ' / 20000';
+          if (lkEditing === l.key) resetLkForm(); renderLocks(); lkMsg('');
+        }));
+      ul.append(li);
+    });
+    $('lock-count').textContent = locks.length + ' / ' + LOCK_MAX;
+    $('lk-add').disabled = !lkEditing && locks.length >= LOCK_MAX;
+    if (!lkEditing && locks.length >= LOCK_MAX) lkMsg('ครบ ' + LOCK_MAX + ' กล่องแล้ว');
+  }
+  function addLock() {
+    const label = $('lk-label').value.replace(/\s+/g, ' ').trim() || '🔒 เนื้อหาที่ถูกล็อก';
+    const secret = $('lk-secret').value.trim();
+    if (!secret) return lkMsg('ใส่ข้อความที่ต้องการซ่อนก่อน', true);
+    const old = locks.find((l) => l.key === lkEditing);
+    const pin = $('lk-pin').value.trim();
+    let unlockAt = null, hasPin = false;
+    if (lkMode === 'pin') {
+      const keepOld = !!(old && old.mode === 'pin' && old.hasPin);
+      if (pin ? !/^\d{4}$/.test(pin) : !keepOld) return lkMsg('ตั้งรหัสเป็นตัวเลข 4 หลัก', true);
+      hasPin = true;
+    }
+    if (lkMode === 'time') {
+      unlockAt = new Date($('lk-time').value).getTime();
+      if (!Number.isFinite(unlockAt)) return lkMsg('เลือกวันและเวลาที่จะปลดล็อก', true);
+      if (unlockAt <= Date.now() && !(old && old.mode === 'time' && old.unlockAt === unlockAt)) return lkMsg('เวลาปลดล็อกต้องอยู่ในอนาคต', true);
+    }
+    const box = { key: lkEditing, label, secret, mode: lkMode, pin: lkMode === 'pin' ? pin : '', hasPin, unlockAt };
+    if (lkEditing) { locks = locks.map((l) => (l.key === lkEditing ? box : l)); resetLkForm(); lkMsg('บันทึกกล่องแล้ว'); renderLocks(); return; }
+    if (locks.length >= LOCK_MAX) return lkMsg('ครบ ' + LOCK_MAX + ' กล่องแล้ว', true);
+    const taken = new Set([...locks.map((l) => l.key), ...marksIn()]);
+    const key = ['k1', 'k2', 'k3', 'k4', 'k5', 'k6', 'k7', 'k8', 'k9'].find((k) => !taken.has(k));
+    if (!key) return lkMsg('เพิ่มกล่องไม่ได้ ลองลบตัวคั่น [[lock:...]] ที่ค้างในเนื้อหาก่อน', true);
+    box.key = key; locks.push(box);
+    insertMark(key); resetLkForm(); lkMsg('เพิ่มกล่องแล้ว วางไว้ที่เคอร์เซอร์ในเนื้อหา'); renderLocks();
+  }
+  // ก่อนส่ง: ตัวคั่นที่ไม่มีกล่อง → ลบทิ้ง · กล่องที่ตัวคั่นถูกลบจากเนื้อหาแล้ว → ตัดทิ้ง (เซิร์ฟเวอร์ตรวจให้ตรงกันทั้งสองทาง)
+  function syncLocks() {
+    const ta = $('content'), keys = new Set(locks.map((l) => l.key));
+    ta.value = ta.value.replace(LOCK_MARK, (m, k) => (keys.has(k) ? m : ''));
+    const used = marksIn();
+    locks = locks.filter((l) => used.has(l.key));
+    $('count').textContent = ta.value.length + ' / 20000';
+    renderLocks();
+  }
+  const locksPayload = () => locks.map((l) => ({
+    key: l.key, label: l.label, secret: l.secret, mode: l.mode,
+    ...(l.mode === 'pin' && l.pin ? { pin: l.pin } : {}),
+    ...(l.mode === 'time' ? { unlockAt: l.unlockAt } : {}),
+  }));
+  $('tg-lock').addEventListener('click', () => toggle('tg-lock', 'pn-lock', 'lk-label'));
+  document.querySelectorAll('#lk-modes button').forEach((b) => b.addEventListener('click', () => setLkMode(b.dataset.mode)));
+  $('lk-pin').addEventListener('input', () => { $('lk-pin').value = $('lk-pin').value.replace(/\D/g, '').slice(0, 4); });
+  $('lk-add').addEventListener('click', addLock);
+  $('lk-cancel').addEventListener('click', () => { resetLkForm(); lkMsg(''); });
+  $('content').addEventListener('change', renderLocks);
+  setLkMode('follow');
+
   $('post-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    syncLocks();
     $('submit-btn').disabled = true;
     msg(editSlug ? 'กำลังบันทึก...' : 'กำลังส่งโพสต์...');
     try {
@@ -460,6 +600,7 @@
           images,
           content: $('content').value,
           videos,
+          locks: locksPayload(),
         },
       });
       if (r.status === 401) return needLogin();
@@ -471,12 +612,14 @@
         a.href = '/posts/' + editSlug;
         const back = el('a', 'font-semibold ml-3', 'โพสต์ของฉัน'); back.href = NIV.userUrl(s.userId);
         m.append('บันทึกการแก้ไขแล้ว' + (r.data.edits_left == null ? ' ' : ` (เหลือแก้ไขได้อีก ${r.data.edits_left} ครั้ง) `), a, back);
+        locks.forEach((l) => { if (l.mode === 'pin') { l.hasPin = true; l.pin = ''; } }); renderLocks();
         if (r.data.edits_left === 0) { $('submit-btn').classList.add('hidden'); [...$('post-form').elements].forEach((x) => { if (x.id !== 'submit-btn') x.disabled = true; }); }
         return;
       }
       $('post-form').reset();
       images = []; renderImages(); imgMsg('');
       videos = []; renderVideos(); ytMsg('');
+      locks = []; resetLkForm(); renderLocks(); lkMsg('');
       $('count').textContent = '0 / 20000';
       if (r.data.status === 'published') { location.href = '/posts?r=' + Date.now(); return; } // ไปหน้าโพสต์ (?r= กันแคชเก่า ให้เห็นโพสต์ใหม่ทันที)
       if (false) {
@@ -513,6 +656,7 @@
     $('content').value = p.content || '';
     videos = Array.isArray(p.videos) ? p.videos.slice(0, YT_MAX) : []; savedVideos = new Set(videos); renderVideos();
     $('count').textContent = $('content').value.length + ' / 20000';
+    locks = (r.data.locks || []).map((x) => ({ key: x.key, label: x.label, secret: x.secret, mode: x.mode, pin: '', hasPin: !!x.has_pin, unlockAt: x.unlock_at || null })); renderLocks();
     const left = r.data.edits_left;
     $('page-sub').textContent = left == null ? 'แอดมินแก้ไขได้ไม่จำกัด' : `แก้ไขโพสต์ได้ไม่เกิน 2 ครั้ง — เหลืออีก ${left} ครั้ง`;
     if (left === 0) {
@@ -582,6 +726,7 @@
 
   renderImages();
   renderVideos();
+  renderLocks();
   loadEdit();
 </script>
 </body>
