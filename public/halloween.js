@@ -1,13 +1,13 @@
-// public/halloween.js — ตัวตกแต่งธีมฮาโลวีน (ใยแมงมุม ผี ฟักทอง) + ปุ่มเปิด/ปิดธีมในเมนูข้าง
+// public/halloween.js — ธีมฮาโลวีนแบบมินิมอล (ใยแมงมุม + แมงมุมห้อย + ผีตัวเล็กท้ายหน้า) + ปุ่มเปิด/ปิดในเมนูข้าง
 // โหลดโดย nivread.js เฉพาะช่วงเทศกาล (หรือ ?hw=1 ตอนทดสอบ) — สไตล์อยู่ใน /halloween.css
+// ไม่ทับสีคอมโพเนนต์ของเว็บ และไม่มีตัวละครลอยบนเนื้อหา
 (() => {
   if (window.__hw) return;
   window.__hw = true;
 
   const html = document.documentElement;
   const KEY = 'halloween';                       // 'off' = ผู้ใช้ปิดธีมเอง
-  const DARK_TC = '#110a05', LIGHT_TC = '#fff5ea';
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DARK_TC = '#110b07', LIGHT_TC = '#fffaf3';
 
   const getPref = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
   const setPref = (v) => { try { localStorage.setItem(KEY, v); } catch {} };
@@ -24,25 +24,19 @@
     tc.setAttribute('content', on ? (html.classList.contains('dark') ? DARK_TC : LIGHT_TC) : origTc);
   };
 
-  // ---------- SVG ----------
-  // ใยแมงมุมมุมบนซ้าย (ฝั่งขวาใช้ scaleX(-1) ใน CSS): เส้นรัศมี + เส้นโค้งขวาง
+  // ---------- SVG / HTML ----------
+  // ใยแมงมุมมุมบนซ้าย (ฝั่งขวาใช้ scaleX(-1) ใน CSS)
   const WEB = `<svg class="hw-web hw-web-%S" viewBox="0 0 100 100" aria-hidden="true">
 <path d="M0 0L100 0M0 0L92 34M0 0L70 70M0 0L34 92M0 0L0 100"/>
 <path d="M30 0Q26 26 0 30M52 0Q46 46 0 52M76 0Q66 66 0 76M98 0Q84 84 0 98"/>
 </svg>`;
-  // ผีลอย (โครงจาก "Little Halloween" ของ khadkamhn) — รูปร่าง/สีทั้งหมดอยู่ใน halloween.css
-  const GHOST = `<div class="hw-gm"><div class="hw-g-head"><div class="hw-g-skull"><div class="hw-g-eyes"><div class="hw-g-eye l"></div><div class="hw-g-eye r"></div></div></div></div><div class="hw-g-body"></div><div class="hw-g-legs"></div></div>`;
-  const PUMPKIN = `<svg viewBox="0 0 80 70" aria-hidden="true">
-<path class="stem" d="M37 12C37 6 39 3 43 1 42 6 44 9 46 12Z"/>
-<ellipse class="body" cx="22" cy="42" rx="17" ry="24"/><ellipse class="body" cx="58" cy="42" rx="17" ry="24"/>
-<ellipse class="body" cx="40" cy="40" rx="21" ry="27"/>
-<path class="rib" d="M40 13C33 25 33 55 40 67M22 20C14 32 14 52 22 64M58 20C66 32 66 52 58 64"/>
-<g class="lit"><ellipse cx="40" cy="46" rx="22" ry="14" fill="url(#hw-glow)"/><g class="face"><path d="M26 31L35 38 24 40ZM54 31L45 38 56 40Z"/><path d="M24 50L30 47 35 53 40 47 45 53 50 47 56 50C52 60 28 60 24 50Z"/></g></g>
+  // แมงมุมห้อยด้วยเส้นไหม (เส้นยาวเกินขอบบน ถูกซ่อนนอกจอ)
+  const SPIDER = `<svg class="hw-spider" viewBox="0 0 20 100" aria-hidden="true">
+<line x1="10" y1="0" x2="10" y2="80"/><circle cx="10" cy="87" r="5"/>
+<path d="M5 85L1 81M5 88L0 89M5 91L2 96M15 85L19 81M15 88L20 89M15 91L18 96"/>
 </svg>`;
-  const DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<linearGradient id="hw-pk-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
-<radialGradient id="hw-glow"><stop offset="0" stop-color="#fbbf24" stop-opacity=".85"/><stop offset="1" stop-color="#f59e0b" stop-opacity="0"/></radialGradient>
-</defs></svg>`;
+  // ผีตัวเล็ก (โครงจาก "Little Halloween" ของ khadkamhn) — รูปร่าง/สีอยู่ใน halloween.css
+  const GHOST = `<div class="hw-gm"><div class="hw-g-head"><div class="hw-g-skull"><div class="hw-g-eyes"><div class="hw-g-eye l"></div><div class="hw-g-eye r"></div></div></div></div><div class="hw-g-body"></div><div class="hw-g-legs"></div></div>`;
 
   // ---------- สร้างตัวตกแต่ง (ครั้งเดียว ตอนเปิดธีมครั้งแรก) ----------
   let built = false;
@@ -54,40 +48,26 @@
     wrap.className = 'hw-deco';
     wrap.setAttribute('aria-hidden', 'true');
 
-    // ใยแมงมุมอยู่ที่ต้นเอกสาร (absolute) — ใส่ใน body ที่ไม่ต้องเป็น relative ก็ยึดมุมบนของหน้า
-    const webs = document.createElement('div');
-    webs.style.cssText = 'position:absolute;top:0;left:0;right:0;height:0;pointer-events:none';
-    webs.innerHTML = WEB.replace('%S', 'l') + WEB.replace('%S', 'r');
-    wrap.appendChild(webs);
+    // ใยแมงมุม + แมงมุม: absolute ที่ต้นเอกสาร (height:0 ไม่ดันเนื้อหา)
+    const top = document.createElement('div');
+    top.style.cssText = 'position:absolute;top:0;left:0;right:0;height:0;pointer-events:none';
+    top.innerHTML = WEB.replace('%S', 'l') + WEB.replace('%S', 'r') + SPIDER;
+    wrap.appendChild(top);
 
-    // แสงอุ่นพื้นหลัง (layer fixed เดียว ไม่ repaint ตอนเลื่อน)
+    // แสงอุ่นจาง ๆ พื้นหลัง (layer fixed เดียว)
     const glow = document.createElement('div');
     glow.className = 'hw-glow';
     wrap.appendChild(glow);
-
-    if (!reduce) {
-      const ghosts = document.createElement('div');
-      ghosts.className = 'hw-ghosts';
-      // [ความสูง%, ขนาด(เท่า), ระยะเวลาs, หน่วงs, กลับทิศ]
-      [[14, 1.7, 30, 1, 0], [34, 1.3, 38, 15, 1]].forEach(([y, s, d, t, r]) => {
-        const g = document.createElement('div');
-        g.className = 'hw-ghost' + (r ? ' rev' : '');
-        g.style.cssText = `--y:${y}%;--s:${s};--d:${d}s;--t:${t}s`;
-        g.innerHTML = GHOST;
-        ghosts.appendChild(g);
-      });
-      wrap.appendChild(ghosts);
-    }
     document.body.appendChild(wrap);
 
-    // ฟักทองเหนือท้ายหน้า (footer ถูกเติมโดย nivread.js ก่อนสคริปต์นี้ทำงาน)
+    // ผีตัวเล็กที่ท้ายหน้า (footer ถูกเติมโดย nivread.js ก่อนสคริปต์นี้ทำงาน)
     const footer = document.getElementById('main-footer');
     if (footer) {
-      const pk = document.createElement('div');
-      pk.className = 'hw-deco hw-pk';
-      pk.setAttribute('aria-hidden', 'true');
-      pk.innerHTML = DEFS + PUMPKIN + PUMPKIN + PUMPKIN;
-      footer.insertBefore(pk, footer.firstChild);
+      const g = document.createElement('div');
+      g.className = 'hw-deco hw-ft';
+      g.setAttribute('aria-hidden', 'true');
+      g.innerHTML = GHOST;
+      footer.insertBefore(g, footer.firstChild);
     }
   }
 
