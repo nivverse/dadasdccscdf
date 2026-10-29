@@ -258,6 +258,11 @@
       const more = el('a', 'inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500', '...'); more.href = '/posts/' + p.slug; more.setAttribute('aria-label', 'อ่านโพสต์ต่อ'); more.title = 'อ่านโพสต์ต่อ';
       body.append(more);
     }
+    if ((p.lock_count || 0) > 0) {
+      const lw = el('div', 'mt-2');
+      const lk = el('a', 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', '🔒 มีเนื้อหาที่ถูกล็อก' + (p.lock_count > 1 ? ' ' + p.lock_count + ' กล่อง' : '') + ' · กดเพื่อปลดล็อก');
+      lk.href = '/posts/' + p.slug; lw.append(lk); body.append(lw);
+    }
     card.append(body);
 
     const imgs = (Array.isArray(p.images) && p.images.length ? p.images : (p.cover_url ? [p.cover_url] : []));
