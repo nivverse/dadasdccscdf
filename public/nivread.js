@@ -268,7 +268,7 @@
     const imgs = (Array.isArray(p.images) && p.images.length ? p.images : (p.cover_url ? [p.cover_url] : []));
     const vid = videoEl(p.videos, p.title, '/posts/' + p.slug);
     if (vid) card.append(vid);
-    else { const gal = galleryEl(imgs, p.title, '/posts/' + p.slug); if (gal) card.append(gal); }
+    else { const gal = galleryEl(imgs, p.title, '/posts/' + p.slug, p.live); if (gal) card.append(gal); }
     const foot = el('div', 'px-4 py-3 flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400');
     foot.append(el('span', '', '♥ ' + (p.like_count || 0)));
     if (p.repost_count != null) foot.append(el('span', '', '🔁 ' + (p.repost_count || 0)));
@@ -328,7 +328,10 @@
 
   // ---------- แกลเลอรีรูปแบบ Facebook + ดูรูปเต็ม (lightbox) ----------
   const IMG_OK = /^https:\/\/[^\s"'<>]{4,500}$/;
-  function galleryEl(list, title, href) {
+  const LIVE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="5.8"/><circle cx="12" cy="12" r="9.6" stroke-dasharray="1.7 2.5"/></svg>';
+  function galleryEl(list, title, href, live) {
+    const liveSet = new Set(Array.isArray(live) ? live : []);
+    const lv = (u) => (liveSet.has(u) ? '<span class="gal-live" role="img" aria-label="Live Photo" title="Live Photo">' + LIVE_ICON + '</span>' : '');
     const urls = (Array.isArray(list) ? list : []).filter((x) => IMG_OK.test(x)).slice(0, 10);
     const n = urls.length;
     if (!n) return null;
@@ -338,11 +341,11 @@
     if (n === 1) {
       root.innerHTML = (feed ? '<a class="gal-s" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' : '<div class="gal-s" data-imgs="' + data + '" data-i="0" role="button" tabindex="0" aria-label="ดูรูปเต็ม">') +
         '<img class="bg" src="' + escHtml(urls[0]) + '" alt="" aria-hidden="true" loading="lazy" decoding="async">' +
-        '<img class="fg" src="' + escHtml(urls[0]) + '" alt="' + alt + '" loading="lazy" decoding="async">' + (feed ? '</a>' : '</div>');
+        '<img class="fg" src="' + escHtml(urls[0]) + '" alt="' + alt + '" loading="lazy" decoding="async">' + lv(urls[0]) + (feed ? '</a>' : '</div>');
     } else {
       root.innerHTML = '<div class="gal-g gal-' + Math.min(n, 5) + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.slice(0, 5).map((u, i) => {
         const more = i === 4 && n > 5;
-        const im = '<img src="' + escHtml(u) + '" alt="' + alt + ' รูปที่ ' + (i + 1) + '" loading="lazy" decoding="async">';
+        const im = '<img src="' + escHtml(u) + '" alt="' + alt + ' รูปที่ ' + (i + 1) + '" loading="lazy" decoding="async">' + lv(u);
         const mo = more ? ' data-more="+' + (n - 5) + '"' : '';
         return feed
           ? '<a class="gal-t' + (more ? ' gal-more' : '') + '" href="' + escHtml(href) + '"' + mo + ' aria-label="เปิดโพสต์ ' + alt + '">' + im + '</a>'
@@ -354,6 +357,7 @@
 
   const GALCSS = `
 .gal{margin:.25rem 1rem .75rem}
+.gal-live{position:absolute;left:8px;top:8px;z-index:2;width:26px;height:26px;display:grid;place-items:center;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;pointer-events:none}.gal-live svg{width:16px;height:16px}
 .gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:#0a0a0a;cursor:zoom-in}
 .gal-s .bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(26px) brightness(.5);pointer-events:none}
 .gal-s .fg{position:relative;display:block;width:auto;height:auto;max-width:100%;max-height:36rem;transition:transform .4s ease}

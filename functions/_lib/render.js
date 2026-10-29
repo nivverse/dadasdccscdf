@@ -151,7 +151,7 @@ function cardHtml(p, origin, first = false) {
     ${(p.content_len || 0) > 160 ? `<a href="${href}" class="inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500" aria-label="อ่านโพสต์ต่อ" title="อ่านโพสต์ต่อ">...</a>` : ''}
     ${(p.lock_count || 0) > 0 ? `<div class="mt-2"><a href="${href}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">🔒 มีเนื้อหาที่ถูกล็อก${Number(p.lock_count) > 1 ? ' ' + Number(p.lock_count) + ' กล่อง' : ''} · กดเพื่อปลดล็อก</a></div>` : ''}
   </div>
-  ${(p.videos && p.videos.length) ? videoGallery(p.videos, p.title, true, first, href) : imageGallery(postImages(p), p.title, first, href)}
+  ${(p.videos && p.videos.length) ? videoGallery(p.videos, p.title, true, first, href) : imageGallery(postImages(p), p.title, first, href, p.live)}
   ${postBar(p, origin)}
 </article>`;
 }
