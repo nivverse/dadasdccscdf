@@ -16,8 +16,10 @@ export function postImages(p) {
 const LIVE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="5.8"/><circle cx="12" cy="12" r="9.6" stroke-dasharray="1.7 2.5"/></svg>';
 export function imageGallery(list, title, eager = false, href = '', live = []) {
   const urls = (list || []).filter((x) => IMG_URL.test(x)).slice(0, 10);
-  const liveSet = new Set(Array.isArray(live) ? live : []);
-  const lv = (u) => (liveSet.has(u) ? `<span class="gal-live" role="img" aria-label="Live Photo" title="Live Photo">${LIVE_ICON}</span>` : '');
+  // live = แผนที่ { url รูป: url คลิป หรือ '' } (รับ array ของ url รูปแบบเก่าด้วย) · มีคลิป → ใส่ data-clip ให้ /nivread.js เล่นทับรูปสั้น ๆ แล้วกลับเป็นภาพนิ่ง
+  const liveMap = Array.isArray(live) ? Object.fromEntries(live.map((u) => [u, ''])) : (live && typeof live === 'object' ? live : {});
+  const lv = (u) => (Object.prototype.hasOwnProperty.call(liveMap, u)
+    ? `<span class="gal-live" role="img" aria-label="Live Photo" title="Live Photo"${liveMap[u] && /^https:\/\//.test(liveMap[u]) ? ` data-clip="${esc(liveMap[u])}"` : ''}>${LIVE_ICON}</span>` : '');
   const n = urls.length;
   if (!n) return '';
   const data = esc(JSON.stringify(urls));

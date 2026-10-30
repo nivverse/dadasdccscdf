@@ -330,8 +330,10 @@
   const IMG_OK = /^https:\/\/[^\s"'<>]{4,500}$/;
   const LIVE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="5.8"/><circle cx="12" cy="12" r="9.6" stroke-dasharray="1.7 2.5"/></svg>';
   function galleryEl(list, title, href, live) {
-    const liveSet = new Set(Array.isArray(live) ? live : []);
-    const lv = (u) => (liveSet.has(u) ? '<span class="gal-live" role="img" aria-label="Live Photo" title="Live Photo">' + LIVE_ICON + '</span>' : '');
+    // live = แผนที่ { url รูป: url คลิป หรือ '' } (รับ array ของ url รูปแบบเก่าด้วย) · มีคลิป → data-clip ให้ตัวเล่นด้านล่างใช้
+    const liveMap = Array.isArray(live) ? Object.fromEntries(live.map((u) => [u, ''])) : (live && typeof live === 'object' ? live : {});
+    const lv = (u) => (Object.prototype.hasOwnProperty.call(liveMap, u)
+      ? '<span class="gal-live" role="img" aria-label="Live Photo" title="Live Photo"' + (liveMap[u] && /^https:\/\//.test(liveMap[u]) ? ' data-clip="' + escHtml(liveMap[u]) + '"' : '') + '>' + LIVE_ICON + '</span>' : '');
     const urls = (Array.isArray(list) ? list : []).filter((x) => IMG_OK.test(x)).slice(0, 10);
     const n = urls.length;
     if (!n) return null;
@@ -357,7 +359,9 @@
 
   const GALCSS = `
 .gal{margin:.25rem 1rem .75rem}
-.gal-live{position:absolute;left:8px;top:8px;z-index:2;width:26px;height:26px;display:grid;place-items:center;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;pointer-events:none}.gal-live svg{width:16px;height:16px}
+.gal-live{position:absolute;left:8px;top:8px;z-index:2;width:26px;height:26px;display:grid;place-items:center;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;pointer-events:none;transition:background .2s}.gal-live svg{width:16px;height:16px}
+.gal-live[data-clip]{pointer-events:auto;cursor:pointer}.gal-live.playing{background:rgba(245,158,11,.92)}
+.gal-clip{position:absolute;z-index:1;opacity:0;transition:opacity .3s;pointer-events:none;background:transparent}.gal-clip.on{opacity:1}
 .gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:#0a0a0a;cursor:zoom-in}
 .gal-s .bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(26px) brightness(.5);pointer-events:none}
 .gal-s .fg{position:relative;display:block;width:auto;height:auto;max-width:100%;max-height:36rem;transition:transform .4s ease}
@@ -1243,4 +1247,52 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
   © ${new Date().getFullYear()} nivread · <a href="/" class="hover:text-amber-500">หน้าแรก</a> · <a href="/posts" class="hover:text-amber-500">โพสต์ทั้งหมด</a> · <a href="/search" class="hover:text-amber-500">ค้นหา</a> · <a href="/write" class="hover:text-amber-500">เขียนโพสต์</a>
 </div>`;
   }
+})();
+
+// ---------- Live Photo: เล่นคลิปสั้นทับรูป 1 ครั้งเมื่อเลื่อนมาเห็น (เงียบ) แล้วค่อย ๆ กลับเป็นภาพนิ่ง · แตะ/ชี้ไอคอน Live เพื่อเล่นซ้ำ ----------
+// ใช้ได้กับทั้งการ์ด SSR และการ์ดที่วาดทีหลัง (เลื่อนโหลดเพิ่ม) · ไม่เล่นเองถ้าผู้ใช้ตั้งลดการเคลื่อนไหวหรือเปิดโหมดประหยัดข้อมูล (ยังแตะเล่นได้)
+(function () {
+  const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const saver = !!(navigator.connection && navigator.connection.saveData);
+  const MAX_MS = 4500;
+  function play(badge) {
+    if (badge._live) return;
+    const clip = badge.getAttribute('data-clip'), host = badge.parentElement;
+    const img = host && host.querySelector('img:not(.bg)');
+    if (!clip || !img) return;
+    const v = document.createElement('video');
+    v.muted = true; v.defaultMuted = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('aria-hidden', 'true');
+    v.preload = 'auto'; v.className = 'gal-clip'; v.src = clip;
+    if (img.offsetWidth) { // วางทับรูปจริงให้พอดี (รูปเดี่ยวแบบ contain / ช่องกริดแบบ cover)
+      const cs = getComputedStyle(img);
+      v.style.cssText = 'left:' + img.offsetLeft + 'px;top:' + img.offsetTop + 'px;width:' + img.offsetWidth + 'px;height:' + img.offsetHeight + 'px;object-fit:' + cs.objectFit + ';object-position:' + cs.objectPosition;
+    } else v.style.cssText = 'left:0;top:0;width:100%;height:100%;object-fit:cover';
+    badge._live = v; badge.classList.add('playing');
+    host.insertBefore(v, badge);
+    let done = false, guard = 0;
+    const stop = () => {
+      if (done) return; done = true; clearTimeout(guard);
+      v.classList.remove('on'); badge.classList.remove('playing');
+      setTimeout(() => { try { v.pause(); } catch (e) {} v.remove(); badge._live = null; }, 320);
+    };
+    v.addEventListener('playing', () => v.classList.add('on'), { once: true });
+    v.addEventListener('ended', stop); v.addEventListener('error', stop);
+    guard = setTimeout(stop, MAX_MS);
+    const p = v.play(); if (p && p.catch) p.catch(stop);
+  }
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver((ents) => {
+    ents.forEach((e) => { if (e.isIntersecting) { io.unobserve(e.target); if (!reduce && !saver) play(e.target); } });
+  }, { threshold: 0.6 }) : null;
+  function scan() {
+    document.querySelectorAll('.gal-live[data-clip]:not([data-seen])').forEach((b) => { b.setAttribute('data-seen', '1'); if (io) io.observe(b); });
+  }
+  let queued = false;
+  const later = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; scan(); }); };
+  document.addEventListener('click', (e) => { // แตะไอคอน = เล่นซ้ำ (ไม่เปิดโพสต์/ไม่เปิด lightbox)
+    const b = e.target.closest && e.target.closest('.gal-live[data-clip]');
+    if (b) { e.preventDefault(); e.stopPropagation(); play(b); }
+  }, true);
+  document.addEventListener('mouseover', (e) => { const b = e.target.closest && e.target.closest('.gal-live[data-clip]'); if (b) play(b); });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan); else scan();
+  if (window.MutationObserver) new MutationObserver(later).observe(document.documentElement, { childList: true, subtree: true });
 })();

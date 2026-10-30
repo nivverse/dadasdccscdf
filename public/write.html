@@ -59,6 +59,7 @@
     <div>
       <div class="block text-sm font-medium mb-2">เพิ่มในโพสต์ <span class="text-slate-400 font-normal">(ไม่บังคับ)</span></div>
       <input id="img-file" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple class="hidden">
+      <input id="live-file" type="file" accept="video/*,.mov,.mp4,.m4v,.webm" class="hidden">
       <div class="flex items-center gap-3">
         <button id="img-up" type="button" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="อัปโหลดรูป (สูงสุด 3 รูป)" aria-label="อัปโหลดรูป">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span id="up-count" class="text-[11px] leading-none text-slate-400">0 / 3</span></button>
@@ -108,7 +109,7 @@
       <ul id="lock-list" class="mt-3 space-y-2"></ul>
 
       <p id="img-msg" class="text-xs mt-2 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
-      <p class="text-[11px] mt-1 text-slate-400 dark:text-neutral-500">รองรับ JPG / PNG / WebP / HEIC (รวม Live Photo จาก iPhone) · กดไอคอนวงกลมบนรูปเพื่อติดป้าย Live Photo (แสดงเป็นไอคอนเท่านั้น ไม่เล่นภาพเคลื่อนไหว)</p>
+      <p class="text-[11px] mt-1 text-slate-400 dark:text-neutral-500">รองรับ JPG / PNG / WebP / HEIC · Live Photo: รูป Motion Photo จาก Android จะแนบคลิปให้อัตโนมัติ ส่วน iPhone กดไอคอนวงกลมบนรูปเพื่อติดป้าย Live แล้วกดไอคอนฟิล์มเพื่อแนบคลิป (ในแอปรูปภาพเลือก แชร์ → บันทึกเป็นวิดีโอ ก่อน) คลิปเล่นไม่กี่วินาทีแล้วหยุดเป็นภาพนิ่ง</p>
       <p id="yt-msg" class="text-xs mt-1 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
       <ul id="img-list" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2"></ul>
       <ul id="yt-list" class="mt-3 space-y-2"></ul>
@@ -157,7 +158,11 @@
   // Live Photo: ติดป้ายได้ทั้งรูปอัปโหลดและลิงก์ · แสดงเป็นไอคอนเท่านั้น (ไม่เล่นภาพเคลื่อนไหว)
   // เบราว์เซอร์ได้แค่ "ภาพนิ่ง" ของ Live Photo (ส่วนวิดีโอไม่ถูกส่งมา) จึงตรวจเองไม่ได้ → ให้ผู้โพสต์กดไอคอนบนรูปเพื่อติดป้าย
   const LIVE_SVG = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="5.8"/><circle cx="12" cy="12" r="9.6" stroke-dasharray="1.7 2.5"/></svg>';
-  let live = new Set();
+  let live = new Map();            // url รูป -> url คลิปสั้น ('' = ติดป้าย Live เฉย ๆ ยังไม่มีคลิป)
+  let clipBusy = false, clipTarget = '';
+  const CLIP_SVG = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor" stroke="none"/></svg>';
+  // ปล่อยไฟล์คลิปที่อัปโหลดแล้วแต่ไม่ใช้ (ถ้ายังมีโพสต์ที่บันทึกไว้อ้างถึง เซิร์ฟเวอร์จะไม่ลบ)
+  const dropClip = (u) => { const c = live.get(u); if (c) NIV.api('/api/blog/video-discard', { method: 'POST', body: { userId: s.userId, url: c } }).catch(() => {}); };
   const imgMsg = (t, bad) => { const m = $('img-msg'); m.textContent = t; m.className = 'text-xs mt-1 ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
   function renderImages() {
     const ul = $('img-list'); ul.replaceChildren();
@@ -169,11 +174,19 @@
       const bar = el('div', 'absolute inset-x-0 bottom-0 flex justify-end gap-1 p-1 bg-gradient-to-t from-black/70 to-transparent');
       const mk = (label, text, fn, dis) => { const b = el('button', 'w-7 h-7 rounded-lg text-sm text-white bg-black/40 hover:bg-amber-500 disabled:opacity-30 disabled:hover:bg-black/40', text); b.type = 'button'; b.title = label; b.setAttribute('aria-label', label); b.disabled = !!dis; b.addEventListener('click', fn); return b; };
       const swap = (a, b) => { [images[a], images[b]] = [images[b], images[a]]; renderImages(); };
-      bar.append(mk('เลื่อนไปก่อน', '←', () => swap(i, i - 1), i === 0), mk('เลื่อนไปหลัง', '→', () => swap(i, i + 1), i === images.length - 1), mk('ลบ', '✕', () => { live.delete(u); images.splice(i, 1); renderImages(); imgMsg(''); }));
-      const lb = el('button', 'mr-auto h-7 px-1.5 rounded-lg text-white hover:bg-amber-500 ' + (live.has(u) ? 'bg-amber-500' : 'bg-black/40'));
+      bar.append(mk('เลื่อนไปก่อน', '←', () => swap(i, i - 1), i === 0), mk('เลื่อนไปหลัง', '→', () => swap(i, i + 1), i === images.length - 1), mk('ลบ', '✕', () => { dropClip(u); live.delete(u); images.splice(i, 1); renderImages(); imgMsg(''); }));
+      const lb = el('button', 'h-7 px-1.5 rounded-lg text-white hover:bg-amber-500 ' + (live.has(u) ? 'bg-amber-500' : 'bg-black/40'));
       lb.type = 'button'; lb.innerHTML = LIVE_SVG; lb.title = 'ติดป้าย Live Photo'; lb.setAttribute('aria-label', 'ติดป้าย Live Photo'); lb.setAttribute('aria-pressed', live.has(u) ? 'true' : 'false');
-      lb.addEventListener('click', () => { if (live.has(u)) live.delete(u); else live.add(u); renderImages(); });
-      bar.prepend(lb);
+      lb.addEventListener('click', () => { if (live.has(u)) { dropClip(u); live.delete(u); } else live.set(u, ''); renderImages(); });
+      const grp = el('div', 'mr-auto flex gap-1'); grp.append(lb);
+      if (live.has(u)) { // แนบ/เอาคลิปสั้น (วิดีโอ 3-5 วินาที) ของรูป Live
+        const cb = el('button', 'h-7 px-1.5 rounded-lg text-white hover:bg-amber-500 disabled:opacity-50 ' + (live.get(u) ? 'bg-amber-500' : 'bg-black/40'));
+        cb.type = 'button'; cb.disabled = clipBusy; cb.innerHTML = CLIP_SVG;
+        cb.title = live.get(u) ? 'เอาคลิปออก (เหลือเป็นรูปนิ่ง)' : 'แนบคลิปสั้น (วิดีโอ 3-5 วินาที)'; cb.setAttribute('aria-label', cb.title); cb.setAttribute('aria-pressed', live.get(u) ? 'true' : 'false');
+        cb.addEventListener('click', () => { if (live.get(u)) { dropClip(u); live.set(u, ''); renderImages(); } else { clipTarget = u; $('live-file').click(); } });
+        grp.append(cb);
+      }
+      bar.prepend(grp);
       li.append(im, tag);
       if (live.has(u)) { const bd = el('span', 'absolute right-1.5 top-1.5 w-6 h-6 grid place-items-center rounded-full bg-black/60 text-white'); bd.innerHTML = LIVE_SVG; bd.setAttribute('role', 'img'); bd.setAttribute('aria-label', 'Live Photo'); li.append(bd); }
       li.append(bar); ul.append(li);
@@ -277,7 +290,7 @@
     const list = [...files];
     if (!list.length) return;
     uploading = true; renderImages();
-    let done = 0; const notes = []; let bad = false;
+    let done = 0, clips = 0; const notes = []; let bad = false;
     for (const f of list) {
       if (upCount() >= UP_MAX || images.length >= IMG_MAX) { notes.push('เกินจำนวนที่อัปโหลดได้'); bad = true; break; }
       if (f.type === 'image/gif') { notes.push('GIF ให้วางเป็นลิงก์แทน'); bad = true; continue; }
@@ -293,10 +306,16 @@
         const d = await r.json().catch(() => ({}));
         if (!r.ok || !d.success) { notes.push(d.error || 'อัปโหลดไม่สำเร็จ'); bad = true; if (r.status === 401) needLogin(); continue; }
         images.push(d.url); done++; renderImages();
+        const mc = await motionClip(f).catch(() => null); // Android Motion Photo มีคลิปในไฟล์
+        if (mc) {
+          live.set(d.url, ''); renderImages();
+          const err = await uploadClip(d.url, mc, (t) => imgMsg(t));
+          if (err) { notes.push(f.name + ': พบคลิป Live แต่แนบไม่สำเร็จ (' + err + ') — ยังเป็นรูปนิ่ง กดไอคอนฟิล์มบนรูปเพื่อลองแนบใหม่'); bad = true; } else clips++;
+        }
       } catch { notes.push(f.name + (isHeic(f) ? ': แปลงไฟล์ HEIC ไม่สำเร็จ ลองส่งออกเป็น JPG แล้วอัปโหลดใหม่' : ': ประมวลผลรูปไม่ได้')); bad = true; }
     }
     uploading = false; renderImages();
-    if (done) notes.unshift('อัปโหลดแล้ว ' + done + ' รูป');
+    if (done) notes.unshift('อัปโหลดแล้ว ' + done + ' รูป' + (clips ? ' (แนบคลิป Live ' + clips + ' รูป)' : ''));
     imgMsg(notes.join(' · ') || 'ไม่มีรูปที่อัปโหลด', bad);
   }
   $('img-up').addEventListener('click', () => { nsfwModel(); $('img-file').click(); }); // เริ่มโหลดโมเดลตรวจภาพรอไว้
@@ -397,7 +416,7 @@
     c.toBlob(res, 'image/jpeg', 0.75);
   });
   // เล่นวิดีโอลง canvas แล้วอัดใหม่ด้วย MediaRecorder (ย่อด้านยาวสุด 1280px, ~2.2Mbps) — ใช้เวลาเท่าความยาวคลิป
-  async function compressVideo(file, onProg) {
+  async function compressVideo(file, onProg, opts = {}) { // opts: { maxSec, maxSide, audio:false, maxBytes } ใช้กับคลิป Live (สั้น/เล็ก/ไม่มีเสียง)
     if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) throw new Error('unsupported');
     const objUrl = URL.createObjectURL(file);
     const v = document.createElement('video');
@@ -408,13 +427,13 @@
       if (!isFinite(v.duration)) { v.currentTime = 1e7; await waitEv(v, 'timeupdate'); v.currentTime = 0; } // ไฟล์ที่ไม่มีข้อมูลความยาว (เช่น WebM จากตัวอัด) ให้เบราว์เซอร์คำนวณเอง
       const dur = v.duration;
       if (!isFinite(dur) || dur <= 0) throw new Error('media');
-      if (dur > VID_SEC + 0.5) throw new Error('long');
-      const k = Math.min(1, 1280 / Math.max(v.videoWidth, v.videoHeight));
+      if (dur > (opts.maxSec || VID_SEC) + 0.5) throw new Error('long');
+      const k = Math.min(1, (opts.maxSide || 1280) / Math.max(v.videoWidth, v.videoHeight));
       const W = Math.max(2, Math.round(v.videoWidth * k / 2) * 2), H = Math.max(2, Math.round(v.videoHeight * k / 2) * 2);
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const ctx = cv.getContext('2d');
       const stream = cv.captureStream(30);
-      try {
+      if (opts.audio !== false) try {
         ac = new (window.AudioContext || window.webkitAudioContext)(); await ac.resume();
         const dest = ac.createMediaStreamDestination();
         ac.createMediaElementSource(v).connect(dest); // ไม่ต่อลำโพง = ไม่มีเสียงดังขณะบีบ
@@ -426,9 +445,9 @@
       // เป้า bitrate = ค่าต่ำสุดของ: (1) ที่ความละเอียดนี้ควรใช้ (~0.06 bit/พิกเซล/เฟรม) (2) 70% ของต้นฉบับ (ให้เล็กลงจริง) (3) เพดานไม่ให้ไฟล์เกิน 11MB
       const srcBps = file.size * 8 / Math.max(dur, 1);
       const bppBps = W * H * 30 * 0.06;
-      const fitBps = Math.floor((11e6 * 8 / Math.max(dur, 1)) * 0.9) - 100000;
+      const fitBps = Math.floor(((opts.maxBytes || 11e6) * 8 / Math.max(dur, 1)) * 0.9) - 100000;
       const vbps = Math.floor(Math.max(400000, Math.min(2200000, bppBps, srcBps * 0.7, fitBps)));
-      rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: vbps, audioBitsPerSecond: 96000 });
+      rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: vbps, ...(opts.audio !== false ? { audioBitsPerSecond: 96000 } : {}) });
       const chunks = []; rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
       const stopped = new Promise((res) => { rec.onstop = res; });
       const marks = [Math.min(0.5, dur * 0.05), dur * 0.5, dur * 0.9], frames = [];
@@ -486,6 +505,73 @@
       const m = String(err && err.message);
       ytMsg(m === 'long' ? 'วิดีโอยาวเกิน 30 วินาที' : m === 'big' ? 'บีบแล้วไฟล์ยังใหญ่เกินไป ลองคลิปที่สั้นลง' : m === 'unsupported' ? 'เบราว์เซอร์นี้ยังบีบวิดีโอไม่ได้ (ลองใช้ Chrome หรือ Safari รุ่นใหม่)' : 'ประมวลผลวิดีโอไม่ได้ (ไฟล์อาจเสียหรือรูปแบบไม่รองรับ)', true);
     } finally { vidBusy = false; renderVideos(); }
+  });
+
+  // ---------- Live Photo = รูป + คลิปสั้น 3-5 วินาที (เล่นครั้งเดียวแล้วหยุดเป็นภาพนิ่ง) ----------
+  // Android "Motion Photo": ไฟล์ JPEG เดียวที่มีวิดีโอ MP4 สั้น ๆ ต่อท้าย → ดึงออกมาเป็นคลิปให้อัตโนมัติ
+  // iPhone: ตอนเลือกรูปผ่านเว็บ iOS ส่งมาแต่ภาพนิ่ง (ส่วนวิดีโอไม่ถูกส่ง) → ผู้โพสต์แนบคลิปเองด้วยปุ่มฟิล์มบนรูป
+  async function motionClip(file) {
+    if (!/^image\/jpe?g$/i.test(file.type) && !/\.jpe?g$/i.test(file.name || '')) return null;
+    if (file.size < 150000 || file.size > 40e6) return null;
+    const head = new TextDecoder('latin1').decode(new Uint8Array(await file.slice(0, 262144).arrayBuffer()));
+    let len = 0;
+    const legacy = /GCamera:MicroVideoOffset\s*=\s*"(\d+)"/.exec(head); // รุ่นเก่า: ระยะจากท้ายไฟล์ถึงต้นวิดีโอ
+    if (legacy) len = +legacy[1];
+    else for (const tag of head.match(/<[^<>]*Item:Mime\s*=\s*"video\/mp4"[^<>]*>/g) || []) { // Motion Photo v1: Container:Item ที่เป็น video/mp4
+      const l = /Item:Length\s*=\s*"(\d+)"/.exec(tag);
+      if (l && +l[1] > 0) { len = +l[1]; break; }
+    }
+    const isFtyp = async (st) => {
+      if (st < 1000 || st > file.size - 1000) return false;
+      const b = new Uint8Array(await file.slice(st, st + 12).arrayBuffer());
+      return b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70; // 'ftyp'
+    };
+    let start = len > 0 ? file.size - len : -1;
+    if (!(await isFtyp(start))) { // XMP ไม่มี/ไม่ตรง (เช่น Samsung บางรุ่น): หา box 'ftyp' ในส่วนท้ายไฟล์
+      start = -1;
+      const from = Math.max(0, file.size - 12e6), tail = new Uint8Array(await file.slice(from).arrayBuffer());
+      for (let i = 4; i < tail.length - 12; i++) {
+        if (tail[i] === 0x66 && tail[i + 1] === 0x74 && tail[i + 2] === 0x79 && tail[i + 3] === 0x70) {
+          const size = ((tail[i - 4] << 24) | (tail[i - 3] << 16) | (tail[i - 2] << 8) | tail[i - 1]) >>> 0;
+          if (size >= 16 && size <= 64) { start = from + i - 4; break; }
+        }
+      }
+      if (start < 0) return null;
+    }
+    return file.size - start < 20000 ? null : file.slice(start, file.size, 'video/mp4');
+  }
+  // บีบคลิป (ไม่มีเสียง ≤ 6 วินาที ≤ ~3MB) → ตรวจเฟรมในเบราว์เซอร์ → อัปโหลด · คืน '' เมื่อสำเร็จ หรือข้อความผิดพลาด
+  async function uploadClip(u, src, onMsg) {
+    clipBusy = true; renderImages();
+    try {
+      onMsg && onMsg('กำลังเตรียมคลิป Live (ห้ามปิดหน้านี้)');
+      const { blob: recBlob, frames, duration } = await compressVideo(src, (p) => onMsg && onMsg('กำลังบีบคลิป Live ' + Math.round(p * 100) + '%'), { maxSec: 6, maxSide: 720, audio: false, maxBytes: 2.8e6 });
+      const blob = (/^video\/(mp4|webm)$/.test(src.type) && src.size <= 2.9e6 && src.size < recBlob.size) ? src : recBlob;
+      if (blob.size > 2.95e6) throw new Error('big');
+      for (const fr of frames.slice(0, 2)) if (await looksNsfw(fr)) return 'คลิปไม่ผ่านการตรวจสอบเนื้อหา (ไม่อนุญาตภาพลามก)';
+      const fd = new FormData();
+      fd.append('clip', blob, 'c.' + (blob.type.includes('mp4') ? 'mp4' : 'webm'));
+      fd.append('duration', Math.min(duration, 6.4).toFixed(2));
+      frames.slice(0, 2).forEach((fr, i) => fd.append('frame', fr, 'f' + i + '.jpg'));
+      onMsg && onMsg('กำลังอัปโหลดคลิป ' + (blob.size / 1048576).toFixed(1) + ' MB ...');
+      const r = await fetch(NIV.API + '/api/blog/live-upload?userId=' + encodeURIComponent(s.userId), { method: 'POST', headers: { Authorization: 'Bearer ' + s.token }, body: fd });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.success) { if (r.status === 401) needLogin(); return d.error || 'อัปโหลดคลิป Live ไม่สำเร็จ'; }
+      if (!live.has(u)) { NIV.api('/api/blog/video-discard', { method: 'POST', body: { userId: s.userId, url: d.url } }).catch(() => {}); return 'รูปนี้ถูกลบไปแล้ว'; }
+      live.set(u, d.url);
+      return '';
+    } catch (err) {
+      const m = String(err && err.message);
+      return m === 'long' ? 'คลิปยาวเกิน 6 วินาที' : m === 'big' ? 'คลิปใหญ่เกินไป ลองคลิปที่สั้นลง' : m === 'unsupported' ? 'เบราว์เซอร์นี้ยังบีบวิดีโอไม่ได้ (ลองใช้ Chrome หรือ Safari รุ่นใหม่)' : 'ประมวลผลคลิปไม่ได้ (ไฟล์อาจเสียหรือเป็นรูปแบบที่เบราว์เซอร์เล่นไม่ได้)';
+    } finally { clipBusy = false; renderImages(); }
+  }
+  $('live-file').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    const u = clipTarget; clipTarget = '';
+    if (!f || !u || clipBusy || !live.has(u)) return;
+    if (!/^video\//.test(f.type) && !/\.(mov|mp4|m4v|webm)$/i.test(f.name || '')) return imgMsg('เลือกไฟล์วิดีโอเท่านั้น', true);
+    const err = await uploadClip(u, f, (t) => imgMsg(t));
+    imgMsg(err || 'แนบคลิป Live แล้ว', !!err);
   });
 
   // ---------- กล่องล็อก: ซ่อนข้อความจนกว่าผู้อ่านจะปลดล็อก (ติดตาม / รหัส 4 หลัก / ตั้งเวลา) ----------
@@ -606,6 +692,7 @@
 
   $('post-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (clipBusy) { imgMsg('กำลังเตรียมคลิป Live รอให้เสร็จก่อนแล้วกดโพสต์อีกครั้ง', true); return; }
     syncLocks();
     $('submit-btn').disabled = true;
     msg(editSlug ? 'กำลังบันทึก...' : 'กำลังส่งโพสต์...');
@@ -618,7 +705,7 @@
           title: $('title').value,
           category: $('category').value,
           images,
-          live: images.filter((u) => live.has(u)),
+          live: Object.fromEntries(images.filter((u) => live.has(u)).map((u) => [u, live.get(u) || ''])),
           content: $('content').value,
           videos,
           locks: locksPayload(),
@@ -638,7 +725,7 @@
         return;
       }
       $('post-form').reset();
-      images = []; live = new Set(); renderImages(); imgMsg('');
+      images = []; live = new Map(); renderImages(); imgMsg('');
       videos = []; renderVideos(); ytMsg('');
       locks = []; resetLkForm(); renderLocks(); lkMsg('');
       $('count').textContent = '0 / 20000';
@@ -673,7 +760,7 @@
     const p = r.data.post;
     $('title').value = p.title || '';
     $('category').value = p.category || '';
-    images = Array.isArray(p.images) ? p.images.slice(0, IMG_MAX) : []; live = new Set(Array.isArray(p.live) ? p.live : []); renderImages();
+    images = Array.isArray(p.images) ? p.images.slice(0, IMG_MAX) : []; live = new Map(Array.isArray(p.live) ? p.live.map((u) => [u, '']) : Object.entries(p.live || {})); renderImages();
     $('content').value = p.content || '';
     videos = Array.isArray(p.videos) ? p.videos.slice(0, YT_MAX) : []; savedVideos = new Set(videos); renderVideos();
     $('count').textContent = $('content').value.length + ' / 20000';
