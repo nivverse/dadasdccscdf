@@ -4,9 +4,6 @@ import { videoGallery, videoLd } from '../_lib/videos.js';
 import { imageGallery, postImages } from '../_lib/gallery.js';
 
 const stripText = (s) => String(s || '').replace(/\s+/g, ' ').trim();
-// ตัวคั่นกล่องล็อกในเนื้อหา [[lock:k1]] — ไม่ให้โผล่ใน meta/JSON-LD และวาดเป็นช่องว่างให้ /lock-box.js เติมกล่องทีหลัง (ข้อความที่ซ่อนไม่อยู่ใน HTML นี้)
-const LOCK_MARK = /\[\[lock:(k[1-9])\]\]/g;
-const stripLocks = (s) => String(s || '').replace(LOCK_MARK, ' ');
 
 export async function onRequestGet({ request, env, params }) {
   const origin = new URL(request.url).origin;
@@ -31,15 +28,12 @@ export async function onRequestGet({ request, env, params }) {
   const p = data.post;
   const path = `/posts/${p.slug}`;
   const url = origin + path;
-  const desc = stripText(stripLocks(p.excerpt)) || stripText(stripLocks(p.content)).slice(0, 155);
+  const desc = stripText(p.excerpt) || stripText(p.content).slice(0, 155);
   const title = `${p.title} | nivread`;
   const author = p.display_name || 'nivread';
 
-  const paraHtml = (chunk) => String(chunk).split(/\n{2,}/).map((t) => t.trim()).filter(Boolean)
+  const paragraphs = String(p.content).split(/\n{2,}/).map((t) => t.trim()).filter(Boolean)
     .map((t) => `<p class="leading-8 text-slate-800 dark:text-neutral-200">${esc(t).replace(/\n/g, '<br>')}</p>`).join('\n');
-  // split แบบมี capture: ตำแหน่งคู่ = ข้อความ, ตำแหน่งคี่ = key ของกล่อง (k1-k9 ผ่าน regex แล้ว ปลอดภัยใส่ใน attribute)
-  const paragraphs = String(p.content).split(LOCK_MARK)
-    .map((seg, i) => (i % 2 ? `<div data-lock="${seg}"></div>` : paraHtml(seg))).filter(Boolean).join('\n');
 
   const jsonld = [
     {
@@ -80,8 +74,8 @@ export async function onRequestGet({ request, env, params }) {
       <h1 class="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
       <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">เผยแพร่ ${esc(fmtDate(p.published_at))}${p.updated_at - p.published_at > 86400000 ? ` · อัปเดต ${esc(fmtDate(p.updated_at))}` : ''}</p>
     </div>
-    ${imageGallery(postImages(p), p.title, true, undefined, p.live)}
-    <div id="post-body" class="px-4 py-6 space-y-5 text-[15px]">
+    ${imageGallery(postImages(p), p.title, true)}
+    <div class="px-4 py-6 space-y-5 text-[15px]">
 ${paragraphs}
     </div>
     ${videoGallery(p.videos, p.title)}
@@ -96,8 +90,6 @@ ${paragraphs}
   </section>
 
 <script src="/comments.js" defer></script>
-<script src="/lock-box.js" defer></script>
-<script>document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('post-body');if(b&&window.NIVLocks)NIVLocks.mount(b,${JSON.stringify(p.slug).replace(/</g, '\\u003c')});});</script>
 <script>document.addEventListener('DOMContentLoaded',function(){if(window.NIV&&NIV.countView)NIV.countView(${JSON.stringify(p.slug).replace(/</g, '\\u003c')});});</script>
 </main>`;
 

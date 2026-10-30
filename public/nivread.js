@@ -258,17 +258,12 @@
       const more = el('a', 'inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500', '...'); more.href = '/posts/' + p.slug; more.setAttribute('aria-label', 'อ่านโพสต์ต่อ'); more.title = 'อ่านโพสต์ต่อ';
       body.append(more);
     }
-    if ((p.lock_count || 0) > 0) {
-      const lw = el('div', 'mt-2');
-      const lk = el('a', 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', '🔒 มีเนื้อหาที่ถูกล็อก' + (p.lock_count > 1 ? ' ' + p.lock_count + ' กล่อง' : '') + ' · กดเพื่อปลดล็อก');
-      lk.href = '/posts/' + p.slug; lw.append(lk); body.append(lw);
-    }
     card.append(body);
 
     const imgs = (Array.isArray(p.images) && p.images.length ? p.images : (p.cover_url ? [p.cover_url] : []));
     const vid = videoEl(p.videos, p.title, '/posts/' + p.slug);
     if (vid) card.append(vid);
-    else { const gal = galleryEl(imgs, p.title, '/posts/' + p.slug, p.live); if (gal) card.append(gal); }
+    else { const gal = galleryEl(imgs, p.title, '/posts/' + p.slug); if (gal) card.append(gal); }
     const foot = el('div', 'px-4 py-3 flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400');
     foot.append(el('span', '', '♥ ' + (p.like_count || 0)));
     if (p.repost_count != null) foot.append(el('span', '', '🔁 ' + (p.repost_count || 0)));
@@ -328,12 +323,7 @@
 
   // ---------- แกลเลอรีรูปแบบ Facebook + ดูรูปเต็ม (lightbox) ----------
   const IMG_OK = /^https:\/\/[^\s"'<>]{4,500}$/;
-  const LIVE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="5.8"/><circle cx="12" cy="12" r="9.6" stroke-dasharray="1.7 2.5"/></svg>';
-  function galleryEl(list, title, href, live) {
-    // live = แผนที่ { url รูป: url คลิป หรือ '' } (รับ array ของ url รูปแบบเก่าด้วย) · มีคลิป → data-clip ให้ตัวเล่นด้านล่างใช้
-    const liveMap = Array.isArray(live) ? Object.fromEntries(live.map((u) => [u, ''])) : (live && typeof live === 'object' ? live : {});
-    const lv = (u) => (Object.prototype.hasOwnProperty.call(liveMap, u)
-      ? '<span class="gal-live" role="img" aria-label="Live Photo" title="Live Photo"' + (liveMap[u] && /^https:\/\//.test(liveMap[u]) ? ' data-clip="' + escHtml(liveMap[u]) + '"' : '') + '>' + LIVE_ICON + '</span>' : '');
+  function galleryEl(list, title, href) {
     const urls = (Array.isArray(list) ? list : []).filter((x) => IMG_OK.test(x)).slice(0, 10);
     const n = urls.length;
     if (!n) return null;
@@ -343,11 +333,11 @@
     if (n === 1) {
       root.innerHTML = (feed ? '<a class="gal-s" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' : '<div class="gal-s" data-imgs="' + data + '" data-i="0" role="button" tabindex="0" aria-label="ดูรูปเต็ม">') +
         '<img class="bg" src="' + escHtml(urls[0]) + '" alt="" aria-hidden="true" loading="lazy" decoding="async">' +
-        '<img class="fg" src="' + escHtml(urls[0]) + '" alt="' + alt + '" loading="lazy" decoding="async">' + lv(urls[0]) + (feed ? '</a>' : '</div>');
+        '<img class="fg" src="' + escHtml(urls[0]) + '" alt="' + alt + '" loading="lazy" decoding="async">' + (feed ? '</a>' : '</div>');
     } else {
       root.innerHTML = '<div class="gal-g gal-' + Math.min(n, 5) + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.slice(0, 5).map((u, i) => {
         const more = i === 4 && n > 5;
-        const im = '<img src="' + escHtml(u) + '" alt="' + alt + ' รูปที่ ' + (i + 1) + '" loading="lazy" decoding="async">' + lv(u);
+        const im = '<img src="' + escHtml(u) + '" alt="' + alt + ' รูปที่ ' + (i + 1) + '" loading="lazy" decoding="async">';
         const mo = more ? ' data-more="+' + (n - 5) + '"' : '';
         return feed
           ? '<a class="gal-t' + (more ? ' gal-more' : '') + '" href="' + escHtml(href) + '"' + mo + ' aria-label="เปิดโพสต์ ' + alt + '">' + im + '</a>'
@@ -359,9 +349,6 @@
 
   const GALCSS = `
 .gal{margin:.25rem 1rem .75rem}
-.gal-live{position:absolute;left:8px;top:8px;z-index:2;width:26px;height:26px;display:grid;place-items:center;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;pointer-events:none;transition:background .2s}.gal-live svg{width:16px;height:16px}
-.gal-live[data-clip]{pointer-events:auto;cursor:pointer}.gal-live.playing{background:rgba(245,158,11,.92)}
-.gal-clip{position:absolute;z-index:1;opacity:0;transition:opacity .3s;pointer-events:none;background:transparent}.gal-clip.on{opacity:1}
 .gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:#0a0a0a;cursor:zoom-in}
 .gal-s .bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(26px) brightness(.5);pointer-events:none}
 .gal-s .fg{position:relative;display:block;width:auto;height:auto;max-width:100%;max-height:36rem;transition:transform .4s ease}
@@ -1247,52 +1234,4 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
   © ${new Date().getFullYear()} nivread · <a href="/" class="hover:text-amber-500">หน้าแรก</a> · <a href="/posts" class="hover:text-amber-500">โพสต์ทั้งหมด</a> · <a href="/search" class="hover:text-amber-500">ค้นหา</a> · <a href="/write" class="hover:text-amber-500">เขียนโพสต์</a>
 </div>`;
   }
-})();
-
-// ---------- Live Photo: เล่นคลิปสั้นทับรูป 1 ครั้งเมื่อเลื่อนมาเห็น (เงียบ) แล้วค่อย ๆ กลับเป็นภาพนิ่ง · แตะ/ชี้ไอคอน Live เพื่อเล่นซ้ำ ----------
-// ใช้ได้กับทั้งการ์ด SSR และการ์ดที่วาดทีหลัง (เลื่อนโหลดเพิ่ม) · ไม่เล่นเองถ้าผู้ใช้ตั้งลดการเคลื่อนไหวหรือเปิดโหมดประหยัดข้อมูล (ยังแตะเล่นได้)
-(function () {
-  const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const saver = !!(navigator.connection && navigator.connection.saveData);
-  const MAX_MS = 4500;
-  function play(badge) {
-    if (badge._live) return;
-    const clip = badge.getAttribute('data-clip'), host = badge.parentElement;
-    const img = host && host.querySelector('img:not(.bg)');
-    if (!clip || !img) return;
-    const v = document.createElement('video');
-    v.muted = true; v.defaultMuted = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('aria-hidden', 'true');
-    v.preload = 'auto'; v.className = 'gal-clip'; v.src = clip;
-    if (img.offsetWidth) { // วางทับรูปจริงให้พอดี (รูปเดี่ยวแบบ contain / ช่องกริดแบบ cover)
-      const cs = getComputedStyle(img);
-      v.style.cssText = 'left:' + img.offsetLeft + 'px;top:' + img.offsetTop + 'px;width:' + img.offsetWidth + 'px;height:' + img.offsetHeight + 'px;object-fit:' + cs.objectFit + ';object-position:' + cs.objectPosition;
-    } else v.style.cssText = 'left:0;top:0;width:100%;height:100%;object-fit:cover';
-    badge._live = v; badge.classList.add('playing');
-    host.insertBefore(v, badge);
-    let done = false, guard = 0;
-    const stop = () => {
-      if (done) return; done = true; clearTimeout(guard);
-      v.classList.remove('on'); badge.classList.remove('playing');
-      setTimeout(() => { try { v.pause(); } catch (e) {} v.remove(); badge._live = null; }, 320);
-    };
-    v.addEventListener('playing', () => v.classList.add('on'), { once: true });
-    v.addEventListener('ended', stop); v.addEventListener('error', stop);
-    guard = setTimeout(stop, MAX_MS);
-    const p = v.play(); if (p && p.catch) p.catch(stop);
-  }
-  const io = 'IntersectionObserver' in window ? new IntersectionObserver((ents) => {
-    ents.forEach((e) => { if (e.isIntersecting) { io.unobserve(e.target); if (!reduce && !saver) play(e.target); } });
-  }, { threshold: 0.6 }) : null;
-  function scan() {
-    document.querySelectorAll('.gal-live[data-clip]:not([data-seen])').forEach((b) => { b.setAttribute('data-seen', '1'); if (io) io.observe(b); });
-  }
-  let queued = false;
-  const later = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; scan(); }); };
-  document.addEventListener('click', (e) => { // แตะไอคอน = เล่นซ้ำ (ไม่เปิดโพสต์/ไม่เปิด lightbox)
-    const b = e.target.closest && e.target.closest('.gal-live[data-clip]');
-    if (b) { e.preventDefault(); e.stopPropagation(); play(b); }
-  }, true);
-  document.addEventListener('mouseover', (e) => { const b = e.target.closest && e.target.closest('.gal-live[data-clip]'); if (b) play(b); });
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan); else scan();
-  if (window.MutationObserver) new MutationObserver(later).observe(document.documentElement, { childList: true, subtree: true });
 })();
