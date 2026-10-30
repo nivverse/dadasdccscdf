@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Nivread AI – คุยทั่วไป จัดเอกสาร ดูดวง</title>
+<meta name="description" content="Nivread AI ผู้ช่วยภาษาไทย คุยทั่วไป ช่วยจัดเอกสาร สรุป ร่างอีเมล และทำนายดวงเพื่อความบันเทิง">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b7d80'/%3E%3Cpath d='M9 23V9l14 14V9' stroke='white' stroke-width='3' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script>
+(function () {
+  var t = localStorage.getItem('theme');
+  var dark = t ? t !== 'light' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.classList.toggle('dark', dark);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f6fa;--sf:#fff;--tx:#161a2e;--mu:#667089;--bd:#dfe2ee;--on:#fff;--ac:#0b7d80;--acs:#e1f3f3;--bot:#eceef6}
+html.dark{--bg:#0e1120;--sf:#171b30;--tx:#eceef8;--mu:#9aa1bb;--bd:#2a3050;--on:#0e1120;--bot:#1d2240}
+body[data-m=general]{--ac:#0b7d80;--acs:#e1f3f3}
+body[data-m=docs]{--ac:#2a4fd8;--acs:#e5eafc}
+body[data-m=fortune]{--ac:#8a3a94;--acs:#f4e6f6}
+html.dark body[data-m=general]{--ac:#3cc9cb;--acs:#143238}
+html.dark body[data-m=docs]{--ac:#8aa2ff;--acs:#1a2350}
+html.dark body[data-m=fortune]{--ac:#d391dd;--acs:#2e1c38}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:'IBM Plex Sans Thai',system-ui,sans-serif;background:var(--bg);color:var(--tx);display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;transition:background .2s}
+button,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+header{display:flex;align-items:center;gap:.75rem;padding:max(.6rem,env(safe-area-inset-top)) 1rem .6rem;max-width:52rem;width:100%;margin:0 auto}
+.brand{font-weight:600;font-size:1.1rem;letter-spacing:-.01em;flex:1}
+.pill{font-size:.8rem;color:var(--mu);border:1px solid var(--bd);border-radius:99px;padding:.2rem .7rem;background:var(--sf)}
+.ghost{background:none;border:1px solid var(--bd);border-radius:99px;padding:.2rem .8rem;font-size:.8rem;color:var(--mu)}
+.ghost:hover{color:var(--tx)}
+nav{display:flex;gap:.4rem;padding:0 1rem .6rem;max-width:52rem;width:100%;margin:0 auto}
+.tab{flex:1;border:1px solid var(--bd);background:var(--sf);border-radius:.8rem;padding:.55rem .4rem;font-size:.92rem;font-weight:500;color:var(--mu);transition:background .2s,color .2s,border-color .2s}
+.tab[aria-selected=true]{background:var(--ac);border-color:var(--ac);color:var(--on)}
+#log{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:.5rem 1rem 1rem;max-width:52rem;width:100%;margin:0 auto}
+.intro{padding:1.2rem 0 .5rem}
+.intro h1{font-size:1.5rem;line-height:1.3;margin:0 0 .4rem;font-weight:600}
+.intro p{margin:0 0 1rem;color:var(--mu);max-width:34rem;line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.chip{border:1px solid var(--bd);background:var(--sf);border-radius:.8rem;padding:.5rem .85rem;font-size:.92rem;text-align:left}
+.chip:hover{border-color:var(--ac);background:var(--acs)}
+.row{display:flex;margin:.6rem 0}
+.row.u{justify-content:flex-end}
+.b{max-width:min(85%,40rem);padding:.6rem .9rem;border-radius:1.1rem;line-height:1.65;overflow-wrap:anywhere}
+.u .b{background:var(--ac);color:var(--on);white-space:pre-wrap;border-bottom-right-radius:.35rem}
+.a .b{background:var(--bot);border-bottom-left-radius:.35rem}
+.a .b>*:first-child{margin-top:0}.a .b>*:last-child{margin-bottom:0}
+.b p,.b ul,.b ol{margin:.5em 0}
+.b h1,.b h2,.b h3{font-size:1.05rem;margin:.9em 0 .3em}
+.b table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%}
+.b th,.b td{border:1px solid var(--bd);padding:.3rem .6rem;text-align:left}
+.b pre{background:var(--bg);padding:.7rem;border-radius:.6rem;overflow-x:auto}
+.b code{font-size:.9em}
+.err .b{background:none;border:1px dashed var(--bd);color:var(--mu)}
+.copy{display:block;margin-top:.5rem;background:none;border:0;padding:0;font-size:.8rem;color:var(--mu)}
+.copy:hover{color:var(--ac)}
+.dots span{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:50%;background:var(--mu);animation:bl 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.gate{border:1px solid var(--bd);background:var(--sf);border-radius:1rem;padding:1rem;margin:.6rem 0;line-height:1.6}
+.gate a{color:var(--ac);font-weight:500}
+form{display:flex;gap:.5rem;align-items:flex-end;padding:.5rem 1rem max(.8rem,env(safe-area-inset-bottom));max-width:52rem;width:100%;margin:0 auto}
+.box{flex:1;display:flex;align-items:flex-end;background:var(--sf);border:1px solid var(--bd);border-radius:1.4rem;padding:.2rem .3rem .2rem 1rem}
+.box:focus-within{border-color:var(--ac);box-shadow:0 0 0 3px var(--acs)}
+textarea{flex:1;resize:none;border:0;background:none;outline:0;font-size:16px;line-height:1.5;padding:.5rem 0;max-height:9rem;min-height:2.4rem}
+textarea::placeholder{color:var(--mu)}
+.go{border:0;border-radius:99px;background:var(--ac);color:var(--on);font-weight:600;padding:.45rem 1rem;margin:.15rem 0}
+.go:disabled{opacity:.4;cursor:default}
+.stop{background:none;color:#d93a3a;border:1px solid currentColor}
+.hide{display:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-m="general">
+<header>
+  <div class="brand">Nivread AI</div>
+  <span class="pill" id="energy" hidden></span>
+  <button class="ghost" id="clear" type="button">ล้างแชท</button>
+</header>
+<nav role="tablist" aria-label="เลือกโหมด">
+  <button class="tab" role="tab" data-m="general" type="button">คุยทั่วไป</button>
+  <button class="tab" role="tab" data-m="docs" type="button">จัดเอกสาร</button>
+  <button class="tab" role="tab" data-m="fortune" type="button">ดูดวง</button>
+</nav>
+<div id="log" aria-live="polite"></div>
+<form id="form">
+  <div class="box">
+    <textarea id="input" rows="1" maxlength="2000" aria-label="ข้อความ"></textarea>
+    <button class="go stop hide" id="stop" type="button">หยุด</button>
+    <button class="go" id="send" type="submit" disabled>ส่ง</button>
+  </div>
+</form>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script>
+const API = "https://api.fnnz.art/api/ai", Q = "app=nivread";
+const LOGIN_URL = "/login";   // หน้าเข้าสู่ระบบของ nivread.com (แก้ให้ตรงกับเว็บ)
+const TOKEN = localStorage.getItem("token"), UID = localStorage.getItem("userId");
+const LOGGED_IN = !!(TOKEN && UID);
+const AUTH = { Authorization: "Bearer " + TOKEN };
+
+const MODES = {
+  general: { max: 2000, ph: "พิมพ์ข้อความ...", title: "ถามอะไรก็ได้", hi: "ช่วยคิด ช่วยเขียน ช่วยอธิบาย หรือแค่คุยเล่น ถ้าเรื่องไหนเปลี่ยนบ่อย เช่น ข่าวหรือราคา จะค้นข้อมูลล่าสุดให้ก่อนตอบ",
+    chips: ["ช่วยวางแผนวันนี้ให้หน่อย", "อธิบายเรื่องดอกเบี้ยทบต้นให้เข้าใจง่าย", "ช่วยตรวจและแก้ภาษาข้อความนี้", "แนะนำวิธีจดจำคำศัพท์ภาษาอังกฤษ"] },
+  docs: { max: 8000, ph: "วางข้อความที่ต้องการจัดการ แล้วบอกว่าอยากให้ทำอะไร", title: "วางข้อความ แล้วบอกว่าจะให้จัดอย่างไร", hi: "สรุป ย่อความ จัดหัวข้อ ปรับสำนวนให้เป็นทางการ หรือร่างเอกสารจากข้อมูลคร่าว ๆ รองรับข้อความที่วางได้ครั้งละประมาณ 8,000 ตัวอักษร (ยังไม่รองรับไฟล์แนบ)",
+    chips: ["ร่างอีเมลขอเลื่อนนัดประชุมให้สุภาพ", "จัดโน้ตประชุมให้เป็นรายงานพร้อมสิ่งที่ต้องทำ", "เขียนจดหมายลากิจแบบเป็นทางการ", "สรุปข้อความที่จะวางให้เหลือ 5 ข้อ"] },
+  fortune: { max: 2000, ph: "บอกวันเกิด หรือเรื่องที่อยากรู้...", title: "ดูดวงเพื่อความบันเทิง", hi: "ดวงตามวันเกิด ราศี ไพ่ทาโรต์ และเลขศาสตร์ ใช้เป็นแนวคิดประกอบการตัดสินใจ ไม่ใช่คำตัดสิน",
+    chips: ["ดูดวงรายวันของวันนี้", "ดวงการงานของคนเกิดวันจันทร์", "เปิดไพ่ทาโรต์ 3 ใบเรื่องความรัก", "ขอเลขมงคลประจำสัปดาห์นี้"] },
+};
+const log = document.getElementById("log"), input = document.getElementById("input"), sendBtn = document.getElementById("send"),
+  stopBtn = document.getElementById("stop"), form = document.getElementById("form"), energyEl = document.getElementById("energy");
+let mode = "general", ctrl = null, busy = false, loadId = 0;
+
+const md = (t) => (window.marked && window.DOMPurify) ? DOMPurify.sanitize(marked.parse(t, { breaks: true })) : null;
+const scrollEnd = () => requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; });
+function setBubble(b, role, text) {
+  if (role === "assistant") { const h = md(text); if (h) b.innerHTML = h; else b.textContent = text; } else b.textContent = text;
+}
+function addMsg(role, text, cls = "") {
+  const row = document.createElement("div"); row.className = "row " + (role === "user" ? "u" : "a") + " " + cls;
+  const b = document.createElement("div"); b.className = "b"; setBubble(b, role, text);
+  row.appendChild(b); log.appendChild(row); scrollEnd(); return b;
+}
+function addCopy(b, text) {
+  const c = document.createElement("button"); c.type = "button"; c.className = "copy"; c.textContent = "คัดลอก";
+  c.onclick = async () => { try { await navigator.clipboard.writeText(text); c.textContent = "คัดลอกแล้ว"; setTimeout(() => (c.textContent = "คัดลอก"), 1500); } catch {} };
+  b.appendChild(c);
+}
+function gate(msg) {
+  const g = document.createElement("div"); g.className = "gate";
+  g.innerHTML = msg + ' <a href="' + LOGIN_URL + '">เข้าสู่ระบบ</a>'; log.appendChild(g);
+}
+function intro() {
+  const m = MODES[mode], d = document.createElement("div"); d.className = "intro"; d.id = "intro";
+  const h = document.createElement("h1"); h.textContent = m.title;
+  const p = document.createElement("p"); p.textContent = m.hi;
+  const c = document.createElement("div"); c.className = "chips";
+  m.chips.forEach((t) => { const x = document.createElement("button"); x.type = "button"; x.className = "chip"; x.textContent = t; x.onclick = () => (mode === "docs" ? (input.value = t + "\n\n", input.focus(), grow()) : send(t)); c.appendChild(x); });
+  d.append(h, p, c); log.appendChild(d);
+}
+function grow() { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 144) + "px"; sync(); }
+function sync() { sendBtn.disabled = busy || !input.value.trim(); }
+function showEnergy(h) { if (!h) return; energyEl.hidden = false; energyEl.textContent = "พลังงาน " + ((h.free | 0) + (h.reserve | 0)); }
+
+async function loadStatus() {
+  if (!LOGGED_IN) return;
+  try { const r = await fetch(API + "/status?" + Q, { headers: AUTH }); if (r.ok) { const d = await r.json(); showEnergy({ free: d.free, reserve: d.reserve }); } } catch {}
+}
+async function load() {
+  const id = ++loadId; log.innerHTML = "";
+  document.body.dataset.m = mode; input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max;
+  document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", t.dataset.m === mode));
+  if (!LOGGED_IN) { intro(); gate("เข้าสู่ระบบก่อนเพื่อเริ่มแชทและเก็บประวัติการคุย"); return; }
+  let msgs = [];
+  try {
+    const r = await fetch(API + "/history?" + Q + "&chat=" + mode, { headers: AUTH });
+    if (id !== loadId) return;
+    if (r.status === 401) { localStorage.removeItem("token"); intro(); gate("เซสชันหมดอายุ"); return; }
+    msgs = (await r.json()).messages || [];
+  } catch { if (id !== loadId) return; }
+  if (!msgs.length) intro();
+  msgs.forEach((m) => { const b = addMsg(m.role, m.content); if (m.role === "assistant") addCopy(b, m.content); });
+}
+function setMode(m) {
+  if (!MODES[m] || (m === mode && log.children.length)) return;
+  if (ctrl) ctrl.abort();
+  mode = m; history.replaceState(null, "", "#" + m); localStorage.setItem("nivMode", m); load();
+}
+
+async function send(text) {
+  text = (text || "").trim(); if (!text || busy) return;
+  if (!LOGGED_IN) { gate("ต้องเข้าสู่ระบบก่อนส่งข้อความ"); return; }
+  document.getElementById("intro")?.remove();
+  addMsg("user", text); input.value = ""; grow(); busy = true; sync();
+  sendBtn.classList.add("hide"); stopBtn.classList.remove("hide");
+  const dots = addMsg("assistant", ""); dots.innerHTML = '<span class="dots"><span></span><span></span><span></span></span>';
+  ctrl = new AbortController();
+  let reply = "", bubble = null, raf = 0;
+  const paint = () => { raf = 0; if (bubble) { setBubble(bubble, "assistant", reply); scrollEnd(); } };
+  try {
+    const res = await fetch(API + "/chat?" + Q, { method: "POST", headers: { "Content-Type": "application/json", ...AUTH },
+      body: JSON.stringify({ message: text, mode }), signal: ctrl.signal });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      dots.parentElement.remove();
+      addMsg("assistant", d.error || "เชื่อมต่อไม่ได้ (" + res.status + ") ลองใหม่อีกครั้ง", "err");
+      if (res.status === 401) { localStorage.removeItem("token"); gate("เซสชันหมดอายุ"); }
+      return;
+    }
+    bubble = dots; bubble.textContent = "";
+    const reader = res.body.getReader(), dec = new TextDecoder(); let buf = "";
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const evs = buf.split("\n\n"); buf = evs.pop();
+      for (const ev of evs) {
+        if (!ev.startsWith("data:")) continue;
+        let m; try { m = JSON.parse(ev.slice(5)); } catch { continue; }
+        if (m.t) { reply += m.t; if (!raf) raf = requestAnimationFrame(paint); }
+        if (m.done && m.hp) showEnergy(m.hp);
+      }
+    }
+    paint(); if (reply) addCopy(bubble, reply);
+  } catch (e) {
+    if (e.name === "AbortError") { if (bubble && reply) { paint(); addCopy(bubble, reply); } else dots.parentElement.remove(); }
+    else { dots.parentElement.remove(); addMsg("assistant", "เครือข่ายมีปัญหา ลองใหม่อีกครั้งนะ", "err"); }
+  } finally {
+    ctrl = null; busy = false; stopBtn.classList.add("hide"); sendBtn.classList.remove("hide"); sync(); input.focus();
+  }
+}
+
+document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => setMode(t.dataset.m)));
+stopBtn.addEventListener("click", () => ctrl && ctrl.abort());
+document.getElementById("clear").addEventListener("click", async () => {
+  if (!LOGGED_IN || !confirm("ล้างแชทโหมด “" + document.querySelector('.tab[aria-selected=true]').textContent + "” ทั้งหมด?")) return;
+  try { await fetch(API + "/clear?" + Q, { method: "POST", headers: { "Content-Type": "application/json", ...AUTH }, body: JSON.stringify({ chat: mode }) }); } catch {}
+  load();
+});
+form.addEventListener("submit", (e) => { e.preventDefault(); send(input.value); });
+input.addEventListener("input", grow);
+input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
+window.addEventListener("hashchange", () => setMode(location.hash.slice(1)));
+
+const first = location.hash.slice(1);
+mode = MODES[first] ? first : (MODES[localStorage.getItem("nivMode")] ? localStorage.getItem("nivMode") : "general");
+load(); loadStatus();
+</script>
+</body>
+</html>
