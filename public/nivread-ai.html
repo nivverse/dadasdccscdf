@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/img/nivreadfavon.png" type="image/png">
 <link rel="apple-touch-icon" href="/img/nivreadfavon.png">
-<meta name="theme-color" content="#0d0d0d">
+<meta name="theme-color" content="#161616">
 <script>
   if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
   else document.documentElement.classList.add('dark');
@@ -16,62 +16,94 @@
 <script>tailwind.config = { darkMode: 'class' }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+  :root { --w: 50rem; }                       /* ความกว้างคอลัมน์อ่าน: ปรับค่าเดียวได้ทั้งหน้า */
   body { font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; }
-  .glass-card { background: rgba(255,255,255,.88); backdrop-filter: blur(16px); border: 1px solid rgba(226,232,240,.8); box-shadow: 0 10px 25px -5px rgba(15,23,42,.08); }
-  .dark .glass-card { background: rgba(18,18,18,.82); border: 1px solid rgba(255,255,255,.1); box-shadow: none; }
-  .fld { width: 100%; padding: .75rem 1rem; border-radius: .75rem; background: #f1f5f9; border: 1px solid #e2e8f0; outline: none; }
-  .dark .fld { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); }
-  .fld:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.2); }
-  .btn-main { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .75rem 1.5rem; border-radius: .75rem; font-size: .875rem; font-weight: 600; color: #fff; background: linear-gradient(to right,#f59e0b,#f97316); cursor: pointer; }
-  .btn-main:hover { filter: brightness(1.08); }
-  .btn-main:disabled { opacity: .5; cursor: not-allowed; }
+  .hidden { display: none !important; }
+  :focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
+
+  /* คอลัมน์กลาง: พื้นที่เลื่อนเต็มจอ แต่เนื้อหาอยู่กลาง */
+  .col { padding-left: max(1rem, calc((100% - var(--w)) / 2)); padding-right: max(1rem, calc((100% - var(--w)) / 2)); }
+
+  /* ข้อความทั้งหมดใช้ฟอนต์อ่านยาว */
+  .read { font-family: 'Sarabun', 'Kanit', sans-serif; }
+
+  #log { overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(148,163,184,.35) transparent; }
+  #log > :first-child { margin-top: 0; }
+  .no-sb { scrollbar-width: none; } .no-sb::-webkit-scrollbar { display: none; }
   .tab-on { color: #f59e0b !important; border-color: #f59e0b !important; }
-  #log { overscroll-behavior: contain; }
-  .col { padding-left: max(1rem, calc((100% - 48rem) / 2)); padding-right: max(1rem, calc((100% - 48rem) / 2)); }
-  .col-t { padding-left: max(.5rem, calc((100% - 48rem) / 2)); padding-right: max(.5rem, calc((100% - 48rem) / 2)); }
+
+  .glass-card { background: rgba(255,255,255,.95); border: 1px solid rgba(226,232,240,.8); }
+  .dark .glass-card { background: #1f1f1f; border: 1px solid rgba(255,255,255,.1); }
+
   #main-footer, body > footer { display: none !important; }
+
+  /* ---------- เนื้อหาตอบกลับของ AI (ไม่มีกรอบ) ---------- */
+  .md { color: #1e293b; }
+  .dark .md { color: #e7e5e4; }
   .md > :first-child { margin-top: 0 } .md > :last-child { margin-bottom: 0 }
-  .md p, .md ul, .md ol { margin: .5em 0 } .md ul { list-style: disc; padding-left: 1.3rem } .md ol { list-style: decimal; padding-left: 1.3rem }
-  .md h1, .md h2, .md h3 { font-weight: 600; margin: .9em 0 .3em } .md h1 { font-size: 1.15rem } .md h2 { font-size: 1.05rem }
-  .md table { display: block; overflow-x: auto; border-collapse: collapse; max-width: 100% }
-  .md th, .md td { border: 1px solid rgba(148,163,184,.4); padding: .3rem .6rem; text-align: left }
-  .md pre { background: rgba(148,163,184,.15); padding: .7rem; border-radius: .6rem; overflow-x: auto }
-  .md a { color: #f59e0b; text-decoration: underline }
-  @media (prefers-reduced-motion: reduce) { .animate-pulse { animation: none } }
+  .md p { margin: .85em 0 }
+  .md ul, .md ol { margin: .8em 0; padding-left: 1.5rem }
+  .md ul { list-style: disc } .md ol { list-style: decimal }
+  .md li { margin: .3em 0; padding-left: .2rem } .md li > ul, .md li > ol { margin: .3em 0 }
+  .md li::marker { color: #94a3b8 }
+  .md h1, .md h2, .md h3, .md h4 { font-family: 'Kanit', sans-serif; font-weight: 500; line-height: 1.4; margin: 1.5em 0 .5em }
+  .md h1 { font-size: 1.45rem } .md h2 { font-size: 1.25rem } .md h3 { font-size: 1.1rem } .md h4 { font-size: 1rem }
+  .md strong { font-weight: 600 }
+  .md a { color: #d97706; text-decoration: underline; text-underline-offset: 3px }
+  .md hr { border: 0; border-top: 1px solid rgba(148,163,184,.3); margin: 1.6em 0 }
+  .md blockquote { margin: 1em 0; padding: .1em 0 .1em 1rem; border-left: 3px solid rgba(245,158,11,.6); color: #64748b }
+  .dark .md blockquote { color: #a8a29e }
+  .md code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em; background: rgba(148,163,184,.18); padding: .12em .4em; border-radius: .4rem }
+  .md pre { margin: 1em 0; background: rgba(148,163,184,.12); border: 1px solid rgba(148,163,184,.25); padding: .9rem 1rem; border-radius: .9rem; overflow-x: auto; line-height: 1.6 }
+  .md pre code { background: none; padding: 0; font-size: .85em }
+  .md table { display: block; overflow-x: auto; border-collapse: collapse; max-width: 100%; margin: 1em 0 }
+  .md th, .md td { border: 1px solid rgba(148,163,184,.35); padding: .45rem .8rem; text-align: left; font-size: .95em }
+  .md th { background: rgba(148,163,184,.12); font-weight: 600 }
+
+  /* จุดเรืองแสงท้ายข้อความขณะกำลังพิมพ์ */
+  .md.streaming > :last-child::after { content: ''; display: inline-block; width: .55em; height: .55em; margin-left: .35em; border-radius: 50%; background: #f59e0b; vertical-align: baseline; animation: pulse-dot 1s ease-in-out infinite; }
+  @keyframes pulse-dot { 0%,100% { opacity: .25; transform: scale(.8) } 50% { opacity: 1; transform: scale(1) } }
+
+  @media (prefers-reduced-motion: reduce) { .animate-pulse, .md.streaming > :last-child::after { animation: none } }
 </style>
 </head>
-<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white h-dvh flex flex-col relative overflow-hidden">
-
-<div class="fixed inset-0 pointer-events-none z-0">
-  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/25 opacity-40 dark:opacity-100 rounded-full blur-[128px]"></div>
-  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/25 opacity-40 dark:opacity-100 rounded-full blur-[128px]"></div>
-</div>
+<body class="bg-[#fafafa] text-slate-900 dark:bg-[#161616] dark:text-white h-dvh flex flex-col relative overflow-hidden">
 
 <header id="main-header" class="z-20 shrink-0"></header>
 
-<main class="flex-1 min-h-0 z-10 w-full flex">
-  <section class="w-full min-h-0 flex flex-col bg-white/80 dark:bg-[#121212]/80 backdrop-blur-xl border-t border-slate-200 dark:border-white/10">
-    <nav class="col-t shrink-0 flex overflow-x-auto border-b border-slate-200 dark:border-white/10" aria-label="โหมด AI">
-      <button type="button" data-tab="general" class="tab px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">คุยทั่วไป</button>
-      <button type="button" data-tab="docs" class="tab px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">จัดเอกสาร</button>
-      <button type="button" data-tab="fortune" class="tab px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">ดูดวง</button>
-    </nav>
+<main class="flex-1 min-h-0 z-10 w-full flex flex-col">
 
-    <div class="col shrink-0 flex items-center justify-between gap-3 py-2 border-b border-slate-200 dark:border-white/10">
-      <span id="energy" class="text-xs font-semibold text-amber-500">พลังงาน ...</span>
+  <!-- แถบบน: โหมด + พลังงาน + ล้างแชท -->
+  <div class="col shrink-0 flex items-stretch gap-3 border-b border-slate-200 dark:border-white/10">
+    <nav class="flex-1 min-w-0 flex overflow-x-auto no-sb -ml-3" aria-label="โหมด AI">
+      <button type="button" data-tab="general" class="tab px-3 py-3 -mb-px text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">คุยทั่วไป</button>
+      <button type="button" data-tab="docs" class="tab px-3 py-3 -mb-px text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">จัดเอกสาร</button>
+      <button type="button" data-tab="fortune" class="tab px-3 py-3 -mb-px text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">ดูดวง</button>
+    </nav>
+    <div class="shrink-0 flex items-center gap-4">
+      <span id="energy" class="text-xs font-medium text-amber-500">พลังงาน ...</span>
       <button id="clear-btn" type="button" class="text-xs font-medium text-slate-500 dark:text-neutral-400 hover:text-red-500 cursor-pointer">ล้างแชท</button>
     </div>
+  </div>
 
-    <div id="log" class="col flex-1 min-h-0 overflow-y-auto py-4 space-y-4" aria-live="polite"></div>
+  <!-- พื้นที่ข้อความ: เลื่อนเต็มจอ ข้อความ AI ไม่มีกรอบ -->
+  <div id="log" class="col read flex-1 min-h-0 overflow-y-auto flex flex-col pt-6 pb-8" aria-live="polite"></div>
 
-    <form id="form" class="col shrink-0 border-t border-slate-200 dark:border-white/10 pt-3 flex items-end gap-2" style="padding-bottom:max(.75rem,env(safe-area-inset-bottom))">
-      <textarea id="input" rows="1" aria-label="ข้อความ" class="fld flex-1 resize-none max-h-36" style="font-size:16px;border-radius:1.5rem;padding:.7rem 1.1rem"></textarea>
-      <button id="stop" type="button" class="hidden shrink-0 px-4 py-3 rounded-xl border border-red-500 text-red-500 text-sm font-semibold cursor-pointer">หยุด</button>
-      <button id="send" type="submit" class="btn-main shrink-0 !rounded-full" disabled>ส่ง</button>
+  <!-- ช่องพิมพ์ลอยด้านล่าง -->
+  <div class="col shrink-0 pt-2" style="padding-bottom:max(.5rem,env(safe-area-inset-bottom))">
+    <form id="form" class="flex items-end gap-2 rounded-[1.75rem] border border-slate-300 dark:border-white/15 bg-white dark:bg-[#1f1f1f] pl-5 pr-2 py-2 shadow-[0_2px_12px_rgba(15,23,42,.06)] dark:shadow-none transition-colors focus-within:border-amber-500/70">
+      <textarea id="input" rows="1" aria-label="ข้อความ" class="read flex-1 min-w-0 bg-transparent outline-none resize-none max-h-48 py-2 leading-relaxed placeholder:text-slate-400 dark:placeholder:text-neutral-500" style="font-size:16px"></textarea>
+      <button id="stop" type="button" aria-label="หยุด" class="hidden shrink-0 w-10 h-10 rounded-full border border-slate-300 dark:border-white/20 text-slate-700 dark:text-white flex items-center justify-center hover:border-red-500 hover:text-red-500 cursor-pointer">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="2"/></svg>
+      </button>
+      <button id="send" type="submit" aria-label="ส่ง" class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white bg-gradient-to-br from-amber-500 to-orange-500 hover:brightness-105 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer" disabled>
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 16V4M4.5 9.5 10 4l5.5 5.5"/></svg>
+      </button>
     </form>
-  </section>
+    <p class="mt-2 text-center text-[11px] text-slate-400 dark:text-neutral-500">AI อาจตอบผิดพลาด โปรดตรวจสอบข้อมูลสำคัญอีกครั้ง</p>
+  </div>
 </main>
 
 <div id="clr-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -107,43 +139,55 @@
       chips: ['ดูดวงรายวันของวันนี้', 'ดวงการงานของคนเกิดวันจันทร์', 'เปิดไพ่ทาโรต์ 3 ใบเรื่องความรัก', 'ขอเลขมงคลประจำสัปดาห์นี้'] },
   };
   const tabs = [...document.querySelectorAll('[data-tab]')];
-  let mode = 'general', ctrl = null, busy = false, loadId = 0;
+  let mode = 'general', ctrl = null, busy = false, loadId = 0, stick = true;
 
+  // รูปแบบข้อความ: ผู้ใช้ = กล่องเทาอ่อนชิดขวา / AI = ข้อความเต็มคอลัมน์ ไม่มีกรอบ
   const BUB = {
-    user: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl rounded-br-md whitespace-pre-wrap',
-    assistant: 'bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl rounded-bl-md md',
-    err: 'border border-dashed border-slate-300 dark:border-white/15 text-red-500 rounded-2xl rounded-bl-md',
+    user: 'ml-auto max-w-[85%] w-fit rounded-3xl bg-slate-200/70 dark:bg-white/10 px-4 py-2.5 text-[16px] leading-relaxed whitespace-pre-wrap',
+    assistant: 'md w-full text-[16px] sm:text-[17px] leading-[1.85]',
+    err: 'w-full border-l-2 border-red-500/70 pl-3 text-[15px] leading-relaxed text-red-500',
   };
-  const scrollEnd = () => requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; });
+  const nearBottom = () => log.scrollHeight - log.scrollTop - log.clientHeight < 120;
+  log.addEventListener('scroll', () => { stick = nearBottom(); });
+  // เลื่อนตามเฉพาะตอนผู้ใช้อยู่ท้ายแชท ถ้าเลื่อนขึ้นไปอ่านจะไม่ดึงกลับ
+  const scrollEnd = () => requestAnimationFrame(() => { if (stick) log.scrollTop = log.scrollHeight; });
+
   function setText(b, role, text) {
     if (role === 'assistant' && window.marked && window.DOMPurify) b.innerHTML = DOMPurify.sanitize(marked.parse(text, { breaks: true }));
     else b.textContent = text;
   }
   function addMsg(role, text, kind) {
-    const row = document.createElement('div'); row.className = 'flex ' + (role === 'user' ? 'justify-end' : '');
-    const b = document.createElement('div'); b.className = 'max-w-[88%] sm:max-w-[80%] px-4 py-2.5 text-[15px] leading-relaxed break-words ' + BUB[kind || role];
+    if (role === 'user') stick = true;
+    const row = document.createElement('div');
+    row.className = 'shrink-0 ' + (role === 'user' ? 'mt-7 flex' : 'mt-6');
+    const b = document.createElement('div'); b.className = 'break-words ' + BUB[kind || role];
     setText(b, kind === 'err' ? 'user' : role, text); row.appendChild(b); log.appendChild(row); scrollEnd(); return b;
   }
+  // ปุ่มคัดลอกอยู่นอกเนื้อหา (ไม่ถูกเขียนทับตอน render markdown)
   function addCopy(b, text) {
-    const c = document.createElement('button'); c.type = 'button'; c.textContent = 'คัดลอก';
-    c.className = 'block mt-2 text-xs text-slate-400 hover:text-amber-500 cursor-pointer';
-    c.onclick = async () => { try { await navigator.clipboard.writeText(text); c.textContent = 'คัดลอกแล้ว'; setTimeout(() => (c.textContent = 'คัดลอก'), 1500); } catch {} };
-    b.appendChild(c);
+    const row = b.parentElement; row.querySelector('.acts')?.remove();
+    const bar = document.createElement('div'); bar.className = 'acts mt-3 -ml-2 flex items-center';
+    const c = document.createElement('button'); c.type = 'button';
+    c.className = 'inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-slate-500 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white cursor-pointer';
+    c.innerHTML = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg><span>คัดลอก</span>';
+    const lab = c.querySelector('span');
+    c.onclick = async () => { try { await navigator.clipboard.writeText(text); lab.textContent = 'คัดลอกแล้ว'; setTimeout(() => (lab.textContent = 'คัดลอก'), 1500); } catch {} };
+    bar.appendChild(c); row.appendChild(bar);
   }
   function intro() {
-    const m = MODES[mode], d = document.createElement('div'); d.id = 'intro'; d.className = 'py-2';
-    d.innerHTML = '<h1 class="text-xl font-bold"></h1><p class="mt-1 mb-4 text-sm text-slate-500 dark:text-neutral-400 max-w-lg leading-relaxed"></p><div class="flex flex-wrap gap-2"></div>';
+    const m = MODES[mode], d = document.createElement('div'); d.id = 'intro'; d.className = 'my-auto shrink-0 pb-10';
+    d.innerHTML = '<h1 class="text-2xl sm:text-3xl font-medium tracking-tight"></h1><p class="mt-3 max-w-xl text-[15px] leading-relaxed text-slate-500 dark:text-neutral-400"></p><ul class="mt-8 divide-y divide-slate-200 dark:divide-white/10 border-y border-slate-200 dark:border-white/10"></ul>';
     d.querySelector('h1').textContent = m.title; d.querySelector('p').textContent = m.hi;
-    const box = d.querySelector('div');
+    const box = d.querySelector('ul');
     m.chips.forEach((t) => {
-      const x = document.createElement('button'); x.type = 'button'; x.textContent = t;
-      x.className = 'px-3 py-2 rounded-xl border border-slate-300 dark:border-white/15 text-sm text-left hover:border-amber-500 transition-colors cursor-pointer';
+      const li = document.createElement('li'), x = document.createElement('button'); x.type = 'button'; x.textContent = t;
+      x.className = 'w-full py-3.5 text-left text-[15px] text-slate-700 dark:text-neutral-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer';
       x.onclick = () => { if (mode === 'docs') { input.value = t + '\n\n'; grow(); input.focus(); } else send(t); };
-      box.appendChild(x);
+      li.appendChild(x); box.appendChild(li);
     });
     log.appendChild(d);
   }
-  const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 144) + 'px'; sync(); };
+  const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 192) + 'px'; sync(); };
   const sync = () => { sendBtn.disabled = busy || !input.value.trim(); };
   function showEnergy(h) {
     if (!h) return; const n = (h.free | 0) + (h.reserve | 0);
@@ -156,7 +200,7 @@
   }
 
   async function load() {
-    const id = ++loadId; log.innerHTML = '';
+    const id = ++loadId; log.innerHTML = ''; stick = true;
     tabs.forEach((t) => t.classList.toggle('tab-on', t.dataset.tab === mode));
     input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max;
     let msgs = [];
@@ -176,10 +220,11 @@
     $('intro')?.remove(); addMsg('user', text); input.value = ''; grow(); busy = true; sync();
     sendBtn.classList.add('hidden'); stopBtn.classList.remove('hidden');
     const bub = addMsg('assistant', '');
-    bub.innerHTML = '<span class="inline-flex gap-1 py-1"><i class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse"></i><i class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" style="animation-delay:.2s"></i><i class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" style="animation-delay:.4s"></i></span>';
+    bub.innerHTML = '<span class="inline-flex gap-1.5 py-2"><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></i><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" style="animation-delay:.2s"></i><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" style="animation-delay:.4s"></i></span>';
     ctrl = new AbortController();
     let reply = '', raf = 0;
-    const paint = () => { raf = 0; setText(bub, 'assistant', reply); scrollEnd(); };
+    const paint = () => { raf = 0; if (reply) bub.classList.add('streaming'); setText(bub, 'assistant', reply); scrollEnd(); };
+    const finish = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } bub.classList.remove('streaming'); setText(bub, 'assistant', reply); scrollEnd(); };
     try {
       const res = await call('/chat', { method: 'POST', body: JSON.stringify({ message: text, mode }), signal: ctrl.signal });
       if (!res.ok) {
@@ -198,12 +243,14 @@
           if (m.done && m.hp) showEnergy(m.hp);
         }
       }
-      paint(); if (reply) addCopy(bub, reply);
+      finish(); if (reply) addCopy(bub, reply);
     } catch (e) {
       if (e.message === '401') return;
-      if (e.name === 'AbortError' && reply) { paint(); addCopy(bub, reply); }
+      if (e.name === 'AbortError' && reply) { finish(); addCopy(bub, reply); }
       else { bub.parentElement.remove(); if (e.name !== 'AbortError') addMsg('assistant', 'เครือข่ายมีปัญหา ลองใหม่อีกครั้ง', 'err'); }
     } finally {
+      if (raf) cancelAnimationFrame(raf);
+      bub.classList.remove('streaming');
       ctrl = null; busy = false; stopBtn.classList.add('hidden'); sendBtn.classList.remove('hidden'); sync(); input.focus();
     }
   }
