@@ -37,7 +37,7 @@
   .glass-card { background: rgba(255,255,255,.95); border: 1px solid rgba(226,232,240,.8); }
   .dark .glass-card { background: #1f1f1f; border: 1px solid rgba(255,255,255,.1); }
 
-  #main-footer, body > footer { display: none !important; }
+  footer, #main-footer, #site-footer, [id*="footer" i], [class*="site-footer" i], [class*="main-footer" i] { display: none !important; }
 
   /* ---------- เนื้อหาตอบกลับของ AI (ไม่มีกรอบ) ---------- */
   .md { color: #1e293b; }
@@ -71,6 +71,18 @@
 </head>
 <body class="bg-[#fafafa] text-slate-900 dark:bg-[#161616] dark:text-white h-dvh flex flex-col relative overflow-hidden">
 
+<script>
+  // ลบ footer ที่ /nivread.js ฉีดเข้ามา (ไม่ว่าชื่ออะไร) เพื่อให้หน้าแชทเต็มจอ
+  (() => {
+    const KEEP = new Set(['main-header', 'clr-modal']);
+    const isFooter = (el) => el.nodeType === 1 && el.parentNode === document.body && !KEEP.has(el.id) &&
+      el.tagName !== 'MAIN' && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE' &&
+      (el.tagName === 'FOOTER' || /foot|bottom-?nav|tab-?bar/i.test(el.id + ' ' + el.className));
+    const sweep = () => [...document.body.children].forEach((el) => isFooter(el) && el.remove());
+    new MutationObserver(sweep).observe(document.body, { childList: true });
+    sweep(); document.addEventListener('DOMContentLoaded', sweep); window.addEventListener('load', sweep);
+  })();
+</script>
 <header id="main-header" class="z-20 shrink-0"></header>
 
 <main class="flex-1 min-h-0 z-10 w-full flex flex-col">
