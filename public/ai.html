@@ -235,13 +235,14 @@
         <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="10" cy="4" r="1.7"/><circle cx="10" cy="10" r="1.7"/><circle cx="10" cy="16" r="1.7"/></svg>
       </button>
       <div id="more-menu" role="menu" aria-label="เมนูเพิ่มเติม" class="menu hidden absolute right-0 top-full mt-2 w-64 z-30">
-        <div class="px-3 pt-2 pb-2">
+        <a id="menu-login" href="/login?redirect=/ai" role="menuitem" class="mitem hidden"><span><b>เข้าสู่ระบบ</b><small>เพื่อเริ่มคุยกับ AI</small></span></a>
+        <div id="menu-acct" class="px-3 pt-2 pb-2">
           <div class="text-xs text-slate-500 dark:text-neutral-400">พลังงานคงเหลือ</div>
           <div id="energy" class="mt-0.5 text-2xl font-semibold tabular-nums text-amber-500">…</div>
           <div id="energy-sub" class="mt-1 text-xs text-slate-400 dark:text-neutral-500"></div>
           <p class="mt-2 text-xs leading-relaxed text-slate-400 dark:text-neutral-500">พิมพ์สั้น ๆ ใช้พลังงานน้อยกว่า</p>
         </div>
-        <div class="my-1 h-px bg-slate-200 dark:bg-white/10"></div>
+        <div class="menu-acct my-1 h-px bg-slate-200 dark:bg-white/10"></div>
         <button id="clear-btn" type="button" role="menuitem" class="mitem text-red-500">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2M6 6l.7 10h6.6L14 6M9 9v4M11 9v4"/></svg>
           <span>ล้างแชทโหมดนี้</span>
@@ -319,10 +320,11 @@
 <script src="/nivread.js"></script>
 <script>
 (() => {
-  const s = NIV.session();
-  if (!s.token || !s.userId) { location.replace('/login?redirect=/ai'); return; }
+  const s = NIV.session() || {};
+  const LOGGED_IN = !!(s.token && s.userId);          // ยังไม่ล็อกอินก็เปิดหน้าแชทได้ แต่ส่งข้อความไม่ได้
+  const LOGIN_URL = '/login?redirect=/ai';
   const API = 'https://api.fnnz.art/api/ai', Q = 'app=nivread';   // ถ้า NIV มีค่า base URL ของ API อยู่แล้ว ให้ใช้ค่านั้นแทน
-  const H = { Authorization: 'Bearer ' + s.token };
+  const H = LOGGED_IN ? { Authorization: 'Bearer ' + s.token } : {};
   const $ = (id) => document.getElementById(id);
   const log = $('log'), input = $('input'), sendBtn = $('send'), stopBtn = $('stop'), form = $('form'), energyEl = $('energy');
 
@@ -895,9 +897,28 @@
     $('energy-sub').textContent = 'ฟรีวันนี้ ' + f.toLocaleString() + ' · สำรอง ' + r.toLocaleString();
     const mb = $('more-btn'); if (n <= 0) mb.dataset.e = 'zero'; else if (n < 15) mb.dataset.e = 'low'; else mb.removeAttribute('data-e'); // จุดเตือนที่ปุ่ม ⋮ เมื่อพลังงานเหลือน้อย
   }
+  // ---------- ต้องเข้าสู่ระบบก่อนถึงจะคุยได้ (เหมือน chat.html ของ fnnz.art) ----------
+  function showLoginGate() {
+    form.classList.add('hidden');
+    $('cc').textContent = '';
+    if ($('login-gate')) return;
+    const g = document.createElement('div');
+    g.id = 'login-gate';
+    g.className = 'rounded-[1.75rem] border border-slate-300 dark:border-white/15 bg-white dark:bg-[#1f1f1f] px-5 py-4 text-center shadow-[0_2px_12px_rgba(15,23,42,.06)]';
+    const p = document.createElement('p');
+    p.className = 'text-sm text-slate-600 dark:text-neutral-300';
+    p.textContent = 'ต้องเข้าสู่ระบบก่อนถึงจะคุยกับ AI ได้';
+    const a = document.createElement('a');
+    a.href = LOGIN_URL;
+    a.className = 'inline-block mt-3 px-6 py-2.5 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-white font-semibold text-sm hover:brightness-110';
+    a.textContent = 'เข้าสู่ระบบ';
+    g.append(p, a);
+    form.after(g);
+    const ml = $('menu-login'); if (ml) ml.classList.remove('hidden');
+  }
   async function call(path, opt) {
     const r = await fetch(API + path + (path.includes('?') ? '&' : '?') + Q, { ...opt, headers: { 'Content-Type': 'application/json', ...H } });
-    if (r.status === 401) { NIV.logout(); throw new Error('401'); }
+    if (r.status === 401) { showLoginGate(); throw new Error('401'); }
     return r;
   }
 
@@ -907,7 +928,7 @@
     $('mode-name').textContent = MODES[mode].name;
     input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max; cnt();
     let msgs = [];
-    try { msgs = (await (await call('/history?chat=' + mode)).json()).messages || []; } catch {}
+    if (LOGGED_IN) { try { msgs = (await (await call('/history?chat=' + mode)).json()).messages || []; } catch {} }
     if (id !== loadId) return;
     if (!msgs.length) intro();
     msgs.forEach((m) => { const b = addMsg(m.role, m.content); if (m.role === 'assistant') addCopy(b, m.content); });
@@ -920,6 +941,7 @@
 
   async function send(text) {
     text = (text || '').trim(); if (!text || busy) return;
+    if (!LOGGED_IN) { showLoginGate(); return; }
     $('intro')?.remove(); addMsg('user', text); input.value = ''; grow(); busy = true; sync();
     sendBtn.classList.add('hidden'); stopBtn.classList.remove('hidden');
     const bub = addMsg('assistant', '');
@@ -996,7 +1018,8 @@
 
   mode = MODES[location.hash.slice(1)] ? location.hash.slice(1) : 'general';
   load();
-  call('/status').then((r) => r.json()).then((d) => showEnergy({ free: d.free, reserve: d.reserve })).catch(() => {});
+  if (LOGGED_IN) call('/status').then((r) => r.json()).then((d) => showEnergy({ free: d.free, reserve: d.reserve })).catch(() => {});
+  else { showLoginGate(); $('menu-acct').classList.add('hidden'); document.querySelectorAll('.menu-acct').forEach((e) => e.classList.add('hidden')); $('clear-btn').classList.add('hidden'); }
 })();
 </script>
 </body>
