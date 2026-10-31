@@ -68,6 +68,36 @@
   .md.streaming > :last-child::after { content: ''; display: inline-block; width: .55em; height: .55em; margin-left: .35em; border-radius: 50%; background: #f59e0b; vertical-align: baseline; animation: pulse-dot 1s ease-in-out infinite; }
   @keyframes pulse-dot { 0%,100% { opacity: .25; transform: scale(.8) } 50% { opacity: 1; transform: scale(1) } }
 
+
+  /* ---------- กราฟ / ตัวเลขสรุป / ตารางโต้ตอบ ---------- */
+  .md .dcard { margin: 1.2em 0; border: 1px solid rgba(148,163,184,.32); border-radius: 1rem; overflow: hidden; font-size: .9rem; line-height: 1.5 }
+  .dcard-h { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .5rem .75rem .5rem 1rem; border-bottom: 1px solid rgba(148,163,184,.22); min-height: 2.6rem }
+  .dcard-h b { font-weight: 500; min-width: 0; font-family: 'Kanit', sans-serif; font-size: .9rem }
+  .dcard-h .muted { color: #94a3b8; font-size: .8rem }
+  .dcard-tools { display: flex; align-items: center; gap: .25rem; flex-shrink: 0 }
+  .dcard-btn { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .55rem; border-radius: .6rem; font-size: .78rem; color: #64748b; cursor: pointer }
+  .dcard-btn:hover { background: rgba(148,163,184,.2); color: #0f172a }
+  .dark .dcard-btn { color: #a8a29e } .dark .dcard-btn:hover { color: #fff }
+  .dcard-search { width: 9.5rem; background: transparent; color: inherit; border: 1px solid rgba(148,163,184,.4); border-radius: .6rem; padding: .3rem .65rem; font-size: .8rem; outline: none }
+  .dcard-search:focus { border-color: #f59e0b }
+  .dcard-scroll { overflow: auto; max-height: 24rem }
+  .md .dcard table { display: table; width: 100%; margin: 0; border-collapse: collapse }
+  .md .dcard th, .md .dcard td { border: 0; border-bottom: 1px solid rgba(148,163,184,.18); padding: .55rem .9rem; white-space: nowrap; font-size: .9rem }
+  .md .dcard tbody tr:last-child td { border-bottom: 0 }
+  .md .dcard tbody tr:hover { background: rgba(148,163,184,.08) }
+  .md .dcard th { position: sticky; top: 0; background: #f1f5f9; font-weight: 500; cursor: pointer; user-select: none }
+  .dark .md .dcard th { background: #232323 }
+  .md .dcard th[data-dir="asc"]::after { content: ' ▲'; font-size: .65em; color: #f59e0b }
+  .md .dcard th[data-dir="desc"]::after { content: ' ▼'; font-size: .65em; color: #f59e0b }
+  .md .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: .75rem; margin: 1.2em 0 }
+  .md .stat { border: 1px solid rgba(148,163,184,.32); border-radius: 1rem; padding: .8rem 1rem; display: flex; flex-direction: column; gap: .15rem }
+  .md .stat small { color: #64748b; font-size: .8rem } .dark .md .stat small { color: #a8a29e }
+  .md .stat strong { font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 1.45rem; line-height: 1.3 }
+  .md .stat em { font-style: normal; font-size: .8rem; color: #64748b }
+  .md .stat em.up { color: #059669 } .md .stat em.down { color: #dc2626 }
+  .md > .dcard:first-child, .md > .stats:first-child { margin-top: 0 }
+  .md > .dcard:last-child, .md > .stats:last-child { margin-bottom: 0 }
+
   @media (prefers-reduced-motion: reduce) { .animate-pulse, .md.streaming > :last-child::after { animation: none } }
 </style>
 </head>
@@ -132,9 +162,22 @@
         <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 16V4M4.5 9.5 10 4l5.5 5.5"/></svg>
       </button>
     </form>
-    <p class="mt-2 text-center text-[11px] text-slate-400 dark:text-neutral-500">AI อาจตอบผิดพลาด โปรดตรวจสอบข้อมูลสำคัญอีกครั้ง</p>
+    <p class="mt-2 text-center text-[11px] text-slate-400 dark:text-neutral-500">AI อาจตอบผิดพลาด โปรดตรวจสอบข้อมูลสำคัญอีกครั้ง<span id="cc" class="ml-3 tabular-nums"></span></p>
   </div>
 </main>
+
+<div id="view-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="vm-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative glass-card w-full max-w-5xl h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="vm-title">
+    <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-200 dark:border-white/10">
+      <h2 id="vm-title" class="font-medium truncate"></h2>
+      <button id="vm-close" type="button" aria-label="ปิด" class="shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg>
+      </button>
+    </div>
+    <div id="vm-body" class="relative flex-1 min-h-0 p-4"></div>
+  </div>
+</div>
 
 <div id="clr-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
   <div id="clr-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -150,6 +193,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="/nivread.js"></script>
 <script>
 (() => {
@@ -182,16 +226,152 @@
   // เลื่อนตามเฉพาะตอนผู้ใช้อยู่ท้ายแชท ถ้าเลื่อนขึ้นไปอ่านจะไม่ดึงกลับ
   const scrollEnd = () => requestAnimationFrame(() => { if (stick) log.scrollTop = log.scrollHeight; });
 
-  function setText(b, role, text) {
+  function setText(b, role, text, live) {
+    // ระหว่างสตรีม ซ่อนบล็อกกราฟ/ตัวเลขที่ยังไม่เสร็จไว้ก่อน แล้วค่อยวาดตอนจบ
+    if (live && role === 'assistant') text = text.replace(/```(chart|stats)[\s\S]*?(```|$)/g, '\n\n*กำลังเตรียมข้อมูลสรุป…*\n\n');
     if (role === 'assistant' && window.marked && window.DOMPurify) b.innerHTML = DOMPurify.sanitize(marked.parse(text, { breaks: true }));
     else b.textContent = text;
   }
+
+  // ---------- ลูกเล่นข้อมูล: กราฟ / ตัวเลขสรุป / ตารางโต้ตอบ ----------
+  const PAL = ['#f59e0b', '#6366f1', '#10b981', '#ef4444', '#06b6d4', '#ec4899', '#84cc16', '#8b5cf6'];
+  const isDark = () => document.documentElement.classList.contains('dark');
+  const cols = () => (isDark() ? { text: '#a8a29e', grid: 'rgba(255,255,255,.07)' } : { text: '#64748b', grid: 'rgba(15,23,42,.08)' });
+  const SV = (d) => '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  const ICON = {
+    dl: SV('<path d="M10 3v9m0 0-3.5-3.5M10 12l3.5-3.5M4 15v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1"/>'),
+    ex: SV('<path d="M12 3h5v5M8 17H3v-5M17 3l-5.5 5.5M3 17l5.5-5.5"/>'),
+  };
+  const h = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  const tool = (icon, label, title, fn) => {
+    const b = h('button', 'dcard-btn'); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.innerHTML = icon;
+    if (label) b.appendChild(h('span', null, label)); b.onclick = fn; return b;
+  };
+  const download = (href, name) => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+  let charts = [], vmChart = null;
+
+  function cleanChart(o) {
+    if (!o || typeof o !== 'object') return null;
+    const type = ['bar', 'line', 'pie', 'doughnut'].includes(o.type) ? o.type : 'bar';
+    const labels = (Array.isArray(o.labels) ? o.labels : []).slice(0, 60).map(String);
+    const datasets = (Array.isArray(o.datasets) ? o.datasets : []).slice(0, 8).map((d) => ({
+      label: String((d && d.label) || ''),
+      data: (Array.isArray(d && d.data) ? d.data : []).slice(0, 60).map((n) => { n = Number(n); return isFinite(n) ? n : 0; }),
+    }));
+    if (!labels.length || !datasets.length || !datasets.some((d) => d.data.length)) return null;
+    return { type, title: String(o.title || '').slice(0, 120), labels, datasets };
+  }
+  function applyTheme(ch) {
+    const c = cols(), o = ch.options;
+    if (o.plugins && o.plugins.legend && o.plugins.legend.labels) o.plugins.legend.labels.color = c.text;
+    if (o.scales) Object.values(o.scales).forEach((sc) => { sc.ticks.color = c.text; sc.grid.color = c.grid; });
+    ch.update('none');
+  }
+  function makeChart(canvas, spec) {
+    const c = cols(), pie = spec.type === 'pie' || spec.type === 'doughnut';
+    Chart.defaults.font.family = "'Sarabun','Kanit',sans-serif"; Chart.defaults.font.size = 12;
+    const datasets = spec.datasets.map((d, i) => {
+      const col = PAL[i % PAL.length];
+      if (pie) return { label: d.label, data: d.data, backgroundColor: spec.labels.map((_, j) => PAL[j % PAL.length]), borderWidth: 0 };
+      if (spec.type === 'line') return { label: d.label, data: d.data, borderColor: col, backgroundColor: col, tension: .3, pointRadius: 3, borderWidth: 2 };
+      return { label: d.label, data: d.data, backgroundColor: col + 'cc', borderColor: col, borderWidth: 1, borderRadius: 6 };
+    });
+    const tick = { color: c.text }, grid = { color: c.grid };
+    return new Chart(canvas.getContext('2d'), {
+      type: spec.type, data: { labels: spec.labels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        animation: matchMedia('(prefers-reduced-motion: reduce)').matches ? false : { duration: 500 },
+        plugins: { legend: { display: pie || datasets.length > 1, labels: { color: c.text, boxWidth: 12 } } },
+        scales: pie ? {} : { x: { ticks: { ...tick }, grid: { ...grid } }, y: { ticks: { ...tick }, grid: { ...grid }, beginAtZero: true } },
+      },
+    });
+  }
+  function savePng(ch, title) {
+    const src = ch.canvas, t = document.createElement('canvas'); t.width = src.width; t.height = src.height;
+    const x = t.getContext('2d'); x.fillStyle = isDark() ? '#161616' : '#ffffff'; x.fillRect(0, 0, t.width, t.height); x.drawImage(src, 0, 0);
+    download(t.toDataURL('image/png'), (title || 'chart').replace(/[^\wก-๙-]+/g, '_') + '.png');
+  }
+  function expand(spec) {
+    $('vm-title').textContent = spec.title || ''; const body = $('vm-body'); body.innerHTML = '';
+    const cv = h('canvas'); body.appendChild(cv); $('view-modal').classList.remove('hidden');
+    vmChart = makeChart(cv, spec); charts.push(vmChart);
+  }
+  function closeView() {
+    $('view-modal').classList.add('hidden');
+    if (vmChart) { vmChart.destroy(); charts = charts.filter((c) => c !== vmChart); vmChart = null; }
+    $('vm-body').innerHTML = '';
+  }
+  function chartCard(o) {
+    const spec = cleanChart(o); if (!spec || !window.Chart) return null;
+    const card = h('div', 'dcard'), head = h('div', 'dcard-h'), tools = h('div', 'dcard-tools'), body = h('div'), canvas = h('canvas');
+    body.style.cssText = 'height:17rem;padding:.75rem 1rem 1rem;position:relative'; body.appendChild(canvas);
+    let ch = null;
+    tools.append(tool(ICON.dl, '', 'บันทึกเป็นรูป', () => ch && savePng(ch, spec.title)), tool(ICON.ex, '', 'ขยาย', () => expand(spec)));
+    head.append(h('b', null, spec.title), tools); card.append(head, body);
+    requestAnimationFrame(() => { if (canvas.isConnected) { ch = makeChart(canvas, spec); charts.push(ch); } });
+    return card;
+  }
+  function statsGrid(o) {
+    const arr = Array.isArray(o) ? o : o && o.items; if (!Array.isArray(arr) || !arr.length) return null;
+    const g = h('div', 'stats');
+    arr.slice(0, 4).forEach((x) => {
+      if (!x) return; const c = h('div', 'stat');
+      c.append(h('small', null, String(x.label == null ? '' : x.label)), h('strong', null, String(x.value == null ? '' : x.value)));
+      if (x.change) { const t = String(x.change); c.appendChild(h('em', /^\+/.test(t) ? 'up' : /^[-−]/.test(t) ? 'down' : '', t)); }
+      g.appendChild(c);
+    });
+    return g.children.length ? g : null;
+  }
+  const collator = new Intl.Collator('th', { numeric: true });
+  const toNum = (t) => { const n = parseFloat(String(t).replace(/[,\s$฿%+]/g, '')); return isNaN(n) ? null : n; };
+  function tableCard(table) {
+    if (table.closest('.dcard') || !table.tBodies[0] || !table.tHead) return;
+    const tbody = table.tBodies[0], rows = [...tbody.rows], ths = [...table.tHead.rows[0].cells];
+    if (!rows.length) return;
+    const card = h('div', 'dcard'), head = h('div', 'dcard-h'), tools = h('div', 'dcard-tools'), scroll = h('div', 'dcard-scroll');
+    let search = null;
+    if (rows.length >= 6) { search = h('input', 'dcard-search'); search.type = 'search'; search.placeholder = 'ค้นหาในตาราง'; search.setAttribute('aria-label', 'ค้นหาในตาราง'); head.appendChild(search); }
+    else head.appendChild(h('span', 'muted', rows.length + ' แถว'));
+    if (search) search.oninput = () => { const q = search.value.trim().toLowerCase(); rows.forEach((r) => { r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none'; }); };
+    tools.appendChild(tool(ICON.dl, 'CSV', 'บันทึกเป็น CSV', () => {
+      const q = (v) => '"' + v.trim().replace(/"/g, '""') + '"';
+      const lines = [ths.map((c) => q(c.textContent)).join(',')].concat([...tbody.rows].map((r) => [...r.cells].map((c) => q(c.textContent)).join(',')));
+      download(URL.createObjectURL(new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })), 'nivread-table.csv');
+    }));
+    head.appendChild(tools);
+    ths.forEach((th, i) => {
+      th.onclick = () => {
+        const dir = th.dataset.dir === 'asc' ? 'desc' : 'asc';
+        ths.forEach((x) => delete x.dataset.dir); th.dataset.dir = dir;
+        const k = dir === 'asc' ? 1 : -1;
+        [...tbody.rows].sort((a, b) => {
+          const x = a.cells[i].textContent, y = b.cells[i].textContent, nx = toNum(x), ny = toNum(y);
+          return k * (nx !== null && ny !== null ? nx - ny : collator.compare(x, y));
+        }).forEach((r) => tbody.appendChild(r));
+      };
+    });
+    table.replaceWith(card); scroll.appendChild(table); card.append(head, scroll);
+  }
+  // อัปเกรดเนื้อหา markdown ที่ render แล้ว: บล็อก ```chart / ```stats และตารางทั้งหมด
+  function enhance(root) {
+    charts = charts.filter((c) => (c.canvas && c.canvas.isConnected) || (c.destroy(), false));
+    root.querySelectorAll('pre > code').forEach((code) => {
+      const m = /language-(chart|stats)/.exec(code.className); if (!m) return;
+      let o; try { o = JSON.parse(code.textContent); } catch { return; }
+      const el = m[1] === 'chart' ? chartCard(o) : statsGrid(o);
+      if (el) code.parentElement.replaceWith(el);
+    });
+    root.querySelectorAll('table').forEach(tableCard);
+  }
+  new MutationObserver(() => charts.forEach(applyTheme)).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
   function addMsg(role, text, kind) {
     if (role === 'user') stick = true;
     const row = document.createElement('div');
     row.className = 'shrink-0 ' + (role === 'user' ? 'mt-7 flex' : 'mt-6');
     const b = document.createElement('div'); b.className = 'break-words ' + BUB[kind || role];
-    setText(b, kind === 'err' ? 'user' : role, text); row.appendChild(b); log.appendChild(row); scrollEnd(); return b;
+    setText(b, kind === 'err' ? 'user' : role, text); if (role === 'assistant' && kind !== 'err' && text) enhance(b); row.appendChild(b); log.appendChild(row); scrollEnd(); return b;
   }
   // ปุ่มคัดลอกอยู่นอกเนื้อหา (ไม่ถูกเขียนทับตอน render markdown)
   function addCopy(b, text) {
@@ -217,7 +397,8 @@
     });
     log.appendChild(d);
   }
-  const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 192) + 'px'; sync(); };
+  const cnt = () => { const n = input.value.length, mx = MODES[mode].max, cc = $('cc'); cc.textContent = n >= mx * 0.7 ? n.toLocaleString() + '/' + mx.toLocaleString() : ''; cc.classList.toggle('text-red-500', n >= mx); };
+  const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 192) + 'px'; sync(); cnt(); };
   const sync = () => { sendBtn.disabled = busy || !input.value.trim(); };
   function showEnergy(h) {
     if (!h) return; const n = (h.free | 0) + (h.reserve | 0);
@@ -232,7 +413,7 @@
   async function load() {
     const id = ++loadId; log.innerHTML = ''; stick = true;
     tabs.forEach((t) => t.classList.toggle('tab-on', t.dataset.tab === mode));
-    input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max;
+    input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max; cnt();
     let msgs = [];
     try { msgs = (await (await call('/history?chat=' + mode)).json()).messages || []; } catch {}
     if (id !== loadId) return;
@@ -253,8 +434,8 @@
     bub.innerHTML = '<span class="inline-flex gap-1.5 py-2"><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></i><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" style="animation-delay:.2s"></i><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" style="animation-delay:.4s"></i></span>';
     ctrl = new AbortController();
     let reply = '', raf = 0;
-    const paint = () => { raf = 0; if (reply) bub.classList.add('streaming'); setText(bub, 'assistant', reply); scrollEnd(); };
-    const finish = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } bub.classList.remove('streaming'); setText(bub, 'assistant', reply); scrollEnd(); };
+    const paint = () => { raf = 0; if (reply) bub.classList.add('streaming'); setText(bub, 'assistant', reply, true); scrollEnd(); };
+    const finish = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } bub.classList.remove('streaming'); setText(bub, 'assistant', reply); enhance(bub); scrollEnd(); };
     try {
       const res = await call('/chat', { method: 'POST', body: JSON.stringify({ message: text, mode }), signal: ctrl.signal });
       if (!res.ok) {
@@ -295,6 +476,8 @@
   };
 
   $('back-btn').onclick = () => { if (history.length > 1 && document.referrer) history.back(); else location.href = '/'; };
+  $('vm-close').onclick = $('vm-backdrop').onclick = closeView;
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeView(); closeModal(); } });
   tabs.forEach((t) => (t.onclick = () => setMode(t.dataset.tab)));
   stopBtn.onclick = () => ctrl && ctrl.abort();
   form.onsubmit = (e) => { e.preventDefault(); send(input.value); };
