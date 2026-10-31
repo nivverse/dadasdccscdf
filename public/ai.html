@@ -106,7 +106,8 @@
   .md .stat { background: #f8fafc; border: 1px solid rgba(148,163,184,.3); border-radius: 1.1rem; padding: .95rem 1.1rem; box-shadow: 0 1px 2px rgba(15,23,42,.04) }
   .dark .md .stat { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.09); box-shadow: none }
   .md .stat small { display: block; color: #64748b; font-size: .82rem } .dark .md .stat small { color: #a8a29e }
-  .md .stat .row { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem .6rem; margin-top: .5rem }
+  .md .stat .row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .3rem .6rem; margin-top: .5rem }
+  .md .stat .chip { white-space: normal; text-align: right }
   .md .stat strong { font-family: 'Kanit', sans-serif; font-weight: 600; font-size: 1.55rem; line-height: 1.2 }
 
   .md .schema-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; padding: .7rem 1rem 1rem }
@@ -416,6 +417,46 @@
     });
     table.replaceWith(card); scroll.appendChild(table); card.append(head, scroll);
   }
+  // ---------- สร้างการ์ดตัวเลข + กราฟอัตโนมัติจากตาราง (ไม่ต้องให้ AI ส่งบล็อกพิเศษ) ----------
+  const NUM = /^[+\-−]?\s*[$฿]?\s*\d[\d,]*(\.\d+)?\s*(%|[kKmMbB]|ล้าน|พัน|หมื่น|แสน)?$/;
+  const strictNum = (t) => {
+    t = String(t == null ? '' : t).trim(); if (!NUM.test(t)) return null;
+    const n = parseFloat(t.replace(/−/g, '-').replace(/[,\s$฿]/g, '').replace(/[^\d.+-].*$/, '')); return isNaN(n) ? null : n;
+  };
+  const TIME = /^(q[1-4]|ไตรมาส|ม\.ค|ก\.พ|มี\.ค|เม\.ย|พ\.ค|มิ\.ย|ก\.ค|ส\.ค|ก\.ย|ต\.ค|พ\.ย|ธ\.ค|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d{4}|เดือน|ปี|วัน|สัปดาห์|week|day|month|year)/i;
+  const fmt = (n) => String(Math.round(n * 100) / 100);
+  function autoViz(table) {
+    if (!table.tHead || !table.tBodies[0]) return [];
+    const ths = [...table.tHead.rows[0].cells].map((c) => c.textContent.trim());
+    const rows = [...table.tBodies[0].rows].map((r) => [...r.cells].map((c) => c.textContent.trim()));
+    if (rows.length < 2 || rows.length > 24 || ths.length < 2) return [];
+    const numCols = [];
+    for (let c = 1; c < ths.length; c++) if (rows.filter((r) => strictNum(r[c]) !== null).length >= rows.length * 0.8) numCols.push(c);
+    if (!numCols.length) return [];
+    const lab = (r) => r[0] || '', val = (r, c) => { const v = strictNum(r[c]); return v === null ? 0 : v; };
+    let max = null, min = null, best = null;
+    rows.forEach((r) => {
+      let sum = 0, n = 0;
+      numCols.forEach((c) => { const v = strictNum(r[c]); if (v === null) return; sum += v; n++; if (!max || v > max.v) max = { v, r, c }; if (!min || v < min.v) min = { v, r, c }; });
+      if (n && (!best || sum / n > best.a)) best = { r, a: sum / n };
+    });
+    const out = [];
+    if (max && min && max.v !== min.v) {
+      const st = [];
+      if (numCols.length >= 2) st.push({ label: 'สูงสุดโดยเฉลี่ย', value: lab(best.r), change: 'เฉลี่ย ' + fmt(best.a) });
+      st.push({ label: 'ค่าสูงสุด', value: max.r[max.c], change: lab(max.r) + ' · ' + ths[max.c] });
+      st.push({ label: 'ค่าต่ำสุด', value: min.r[min.c], change: lab(min.r) + ' · ' + ths[min.c] });
+      const g = statsGrid(st); if (g) out.push(g);
+    }
+    const timeLike = numCols.length >= 3 && numCols.every((c) => TIME.test(ths[c]));
+    const spec = timeLike
+      ? { type: 'line', labels: numCols.map((c) => ths[c]), datasets: rows.slice(0, 8).map((r) => ({ label: lab(r), data: numCols.map((c) => val(r, c)) })) }
+      : { type: 'bar', labels: rows.map(lab), datasets: numCols.slice(0, 4).map((c) => ({ label: ths[c], data: rows.map((r) => val(r, c)) })) };
+    const prev = table.previousElementSibling;
+    spec.title = prev && /^H[1-6]$/.test(prev.tagName) ? prev.textContent.trim() : 'กราฟจากตาราง';
+    const ch = chartCard(spec); if (ch) out.push(ch);
+    return out;
+  }
   // อัปเกรดเนื้อหา markdown ที่ render แล้ว: บล็อก ```chart / ```stats / ```schema และตารางทั้งหมด
   function enhance(root) {
     charts = charts.filter((c) => (c.canvas && c.canvas.isConnected) || (c.destroy(), false));
@@ -425,7 +466,12 @@
       const el = m[1] === 'chart' ? chartCard(o) : m[1] === 'stats' ? statsGrid(o) : schemaCard(o);
       if (el) code.parentElement.replaceWith(el);
     });
-    root.querySelectorAll('table').forEach(tableCard);
+    // ถ้า AI ไม่ได้ส่งกราฟมาเอง ให้สร้างตัวเลขสรุป + กราฟจากตาราง (สูงสุด 2 ตารางต่อคำตอบ)
+    const hasChart = !!root.querySelector('.dcard canvas'); let auto = 0;
+    root.querySelectorAll('table').forEach((t) => {
+      if (!t.closest('.dcard') && !hasChart && auto < 2) { const els = autoViz(t); if (els.length) { t.before(...els); auto++; } }
+      tableCard(t);
+    });
   }
   new MutationObserver(() => charts.forEach(applyTheme)).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
