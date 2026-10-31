@@ -1,10 +1,20 @@
 <!DOCTYPE html>
-<html lang="th" class="dark">
+<html data-mode="general" lang="th" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-<title>AI ผู้ช่วย | nivread</title>
-<meta name="robots" content="noindex, nofollow">
+<title>Nivread AI แชท AI ภาษาไทย ถามตอบได้ทุกเรื่อง | nivread</title>
+<meta name="description" content="แชทกับ Nivread AI ผู้ช่วย AI ภาษาไทย ถามตอบได้ทุกเรื่อง อธิบายเรื่องยาก ช่วยเขียน แปลภาษา วางแผน พร้อมค้นข้อมูลล่าสุดให้ก่อนตอบ" id="seo-desc">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="canonical" href="https://nivread.com/ai" id="seo-canon">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Nivread">
+<meta property="og:title" content="Nivread AI - แชท AI ภาษาไทย ถามได้ทุกเรื่อง" id="seo-ogt">
+<meta property="og:description" content="แชทกับ Nivread AI ผู้ช่วย AI ภาษาไทย ถามตอบได้ทุกเรื่อง อธิบายเรื่องยาก ช่วยเขียน แปลภาษา วางแผน พร้อมค้นข้อมูลล่าสุดให้ก่อนตอบ" id="seo-ogd">
+<meta property="og:url" content="https://nivread.com/ai" id="seo-ogu">
+<meta property="og:locale" content="th_TH">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Nivread AI แชททั่วไป", "url": "https://nivread.com/ai", "description": "แชทกับ Nivread AI ผู้ช่วย AI ภาษาไทย ถามตอบได้ทุกเรื่อง อธิบายเรื่องยาก ช่วยเขียน แปลภาษา วางแผน พร้อมค้นข้อมูลล่าสุดให้ก่อนตอบ", "inLanguage": "th", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Web", "isPartOf": {"@type": "WebSite", "name": "Nivread", "url": "https://nivread.com"}}</script>
 <link rel="icon" href="/img/nivreadfavon.png" type="image/png">
 <link rel="apple-touch-icon" href="/img/nivreadfavon.png">
 <meta name="theme-color" content="#161616">
@@ -229,13 +239,13 @@
     <button type="button" id="back-btn" aria-label="กลับ" class="shrink-0 -ml-2 w-9 h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 6 10l6 6"/></svg>
     </button>
-    <h1 id="mode-name" class="flex-1 min-w-0 truncate text-[15px] font-medium">คุยทั่วไป</h1>
+    <div id="mode-name" class="flex-1 min-w-0 truncate text-[15px] font-medium">คุยทั่วไป</div>
     <div class="relative shrink-0 -mr-2">
       <button type="button" id="more-btn" aria-label="เมนูเพิ่มเติม" aria-haspopup="menu" aria-expanded="false" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
         <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="10" cy="4" r="1.7"/><circle cx="10" cy="10" r="1.7"/><circle cx="10" cy="16" r="1.7"/></svg>
       </button>
       <div id="more-menu" role="menu" aria-label="เมนูเพิ่มเติม" class="menu hidden absolute right-0 top-full mt-2 w-64 z-30">
-        <a id="menu-login" href="/login?redirect=/ai" role="menuitem" class="mitem hidden"><span><b>เข้าสู่ระบบ</b><small>เพื่อเริ่มคุยกับ AI</small></span></a>
+        <a id="menu-login" href="/login?redirect=/ai" data-login role="menuitem" class="mitem hidden"><span><b>เข้าสู่ระบบ</b><small>เพื่อเริ่มคุยกับ AI</small></span></a>
         <div id="menu-acct" class="px-3 pt-2 pb-2">
           <div class="text-xs text-slate-500 dark:text-neutral-400">พลังงานคงเหลือ</div>
           <div id="energy" class="mt-0.5 text-2xl font-semibold tabular-nums text-amber-500">…</div>
@@ -252,7 +262,7 @@
   </div>
 
   <!-- พื้นที่ข้อความ: เลื่อนเต็มจอ ข้อความ AI ไม่มีกรอบ -->
-  <div id="log" class="col read flex-1 min-h-0 overflow-y-auto flex flex-col pt-6 pb-8" aria-live="polite"></div>
+  <div id="log" class="col read flex-1 min-h-0 overflow-y-auto flex flex-col pt-6 pb-8" aria-live="polite"><div id="intro" class="my-auto shrink-0 pb-10"><h1 class="text-2xl sm:text-3xl font-medium tracking-tight">แชท AI ภาษาไทย ถามอะไรก็ได้</h1><p class="mt-3 max-w-xl text-[15px] leading-relaxed text-slate-500 dark:text-neutral-400">ช่วยคิด ช่วยเขียน ช่วยอธิบาย หรือแค่คุยเล่น เรื่องที่เปลี่ยนบ่อย เช่น ข่าวและราคา จะค้นข้อมูลล่าสุดให้ก่อนตอบ</p><ul class="mt-8 divide-y divide-slate-200 dark:divide-white/10 border-y border-slate-200 dark:border-white/10"><li class="py-3.5 text-[15px] text-slate-700 dark:text-neutral-200">ช่วยวางแผนวันนี้ให้หน่อย</li><li class="py-3.5 text-[15px] text-slate-700 dark:text-neutral-200">อธิบายดอกเบี้ยทบต้นให้เข้าใจง่าย</li><li class="py-3.5 text-[15px] text-slate-700 dark:text-neutral-200">ช่วยตรวจและแก้ภาษาข้อความนี้</li><li class="py-3.5 text-[15px] text-slate-700 dark:text-neutral-200">แนะนำวิธีจำคำศัพท์ภาษาอังกฤษ</li></ul></div></div>
 
   <!-- ช่องพิมพ์ลอยด้านล่าง -->
   <div class="col shrink-0 pt-2" style="padding-bottom:max(.5rem,env(safe-area-inset-bottom))">
@@ -322,7 +332,7 @@
 (() => {
   const s = NIV.session() || {};
   const LOGGED_IN = !!(s.token && s.userId);          // ยังไม่ล็อกอินก็เปิดหน้าแชทได้ แต่ส่งข้อความไม่ได้
-  const LOGIN_URL = '/login?redirect=/ai';
+  const LOGIN_URL = '/login?redirect=' + encodeURIComponent(location.pathname);
   const API = 'https://api.fnnz.art/api/ai', Q = 'app=nivread';   // ถ้า NIV มีค่า base URL ของ API อยู่แล้ว ให้ใช้ค่านั้นแทน
   const H = LOGGED_IN ? { Authorization: 'Bearer ' + s.token } : {};
   const $ = (id) => document.getElementById(id);
@@ -336,6 +346,16 @@
     fortune: { name: 'ดูดวง', max: 2000, ph: 'ถามต่อเรื่องดวง หรือพิมพ์เรื่องที่อยากรู้...', title: 'ดูดวงเพื่อความบันเทิง', hi: 'กรอกวันเกิด ระบบจะคำนวณวัน ราศี และปีนักษัตรให้ แล้วให้ AI ตีความ ใช้เป็นแนวคิดประกอบ ไม่ใช่คำตัดสิน',
       chips: ['ดูดวงรายวันของวันนี้', 'ดวงการงานของคนเกิดวันจันทร์', 'เปิดไพ่ทาโรต์ 3 ใบเรื่องความรัก', 'ขอเลขมงคลประจำสัปดาห์นี้'] },
   };
+  // SEO ต่อโหมด: แต่ละโหมดมี URL / title / description ของตัวเอง (ไฟล์ HTML แต่ละหน้าใส่ไว้แล้ว ส่วนนี้ใช้ตอนสลับโหมดในหน้า)
+  const SITE = 'https://nivread.com';
+  const SEO = {"general": {"path": "/ai", "title": "Nivread AI แชท AI ภาษาไทย ถามตอบได้ทุกเรื่อง | nivread", "desc": "แชทกับ Nivread AI ผู้ช่วย AI ภาษาไทย ถามตอบได้ทุกเรื่อง อธิบายเรื่องยาก ช่วยเขียน แปลภาษา วางแผน พร้อมค้นข้อมูลล่าสุดให้ก่อนตอบ", "og": "Nivread AI - แชท AI ภาษาไทย ถามได้ทุกเรื่อง", "h1": "แชท AI ภาษาไทย ถามอะไรก็ได้"}, "docs": {"path": "/ai/docs", "title": "จัดเอกสารด้วย AI สรุป ย่อความ ร่างอีเมล ปรับสำนวนทางการ | Nivread AI", "desc": "ให้ Nivread AI ช่วยจัดเอกสารภาษาไทย สรุปและย่อความ จัดหัวข้อ ปรับสำนวนให้เป็นทางการ ร่างอีเมล จดหมาย รายงานการประชุม วางข้อความได้ครั้งละประมาณ 8,000 ตัวอักษร", "og": "จัดเอกสารด้วย AI - สรุป ร่างอีเมล ปรับสำนวน | Nivread AI", "h1": "จัดเอกสารด้วย AI สรุป ร่างอีเมล ปรับสำนวน"}, "fortune": {"path": "/ai/fortune", "title": "ดูดวงออนไลน์ ดวงรายวัน ไพ่ทาโรต์ ตามวันเกิดและราศี | Nivread AI", "desc": "ดูดวงออนไลน์กับ Nivread AI กรอกวันเกิดเพื่อดูดวงรายวัน ความรัก การงาน การเงิน พร้อมเปิดไพ่ทาโรต์และเลขมงคล เพื่อความบันเทิง ใช้ประกอบการตัดสินใจเท่านั้น", "og": "ดูดวงออนไลน์ ดวงรายวัน ไพ่ทาโรต์ | Nivread AI", "h1": "ดูดวงออนไลน์ ตามวันเกิดและไพ่ทาโรต์"}};
+  function applySeo(m) {
+    const d = SEO[m]; if (!d) return;
+    document.title = d.title;
+    const set = (id, attr, v) => { const el = $(id); if (el) el.setAttribute(attr, v); };
+    set('seo-desc', 'content', d.desc); set('seo-canon', 'href', SITE + d.path);
+    set('seo-ogt', 'content', d.og); set('seo-ogd', 'content', d.desc); set('seo-ogu', 'content', SITE + d.path);
+  }
   const tabs = [...document.querySelectorAll('[data-tab]')];
   let mode = 'general', ctrl = null, busy = false, loadId = 0, stick = true;
 
@@ -877,7 +897,7 @@
   function intro() {
     const m = MODES[mode], d = document.createElement('div'); d.id = 'intro'; d.className = 'my-auto shrink-0 pb-10';
     d.innerHTML = '<h1 class="text-2xl sm:text-3xl font-medium tracking-tight"></h1><p class="mt-3 max-w-xl text-[15px] leading-relaxed text-slate-500 dark:text-neutral-400"></p><ul class="mt-8 divide-y divide-slate-200 dark:divide-white/10 border-y border-slate-200 dark:border-white/10"></ul>';
-    d.querySelector('h1').textContent = m.title; d.querySelector('p').textContent = m.hi;
+    d.querySelector('h1').textContent = SEO[mode].h1; d.querySelector('p').textContent = m.hi;
     if (mode === 'fortune') { d.querySelector('ul').replaceWith(fortuneHome()); log.appendChild(d); return; }
     const box = d.querySelector('ul');
     m.chips.forEach((t) => {
@@ -910,6 +930,7 @@
     p.textContent = 'ต้องเข้าสู่ระบบก่อนถึงจะคุยกับ AI ได้';
     const a = document.createElement('a');
     a.href = LOGIN_URL;
+    const ml0 = $('menu-login'); if (ml0) ml0.href = LOGIN_URL;
     a.className = 'inline-block mt-3 px-6 py-2.5 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-white font-semibold text-sm hover:brightness-110';
     a.textContent = 'เข้าสู่ระบบ';
     g.append(p, a);
@@ -925,7 +946,7 @@
   async function load() {
     const id = ++loadId; log.innerHTML = ''; stick = true;
     tabs.forEach((t) => { const on = t.dataset.tab === mode; t.classList.toggle('tab-on', on); t.setAttribute('aria-checked', on ? 'true' : 'false'); });
-    $('mode-name').textContent = MODES[mode].name;
+    $('mode-name').textContent = MODES[mode].name; applySeo(mode);
     input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max; cnt();
     let msgs = [];
     if (LOGGED_IN) { try { msgs = (await (await call('/history?chat=' + mode)).json()).messages || []; } catch {} }
@@ -936,7 +957,7 @@
   const setMode = (m) => {
     if (!MODES[m] || m === mode) return;
     if (ctrl) ctrl.abort();
-    mode = m; history.replaceState(null, '', '#' + m); load();
+    mode = m; history.replaceState(null, '', SEO[m].path); load();
   };
 
   async function send(text) {
@@ -1016,7 +1037,10 @@
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
   window.addEventListener('hashchange', () => setMode(location.hash.slice(1)));
 
-  mode = MODES[location.hash.slice(1)] ? location.hash.slice(1) : 'general';
+  // โหมดเริ่มต้นมาจากหน้า (data-mode); ลิงก์เก่าแบบ /ai#fortune ยังใช้ได้และจะถูกแปลงเป็น URL ใหม่
+  const dm = document.documentElement.dataset.mode, hm = location.hash.slice(1);
+  mode = dm !== 'general' && MODES[dm] ? dm : MODES[hm] ? hm : 'general';
+  if (hm && MODES[hm]) history.replaceState(null, '', SEO[mode].path);
   load();
   if (LOGGED_IN) call('/status').then((r) => r.json()).then((d) => showEnergy({ free: d.free, reserve: d.reserve })).catch(() => {});
   else { showLoginGate(); $('menu-acct').classList.add('hidden'); document.querySelectorAll('.menu-acct').forEach((e) => e.classList.add('hidden')); $('clear-btn').classList.add('hidden'); }
