@@ -348,13 +348,16 @@
   };
   // SEO ต่อโหมด: แต่ละโหมดมี URL / title / description ของตัวเอง (ไฟล์ HTML แต่ละหน้าใส่ไว้แล้ว ส่วนนี้ใช้ตอนสลับโหมดในหน้า)
   const SITE = 'https://nivread.com';
-  const SEO = {"general": {"path": "/ai", "title": "Nivread AI แชท AI ภาษาไทย ถามตอบได้ทุกเรื่อง | nivread", "desc": "แชทกับ Nivread AI ผู้ช่วย AI ภาษาไทย ถามตอบได้ทุกเรื่อง อธิบายเรื่องยาก ช่วยเขียน แปลภาษา วางแผน พร้อมค้นข้อมูลล่าสุดให้ก่อนตอบ", "og": "Nivread AI - แชท AI ภาษาไทย ถามได้ทุกเรื่อง", "h1": "แชท AI ภาษาไทย ถามอะไรก็ได้"}, "docs": {"path": "/ai/docs", "title": "จัดเอกสารด้วย AI สรุป ย่อความ ร่างอีเมล ปรับสำนวนทางการ | Nivread AI", "desc": "ให้ Nivread AI ช่วยจัดเอกสารภาษาไทย สรุปและย่อความ จัดหัวข้อ ปรับสำนวนให้เป็นทางการ ร่างอีเมล จดหมาย รายงานการประชุม วางข้อความได้ครั้งละประมาณ 8,000 ตัวอักษร", "og": "จัดเอกสารด้วย AI - สรุป ร่างอีเมล ปรับสำนวน | Nivread AI", "h1": "จัดเอกสารด้วย AI สรุป ร่างอีเมล ปรับสำนวน"}, "fortune": {"path": "/ai/fortune", "title": "ดูดวงออนไลน์ ดวงรายวัน ไพ่ทาโรต์ ตามวันเกิดและราศี | Nivread AI", "desc": "ดูดวงออนไลน์กับ Nivread AI กรอกวันเกิดเพื่อดูดวงรายวัน ความรัก การงาน การเงิน พร้อมเปิดไพ่ทาโรต์และเลขมงคล เพื่อความบันเทิง ใช้ประกอบการตัดสินใจเท่านั้น", "og": "ดูดวงออนไลน์ ดวงรายวัน ไพ่ทาโรต์ | Nivread AI", "h1": "ดูดวงออนไลน์ ตามวันเกิดและไพ่ทาโรต์"}};
+  const SEO = {"general": {"title": "Nivread AI แชท AI ภาษาไทย ถามตอบได้ทุกเรื่อง | nivread", "desc": "แชทกับ Nivread AI ผู้ช่วย AI ภาษาไทย ถามตอบได้ทุกเรื่อง อธิบายเรื่องยาก ช่วยเขียน แปลภาษา วางแผน พร้อมค้นข้อมูลล่าสุดให้ก่อนตอบ", "og": "Nivread AI - แชท AI ภาษาไทย ถามได้ทุกเรื่อง", "h1": "แชท AI ภาษาไทย ถามอะไรก็ได้"}, "docs": {"title": "จัดเอกสารด้วย AI สรุป ย่อความ ร่างอีเมล ปรับสำนวนทางการ | Nivread AI", "desc": "ให้ Nivread AI ช่วยจัดเอกสารภาษาไทย สรุปและย่อความ จัดหัวข้อ ปรับสำนวนให้เป็นทางการ ร่างอีเมล จดหมาย รายงานการประชุม วางข้อความได้ครั้งละประมาณ 8,000 ตัวอักษร", "og": "จัดเอกสารด้วย AI - สรุป ร่างอีเมล ปรับสำนวน | Nivread AI", "h1": "จัดเอกสารด้วย AI สรุป ร่างอีเมล ปรับสำนวน"}, "fortune": {"title": "ดูดวงออนไลน์ ดวงรายวัน ไพ่ทาโรต์ ตามวันเกิดและราศี | Nivread AI", "desc": "ดูดวงออนไลน์กับ Nivread AI กรอกวันเกิดเพื่อดูดวงรายวัน ความรัก การงาน การเงิน พร้อมเปิดไพ่ทาโรต์และเลขมงคล เพื่อความบันเทิง ใช้ประกอบการตัดสินใจเท่านั้น", "og": "ดูดวงออนไลน์ ดวงรายวัน ไพ่ทาโรต์ | Nivread AI", "h1": "ดูดวงออนไลน์ ตามวันเกิดและไพ่ทาโรต์"}};
+  // หน้าเดียวเหมือน fnnz (/ai/chat?c=ชื่อ): โหมดอยู่ใน query → /ai?mode=docs ฐาน path ใช้ของหน้าปัจจุบันเสมอ
+  const BASE = location.pathname.replace(/\/+$/, '') || '/ai';
+  const pathOf = (m) => BASE + (m === 'general' ? '' : '?mode=' + m);
   function applySeo(m) {
     const d = SEO[m]; if (!d) return;
     document.title = d.title;
     const set = (id, attr, v) => { const el = $(id); if (el) el.setAttribute(attr, v); };
-    set('seo-desc', 'content', d.desc); set('seo-canon', 'href', SITE + d.path);
-    set('seo-ogt', 'content', d.og); set('seo-ogd', 'content', d.desc); set('seo-ogu', 'content', SITE + d.path);
+    set('seo-desc', 'content', d.desc); set('seo-canon', 'href', SITE + pathOf(m));
+    set('seo-ogt', 'content', d.og); set('seo-ogd', 'content', d.desc); set('seo-ogu', 'content', SITE + pathOf(m));
   }
   const tabs = [...document.querySelectorAll('[data-tab]')];
   let mode = 'general', ctrl = null, busy = false, loadId = 0, stick = true;
@@ -957,7 +960,7 @@
   const setMode = (m) => {
     if (!MODES[m] || m === mode) return;
     if (ctrl) ctrl.abort();
-    mode = m; history.replaceState(null, '', SEO[m].path); load();
+    mode = m; history.replaceState(null, '', pathOf(m)); load();
   };
 
   async function send(text) {
@@ -1037,10 +1040,10 @@
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
   window.addEventListener('hashchange', () => setMode(location.hash.slice(1)));
 
-  // โหมดเริ่มต้นมาจากหน้า (data-mode); ลิงก์เก่าแบบ /ai#fortune ยังใช้ได้และจะถูกแปลงเป็น URL ใหม่
-  const dm = document.documentElement.dataset.mode, hm = location.hash.slice(1);
-  mode = dm !== 'general' && MODES[dm] ? dm : MODES[hm] ? hm : 'general';
-  if (hm && MODES[hm]) history.replaceState(null, '', SEO[mode].path);
+  // โหมดเริ่มต้นจาก ?mode=docs ; ลิงก์เก่าแบบ /ai#fortune ยังใช้ได้และจะถูกแปลงเป็น URL ใหม่
+  const qm = new URLSearchParams(location.search).get('mode'), hm = location.hash.slice(1);
+  mode = MODES[qm] ? qm : MODES[hm] ? hm : 'general';
+  if (hm && MODES[hm]) history.replaceState(null, '', pathOf(mode));
   load();
   if (LOGGED_IN) call('/status').then((r) => r.json()).then((d) => showEnergy({ free: d.free, reserve: d.reserve })).catch(() => {});
   else { showLoginGate(); $('menu-acct').classList.add('hidden'); document.querySelectorAll('.menu-acct').forEach((e) => e.classList.add('hidden')); $('clear-btn').classList.add('hidden'); }
