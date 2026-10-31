@@ -2,6 +2,10 @@
 <html lang="th" class="dark">
 <head>
 <meta charset="UTF-8">
+<script>
+// ลิงก์เก่า /user?id=name -> เปลี่ยนแถบที่อยู่เป็น /@name ทันที (รันก่อนโหลดสคริปต์อื่น ไม่รีโหลดหน้า)
+(function () { try { var id = new URLSearchParams(location.search).get('id'); if (id && !/^\/@/.test(location.pathname)) history.replaceState(null, '', '/@' + encodeURIComponent(id.trim()) + location.hash); } catch (e) {} })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>โปรไฟล์ผู้ใช้ | nivread</title>
 <meta name="robots" content="noindex, follow">
@@ -65,8 +69,6 @@
   // รองรับ /@name (ใหม่) และ ?id=name (ลิงก์เก่า)
   const pathId = (() => { const m = location.pathname.match(/^\/@([^\/?#]+)/); try { return m ? decodeURIComponent(m[1]) : ''; } catch { return ''; } })();
   const id = (pathId || new URLSearchParams(location.search).get('id') || '').trim();
-  // ถ้าเข้าด้วยลิงก์เก่า ให้เปลี่ยน URL บนแถบที่อยู่เป็นแบบ /@name
-  if (!pathId && id) history.replaceState(null, '', '/@' + encodeURIComponent(id) + location.hash);
   const fail = (t) => { $('card').classList.add('hidden'); $('status').textContent = t; };
   if (!id) return fail('ไม่พบผู้ใช้');
   const r = await api('/api/blog/user?id=' + encodeURIComponent(id));
