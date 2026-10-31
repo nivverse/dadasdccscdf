@@ -178,6 +178,18 @@
   .fcard .ffoot b { font-weight: 500; color: #e9c46a; font-size: .82rem }
   .ftools { display: flex; gap: .25rem; margin-top: .45rem; margin-left: -.4rem }
   .md > .fwrap:first-child { margin-top: 0 } .md > .fwrap:last-child { margin-bottom: 0 }
+  /* ---------- เมนูป๊อปอัป (+ และ ⋮) ---------- */
+  .menu { background: #fff; border: 1px solid rgba(148,163,184,.35); border-radius: 1.1rem; box-shadow: 0 14px 38px -14px rgba(15,23,42,.38); padding: .4rem }
+  .dark .menu { background: #1f1f1f; border-color: rgba(255,255,255,.1); box-shadow: 0 14px 38px -14px rgba(0,0,0,.75) }
+  .mitem { display: flex; align-items: center; gap: .75rem; width: 100%; padding: .55rem .75rem; border-radius: .8rem; text-align: left; cursor: pointer; font-size: .95rem }
+  .mitem:hover, .mitem:focus-visible { background: rgba(148,163,184,.18) }
+  .mitem b { display: block; font-weight: 500; line-height: 1.3 }
+  .mitem small { display: block; margin-top: .05rem; font-size: .75rem; color: #94a3b8 }
+  .mitem .chk { margin-left: auto; opacity: 0; display: flex }
+  .mitem.tab-on .chk { opacity: 1 }
+  #more-btn { position: relative }
+  #more-btn[data-e]::after { content: ''; position: absolute; top: .45rem; right: .45rem; width: .55rem; height: .55rem; border-radius: 50% }
+  #more-btn[data-e="low"]::after { background: #f59e0b } #more-btn[data-e="zero"]::after { background: #ef4444 }
   @media (prefers-reduced-motion: reduce) { .animate-pulse, .md.streaming > :last-child::after { animation: none } }
 </style>
 </head>
@@ -212,19 +224,29 @@
 
 <main class="flex-1 min-h-0 z-10 w-full flex flex-col">
 
-  <!-- แถบบน: โหมด + พลังงาน + ล้างแชท -->
-  <div class="col shrink-0 flex items-stretch gap-3 border-b border-slate-200 dark:border-white/10">
-    <button type="button" id="back-btn" aria-label="กลับ" class="shrink-0 -ml-2 w-9 self-center h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
+  <!-- แถบบน: ย้อนกลับ + ชื่อโหมด + เมนู ⋮ (พลังงาน / ล้างแชท) -->
+  <div class="col shrink-0 flex items-center gap-2 h-14 border-b border-slate-200 dark:border-white/10">
+    <button type="button" id="back-btn" aria-label="กลับ" class="shrink-0 -ml-2 w-9 h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 6 10l6 6"/></svg>
     </button>
-    <nav class="flex-1 min-w-0 flex overflow-x-auto no-sb " aria-label="โหมด AI">
-      <button type="button" data-tab="general" class="tab px-3 py-3 -mb-px text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">คุยทั่วไป</button>
-      <button type="button" data-tab="docs" class="tab px-3 py-3 -mb-px text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">จัดเอกสาร</button>
-      <button type="button" data-tab="fortune" class="tab px-3 py-3 -mb-px text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white cursor-pointer">ดูดวง</button>
-    </nav>
-    <div class="shrink-0 flex items-center gap-4">
-      <span id="energy" class="text-xs font-medium text-amber-500">พลังงาน ...</span>
-      <button id="clear-btn" type="button" class="text-xs font-medium text-slate-500 dark:text-neutral-400 hover:text-red-500 cursor-pointer">ล้างแชท</button>
+    <h1 id="mode-name" class="flex-1 min-w-0 truncate text-[15px] font-medium">คุยทั่วไป</h1>
+    <div class="relative shrink-0 -mr-2">
+      <button type="button" id="more-btn" aria-label="เมนูเพิ่มเติม" aria-haspopup="menu" aria-expanded="false" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="10" cy="4" r="1.7"/><circle cx="10" cy="10" r="1.7"/><circle cx="10" cy="16" r="1.7"/></svg>
+      </button>
+      <div id="more-menu" role="menu" aria-label="เมนูเพิ่มเติม" class="menu hidden absolute right-0 top-full mt-2 w-64 z-30">
+        <div class="px-3 pt-2 pb-2">
+          <div class="text-xs text-slate-500 dark:text-neutral-400">พลังงานคงเหลือ</div>
+          <div id="energy" class="mt-0.5 text-2xl font-semibold tabular-nums text-amber-500">…</div>
+          <div id="energy-sub" class="mt-1 text-xs text-slate-400 dark:text-neutral-500"></div>
+          <p class="mt-2 text-xs leading-relaxed text-slate-400 dark:text-neutral-500">พิมพ์สั้น ๆ ใช้พลังงานน้อยกว่า</p>
+        </div>
+        <div class="my-1 h-px bg-slate-200 dark:bg-white/10"></div>
+        <button id="clear-btn" type="button" role="menuitem" class="mitem text-red-500">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2M6 6l.7 10h6.6L14 6M9 9v4M11 9v4"/></svg>
+          <span>ล้างแชทโหมดนี้</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -233,8 +255,28 @@
 
   <!-- ช่องพิมพ์ลอยด้านล่าง -->
   <div class="col shrink-0 pt-2" style="padding-bottom:max(.5rem,env(safe-area-inset-bottom))">
-    <form id="form" class="flex items-end gap-2 rounded-[1.75rem] border border-slate-300 dark:border-white/15 bg-white dark:bg-[#1f1f1f] pl-5 pr-2 py-2 shadow-[0_2px_12px_rgba(15,23,42,.06)] dark:shadow-none transition-colors focus-within:border-amber-500/70">
-      <textarea id="input" rows="1" aria-label="ข้อความ" class="read flex-1 min-w-0 bg-transparent outline-none resize-none max-h-48 py-2 leading-relaxed placeholder:text-slate-400 dark:placeholder:text-neutral-500" style="font-size:16px"></textarea>
+    <form id="form" class="flex items-end gap-2 rounded-[1.75rem] border border-slate-300 dark:border-white/15 bg-white dark:bg-[#1f1f1f] pl-2 pr-2 py-2 shadow-[0_2px_12px_rgba(15,23,42,.06)] dark:shadow-none transition-colors focus-within:border-amber-500/70">
+      <div class="relative shrink-0">
+        <button id="plus-btn" type="button" aria-label="เลือกโหมด" aria-haspopup="menu" aria-expanded="false" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
+        </button>
+        <div id="plus-menu" role="menu" aria-label="โหมดการคุย" class="menu hidden absolute left-0 bottom-full mb-3 w-64 z-30">
+          <div class="px-3 pt-1.5 pb-1.5 text-xs text-slate-500 dark:text-neutral-400">โหมดการคุย</div>
+          <button type="button" role="menuitemradio" aria-checked="true" data-tab="general" class="mitem">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h12a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>
+            <span><b>คุยทั่วไป</b><small>ถามได้ทุกเรื่อง</small></span><i class="chk" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14.5 16 6"/></svg></i>
+          </button>
+          <button type="button" role="menuitemradio" aria-checked="false" data-tab="docs" class="mitem">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h6l4 4v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M12 3v4h4M8 11h5M8 14h5"/></svg>
+            <span><b>จัดเอกสาร</b><small>สรุป ร่าง ปรับสำนวน</small></span><i class="chk" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14.5 16 6"/></svg></i>
+          </button>
+          <button type="button" role="menuitemradio" aria-checked="false" data-tab="fortune" class="mitem">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 12.5A7 7 0 1 1 7.5 4a5.5 5.5 0 0 0 8.5 8.5z"/></svg>
+            <span><b>ดูดวง</b><small>วันเกิด ไพ่ทาโรต์</small></span><i class="chk" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14.5 16 6"/></svg></i>
+          </button>
+        </div>
+      </div>
+      <textarea id="input" rows="1" aria-label="ข้อความ" class="read flex-1 min-w-0 bg-transparent outline-none resize-none max-h-48 px-1 py-2 leading-relaxed placeholder:text-slate-400 dark:placeholder:text-neutral-500" style="font-size:16px"></textarea>
       <button id="stop" type="button" aria-label="หยุด" class="hidden shrink-0 w-10 h-10 rounded-full border border-slate-300 dark:border-white/20 text-slate-700 dark:text-white flex items-center justify-center hover:border-red-500 hover:text-red-500 cursor-pointer">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="2"/></svg>
       </button>
@@ -848,8 +890,10 @@
   const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 192) + 'px'; sync(); cnt(); };
   const sync = () => { sendBtn.disabled = busy || !input.value.trim(); };
   function showEnergy(h) {
-    if (!h) return; const n = (h.free | 0) + (h.reserve | 0);
-    energyEl.textContent = 'พลังงาน ' + n; energyEl.classList.toggle('text-red-500', n <= 0); energyEl.classList.toggle('text-amber-500', n > 0);
+    if (!h) return; const f = Math.max(Number(h.free) || 0, 0), r = Math.max(Number(h.reserve) || 0, 0), n = f + r;
+    energyEl.textContent = n.toLocaleString(); energyEl.classList.toggle('text-red-500', n <= 0); energyEl.classList.toggle('text-amber-500', n > 0);
+    $('energy-sub').textContent = 'ฟรีวันนี้ ' + f.toLocaleString() + ' · สำรอง ' + r.toLocaleString();
+    const mb = $('more-btn'); if (n <= 0) mb.dataset.e = 'zero'; else if (n < 15) mb.dataset.e = 'low'; else mb.removeAttribute('data-e'); // จุดเตือนที่ปุ่ม ⋮ เมื่อพลังงานเหลือน้อย
   }
   async function call(path, opt) {
     const r = await fetch(API + path + (path.includes('?') ? '&' : '?') + Q, { ...opt, headers: { 'Content-Type': 'application/json', ...H } });
@@ -859,7 +903,8 @@
 
   async function load() {
     const id = ++loadId; log.innerHTML = ''; stick = true;
-    tabs.forEach((t) => t.classList.toggle('tab-on', t.dataset.tab === mode));
+    tabs.forEach((t) => { const on = t.dataset.tab === mode; t.classList.toggle('tab-on', on); t.setAttribute('aria-checked', on ? 'true' : 'false'); });
+    $('mode-name').textContent = MODES[mode].name;
     input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max; cnt();
     let msgs = [];
     try { msgs = (await (await call('/history?chat=' + mode)).json()).messages || []; } catch {}
@@ -887,6 +932,7 @@
       const res = await call('/chat', { method: 'POST', body: JSON.stringify({ message: text, mode }), signal: ctrl.signal });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
+        if (d.needPlan) showEnergy({ free: d.free, reserve: d.reserve });
         bub.parentElement.remove(); addMsg('assistant', d.error || 'เชื่อมต่อไม่ได้ (' + res.status + ') ลองใหม่อีกครั้ง', 'err'); return;
       }
       const reader = res.body.getReader(), dec = new TextDecoder(); let buf = '';
@@ -915,7 +961,7 @@
 
   // ---------- ล้างแชท ----------
   const modal = $('clr-modal'), closeModal = () => modal.classList.add('hidden');
-  $('clear-btn').onclick = () => { $('clr-mode').textContent = ' “' + MODES[mode].name + '” '; modal.classList.remove('hidden'); };
+  $('clear-btn').onclick = () => { closeMenus(); $('clr-mode').textContent = ' “' + MODES[mode].name + '” '; modal.classList.remove('hidden'); };
   $('clr-cancel').onclick = $('clr-backdrop').onclick = closeModal;
   $('clr-ok').onclick = async () => {
     try { await call('/clear', { method: 'POST', body: JSON.stringify({ chat: mode }) }); } catch {}
@@ -925,7 +971,23 @@
   $('back-btn').onclick = () => { if (history.length > 1 && document.referrer) history.back(); else location.href = '/'; };
   $('vm-close').onclick = $('vm-backdrop').onclick = closeView;
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeView(); closeModal(); } });
-  tabs.forEach((t) => (t.onclick = () => setMode(t.dataset.tab)));
+  // เมนูป๊อปอัป: + (เลือกโหมด) และ ⋮ (พลังงาน / ล้างแชท)
+  const menus = [['plus-btn', 'plus-menu'], ['more-btn', 'more-menu']].map(([b, m]) => ({ btn: $(b), menu: $(m) }));
+  function closeMenus() { menus.forEach(({ btn, menu }) => { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); }); }
+  menus.forEach(({ btn, menu }) => {
+    btn.onclick = () => {
+      const willOpen = menu.classList.contains('hidden'); closeMenus();
+      if (willOpen) { menu.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); const f = menu.querySelector('.tab-on, button[role^="menuitem"]'); if (f) f.focus(); }
+    };
+    menu.addEventListener('keydown', (e) => {
+      const items = [...menu.querySelectorAll('button[role^="menuitem"]')], i = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+      else if (e.key === 'Escape') { e.stopPropagation(); closeMenus(); btn.focus(); }
+    });
+  });
+  document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.menu, #plus-btn, #more-btn')) closeMenus(); });
+  tabs.forEach((t) => (t.onclick = () => { closeMenus(); setMode(t.dataset.tab); input.focus(); }));
   stopBtn.onclick = () => ctrl && ctrl.abort();
   form.onsubmit = (e) => { e.preventDefault(); send(input.value); };
   input.addEventListener('input', grow);
