@@ -62,7 +62,11 @@
 (async () => {
   const { api, el, session, avatarEl, postCardEl } = NIV;
   const $ = (id) => document.getElementById(id);
-  const id = (new URLSearchParams(location.search).get('id') || '').trim();
+  // รองรับ /@name (ใหม่) และ ?id=name (ลิงก์เก่า)
+  const pathId = (() => { const m = location.pathname.match(/^\/@([^\/?#]+)/); try { return m ? decodeURIComponent(m[1]) : ''; } catch { return ''; } })();
+  const id = (pathId || new URLSearchParams(location.search).get('id') || '').trim();
+  // ถ้าเข้าด้วยลิงก์เก่า ให้เปลี่ยน URL บนแถบที่อยู่เป็นแบบ /@name
+  if (!pathId && id) history.replaceState(null, '', '/@' + encodeURIComponent(id) + location.hash);
   const fail = (t) => { $('card').classList.add('hidden'); $('status').textContent = t; };
   if (!id) return fail('ไม่พบผู้ใช้');
   const r = await api('/api/blog/user?id=' + encodeURIComponent(id));

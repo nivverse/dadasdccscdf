@@ -36,7 +36,7 @@
     try { window.google?.accounts?.id?.disableAutoSelect(); } catch {}
     location.href = '/';
   };
-  const userUrl = (id) => '/user?id=' + encodeURIComponent(id);
+  const userUrl = (id) => '/@' + encodeURIComponent(id);
   const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   // เรียก API พร้อมแนบ token อัตโนมัติ
@@ -1104,6 +1104,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
     const path = location.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
     const here = encodeURIComponent(location.pathname + location.search);
     const params = new URLSearchParams(location.search);
+    const isMyProfile = (uid) => { let p = ''; try { p = decodeURIComponent(location.pathname); } catch {} return p === '/@' + uid || (location.pathname.replace(/\.html$/, '') === '/user' && params.get('id') === uid); };
     const q0 = path === '/search' ? (params.get('q') || '') : '';
 
     const nav = [
@@ -1112,7 +1113,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
       { href: '/search', label: 'ค้นหา', ic: 'search', on: path === '/search' },
       ...(loggedIn ? [
         { href: '/write', label: 'เขียนโพสต์', ic: 'write', on: path === '/write' },
-        { href: userUrl(s.userId), label: 'โปรไฟล์ของฉัน', ic: 'user', on: path === '/user' && params.get('id') === s.userId },
+        { href: userUrl(s.userId), label: 'โปรไฟล์ของฉัน', ic: 'user', on: isMyProfile(s.userId) },
         { href: '/profile', label: 'ตั้งค่าบัญชี', ic: 'cog', on: path === '/profile' },
       ] : []),
     ];
@@ -1150,7 +1151,7 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
   ${[
     { href: '/', label: 'หน้าแรก', ic: 'home', on: path === '/' },
     { href: '/posts', label: 'โพสต์ทั้งหมด', ic: 'posts', on: path === '/posts' || path.startsWith('/posts/') },
-    { href: loggedIn ? userUrl(s.userId) : '/login?redirect=' + here, label: 'โปรไฟล์', ic: 'user', on: loggedIn && path === '/user' && params.get('id') === s.userId },
+    { href: loggedIn ? userUrl(s.userId) : '/login?redirect=' + here, label: 'โปรไฟล์', ic: 'user', on: loggedIn && isMyProfile(s.userId) },
     { href: '/search', label: 'ค้นหา', ic: 'search', on: path === '/search' },
   ].map((t) => `<a href="${t.href}" class="tb${t.on ? ' on' : ''}" aria-label="${t.label}"${t.on ? ' aria-current="page"' : ''}>${svg(t.ic, 'w-6 h-6')}</a>`).join('')}
   <button id="niv-burger-m" type="button" class="tb" aria-label="เมนู" aria-expanded="false" aria-controls="niv-drawer"><span class="nv-burger" aria-hidden="true"><i></i><i></i><i></i></span></button>
