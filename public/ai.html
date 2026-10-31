@@ -337,9 +337,13 @@
     return new Chart(canvas.getContext('2d'), { type: spec.type, data: { labels: spec.labels, datasets }, options: opts });
   }
   function savePng(ch, title) {
-    const src = ch.canvas, t = document.createElement('canvas'); t.width = src.width; t.height = src.height;
+    // วาดภาพในเบราว์เซอร์ล้วน ๆ (ไม่เรียกเซิร์ฟเวอร์/Workers) แล้วเติมแถบชื่อเว็บด้านล่าง
+    const src = ch.canvas, k = src.width / (src.clientWidth || src.width), pad = Math.round(30 * k);
+    const t = document.createElement('canvas'); t.width = src.width; t.height = src.height + pad;
     const x = t.getContext('2d'); x.fillStyle = cardBg(); x.fillRect(0, 0, t.width, t.height); x.drawImage(src, 0, 0);
-    download(t.toDataURL('image/png'), (title || 'chart').replace(/[^\wก-๙-]+/g, '_') + '.png');
+    x.font = '500 ' + Math.round(13 * k) + "px Kanit, 'Sarabun', sans-serif"; x.textAlign = 'right'; x.textBaseline = 'middle';
+    x.fillStyle = '#f59e0b'; x.fillText('nivread.com', t.width - Math.round(16 * k), src.height + pad / 2 - 2 * k);
+    download(t.toDataURL('image/png'), 'nivread-' + (title || 'chart').replace(/[^\wก-๙-]+/g, '_') + '.png');
   }
   function expand(spec) {
     $('vm-title').textContent = spec.title || ''; const body = $('vm-body'); body.innerHTML = '';
