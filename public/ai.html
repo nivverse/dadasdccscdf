@@ -636,7 +636,7 @@
     setText(b, kind === 'err' ? 'user' : role, text, false, mode); if (role === 'assistant' && kind !== 'err' && text) enhance(b, mode); row.appendChild(b); log.appendChild(row); scrollEnd(); return b;
   }
   // ---------- PDF ธีม Modern (กระดาษขาว สร้างและพิมพ์ในเครื่องผู้ใช้ ไม่ใช้เซิร์ฟเวอร์) ----------
-  const PDF_CSS = `@page{size:A4;margin:16mm 15mm 20mm;@bottom-left{content:"สร้างด้วย Nivread AI · nivread.com";font:8.5pt Sarabun,sans-serif;color:#a8a29e}@bottom-right{content:counter(page) " / " counter(pages);font:8.5pt Sarabun,sans-serif;color:#a8a29e}}
+  const PDF_CSS = `@page{size:A4;margin:16mm 15mm 20mm;@bottom-left{content:"__USER__";font:8.5pt Sarabun,sans-serif;color:#a8a29e}@bottom-right{content:counter(page) " / " counter(pages);font:8.5pt Sarabun,sans-serif;color:#a8a29e}}
 *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body{margin:0;font:11pt/1.8 Sarabun,"Noto Sans Thai",Tahoma,sans-serif;color:#292524}
 .hero{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;border-radius:14px;padding:16px 22px 20px;margin-bottom:18px}
@@ -658,9 +658,9 @@ hr{border:0;border-top:1px solid #e7e5e4;margin:16px 0}strong{color:#1c1917}a{co
   const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function pdfHtml(text) {
     const doc = new DOMParser().parseFromString(DOMPurify.sanitize(marked.parse(text, { breaks: true })), 'text/html'), hd = doc.body.querySelector('h1, h2');
-    let title = 'เอกสารจาก Nivread AI'; if (hd && doc.body.firstElementChild === hd) { title = hd.textContent.trim() || title; hd.remove(); }
+    const user = String(s.name || s.displayName || s.username || s.email || '').trim().slice(0, 60); let title = 'เอกสาร'; if (hd && doc.body.firstElementChild === hd) { title = hd.textContent.trim() || title; hd.remove(); }
     const d = new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
-    return '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>' + esc(title) + '</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet"><style>' + PDF_CSS + '</style></head><body><div class="hero"><div class="top"><div class="brand"><i></i>nivread</div><div>' + d + '</div></div><h1>' + esc(title) + '</h1></div><main>' + doc.body.innerHTML + '</main></body></html>';
+    return '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>' + esc(title) + '</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet"><style>' + PDF_CSS.replace('__USER__', user.replace(/[\\"\n]/g, ' ')) + '</style></head><body><div class="hero"><div class="top"><div class="brand">' + (user ? '<i></i>' + esc(user) : '') + '</div><div>' + d + '</div></div><h1>' + esc(title) + '</h1></div><main>' + doc.body.innerHTML + '</main></body></html>';
   }
   function printPdf(text) {
     const w = window.open('', '_blank'); if (!w) return;
@@ -681,8 +681,8 @@ hr{border:0;border-top:1px solid #e7e5e4;margin:16px 0}strong{color:#1c1917}a{co
     bar.appendChild(c);
     if (mode === 'docs') {
       const page = () => '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:"TH Sarabun New",Tahoma,sans-serif;font-size:16pt;line-height:1.5}h2{color:#b45309}table{border-collapse:collapse}th{background:#fef3c7;color:#92400e}td,th{border:1px solid #d6d3d1;padding:4px 8px}</style></head><body>' + DOMPurify.sanitize(marked.parse(text, { breaks: true })) + '</body></html>';
-      [['Word', () => download(URL.createObjectURL(new Blob(['\ufeff', page()], { type: 'application/msword' })), 'nivread-doc.doc')],
-       ['Markdown', () => download(URL.createObjectURL(new Blob(['\ufeff' + text], { type: 'text/markdown;charset=utf-8' })), 'nivread-doc.md')],
+      [['Word', () => download(URL.createObjectURL(new Blob(['\ufeff', page()], { type: 'application/msword' })), 'เอกสาร.doc')],
+       ['Markdown', () => download(URL.createObjectURL(new Blob(['\ufeff' + text], { type: 'text/markdown;charset=utf-8' })), 'เอกสาร.md')],
        ['PDF', () => printPdf(text)]
       ].forEach(([l, fn]) => { const x = document.createElement('button'); x.type = 'button'; x.className = c.className; x.textContent = l; x.onclick = fn; bar.appendChild(x); });
     }
@@ -1176,7 +1176,7 @@ hr{border:0;border-top:1px solid #e7e5e4;margin:16px 0}strong{color:#1c1917}a{co
       if (!window.JSZip) await lib(CDN + 'jszip/3.10.1/jszip.min.js');
       const z = new JSZip(), used = new Set();
       map.forEach((m) => { const ext = extOf(m.f.name), cat = safe(m.cat, 'อื่น ๆ'); let nm = safe(m.name, 'ไฟล์'); if (ext && !nm.toLowerCase().endsWith(ext.toLowerCase())) nm += ext; let p = cat + '/' + nm, k = 1; while (used.has(p)) p = cat + '/' + (++k) + '_' + nm; used.add(p); z.file(p, m.f.blob); });
-      const u = URL.createObjectURL(await z.generateAsync({ type: 'blob' })); download(u, 'nivread-organized.zip'); setTimeout(() => URL.revokeObjectURL(u), 4000);
+      const u = URL.createObjectURL(await z.generateAsync({ type: 'blob' })); download(u, 'เอกสารจัดหมวด.zip'); setTimeout(() => URL.revokeObjectURL(u), 4000);
     };
     foot.append(h('p', 'flex-1 text-xs text-slate-500 dark:text-neutral-400', map.length + ' ไฟล์ · แก้ชื่อหมวดหรือชื่อไฟล์ หรือย้ายหมวดได้ก่อนดาวน์โหลด'), zb);
     row.append(box, foot); log.appendChild(row); scrollEnd();
