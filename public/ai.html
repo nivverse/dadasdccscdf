@@ -289,10 +289,7 @@
           </button>
         </div>
       </div>
-      <div id="att-wrap" class="relative shrink-0 hidden">
-        <button id="att-btn" type="button" aria-label="แนบไฟล์และคำสั่ง" aria-haspopup="menu" aria-expanded="false" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 9-6.2 6.2a3.3 3.3 0 0 1-4.7-4.7L11.6 4a2.2 2.2 0 0 1 3.1 3.1l-6.5 6.5a1.1 1.1 0 0 1-1.6-1.6L12 7.3"/></svg></button>
-        <div id="act-menu" role="menu" aria-label="จัดเอกสาร" class="menu hidden absolute -left-12 bottom-full mb-3 w-64 max-h-[60vh] overflow-y-auto z-30"></div>
-      </div>
+      <button id="att-btn" type="button" aria-label="แนบไฟล์" title="แนบไฟล์" class="hidden shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 9-6.2 6.2a3.3 3.3 0 0 1-4.7-4.7L11.6 4a2.2 2.2 0 0 1 3.1 3.1l-6.5 6.5a1.1 1.1 0 0 1-1.6-1.6L12 7.3"/></svg></button>
       <input id="file" type="file" multiple accept=".txt,.md,.csv,.json,.html,.docx,.pdf" class="hidden">
       <textarea id="input" rows="1" aria-label="ข้อความ" class="read flex-1 min-w-0 bg-transparent outline-none resize-none max-h-48 px-1 py-2 leading-relaxed placeholder:text-slate-400 dark:placeholder:text-neutral-500" style="font-size:16px"></textarea>
       <button id="stop" type="button" aria-label="หยุด" class="hidden shrink-0 w-10 h-10 rounded-full border border-slate-300 dark:border-white/20 text-slate-700 dark:text-white flex items-center justify-center hover:border-red-500 hover:text-red-500 cursor-pointer">
@@ -348,9 +345,9 @@
   const MODES = {
     general: { name: 'คุยทั่วไป', max: 2000, ph: 'พิมพ์ข้อความ...', title: 'ถามอะไรก็ได้', hi: 'ช่วยคิด ช่วยเขียน ช่วยอธิบาย หรือแค่คุยเล่น เรื่องที่เปลี่ยนบ่อย เช่น ข่าวและราคา จะค้นข้อมูลล่าสุดให้ก่อนตอบ',
       chips: ['ช่วยวางแผนวันนี้ให้หน่อย', 'อธิบายดอกเบี้ยทบต้นให้เข้าใจง่าย', 'ช่วยตรวจและแก้ภาษาข้อความนี้', 'แนะนำวิธีจำคำศัพท์ภาษาอังกฤษ'] },
-    docs: { name: 'จัดเอกสาร', max: 8000, ph: 'วางข้อความ..', title: 'วางข้อความ แล้วบอกว่าจะให้ทำอะไร', hi: 'สรุป จัดหัวข้อ ปรับสำนวน หรือจัดหมวดไฟล์ วางข้อความ หรือกดปุ่มคลิปเพื่อแนบไฟล์',
+    docs: { name: 'จัดเอกสาร', max: 8000, ph: 'วางข้อความ หรือแนบไฟล์', title: 'วางข้อความ แล้วบอกว่าจะให้ทำอะไร', hi: 'สรุป จัดหัวข้อ ปรับสำนวน หรือจัดหมวดไฟล์ วางข้อความ หรือกดปุ่มคลิปเพื่อแนบไฟล์',
       chips: ['ร่างอีเมลขอเลื่อนนัดประชุมให้สุภาพ', 'จัดโน้ตประชุมเป็นรายงานพร้อมสิ่งที่ต้องทำ', 'เขียนจดหมายลากิจแบบเป็นทางการ', 'สรุปข้อความที่จะวางให้เหลือ 5 ข้อ'] },
-    fortune: { name: 'ดูดวง', max: 2000, ph: 'พิมพ์เรื่องที่อยากรู้...', title: 'ดูดวงเพื่อความบันเทิง', hi: 'กรอกวันเกิด ระบบจะคำนวณวัน ราศี และปีนักษัตรให้ แล้วให้ AI ตีความ ใช้เป็นแนวคิดประกอบ ไม่ใช่คำตัดสิน',
+    fortune: { name: 'ดูดวง', max: 2000, ph: 'ถามต่อเรื่องดวง หรือพิมพ์เรื่องที่อยากรู้...', title: 'ดูดวงเพื่อความบันเทิง', hi: 'กรอกวันเกิด ระบบจะคำนวณวัน ราศี และปีนักษัตรให้ แล้วให้ AI ตีความ ใช้เป็นแนวคิดประกอบ ไม่ใช่คำตัดสิน',
       chips: ['ดูดวงรายวันของวันนี้', 'ดวงการงานของคนเกิดวันจันทร์', 'เปิดไพ่ทาโรต์ 3 ใบเรื่องความรัก', 'ขอเลขมงคลประจำสัปดาห์นี้'] },
   };
   // SEO ต่อโหมด: แต่ละโหมดมี URL / title / description ของตัวเอง (ไฟล์ HTML แต่ละหน้าใส่ไว้แล้ว ส่วนนี้ใช้ตอนสลับโหมดในหน้า)
@@ -638,6 +635,40 @@
     const b = document.createElement('div'); b.className = 'break-words ' + BUB[kind || role];
     setText(b, kind === 'err' ? 'user' : role, text, false, mode); if (role === 'assistant' && kind !== 'err' && text) enhance(b, mode); row.appendChild(b); log.appendChild(row); scrollEnd(); return b;
   }
+  // ---------- PDF ธีม Modern (กระดาษขาว สร้างและพิมพ์ในเครื่องผู้ใช้ ไม่ใช้เซิร์ฟเวอร์) ----------
+  const PDF_CSS = `@page{size:A4;margin:16mm 15mm 20mm;@bottom-left{content:"สร้างด้วย Nivread AI · nivread.com";font:8.5pt Sarabun,sans-serif;color:#a8a29e}@bottom-right{content:counter(page) " / " counter(pages);font:8.5pt Sarabun,sans-serif;color:#a8a29e}}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;font:11pt/1.8 Sarabun,"Noto Sans Thai",Tahoma,sans-serif;color:#292524}
+.hero{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;border-radius:14px;padding:16px 22px 20px;margin-bottom:18px}
+.top{display:flex;justify-content:space-between;align-items:center;font:500 9pt Prompt,Sarabun,sans-serif;color:#b45309;letter-spacing:.04em}
+.brand{display:flex;align-items:center;gap:7px;font-weight:600}.brand i{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#f97316)}
+h1{font:600 24pt/1.35 Prompt,Sarabun,sans-serif;margin:14px 0 0;color:#1c1917}
+h1::after{content:"";display:block;width:44px;height:4px;border-radius:4px;background:linear-gradient(90deg,#f59e0b,#f97316);margin-top:10px}
+h2{font:600 15pt/1.4 Prompt,Sarabun,sans-serif;margin:22px 0 8px;padding-left:12px;border-left:4px solid #f59e0b;color:#1c1917;break-after:avoid}
+h3{font:600 12.5pt/1.4 Prompt,Sarabun,sans-serif;margin:16px 0 6px;color:#b45309;break-after:avoid}
+p{margin:0 0 9px}ul,ol{margin:0 0 10px;padding-left:22px}li{margin:3px 0}li::marker{color:#f59e0b;font-weight:600}
+li:has(>input[type=checkbox]){list-style:none;margin-left:-20px}
+input[type=checkbox]{appearance:none;width:11px;height:11px;border:1.6px solid #f59e0b;border-radius:3px;margin:0 8px 0 0;vertical-align:-1px}
+input[type=checkbox]:checked{background:#f59e0b}
+blockquote{margin:12px 0;padding:10px 16px;background:#fff7ed;border-left:4px solid #f59e0b;border-radius:0 10px 10px 0;color:#7c2d12;break-inside:avoid}blockquote p:last-child{margin:0}
+table{width:100%;border-collapse:separate;border-spacing:0;margin:12px 0;font-size:10pt;border:1px solid #e7e5e4;border-radius:10px;overflow:hidden}
+th{background:#fef3c7;color:#92400e;font-weight:600;text-align:left;padding:7px 10px}td{padding:7px 10px;border-top:1px solid #f0eeec}tr:nth-child(even) td{background:#fafaf9}tr{break-inside:avoid}
+code{background:#f5f5f4;border-radius:5px;padding:1px 5px;font-size:.9em}pre{background:#f5f5f4;border-radius:10px;padding:12px 14px;white-space:pre-wrap;break-inside:avoid}pre code{background:none;padding:0}
+hr{border:0;border-top:1px solid #e7e5e4;margin:16px 0}strong{color:#1c1917}a{color:#b45309}`;
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function pdfHtml(text) {
+    const doc = new DOMParser().parseFromString(DOMPurify.sanitize(marked.parse(text, { breaks: true })), 'text/html'), hd = doc.body.querySelector('h1, h2');
+    let title = 'เอกสารจาก Nivread AI'; if (hd && doc.body.firstElementChild === hd) { title = hd.textContent.trim() || title; hd.remove(); }
+    const d = new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+    return '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>' + esc(title) + '</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet"><style>' + PDF_CSS + '</style></head><body><div class="hero"><div class="top"><div class="brand"><i></i>nivread</div><div>' + d + '</div></div><h1>' + esc(title) + '</h1></div><main>' + doc.body.innerHTML + '</main></body></html>';
+  }
+  function printPdf(text) {
+    const w = window.open('', '_blank'); if (!w) return;
+    w.document.write(pdfHtml(text)); w.document.close();
+    let ok = false; const go = () => { if (!ok) { ok = true; w.print(); } };
+    w.addEventListener('load', () => (w.document.fonts ? w.document.fonts.ready : Promise.resolve()).then(() => setTimeout(go, 250)));
+    setTimeout(go, 4000);
+  }
   // ปุ่มคัดลอกอยู่นอกเนื้อหา (ไม่ถูกเขียนทับตอน render markdown)
   function addCopy(b, text) {
     const row = b.parentElement; row.querySelector('.acts')?.remove();
@@ -649,10 +680,10 @@
     c.onclick = async () => { try { await navigator.clipboard.writeText(text.replace(/```fortune[\s\S]*?(```|$)/g, '').trim()); lab.textContent = 'คัดลอกแล้ว'; setTimeout(() => (lab.textContent = 'คัดลอก'), 1500); } catch {} };
     bar.appendChild(c);
     if (mode === 'docs') {
-      const page = () => '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:"TH Sarabun New",Tahoma,sans-serif;font-size:16pt;line-height:1.5}table{border-collapse:collapse}td,th{border:1px solid #888;padding:4px 8px}</style></head><body>' + DOMPurify.sanitize(marked.parse(text, { breaks: true })) + '</body></html>';
+      const page = () => '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:"TH Sarabun New",Tahoma,sans-serif;font-size:16pt;line-height:1.5}h2{color:#b45309}table{border-collapse:collapse}th{background:#fef3c7;color:#92400e}td,th{border:1px solid #d6d3d1;padding:4px 8px}</style></head><body>' + DOMPurify.sanitize(marked.parse(text, { breaks: true })) + '</body></html>';
       [['Word', () => download(URL.createObjectURL(new Blob(['\ufeff', page()], { type: 'application/msword' })), 'nivread-doc.doc')],
        ['Markdown', () => download(URL.createObjectURL(new Blob(['\ufeff' + text], { type: 'text/markdown;charset=utf-8' })), 'nivread-doc.md')],
-       ['PDF', () => { const w = window.open('', '_blank'); if (!w) return; w.document.write(page()); w.document.close(); setTimeout(() => w.print(), 300); }]
+       ['PDF', () => printPdf(text)]
       ].forEach(([l, fn]) => { const x = document.createElement('button'); x.type = 'button'; x.className = c.className; x.textContent = l; x.onclick = fn; bar.appendChild(x); });
     }
     row.appendChild(bar);
@@ -964,7 +995,7 @@
   async function load() {
     const id = ++loadId; log.innerHTML = ''; stick = true;
     tabs.forEach((t) => { const on = t.dataset.tab === mode; t.classList.toggle('tab-on', on); t.setAttribute('aria-checked', on ? 'true' : 'false'); });
-    $('mode-name').textContent = MODES[mode].name; applySeo(mode); $('att-wrap').classList.toggle('hidden', mode !== 'docs'); $('mask-row').classList.toggle('hidden', mode !== 'docs'); renderAtt();
+    $('mode-name').textContent = MODES[mode].name; applySeo(mode); $('att-btn').classList.toggle('hidden', mode !== 'docs'); $('mask-row').classList.toggle('hidden', mode !== 'docs'); renderAtt();
     input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max; cnt();
     let msgs = [];
     if (LOGGED_IN) { try { msgs = (await (await call('/history?chat=' + mode)).json()).messages || []; } catch {} }
@@ -1036,22 +1067,7 @@
     return f.text();
   }
   const split = (t) => { const o = []; let c = ''; for (const p of t.split(/\n{2,}/)) for (let s = p; s; s = s.slice(LIM)) { const q = s.slice(0, LIM); if (c.length + q.length + 2 > LIM) { o.push(c); c = ''; } c += (c ? '\n\n' : '') + q; } if (c) o.push(c); return o; };
-  const ACTS = [
-    ['สรุปเป็นข้อ ๆ', 'สรุปเอกสารนี้เป็นข้อ ๆ ให้ครบประเด็นสำคัญ'],
-    ['จัดหัวข้อ', 'จัดโครงสร้างเอกสารนี้ใหม่ ใส่หัวข้อหลักและหัวข้อย่อย เรียงลำดับให้อ่านง่าย โดยไม่ตัดเนื้อหาสำคัญ'],
-    ['ปรับสำนวนทางการ', 'ปรับสำนวนเอกสารนี้ให้เป็นทางการและสุภาพ คงความหมายเดิม'],
-    ['แก้คำผิด', 'ตรวจและแก้คำผิด ไวยากรณ์ การเว้นวรรค โดยไม่เปลี่ยนความหมาย แล้วสรุปสิ่งที่แก้ไว้ท้ายเอกสาร'],
-    ['รายงานประชุม', 'จัดเนื้อหานี้เป็นรายงานการประชุม มีวาระ มติ และตารางสิ่งที่ต้องทำ (งาน | ผู้รับผิดชอบ | กำหนดส่ง)'],
-    ['ดึงงานที่ต้องทำ', 'ดึงงานที่ต้องทำทั้งหมดออกมาเป็นตาราง (งาน | ผู้รับผิดชอบ | กำหนดส่ง | ความสำคัญ)'],
-  ];
-  function buildActs() {
-    const m = $('act-menu'); m.innerHTML = '';
-    const add = (label, sub, fn) => { const b = h('button', 'mitem'); b.type = 'button'; b.setAttribute('role', 'menuitem'); const s = h('span'); s.append(h('b', null, label)); if (sub) s.append(h('small', null, sub)); b.appendChild(s); b.onclick = () => { closeMenus(); fn(); }; m.appendChild(b); };
-    add('แนบไฟล์', 'txt, md, csv, docx, pdf', () => $('file').click());
-    m.appendChild(h('div', 'my-1 h-px bg-slate-200 dark:bg-white/10'));
-    if (files.length > 1) add('จัดหมวดไฟล์', files.length + ' ไฟล์ · ตั้งชื่อใหม่ + ZIP', organize);
-    ACTS.forEach(([l, p]) => add(l, '', () => runAct(p)));
-  }
+  $('att-btn').onclick = () => $('file').click();
   function renderAtt() {
     const a = $('att'); a.innerHTML = '';
     files.forEach((f, i) => {
@@ -1059,7 +1075,7 @@
       const x = h('button', 'shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'เอาออก');
       x.onclick = () => { files.splice(i, 1); renderAtt(); }; c.appendChild(x); a.appendChild(c);
     });
-    $('docs-bar').classList.toggle('hidden', mode !== 'docs' || !files.length); buildActs();
+    $('docs-bar').classList.toggle('hidden', mode !== 'docs' || !files.length); if (mode === 'docs') input.placeholder = files.length ? 'ให้ทำอะไรกับไฟล์นี้' : MODES.docs.ph;
   }
   $('file').onchange = async (e) => {
     for (const f of e.target.files) {
@@ -1072,7 +1088,7 @@
     const typed = input.value.trim();
     const src = files.length ? files.map((f) => (files.length > 1 ? '### ' + f.name + '\n' : '') + f.text).join('\n\n') : typed;
     if (!src) { input.placeholder = 'วางข้อความก่อน'; input.focus(); return; }
-    if (files.length && typed) p += '\nคำสั่งเพิ่มเติมจากผู้ใช้: ' + typed;
+    if (files.length && typed && p !== typed) p += '\nคำสั่งเพิ่มเติมจากผู้ใช้: ' + typed;
     const mk = maskOn() ? mask(src) : { t: src, n: 0 }, parts = split(mk.t);
     if (parts.length > 1 && !confirm('เอกสารยาว จะแบ่งเป็น ' + parts.length + ' ส่วน และใช้พลังงานประมาณ ' + parts.length + ' เท่า ดำเนินการต่อไหม?')) return;
     input.value = ''; grow();
@@ -1179,7 +1195,7 @@
   $('vm-close').onclick = $('vm-backdrop').onclick = closeView;
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeView(); closeModal(); } });
   // เมนูป๊อปอัป: + (เลือกโหมด) และ ⋮ (พลังงาน / ล้างแชท)
-  const menus = [['plus-btn', 'plus-menu'], ['more-btn', 'more-menu'], ['att-btn', 'act-menu']].map(([b, m]) => ({ btn: $(b), menu: $(m) }));
+  const menus = [['plus-btn', 'plus-menu'], ['more-btn', 'more-menu']].map(([b, m]) => ({ btn: $(b), menu: $(m) }));
   function closeMenus() { menus.forEach(({ btn, menu }) => { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); }); }
   menus.forEach(({ btn, menu }) => {
     btn.onclick = () => {
@@ -1193,10 +1209,10 @@
       else if (e.key === 'Escape') { e.stopPropagation(); closeMenus(); btn.focus(); }
     });
   });
-  document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.menu, #plus-btn, #more-btn, #att-btn')) closeMenus(); });
+  document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.menu, #plus-btn, #more-btn')) closeMenus(); });
   tabs.forEach((t) => (t.onclick = () => { closeMenus(); setMode(t.dataset.tab); input.focus(); }));
   stopBtn.onclick = () => ctrl && ctrl.abort();
-  form.onsubmit = (e) => { e.preventDefault(); send(input.value); };
+  form.onsubmit = (e) => { e.preventDefault(); const t = input.value.trim(); if (mode === 'docs' && files.length && t && !busy) { if (files.length > 1 && /จัดหมวด|จัดเรียง|จัดระเบียบ|แยกโฟลเดอร์|ตั้งชื่อ/.test(t)) { input.value = ''; grow(); organize(); } else runAct(t); return; } send(input.value); };
   input.addEventListener('input', grow);
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
   window.addEventListener('hashchange', () => setMode(location.hash.slice(1)));
