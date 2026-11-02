@@ -377,8 +377,12 @@
   // เลื่อนตามเฉพาะตอนผู้ใช้อยู่ท้ายแชท ถ้าเลื่อนขึ้นไปอ่านจะไม่ดึงกลับ
   const scrollEnd = () => requestAnimationFrame(() => { if (stick) log.scrollTop = log.scrollHeight; });
 
+  // เอกสารต้องไม่มีคำลงท้ายแบบสนทนา (ครับ/ค่ะ/คะ): สั่ง AI ไม่ให้ใส่ และตัดทิ้งอีกชั้นตอนแสดงผล/ส่งออก
+  const DOC_RULE = '\n(เขียนเป็นเนื้อเอกสารทางการ ห้ามใส่คำลงท้าย ครับ ค่ะ คะ ห้ามทักทายหรือพูดกับผู้อ่าน ไม่ต้องมีคำเกริ่นหรือคำปิดท้าย)';
+  const tidy = (t) => t.replace(/(?:ครับ|ค่ะ|คะ)(?=[\s.!?…]|$)/gm, '').replace(/\sนะ(?=[\s.!?…]|$)/gm, '').replace(/[ \t]+$/gm, '');
   function setText(b, role, text, live, m) {
     if (role === 'assistant') {
+      if (m === 'docs') text = tidy(text);
       // โหมดดูดวงไม่แสดงกราฟ/การ์ดข้อมูล: ตัดบล็อกพิเศษทิ้งทั้งหมด
       if (m === 'fortune') {
         text = text.replace(/```(chart|stats|schema)[\s\S]*?(```|$)/g, '');
@@ -673,6 +677,7 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
   }
   // ปุ่มคัดลอกอยู่นอกเนื้อหา (ไม่ถูกเขียนทับตอน render markdown)
   function addCopy(b, text) {
+    if (mode === 'docs') text = tidy(text);
     const row = b.parentElement; row.querySelector('.acts')?.remove();
     const bar = document.createElement('div'); bar.className = 'acts mt-3 -ml-2 flex items-center';
     const c = document.createElement('button'); c.type = 'button';
@@ -1097,7 +1102,7 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
     const label = (files.length ? '📎 ' + files.map((f) => f.name).join(', ') : 'ข้อความที่วาง') + ' · ' + p.slice(0, 30) + (mk.n ? ' · ปิดบัง ' + mk.n + ' จุด' : '');
     for (let i = 0; i < parts.length; i++) {
       const n = parts.length > 1 ? ' [' + (i + 1) + '/' + parts.length + ']' : '';
-      const r = await send(p + (n ? ' (ส่วนที่ ' + (i + 1) + ' จาก ' + parts.length + ' ของเอกสาร)' : '') + '\n\n' + parts[i], { show: label + n });
+      const r = await send(p + DOC_RULE + (n ? ' (ส่วนที่ ' + (i + 1) + ' จาก ' + parts.length + ' ของเอกสาร)' : '') + '\n\n' + parts[i], { show: label + n });
       if (!r) break;
     }
   }
@@ -1214,7 +1219,7 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
   document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.menu, #plus-btn, #more-btn')) closeMenus(); });
   tabs.forEach((t) => (t.onclick = () => { closeMenus(); setMode(t.dataset.tab); input.focus(); }));
   stopBtn.onclick = () => ctrl && ctrl.abort();
-  form.onsubmit = (e) => { e.preventDefault(); const t = input.value.trim(); if (mode === 'docs' && files.length && t && !busy) { if (files.length > 1 && /จัดหมวด|จัดเรียง|จัดระเบียบ|แยกโฟลเดอร์|ตั้งชื่อ/.test(t)) { input.value = ''; grow(); organize(); } else runAct(t); return; } send(input.value); };
+  form.onsubmit = (e) => { e.preventDefault(); const t = input.value.trim(); if (mode === 'docs' && files.length && t && !busy) { if (files.length > 1 && /จัดหมวด|จัดเรียง|จัดระเบียบ|แยกโฟลเดอร์|ตั้งชื่อ/.test(t)) { input.value = ''; grow(); organize(); } else runAct(t); return; } if (mode === 'docs' && t && t.length < 7800) send(t + DOC_RULE, { show: t }); else send(input.value); };
   input.addEventListener('input', grow);
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
   window.addEventListener('hashchange', () => setMode(location.hash.slice(1)));
