@@ -254,6 +254,7 @@
         </div>
         <div class="menu-acct my-1 h-px bg-slate-200 dark:bg-white/10"></div>
         <label id="mask-row" class="mitem hidden"><span><b>ปิดบังข้อมูลส่วนตัว</b><small>เลขบัตร เบอร์โทร อีเมล</small></span><input id="mask" type="checkbox" checked class="ml-auto w-4 h-4 accent-amber-500"></label>
+        <label id="peek-row" class="mitem hidden"><span><b>ดูก่อนส่งให้ AI</b><small>แสดงข้อความที่จะถูกส่งออกไป</small></span><input id="peek" type="checkbox" checked class="ml-auto w-4 h-4 accent-amber-500"></label>
         <button id="clear-btn" type="button" role="menuitem" class="mitem text-red-500">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2M6 6l.7 10h6.6L14 6M9 9v4M11 9v4"/></svg>
           <span>ล้างแชทโหมดนี้</span>
@@ -290,7 +291,7 @@
         </div>
       </div>
       <button id="att-btn" type="button" aria-label="แนบไฟล์" title="แนบไฟล์" class="hidden shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 9-6.2 6.2a3.3 3.3 0 0 1-4.7-4.7L11.6 4a2.2 2.2 0 0 1 3.1 3.1l-6.5 6.5a1.1 1.1 0 0 1-1.6-1.6L12 7.3"/></svg></button>
-      <input id="file" type="file" multiple accept=".txt,.md,.csv,.json,.html,.docx,.pdf" class="hidden">
+      <input id="file" type="file" multiple accept=".txt,.md,.csv,.json,.html,.docx,.pdf,.png,.jpg,.jpeg,.webp" class="hidden">
       <textarea id="input" rows="1" aria-label="ข้อความ" class="read flex-1 min-w-0 bg-transparent outline-none resize-none max-h-48 px-1 py-2 leading-relaxed placeholder:text-slate-400 dark:placeholder:text-neutral-500" style="font-size:16px"></textarea>
       <button id="stop" type="button" aria-label="หยุด" class="hidden shrink-0 w-10 h-10 rounded-full border border-slate-300 dark:border-white/20 text-slate-700 dark:text-white flex items-center justify-center hover:border-red-500 hover:text-red-500 cursor-pointer">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="2"/></svg>
@@ -691,7 +692,7 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
       [['Word', () => download(URL.createObjectURL(new Blob(['\ufeff', page()], { type: 'application/msword' })), 'เอกสาร.doc')],
        ['Markdown', () => download(URL.createObjectURL(new Blob(['\ufeff' + text], { type: 'text/markdown;charset=utf-8' })), 'เอกสาร.md')],
        ['PDF', () => printPdf(text)]
-      ].forEach(([l, fn]) => { const x = document.createElement('button'); x.type = 'button'; x.className = c.className; x.textContent = l; x.onclick = fn; bar.appendChild(x); });
+      ].concat(dueDates(text).length ? [['ปฏิทิน', () => icsDownload(dueDates(text))]] : []).forEach(([l, fn]) => { const x = document.createElement('button'); x.type = 'button'; x.className = c.className; x.textContent = l; x.onclick = fn; bar.appendChild(x); });
     }
     row.appendChild(bar);
   }
@@ -1002,7 +1003,7 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
   async function load() {
     const id = ++loadId; log.innerHTML = ''; stick = true;
     tabs.forEach((t) => { const on = t.dataset.tab === mode; t.classList.toggle('tab-on', on); t.setAttribute('aria-checked', on ? 'true' : 'false'); });
-    $('mode-name').textContent = MODES[mode].name; applySeo(mode); $('att-btn').classList.toggle('hidden', mode !== 'docs'); $('mask-row').classList.toggle('hidden', mode !== 'docs'); renderAtt();
+    $('mode-name').textContent = MODES[mode].name; applySeo(mode); $('att-btn').classList.toggle('hidden', mode !== 'docs'); $('mask-row').classList.toggle('hidden', mode !== 'docs'); $('peek-row').classList.toggle('hidden', mode !== 'docs'); renderAtt();
     input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max; cnt();
     let msgs = [];
     if (LOGGED_IN) { try { msgs = (await (await call('/history?chat=' + mode)).json()).messages || []; } catch {} }
@@ -1062,13 +1063,23 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
   // ---------- โหมดจัดเอกสาร: แนบไฟล์ / คำสั่งจัดเอกสาร / แบ่งส่วนเอกสารยาว / จัดหมวดหลายไฟล์ + ZIP ----------
   const files = [], LIM = 6500, CDN = 'https://cdnjs.cloudflare.com/ajax/libs/';
   const lib = (u) => new Promise((ok, no) => { const s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  let ocrOk = null;
+  async function ocr(img) {
+    if (ocrOk === null) ocrOk = confirm('ไฟล์นี้เป็นภาพหรือเอกสารสแกน ต้องโหลดตัวอ่านภาษาไทยครั้งแรกประมาณ 10-20 MB ดำเนินการต่อไหม?');
+    if (!ocrOk) throw 0;
+    if (!window.Tesseract) await lib(CDN + 'tesseract.js/5.1.1/tesseract.min.js');
+    input.placeholder = 'กำลังอ่านเอกสารสแกน…';
+    return (await Tesseract.recognize(img, 'tha+eng')).data.text.replace(/(?<=[\u0E00-\u0E7F])[ \t]+(?=[\u0E00-\u0E7F])/g, '');
+  }
   async function readFile(f) {
     const ext = f.name.split('.').pop().toLowerCase();
     if (ext === 'docx') { if (!window.mammoth) await lib(CDN + 'mammoth/1.6.0/mammoth.browser.min.js'); return (await mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() })).value; }
+    if (/^(png|jpe?g|webp)$/.test(ext)) return ocr(f);
     if (ext === 'pdf') {
       if (!window.pdfjsLib) { await lib(CDN + 'pdf.js/3.11.174/pdf.min.js'); pdfjsLib.GlobalWorkerOptions.workerSrc = CDN + 'pdf.js/3.11.174/pdf.worker.min.js'; }
       const pdf = await pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise; let t = '';
       for (let i = 1; i <= pdf.numPages && t.length < 80000; i++) t += (await (await pdf.getPage(i)).getTextContent()).items.map((x) => x.str).join(' ') + '\n\n';
+      if (t.replace(/\s/g, '').length < 30) { t = ''; for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) { const pg = await pdf.getPage(i), vp = pg.getViewport({ scale: 2 }), cv = document.createElement('canvas'); cv.width = vp.width; cv.height = vp.height; await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise; t += (await ocr(cv)) + '\n\n'; } }
       return t;
     }
     return f.text();
@@ -1082,15 +1093,63 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
       const x = h('button', 'shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'เอาออก');
       x.onclick = () => { files.splice(i, 1); renderAtt(); }; c.appendChild(x); a.appendChild(c);
     });
-    $('docs-bar').classList.toggle('hidden', mode !== 'docs' || !files.length); if (mode === 'docs') input.placeholder = files.length ? 'ให้ทำอะไรกับไฟล์นี้' : MODES.docs.ph;
+    $('docs-bar').classList.toggle('hidden', mode !== 'docs' || !files.length); if (mode === 'docs') input.placeholder = files.length > 1 ? 'เช่น จัดหมวด หรือ เทียบ' : files.length ? 'ให้ทำอะไรกับไฟล์นี้' : MODES.docs.ph;
   }
   $('file').onchange = async (e) => {
     for (const f of e.target.files) {
       try { if (f.size > 15e6) throw 0; const t = (await readFile(f)).trim(); if (!t) throw 0; files.push({ name: f.name, text: t, blob: f }); }
-      catch { addMsg('assistant', 'อ่านไฟล์ ' + f.name + ' ไม่ได้ รองรับ txt, md, csv, json, docx และ pdf ที่เป็นข้อความ (ไม่ใช่สแกนรูป) ขนาดไม่เกิน 15 MB', 'err'); }
+      catch { addMsg('assistant', 'อ่านไฟล์ ' + f.name + ' ไม่ได้ รองรับ txt, md, csv, json, docx, pdf และรูปภาพ ขนาดไม่เกิน 15 MB', 'err'); }
     }
     e.target.value = ''; $('intro')?.remove(); renderAtt();
   };
+  // ---------- ดูก่อนส่ง / ดึงข้อมูลสำคัญ / ปฏิทิน / เทียบเอกสาร (ทำในเครื่องทั้งหมด) ----------
+  try { if (localStorage.getItem('niv-peek') === '0') $('peek').checked = false; } catch {}
+  $('peek').onchange = () => { try { localStorage.setItem('niv-peek', $('peek').checked ? '1' : '0'); } catch {} };
+  const peek = (t, n) => new Promise((ok) => {
+    if (!$('peek').checked) return ok(true);
+    const ov = h('div', 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm'), c = h('div', 'w-full max-w-2xl max-h-[85vh] flex flex-col rounded-3xl bg-white dark:bg-[#1f1f1f] shadow-2xl overflow-hidden');
+    const body = h('div', 'flex-1 min-h-0 overflow-y-auto px-5 py-4 text-sm leading-relaxed whitespace-pre-wrap break-words');
+    t.slice(0, 6000).split(/(\[(?:เลขบัตร|เลขบัญชี|เบอร์โทร|อีเมล)\])/).forEach((s, i) => body.appendChild(i % 2 ? h('mark', 'rounded bg-amber-400/30 px-1 text-inherit', s) : document.createTextNode(s)));
+    if (t.length > 6000) body.appendChild(document.createTextNode('\n… (แสดง 6,000 ตัวอักษรแรก)'));
+    const bar = h('div', 'flex gap-3 px-5 py-4 border-t border-slate-200 dark:border-white/10'), done = (v) => { ov.remove(); ok(v); };
+    const no = h('button', 'w-1/2 py-3 rounded-xl bg-slate-200 dark:bg-white/10 font-semibold text-sm cursor-pointer', 'ยกเลิก'), go = h('button', 'w-1/2 py-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white font-semibold text-sm cursor-pointer', 'ส่งให้ AI');
+    no.type = go.type = 'button'; no.onclick = () => done(false); go.onclick = () => done(true); bar.append(no, go);
+    c.append(h('div', 'px-5 pt-5 text-base font-medium', 'ข้อความที่จะส่งให้ AI'), h('div', 'px-5 pt-1 text-xs text-slate-500 dark:text-neutral-400', n ? 'ปิดบังข้อมูลส่วนตัวแล้ว ' + n + ' จุด (ไฮไลต์สีเหลือง)' : 'ไม่พบข้อมูลส่วนตัวที่ต้องปิดบัง'), body, bar); ov.appendChild(c); document.body.appendChild(ov); go.focus();
+  });
+  const TM = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  const ymd = (y, mo, d) => { y = +y; mo = +mo; d = d ? +d : 0; if (y > 2400) y -= 543; if (mo < 1 || mo > 12 || d > 31) return ''; return y + '-' + String(mo).padStart(2, '0') + (d ? '-' + String(d).padStart(2, '0') : ''); };
+  function facts(t) {
+    const o = {}; let m = new RegExp('(\\d{1,2})?\\s*(' + TM.join('|') + ')\\s*(\\d{4})').exec(t), d = '';
+    if (m) d = ymd(m[3], TM.indexOf(m[2]) + 1, m[1]); else if ((m = /(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(t))) d = ymd(m[3], m[2], m[1]);
+    if (d) o.date = d;
+    const a = /(?:รวมทั้งสิ้น|ยอดรวม|รวมเงิน|ยอดชำระ|ยอดค่าใช้บริการ|จำนวนเงิน|total)[^\d]{0,20}(\d[\d,]*(?:\.\d{1,2})?)/i.exec(t); if (a) o.amt = a[1].replace(/,/g, '');
+    return o;
+  }
+  function dueDates(t) {
+    const re = new RegExp('(ครบกำหนด|กำหนดชำระ|กำหนดส่ง|ภายในวันที่|ชำระภายใน|due)[^\\d\\n]{0,20}(\\d{1,2})\\s*(?:\\/\\s*(\\d{1,2})\\s*\\/|\\s+(' + TM.join('|') + ')\\s*)(\\d{4})', 'gi'), out = [], ttl = t.replace(/^[#*>\s-]+/, '').split('\n')[0].slice(0, 40);
+    let m; while ((m = re.exec(t))) { const d = ymd(m[5], m[3] || TM.indexOf(m[4]) + 1, m[2]); if (d.length === 10) out.push({ date: d, title: m[1] + ' · ' + ttl }); }
+    return out;
+  }
+  function icsDownload(ev) {
+    const nx = (s) => { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10).replace(/-/g, ''); }, q = (s) => s.replace(/[\\;,]/g, '\\$&');
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Docs//TH', 'CALSCALE:GREGORIAN'];
+    ev.forEach((e, i) => L.push('BEGIN:VEVENT', 'UID:' + Date.now() + i + '@docs', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d+/g, ''), 'DTSTART;VALUE=DATE:' + e.date.replace(/-/g, ''), 'DTEND;VALUE=DATE:' + nx(e.date), 'SUMMARY:' + q(e.title), 'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:' + q(e.title), 'END:VALARM', 'END:VEVENT'));
+    L.push('END:VCALENDAR'); const u = URL.createObjectURL(new Blob([L.join('\r\n')], { type: 'text/calendar;charset=utf-8' })); download(u, 'นัดหมาย.ics'); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  }
+  function compare(a, b) {
+    const sp = (t) => t.split(/\n+/).map((x) => x.trim()).filter(Boolean), A = sp(a.text), B = sp(b.text); $('intro')?.remove(); addMsg('user', 'เทียบ ' + a.name + ' กับ ' + b.name);
+    if (A.length > 3000 || B.length > 3000) { addMsg('assistant', 'เอกสารยาวเกินไปสำหรับเทียบในเครื่อง (เกิน 3,000 บรรทัด)', 'err'); return; }
+    const n = A.length, m = B.length, W = m + 1, dp = new Uint16Array((n + 1) * W), ops = []; let i = 0, j = 0;
+    for (let x = n - 1; x >= 0; x--) for (let y = m - 1; y >= 0; y--) dp[x * W + y] = A[x] === B[y] ? dp[(x + 1) * W + y + 1] + 1 : Math.max(dp[(x + 1) * W + y], dp[x * W + y + 1]);
+    while (i < n && j < m) { if (A[i] === B[j]) { ops.push(['=', A[i]]); i++; j++; } else if (dp[(i + 1) * W + j] >= dp[i * W + j + 1]) ops.push(['-', A[i++]]); else ops.push(['+', B[j++]]); }
+    while (i < n) ops.push(['-', A[i++]]); while (j < m) ops.push(['+', B[j++]]);
+    const line = 'border-t border-slate-200 dark:border-white/10', row = h('div', 'shrink-0 mt-6 w-full'), card = h('div', 'rounded-2xl border overflow-hidden text-[15px] leading-relaxed border-slate-200 dark:border-white/10');
+    const add = ops.filter((o) => o[0] === '+').length, del = ops.filter((o) => o[0] === '-').length; let same = 0;
+    card.appendChild(h('div', 'px-4 py-3 bg-slate-100/70 dark:bg-white/5 text-sm break-words', a.name + '  ↔  ' + b.name + ' · เพิ่ม ' + add + ' · ลบ ' + del + ' บรรทัด'));
+    const flush = () => { if (same) card.appendChild(h('div', 'px-4 py-1.5 text-xs text-slate-400 dark:text-neutral-500 ' + line, '… เหมือนเดิม ' + same + ' บรรทัด')); same = 0; };
+    ops.forEach(([k, t]) => { if (k === '=') { same++; return; } flush(); card.appendChild(h('div', 'px-4 py-2 break-words ' + line + (k === '+' ? ' bg-emerald-500/10 text-emerald-800 dark:text-emerald-300' : ' bg-red-500/10 text-red-700 dark:text-red-300'), (k === '+' ? '+ ' : '− ') + t)); }); flush();
+    row.appendChild(card); log.appendChild(row); scrollEnd();
+  }
   async function runAct(p) {
     const typed = input.value.trim();
     const src = files.length ? files.map((f) => (files.length > 1 ? '### ' + f.name + '\n' : '') + f.text).join('\n\n') : typed;
@@ -1098,6 +1157,7 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
     if (files.length && typed && p !== typed) p += '\nคำสั่งเพิ่มเติมจากผู้ใช้: ' + typed;
     const mk = maskOn() ? mask(src) : { t: src, n: 0 }, parts = split(mk.t);
     if (parts.length > 1 && !confirm('เอกสารยาว จะแบ่งเป็น ' + parts.length + ' ส่วน และใช้พลังงานประมาณ ' + parts.length + ' เท่า ดำเนินการต่อไหม?')) return;
+    if (!(await peek(mk.t, mk.n))) return;
     input.value = ''; grow();
     const label = (files.length ? '📎 ' + files.map((f) => f.name).join(', ') : 'ข้อความที่วาง') + ' · ' + p.slice(0, 30) + (mk.n ? ' · ปิดบัง ' + mk.n + ' จุด' : '');
     for (let i = 0; i < parts.length; i++) {
@@ -1141,6 +1201,7 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
     list.forEach((x) => { const l = JSON.stringify(x).length; if (len + l > 5500 && cur.length) { batches.push(cur); cur = []; len = 0; } cur.push(x); len += l; });
     if (cur.length) batches.push(cur);
     if (batches.length > 1 && !confirm('จะส่งเป็น ' + batches.length + ' รอบ ใช้พลังงานประมาณ ' + batches.length + ' เท่า ดำเนินการต่อไหม?')) return;
+    if (rest.length && !(await peek(list.map((x) => x.n + ': ' + x.t).join('\n\n'), 0))) return;
     const all = loc.slice();
     for (const b of batches) {
       const r = await send('จัดหมวดหมู่เอกสารต่อไปนี้ ตอบเป็น JSON array เท่านั้น ห้ามมีคำอธิบายอื่น รูปแบบ [{"i":เลขเดิม,"category":"ชื่อหมวดสั้น ๆ","name":"ชื่อไฟล์ใหม่ที่สื่อความหมาย ไม่มีนามสกุล","tags":["แท็ก"],"summary":"สรุป 1 บรรทัด"}] ถ้าเนื้อหาเรื่องเดียวกันให้ใช้ชื่อหมวดเดียวกัน\n\n' + JSON.stringify(b), { show: '📎 จัดหมวด ' + b.length + ' ไฟล์', hide: true });
@@ -1148,12 +1209,13 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
       try { all.push(...JSON.parse(m[0])); } catch { break; }
     }
     if (!all.length) { addMsg('assistant', 'จัดหมวดไม่สำเร็จ ลองใหม่อีกครั้ง หรือแนบทีละน้อยไฟล์', 'err'); return; }
+    all.forEach((r) => { const f = files[r.i]; if (f) Object.assign(r, facts(f.text)); });
     showPlan(all);
   }
   function showPlan(rows) {
     const safe = (s, d) => String(s || d).replace(/[\\/:*?"<>|]+/g, ' ').trim().slice(0, 80) || d;
     const extOf = (n) => (n.includes('.') ? n.slice(n.lastIndexOf('.')) : '');
-    const map = rows.filter((r) => files[r.i]).map((r) => { const f = files[r.i]; return { f, cat: safe(r.category, 'อื่น ๆ'), name: new Date(f.blob.lastModified).toISOString().slice(0, 10) + '_' + safe(r.name, f.name.replace(/\.[^.]+$/, '')), sum: String(r.summary || '') }; });
+    const map = rows.filter((r) => files[r.i]).map((r) => { const f = files[r.i]; return { f, cat: safe(r.category, 'อื่น ๆ'), name: (r.date || new Date(f.blob.lastModified).toISOString().slice(0, 10)) + '_' + safe(r.name, f.name.replace(/\.[^.]+$/, '')) + (r.amt ? '_' + r.amt + 'บาท' : ''), date: r.date || '', amt: r.amt || '', orig: f.name, sum: String(r.summary || '') }; });
     const row = h('div', 'shrink-0 mt-6 w-full'), box = h('div', 'space-y-3'), foot = h('div', 'mt-4 flex flex-col sm:flex-row sm:items-center gap-3');
     const FOLDER = SV('<path d="M3 6a1 1 0 0 1 1-1h4l2 2h6a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>', 17), line = 'border-slate-200 dark:border-white/10';
     function draw() {
@@ -1185,7 +1247,9 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
       map.forEach((m) => { const ext = extOf(m.f.name), cat = safe(m.cat, 'อื่น ๆ'); let nm = safe(m.name, 'ไฟล์'); if (ext && !nm.toLowerCase().endsWith(ext.toLowerCase())) nm += ext; let p = cat + '/' + nm, k = 1; while (used.has(p)) p = cat + '/' + (++k) + '_' + nm; used.add(p); z.file(p, m.f.blob); });
       const u = URL.createObjectURL(await z.generateAsync({ type: 'blob' })); download(u, 'เอกสารจัดหมวด.zip'); setTimeout(() => URL.revokeObjectURL(u), 4000);
     };
-    foot.append(h('p', 'flex-1 text-xs text-slate-500 dark:text-neutral-400', map.length + ' ไฟล์ · แก้ชื่อหมวดหรือชื่อไฟล์ หรือย้ายหมวดได้ก่อนดาวน์โหลด'), zb);
+    const cb = h('button', 'w-full sm:w-auto shrink-0 rounded-full border border-slate-300 dark:border-white/20 px-6 py-3 text-sm font-medium cursor-pointer', 'CSV สรุป'); cb.type = 'button';
+    cb.onclick = () => { const q = (v) => '"' + String(v).replace(/"/g, '""') + '"', L = [['หมวด', 'ชื่อใหม่', 'ไฟล์เดิม', 'วันที่ในเอกสาร', 'ยอดเงิน', 'สรุป']].concat(map.map((m) => [m.cat, m.name, m.orig, m.date, m.amt, m.sum])); const u = URL.createObjectURL(new Blob(['\uFEFF' + L.map((r) => r.map(q).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' })); download(u, 'สรุปเอกสาร.csv'); setTimeout(() => URL.revokeObjectURL(u), 4000); };
+    foot.append(h('p', 'flex-1 text-xs text-slate-500 dark:text-neutral-400', map.length + ' ไฟล์ · แก้ชื่อหมวดหรือชื่อไฟล์ หรือย้ายหมวดได้ก่อนดาวน์โหลด'), cb, zb);
     row.append(box, foot); log.appendChild(row); scrollEnd();
   }
 
@@ -1219,7 +1283,7 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
   document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.menu, #plus-btn, #more-btn')) closeMenus(); });
   tabs.forEach((t) => (t.onclick = () => { closeMenus(); setMode(t.dataset.tab); input.focus(); }));
   stopBtn.onclick = () => ctrl && ctrl.abort();
-  form.onsubmit = (e) => { e.preventDefault(); const t = input.value.trim(); if (mode === 'docs' && files.length && t && !busy) { if (files.length > 1 && /จัดหมวด|จัดเรียง|จัดระเบียบ|แยกโฟลเดอร์|ตั้งชื่อ/.test(t)) { input.value = ''; grow(); organize(); } else runAct(t); return; } if (mode === 'docs' && t && t.length < 7800) send(t + DOC_RULE, { show: t }); else send(input.value); };
+  form.onsubmit = (e) => { e.preventDefault(); const t = input.value.trim(); if (mode === 'docs' && files.length && t && !busy) { if (files.length > 1 && /เทียบ|เปรียบเทียบ|ต่างกัน/.test(t)) { input.value = ''; grow(); compare(files[0], files[1]); } else if (files.length > 1 && /จัดหมวด|จัดเรียง|จัดระเบียบ|แยกโฟลเดอร์|ตั้งชื่อ/.test(t)) { input.value = ''; grow(); organize(); } else runAct(t); return; } if (mode === 'docs' && t && t.length < 7800) send(t + DOC_RULE, { show: t }); else send(input.value); };
   input.addEventListener('input', grow);
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
   window.addEventListener('hashchange', () => setMode(location.hash.slice(1)));
