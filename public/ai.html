@@ -636,9 +636,9 @@
     setText(b, kind === 'err' ? 'user' : role, text, false, mode); if (role === 'assistant' && kind !== 'err' && text) enhance(b, mode); row.appendChild(b); log.appendChild(row); scrollEnd(); return b;
   }
   // ---------- PDF ธีม Modern (กระดาษขาว สร้างและพิมพ์ในเครื่องผู้ใช้ ไม่ใช้เซิร์ฟเวอร์) ----------
-  const PDF_CSS = `@page{size:A4;margin:16mm 15mm 20mm;@bottom-left{content:"__USER__";font:8.5pt Sarabun,sans-serif;color:#a8a29e}@bottom-right{content:counter(page) " / " counter(pages);font:8.5pt Sarabun,sans-serif;color:#a8a29e}}
+  const PDF_CSS = `@page{size:A4;margin:0}
 *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{margin:0;font:11pt/1.8 Sarabun,"Noto Sans Thai",Tahoma,sans-serif;color:#292524}
+body{margin:0;padding:0 15mm;font:11pt/1.8 Sarabun,"Noto Sans Thai",Tahoma,sans-serif;color:#292524}
 .hero{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;border-radius:14px;padding:16px 22px 20px;margin-bottom:18px}
 .top{display:flex;justify-content:space-between;align-items:center;font:500 9pt Prompt,Sarabun,sans-serif;color:#b45309;letter-spacing:.04em}
 .brand{display:flex;align-items:center;gap:7px;font-weight:600}.brand i{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#f97316)}
@@ -654,13 +654,15 @@ blockquote{margin:12px 0;padding:10px 16px;background:#fff7ed;border-left:4px so
 table{width:100%;border-collapse:separate;border-spacing:0;margin:12px 0;font-size:10pt;border:1px solid #e7e5e4;border-radius:10px;overflow:hidden}
 th{background:#fef3c7;color:#92400e;font-weight:600;text-align:left;padding:7px 10px}td{padding:7px 10px;border-top:1px solid #f0eeec}tr:nth-child(even) td{background:#fafaf9}tr{break-inside:avoid}
 code{background:#f5f5f4;border-radius:5px;padding:1px 5px;font-size:.9em}pre{background:#f5f5f4;border-radius:10px;padding:12px 14px;white-space:pre-wrap;break-inside:avoid}pre code{background:none;padding:0}
-hr{border:0;border-top:1px solid #e7e5e4;margin:16px 0}strong{color:#1c1917}a{color:#b45309}`;
+hr{border:0;border-top:1px solid #e7e5e4;margin:16px 0}strong{color:#1c1917}a{color:#b45309}
+table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-collapse:collapse;overflow:visible}
+.pg>thead>tr>td,.pg>tbody>tr>td,.pg>tfoot>tr>td{padding:0!important;border:0!important;background:none!important}
+.pg>tbody>tr{break-inside:auto}.sp.t{height:16mm}.sp.b{height:18mm}`;
   const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function pdfHtml(text) {
     const doc = new DOMParser().parseFromString(DOMPurify.sanitize(marked.parse(text, { breaks: true })), 'text/html'), hd = doc.body.querySelector('h1, h2');
-    const user = String(s.name || s.displayName || s.username || s.email || '').trim().slice(0, 60); let title = 'เอกสาร'; if (hd && doc.body.firstElementChild === hd) { title = hd.textContent.trim() || title; hd.remove(); }
-    const d = new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
-    return '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>' + esc(title) + '</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet"><style>' + PDF_CSS.replace('__USER__', user.replace(/[\\"\n]/g, ' ')) + '</style></head><body><div class="hero"><div class="top"><div class="brand">' + (user ? '<i></i>' + esc(user) : '') + '</div><div>' + d + '</div></div><h1>' + esc(title) + '</h1></div><main>' + doc.body.innerHTML + '</main></body></html>';
+    const title = (hd && doc.body.firstElementChild === hd && hd.textContent.trim()) || 'เอกสาร';
+    return '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>' + esc(title) + '</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet"><style>' + PDF_CSS + '</style></head><body><table class="pg"><thead><tr><td><div class="sp t"></div></td></tr></thead><tfoot><tr><td><div class="sp b"></div></td></tr></tfoot><tbody><tr><td><main>' + doc.body.innerHTML + '</main></td></tr></tbody></table></body></html>';
   }
   function printPdf(text) {
     const w = window.open('', '_blank'); if (!w) return;
