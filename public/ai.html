@@ -253,6 +253,7 @@
           <p class="mt-2 text-xs leading-relaxed text-slate-400 dark:text-neutral-500">พิมพ์สั้น ๆ ใช้พลังงานน้อยกว่า</p>
         </div>
         <div class="menu-acct my-1 h-px bg-slate-200 dark:bg-white/10"></div>
+        <label id="mask-row" class="mitem hidden"><span><b>ปิดบังข้อมูลส่วนตัว</b><small>เลขบัตร เบอร์โทร อีเมล</small></span><input id="mask" type="checkbox" checked class="ml-auto w-4 h-4 accent-amber-500"></label>
         <button id="clear-btn" type="button" role="menuitem" class="mitem text-red-500">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2M6 6l.7 10h6.6L14 6M9 9v4M11 9v4"/></svg>
           <span>ล้างแชทโหมดนี้</span>
@@ -266,11 +267,7 @@
 
   <!-- ช่องพิมพ์ลอยด้านล่าง -->
   <div class="col shrink-0 pt-2" style="padding-bottom:max(.5rem,env(safe-area-inset-bottom))">
-    <div id="docs-bar" class="hidden mb-2">
-      <label class="flex items-center gap-2 mb-2 text-xs text-slate-500 dark:text-neutral-400 cursor-pointer"><input id="mask" type="checkbox" checked class="accent-amber-500"> ปิดบังเลขบัตร เบอร์โทร อีเมล เลขบัญชี ก่อนส่งให้ AI</label>
-      <div id="att" class="flex flex-wrap gap-2 mb-2"></div>
-      <div id="acts-bar" class="flex gap-2 overflow-x-auto pb-1"></div>
-    </div>
+    <div id="docs-bar" class="hidden mb-2"><div id="att" class="flex gap-2 overflow-x-auto pb-1"></div></div>
     <form id="form" class="flex items-end gap-2 rounded-[1.75rem] border border-slate-300 dark:border-white/15 bg-white dark:bg-[#1f1f1f] pl-2 pr-2 py-2 shadow-[0_2px_12px_rgba(15,23,42,.06)] dark:shadow-none transition-colors focus-within:border-amber-500/70">
       <div class="relative shrink-0">
         <button id="plus-btn" type="button" aria-label="เลือกโหมด" aria-haspopup="menu" aria-expanded="false" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
@@ -292,7 +289,10 @@
           </button>
         </div>
       </div>
-      <button id="att-btn" type="button" aria-label="แนบไฟล์" title="แนบไฟล์ (txt, md, csv, docx, pdf)" class="hidden shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 9-6.2 6.2a3.3 3.3 0 0 1-4.7-4.7L11.6 4a2.2 2.2 0 0 1 3.1 3.1l-6.5 6.5a1.1 1.1 0 0 1-1.6-1.6L12 7.3"/></svg></button>
+      <div id="att-wrap" class="relative shrink-0 hidden">
+        <button id="att-btn" type="button" aria-label="แนบไฟล์และคำสั่ง" aria-haspopup="menu" aria-expanded="false" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 9-6.2 6.2a3.3 3.3 0 0 1-4.7-4.7L11.6 4a2.2 2.2 0 0 1 3.1 3.1l-6.5 6.5a1.1 1.1 0 0 1-1.6-1.6L12 7.3"/></svg></button>
+        <div id="act-menu" role="menu" aria-label="จัดเอกสาร" class="menu hidden absolute -left-12 bottom-full mb-3 w-64 max-h-[60vh] overflow-y-auto z-30"></div>
+      </div>
       <input id="file" type="file" multiple accept=".txt,.md,.csv,.json,.html,.docx,.pdf" class="hidden">
       <textarea id="input" rows="1" aria-label="ข้อความ" class="read flex-1 min-w-0 bg-transparent outline-none resize-none max-h-48 px-1 py-2 leading-relaxed placeholder:text-slate-400 dark:placeholder:text-neutral-500" style="font-size:16px"></textarea>
       <button id="stop" type="button" aria-label="หยุด" class="hidden shrink-0 w-10 h-10 rounded-full border border-slate-300 dark:border-white/20 text-slate-700 dark:text-white flex items-center justify-center hover:border-red-500 hover:text-red-500 cursor-pointer">
@@ -348,7 +348,7 @@
   const MODES = {
     general: { name: 'คุยทั่วไป', max: 2000, ph: 'พิมพ์ข้อความ...', title: 'ถามอะไรก็ได้', hi: 'ช่วยคิด ช่วยเขียน ช่วยอธิบาย หรือแค่คุยเล่น เรื่องที่เปลี่ยนบ่อย เช่น ข่าวและราคา จะค้นข้อมูลล่าสุดให้ก่อนตอบ',
       chips: ['ช่วยวางแผนวันนี้ให้หน่อย', 'อธิบายดอกเบี้ยทบต้นให้เข้าใจง่าย', 'ช่วยตรวจและแก้ภาษาข้อความนี้', 'แนะนำวิธีจำคำศัพท์ภาษาอังกฤษ'] },
-    docs: { name: 'จัดเอกสาร', max: 8000, ph: 'วางข้อความ แล้วบอกว่าจะให้จัดอย่างไร', title: 'วางข้อความ แล้วบอกว่าจะให้ทำอะไร', hi: 'สรุป ย่อความ จัดหัวข้อ ปรับสำนวนให้เป็นทางการ หรือร่างเอกสารจากข้อมูลคร่าว ๆ วางข้อความหรือแนบไฟล์ได้หลายไฟล์ (txt, md, csv, docx, pdf) เอกสารยาวจะถูกแบ่งส่วนให้อัตโนมัติ แนบหลายไฟล์แล้วให้ AI จัดหมวดและตั้งชื่อใหม่ได้',
+    docs: { name: 'จัดเอกสาร', max: 8000, ph: 'วางข้อความ หรือแนบไฟล์', title: 'วางข้อความ แล้วบอกว่าจะให้ทำอะไร', hi: 'สรุป จัดหัวข้อ ปรับสำนวน หรือจัดหมวดไฟล์ วางข้อความ หรือกดปุ่มคลิปเพื่อแนบไฟล์',
       chips: ['ร่างอีเมลขอเลื่อนนัดประชุมให้สุภาพ', 'จัดโน้ตประชุมเป็นรายงานพร้อมสิ่งที่ต้องทำ', 'เขียนจดหมายลากิจแบบเป็นทางการ', 'สรุปข้อความที่จะวางให้เหลือ 5 ข้อ'] },
     fortune: { name: 'ดูดวง', max: 2000, ph: 'ถามต่อเรื่องดวง หรือพิมพ์เรื่องที่อยากรู้...', title: 'ดูดวงเพื่อความบันเทิง', hi: 'กรอกวันเกิด ระบบจะคำนวณวัน ราศี และปีนักษัตรให้ แล้วให้ AI ตีความ ใช้เป็นแนวคิดประกอบ ไม่ใช่คำตัดสิน',
       chips: ['ดูดวงรายวันของวันนี้', 'ดวงการงานของคนเกิดวันจันทร์', 'เปิดไพ่ทาโรต์ 3 ใบเรื่องความรัก', 'ขอเลขมงคลประจำสัปดาห์นี้'] },
@@ -964,7 +964,7 @@
   async function load() {
     const id = ++loadId; log.innerHTML = ''; stick = true;
     tabs.forEach((t) => { const on = t.dataset.tab === mode; t.classList.toggle('tab-on', on); t.setAttribute('aria-checked', on ? 'true' : 'false'); });
-    $('mode-name').textContent = MODES[mode].name; applySeo(mode); $('docs-bar').classList.toggle('hidden', mode !== 'docs'); $('att-btn').classList.toggle('hidden', mode !== 'docs'); if (mode === 'docs') buildActs();
+    $('mode-name').textContent = MODES[mode].name; applySeo(mode); $('att-wrap').classList.toggle('hidden', mode !== 'docs'); $('mask-row').classList.toggle('hidden', mode !== 'docs'); renderAtt();
     input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max; cnt();
     let msgs = [];
     if (LOGGED_IN) { try { msgs = (await (await call('/history?chat=' + mode)).json()).messages || []; } catch {} }
@@ -1045,21 +1045,22 @@
     ['ดึงงานที่ต้องทำ', 'ดึงงานที่ต้องทำทั้งหมดออกมาเป็นตาราง (งาน | ผู้รับผิดชอบ | กำหนดส่ง | ความสำคัญ)'],
   ];
   function buildActs() {
-    const bar = $('acts-bar'); bar.innerHTML = '';
-    const add = (label, fn, hot) => { const b = h('button', 'shrink-0 rounded-full border px-3.5 py-1.5 text-[13px] cursor-pointer transition-colors ' + (hot ? 'border-amber-500 text-amber-600 dark:text-amber-400' : 'border-slate-300 dark:border-white/15 text-slate-600 dark:text-neutral-300 hover:border-amber-500'), label); b.type = 'button'; b.onclick = fn; bar.appendChild(b); };
-    if (files.length > 1) add('จัดหมวดไฟล์ + ตั้งชื่อใหม่', organize, true);
-    ACTS.forEach(([l, p]) => add(l, () => runAct(p)));
+    const m = $('act-menu'); m.innerHTML = '';
+    const add = (label, sub, fn) => { const b = h('button', 'mitem'); b.type = 'button'; b.setAttribute('role', 'menuitem'); const s = h('span'); s.append(h('b', null, label)); if (sub) s.append(h('small', null, sub)); b.appendChild(s); b.onclick = () => { closeMenus(); fn(); }; m.appendChild(b); };
+    add('แนบไฟล์', 'txt, md, csv, docx, pdf', () => $('file').click());
+    m.appendChild(h('div', 'my-1 h-px bg-slate-200 dark:bg-white/10'));
+    if (files.length > 1) add('จัดหมวดไฟล์', files.length + ' ไฟล์ · ตั้งชื่อใหม่ + ZIP', organize);
+    ACTS.forEach(([l, p]) => add(l, '', () => runAct(p)));
   }
   function renderAtt() {
     const a = $('att'); a.innerHTML = '';
     files.forEach((f, i) => {
-      const c = h('span', 'inline-flex items-center gap-1.5 rounded-full bg-slate-200/70 dark:bg-white/10 px-3 py-1 text-xs', f.name + ' · ' + f.text.length.toLocaleString() + ' ตัวอักษร');
-      const x = h('button', 'cursor-pointer text-slate-500 hover:text-red-500', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'เอาออก');
+      const c = h('span', 'shrink-0 max-w-[14rem] inline-flex items-center gap-1.5 rounded-full bg-slate-200/70 dark:bg-white/10 pl-3 pr-1 py-1 text-xs'); c.appendChild(h('span', 'truncate', f.name));
+      const x = h('button', 'shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'เอาออก');
       x.onclick = () => { files.splice(i, 1); renderAtt(); }; c.appendChild(x); a.appendChild(c);
     });
-    buildActs();
+    $('docs-bar').classList.toggle('hidden', mode !== 'docs' || !files.length); buildActs();
   }
-  $('att-btn').onclick = () => $('file').click();
   $('file').onchange = async (e) => {
     for (const f of e.target.files) {
       try { if (f.size > 15e6) throw 0; const t = (await readFile(f)).trim(); if (!t) throw 0; files.push({ name: f.name, text: t, blob: f }); }
@@ -1070,7 +1071,7 @@
   async function runAct(p) {
     const typed = input.value.trim();
     const src = files.length ? files.map((f) => (files.length > 1 ? '### ' + f.name + '\n' : '') + f.text).join('\n\n') : typed;
-    if (!src) { input.placeholder = 'วางข้อความหรือแนบไฟล์ก่อน แล้วกดคำสั่งอีกครั้ง'; input.focus(); return; }
+    if (!src) { input.placeholder = 'วางข้อความก่อน'; input.focus(); return; }
     if (files.length && typed) p += '\nคำสั่งเพิ่มเติมจากผู้ใช้: ' + typed;
     const mk = maskOn() ? mask(src) : { t: src, n: 0 }, parts = split(mk.t);
     if (parts.length > 1 && !confirm('เอกสารยาว จะแบ่งเป็น ' + parts.length + ' ส่วน และใช้พลังงานประมาณ ' + parts.length + ' เท่า ดำเนินการต่อไหม?')) return;
@@ -1128,28 +1129,41 @@
   }
   function showPlan(rows) {
     const safe = (s, d) => String(s || d).replace(/[\\/:*?"<>|]+/g, ' ').trim().slice(0, 80) || d;
-    const map = rows.filter((r) => files[r.i]).map((r) => { const f = files[r.i], ext = f.name.includes('.') ? f.name.slice(f.name.lastIndexOf('.')) : ''; return { f, cat: safe(r.category, 'อื่น ๆ'), name: new Date(f.blob.lastModified).toISOString().slice(0, 10) + '_' + safe(r.name, f.name.replace(/\.[^.]+$/, '')) + ext, tags: [].concat(r.tags || []).join(', '), sum: String(r.summary || '') }; });
-    const row = h('div', 'shrink-0 mt-6'), w = h('div', 'md w-full'), t = document.createElement('table'), hd = t.createTHead().insertRow();
-    ['หมวด', 'ชื่อใหม่', 'ไฟล์เดิม', 'แท็ก', 'สรุป'].forEach((x) => hd.appendChild(h('th', null, x)));
-    const tb = t.createTBody();
-    map.forEach((m) => { const r = tb.insertRow(); r._m = m;
-      [m.cat, m.name, m.f.name, m.tags, m.sum].forEach((x, c) => { const td = r.insertCell(); td.textContent = x;
-        if (c < 2) { td.contentEditable = 'true'; td.spellcheck = false; td.title = 'คลิกเพื่อแก้ไข'; td.style.cursor = 'text'; td.style.borderBottom = '1px dashed rgba(245,158,11,.6)'; td.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); td.blur(); } }; }
-      }); });
-    w.appendChild(t); row.appendChild(w); log.appendChild(row); tableCard(t);
-    const zb = h('button', 'mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 px-5 py-2.5 text-sm font-semibold text-white cursor-pointer', 'ดาวน์โหลด ZIP แยกโฟลเดอร์ตามหมวด'); zb.type = 'button';
+    const extOf = (n) => (n.includes('.') ? n.slice(n.lastIndexOf('.')) : '');
+    const map = rows.filter((r) => files[r.i]).map((r) => { const f = files[r.i]; return { f, cat: safe(r.category, 'อื่น ๆ'), name: new Date(f.blob.lastModified).toISOString().slice(0, 10) + '_' + safe(r.name, f.name.replace(/\.[^.]+$/, '')), sum: String(r.summary || '') }; });
+    const row = h('div', 'shrink-0 mt-6 w-full'), box = h('div', 'space-y-3'), foot = h('div', 'mt-4 flex flex-col sm:flex-row sm:items-center gap-3');
+    const FOLDER = SV('<path d="M3 6a1 1 0 0 1 1-1h4l2 2h6a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>', 17), line = 'border-slate-200 dark:border-white/10';
+    function draw() {
+      box.innerHTML = ''; const cats = [...new Set(map.map((m) => m.cat))];
+      cats.forEach((c) => {
+        const items = map.filter((m) => m.cat === c), g = h('section', 'rounded-2xl border overflow-hidden ' + line), hd = h('div', 'flex items-center gap-2.5 px-4 py-2.5 bg-slate-100/70 dark:bg-white/5 text-amber-600 dark:text-amber-400');
+        hd.innerHTML = FOLDER; const t = h('input', 'min-w-0 flex-1 bg-transparent outline-none text-[15px] font-medium text-slate-800 dark:text-neutral-100'); t.value = c; t.setAttribute('aria-label', 'ชื่อหมวด');
+        let done = false; t.onblur = () => { if (done) return; const v = safe(t.value, c); if (v === c) { t.value = c; return; } done = true; map.forEach((m) => { if (m.cat === c) m.cat = v; }); draw(); };
+        t.onkeydown = (e) => { if (e.key === 'Enter') t.blur(); };
+        hd.append(t, h('span', 'shrink-0 text-xs text-slate-500 dark:text-neutral-400', items.length + ' ไฟล์')); g.appendChild(hd);
+        items.forEach((m) => {
+          const r = h('div', 'px-4 py-3 border-t flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 ' + line), l = h('div', 'min-w-0 flex-1');
+          const n = h('input', 'w-full bg-transparent outline-none text-[15px] text-slate-800 dark:text-neutral-100'); n.value = m.name; n.setAttribute('aria-label', 'ชื่อไฟล์'); n.oninput = () => { m.name = n.value; };
+          l.append(n, h('div', 'mt-0.5 truncate text-xs text-slate-400 dark:text-neutral-500', m.f.name + (m.sum ? ' · ' + m.sum : '')));
+          const s = h('select', 'shrink-0 w-full sm:w-40 rounded-lg border bg-white dark:bg-[#1f1f1f] px-2 py-1.5 text-sm cursor-pointer ' + line); s.setAttribute('aria-label', 'ย้ายไปหมวด');
+          cats.forEach((x) => { const o = h('option', null, x); o.value = x; o.selected = x === c; s.appendChild(o); });
+          const nw = h('option', null, '+ หมวดใหม่'); nw.value = '\u0000'; s.appendChild(nw);
+          s.onchange = () => { m.cat = s.value === '\u0000' ? safe(prompt('ชื่อหมวดใหม่'), c) : s.value; draw(); };
+          r.append(l, s); g.appendChild(r);
+        });
+        box.appendChild(g);
+      });
+    }
+    draw();
+    const zb = h('button', 'w-full sm:w-auto shrink-0 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 px-6 py-3 text-sm font-semibold text-white cursor-pointer hover:brightness-105', 'ดาวน์โหลด ZIP'); zb.type = 'button';
     zb.onclick = async () => {
       if (!window.JSZip) await lib(CDN + 'jszip/3.10.1/jszip.min.js');
       const z = new JSZip(), used = new Set();
-      [...tb.rows].forEach((r) => {
-        const m = r._m, ext = m.f.name.includes('.') ? m.f.name.slice(m.f.name.lastIndexOf('.')) : '';
-        const cat = safe(r.cells[0].textContent, 'อื่น ๆ'); let nm = safe(r.cells[1].textContent, m.name);
-        if (ext && !nm.toLowerCase().endsWith(ext.toLowerCase())) nm += ext;
-        let p = cat + '/' + nm, k = 1; while (used.has(p)) p = cat + '/' + (++k) + '_' + nm; used.add(p); z.file(p, m.f.blob);
-      });
+      map.forEach((m) => { const ext = extOf(m.f.name), cat = safe(m.cat, 'อื่น ๆ'); let nm = safe(m.name, 'ไฟล์'); if (ext && !nm.toLowerCase().endsWith(ext.toLowerCase())) nm += ext; let p = cat + '/' + nm, k = 1; while (used.has(p)) p = cat + '/' + (++k) + '_' + nm; used.add(p); z.file(p, m.f.blob); });
       const u = URL.createObjectURL(await z.generateAsync({ type: 'blob' })); download(u, 'nivread-organized.zip'); setTimeout(() => URL.revokeObjectURL(u), 4000);
     };
-    row.appendChild(h('p', 'mt-3 text-xs text-slate-500 dark:text-neutral-400', 'คลิกช่อง “หมวด” หรือ “ชื่อใหม่” เพื่อแก้ไขก่อนดาวน์โหลด ใส่ชื่อหมวดเดียวกันเพื่อรวมไว้โฟลเดอร์เดียวกัน')); row.appendChild(zb); scrollEnd();
+    foot.append(h('p', 'flex-1 text-xs text-slate-500 dark:text-neutral-400', map.length + ' ไฟล์ · แก้ชื่อหมวดหรือชื่อไฟล์ หรือย้ายหมวดได้ก่อนดาวน์โหลด'), zb);
+    row.append(box, foot); log.appendChild(row); scrollEnd();
   }
 
   // ---------- ล้างแชท ----------
@@ -1165,7 +1179,7 @@
   $('vm-close').onclick = $('vm-backdrop').onclick = closeView;
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeView(); closeModal(); } });
   // เมนูป๊อปอัป: + (เลือกโหมด) และ ⋮ (พลังงาน / ล้างแชท)
-  const menus = [['plus-btn', 'plus-menu'], ['more-btn', 'more-menu']].map(([b, m]) => ({ btn: $(b), menu: $(m) }));
+  const menus = [['plus-btn', 'plus-menu'], ['more-btn', 'more-menu'], ['att-btn', 'act-menu']].map(([b, m]) => ({ btn: $(b), menu: $(m) }));
   function closeMenus() { menus.forEach(({ btn, menu }) => { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); }); }
   menus.forEach(({ btn, menu }) => {
     btn.onclick = () => {
@@ -1179,7 +1193,7 @@
       else if (e.key === 'Escape') { e.stopPropagation(); closeMenus(); btn.focus(); }
     });
   });
-  document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.menu, #plus-btn, #more-btn')) closeMenus(); });
+  document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.menu, #plus-btn, #more-btn, #att-btn')) closeMenus(); });
   tabs.forEach((t) => (t.onclick = () => { closeMenus(); setMode(t.dataset.tab); input.focus(); }));
   stopBtn.onclick = () => ctrl && ctrl.abort();
   form.onsubmit = (e) => { e.preventDefault(); send(input.value); };
