@@ -266,6 +266,11 @@
 
   <!-- ช่องพิมพ์ลอยด้านล่าง -->
   <div class="col shrink-0 pt-2" style="padding-bottom:max(.5rem,env(safe-area-inset-bottom))">
+    <div id="docs-bar" class="hidden mb-2">
+      <label class="flex items-center gap-2 mb-2 text-xs text-slate-500 dark:text-neutral-400 cursor-pointer"><input id="mask" type="checkbox" checked class="accent-amber-500"> ปิดบังเลขบัตร เบอร์โทร อีเมล เลขบัญชี ก่อนส่งให้ AI</label>
+      <div id="att" class="flex flex-wrap gap-2 mb-2"></div>
+      <div id="acts-bar" class="flex gap-2 overflow-x-auto pb-1"></div>
+    </div>
     <form id="form" class="flex items-end gap-2 rounded-[1.75rem] border border-slate-300 dark:border-white/15 bg-white dark:bg-[#1f1f1f] pl-2 pr-2 py-2 shadow-[0_2px_12px_rgba(15,23,42,.06)] dark:shadow-none transition-colors focus-within:border-amber-500/70">
       <div class="relative shrink-0">
         <button id="plus-btn" type="button" aria-label="เลือกโหมด" aria-haspopup="menu" aria-expanded="false" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
@@ -287,6 +292,8 @@
           </button>
         </div>
       </div>
+      <button id="att-btn" type="button" aria-label="แนบไฟล์" title="แนบไฟล์ (txt, md, csv, docx, pdf)" class="hidden shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 9-6.2 6.2a3.3 3.3 0 0 1-4.7-4.7L11.6 4a2.2 2.2 0 0 1 3.1 3.1l-6.5 6.5a1.1 1.1 0 0 1-1.6-1.6L12 7.3"/></svg></button>
+      <input id="file" type="file" multiple accept=".txt,.md,.csv,.json,.html,.docx,.pdf" class="hidden">
       <textarea id="input" rows="1" aria-label="ข้อความ" class="read flex-1 min-w-0 bg-transparent outline-none resize-none max-h-48 px-1 py-2 leading-relaxed placeholder:text-slate-400 dark:placeholder:text-neutral-500" style="font-size:16px"></textarea>
       <button id="stop" type="button" aria-label="หยุด" class="hidden shrink-0 w-10 h-10 rounded-full border border-slate-300 dark:border-white/20 text-slate-700 dark:text-white flex items-center justify-center hover:border-red-500 hover:text-red-500 cursor-pointer">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="2"/></svg>
@@ -341,7 +348,7 @@
   const MODES = {
     general: { name: 'คุยทั่วไป', max: 2000, ph: 'พิมพ์ข้อความ...', title: 'ถามอะไรก็ได้', hi: 'ช่วยคิด ช่วยเขียน ช่วยอธิบาย หรือแค่คุยเล่น เรื่องที่เปลี่ยนบ่อย เช่น ข่าวและราคา จะค้นข้อมูลล่าสุดให้ก่อนตอบ',
       chips: ['ช่วยวางแผนวันนี้ให้หน่อย', 'อธิบายดอกเบี้ยทบต้นให้เข้าใจง่าย', 'ช่วยตรวจและแก้ภาษาข้อความนี้', 'แนะนำวิธีจำคำศัพท์ภาษาอังกฤษ'] },
-    docs: { name: 'จัดเอกสาร', max: 8000, ph: 'วางข้อความ แล้วบอกว่าจะให้จัดอย่างไร', title: 'วางข้อความ แล้วบอกว่าจะให้ทำอะไร', hi: 'สรุป ย่อความ จัดหัวข้อ ปรับสำนวนให้เป็นทางการ หรือร่างเอกสารจากข้อมูลคร่าว ๆ วางข้อความได้ครั้งละประมาณ 8,000 ตัวอักษร (ยังไม่รองรับไฟล์แนบ)',
+    docs: { name: 'จัดเอกสาร', max: 8000, ph: 'วางข้อความ แล้วบอกว่าจะให้จัดอย่างไร', title: 'วางข้อความ แล้วบอกว่าจะให้ทำอะไร', hi: 'สรุป ย่อความ จัดหัวข้อ ปรับสำนวนให้เป็นทางการ หรือร่างเอกสารจากข้อมูลคร่าว ๆ วางข้อความหรือแนบไฟล์ได้หลายไฟล์ (txt, md, csv, docx, pdf) เอกสารยาวจะถูกแบ่งส่วนให้อัตโนมัติ แนบหลายไฟล์แล้วให้ AI จัดหมวดและตั้งชื่อใหม่ได้',
       chips: ['ร่างอีเมลขอเลื่อนนัดประชุมให้สุภาพ', 'จัดโน้ตประชุมเป็นรายงานพร้อมสิ่งที่ต้องทำ', 'เขียนจดหมายลากิจแบบเป็นทางการ', 'สรุปข้อความที่จะวางให้เหลือ 5 ข้อ'] },
     fortune: { name: 'ดูดวง', max: 2000, ph: 'ถามต่อเรื่องดวง หรือพิมพ์เรื่องที่อยากรู้...', title: 'ดูดวงเพื่อความบันเทิง', hi: 'กรอกวันเกิด ระบบจะคำนวณวัน ราศี และปีนักษัตรให้ แล้วให้ AI ตีความ ใช้เป็นแนวคิดประกอบ ไม่ใช่คำตัดสิน',
       chips: ['ดูดวงรายวันของวันนี้', 'ดวงการงานของคนเกิดวันจันทร์', 'เปิดไพ่ทาโรต์ 3 ใบเรื่องความรัก', 'ขอเลขมงคลประจำสัปดาห์นี้'] },
@@ -640,7 +647,15 @@
     c.innerHTML = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg><span>คัดลอก</span>';
     const lab = c.querySelector('span');
     c.onclick = async () => { try { await navigator.clipboard.writeText(text.replace(/```fortune[\s\S]*?(```|$)/g, '').trim()); lab.textContent = 'คัดลอกแล้ว'; setTimeout(() => (lab.textContent = 'คัดลอก'), 1500); } catch {} };
-    bar.appendChild(c); row.appendChild(bar);
+    bar.appendChild(c);
+    if (mode === 'docs') {
+      const page = () => '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:"TH Sarabun New",Tahoma,sans-serif;font-size:16pt;line-height:1.5}table{border-collapse:collapse}td,th{border:1px solid #888;padding:4px 8px}</style></head><body>' + DOMPurify.sanitize(marked.parse(text, { breaks: true })) + '</body></html>';
+      [['Word', () => download(URL.createObjectURL(new Blob(['\ufeff', page()], { type: 'application/msword' })), 'nivread-doc.doc')],
+       ['Markdown', () => download(URL.createObjectURL(new Blob(['\ufeff' + text], { type: 'text/markdown;charset=utf-8' })), 'nivread-doc.md')],
+       ['PDF', () => { const w = window.open('', '_blank'); if (!w) return; w.document.write(page()); w.document.close(); setTimeout(() => w.print(), 300); }]
+      ].forEach(([l, fn]) => { const x = document.createElement('button'); x.type = 'button'; x.className = c.className; x.textContent = l; x.onclick = fn; bar.appendChild(x); });
+    }
+    row.appendChild(bar);
   }
   // ---------- โหมดดูดวง: ฟอร์มวันเกิด (คำนวณวัน/ราศี/ปีนักษัตรในเบราว์เซอร์ ไม่เปลืองพลังงาน AI) ----------
   const TH_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
@@ -949,7 +964,7 @@
   async function load() {
     const id = ++loadId; log.innerHTML = ''; stick = true;
     tabs.forEach((t) => { const on = t.dataset.tab === mode; t.classList.toggle('tab-on', on); t.setAttribute('aria-checked', on ? 'true' : 'false'); });
-    $('mode-name').textContent = MODES[mode].name; applySeo(mode);
+    $('mode-name').textContent = MODES[mode].name; applySeo(mode); $('docs-bar').classList.toggle('hidden', mode !== 'docs'); $('att-btn').classList.toggle('hidden', mode !== 'docs'); if (mode === 'docs') buildActs();
     input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max; cnt();
     let msgs = [];
     if (LOGGED_IN) { try { msgs = (await (await call('/history?chat=' + mode)).json()).messages || []; } catch {} }
@@ -963,17 +978,17 @@
     mode = m; history.replaceState(null, '', pathOf(m)); load();
   };
 
-  async function send(text) {
+  async function send(text, opt = {}) {
     text = (text || '').trim(); if (!text || busy) return;
     if (!LOGGED_IN) { showLoginGate(); return; }
-    $('intro')?.remove(); addMsg('user', text); input.value = ''; grow(); busy = true; sync();
+    $('intro')?.remove(); addMsg('user', opt.show || text); input.value = ''; grow(); busy = true; sync();
     sendBtn.classList.add('hidden'); stopBtn.classList.remove('hidden');
     const bub = addMsg('assistant', '');
     bub.innerHTML = '<span class="inline-flex gap-1.5 py-2"><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></i><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" style="animation-delay:.2s"></i><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" style="animation-delay:.4s"></i></span>';
     ctrl = new AbortController();
     let reply = '', raf = 0; const m0 = mode;
-    const paint = () => { raf = 0; if (reply) bub.classList.add('streaming'); setText(bub, 'assistant', reply, true, m0); scrollEnd(); };
-    const finish = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } bub.classList.remove('streaming'); setText(bub, 'assistant', reply, false, m0); enhance(bub, m0); scrollEnd(); };
+    const paint = () => { raf = 0; if (reply) bub.classList.add('streaming'); setText(bub, 'assistant', opt.hide ? '*กำลังจัดหมวดหมู่…*' : reply, true, m0); scrollEnd(); };
+    const finish = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } bub.classList.remove('streaming'); if (opt.hide) return; setText(bub, 'assistant', reply, false, m0); enhance(bub, m0); scrollEnd(); };
     try {
       const res = await call('/chat', { method: 'POST', body: JSON.stringify({ message: text, mode }), signal: ctrl.signal });
       if (!res.ok) {
@@ -993,7 +1008,7 @@
           if (m.done && m.hp) showEnergy(m.hp);
         }
       }
-      finish(); if (reply) addCopy(bub, reply);
+      finish(); if (opt.hide) bub.parentElement.remove(); else if (reply) addCopy(bub, reply);
     } catch (e) {
       if (e.message === '401') return;
       if (e.name === 'AbortError' && reply) { finish(); addCopy(bub, reply); }
@@ -1003,6 +1018,138 @@
       bub.classList.remove('streaming');
       ctrl = null; busy = false; stopBtn.classList.add('hidden'); sendBtn.classList.remove('hidden'); sync(); input.focus();
     }
+    return reply;
+  }
+
+  // ---------- โหมดจัดเอกสาร: แนบไฟล์ / คำสั่งจัดเอกสาร / แบ่งส่วนเอกสารยาว / จัดหมวดหลายไฟล์ + ZIP ----------
+  const files = [], LIM = 6500, CDN = 'https://cdnjs.cloudflare.com/ajax/libs/';
+  const lib = (u) => new Promise((ok, no) => { const s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  async function readFile(f) {
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (ext === 'docx') { if (!window.mammoth) await lib(CDN + 'mammoth/1.6.0/mammoth.browser.min.js'); return (await mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() })).value; }
+    if (ext === 'pdf') {
+      if (!window.pdfjsLib) { await lib(CDN + 'pdf.js/3.11.174/pdf.min.js'); pdfjsLib.GlobalWorkerOptions.workerSrc = CDN + 'pdf.js/3.11.174/pdf.worker.min.js'; }
+      const pdf = await pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise; let t = '';
+      for (let i = 1; i <= pdf.numPages && t.length < 80000; i++) t += (await (await pdf.getPage(i)).getTextContent()).items.map((x) => x.str).join(' ') + '\n\n';
+      return t;
+    }
+    return f.text();
+  }
+  const split = (t) => { const o = []; let c = ''; for (const p of t.split(/\n{2,}/)) for (let s = p; s; s = s.slice(LIM)) { const q = s.slice(0, LIM); if (c.length + q.length + 2 > LIM) { o.push(c); c = ''; } c += (c ? '\n\n' : '') + q; } if (c) o.push(c); return o; };
+  const ACTS = [
+    ['สรุปเป็นข้อ ๆ', 'สรุปเอกสารนี้เป็นข้อ ๆ ให้ครบประเด็นสำคัญ'],
+    ['จัดหัวข้อ', 'จัดโครงสร้างเอกสารนี้ใหม่ ใส่หัวข้อหลักและหัวข้อย่อย เรียงลำดับให้อ่านง่าย โดยไม่ตัดเนื้อหาสำคัญ'],
+    ['ปรับสำนวนทางการ', 'ปรับสำนวนเอกสารนี้ให้เป็นทางการและสุภาพ คงความหมายเดิม'],
+    ['แก้คำผิด', 'ตรวจและแก้คำผิด ไวยากรณ์ การเว้นวรรค โดยไม่เปลี่ยนความหมาย แล้วสรุปสิ่งที่แก้ไว้ท้ายเอกสาร'],
+    ['รายงานประชุม', 'จัดเนื้อหานี้เป็นรายงานการประชุม มีวาระ มติ และตารางสิ่งที่ต้องทำ (งาน | ผู้รับผิดชอบ | กำหนดส่ง)'],
+    ['ดึงงานที่ต้องทำ', 'ดึงงานที่ต้องทำทั้งหมดออกมาเป็นตาราง (งาน | ผู้รับผิดชอบ | กำหนดส่ง | ความสำคัญ)'],
+  ];
+  function buildActs() {
+    const bar = $('acts-bar'); bar.innerHTML = '';
+    const add = (label, fn, hot) => { const b = h('button', 'shrink-0 rounded-full border px-3.5 py-1.5 text-[13px] cursor-pointer transition-colors ' + (hot ? 'border-amber-500 text-amber-600 dark:text-amber-400' : 'border-slate-300 dark:border-white/15 text-slate-600 dark:text-neutral-300 hover:border-amber-500'), label); b.type = 'button'; b.onclick = fn; bar.appendChild(b); };
+    if (files.length > 1) add('จัดหมวดไฟล์ + ตั้งชื่อใหม่', organize, true);
+    ACTS.forEach(([l, p]) => add(l, () => runAct(p)));
+  }
+  function renderAtt() {
+    const a = $('att'); a.innerHTML = '';
+    files.forEach((f, i) => {
+      const c = h('span', 'inline-flex items-center gap-1.5 rounded-full bg-slate-200/70 dark:bg-white/10 px-3 py-1 text-xs', f.name + ' · ' + f.text.length.toLocaleString() + ' ตัวอักษร');
+      const x = h('button', 'cursor-pointer text-slate-500 hover:text-red-500', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'เอาออก');
+      x.onclick = () => { files.splice(i, 1); renderAtt(); }; c.appendChild(x); a.appendChild(c);
+    });
+    buildActs();
+  }
+  $('att-btn').onclick = () => $('file').click();
+  $('file').onchange = async (e) => {
+    for (const f of e.target.files) {
+      try { if (f.size > 15e6) throw 0; const t = (await readFile(f)).trim(); if (!t) throw 0; files.push({ name: f.name, text: t, blob: f }); }
+      catch { addMsg('assistant', 'อ่านไฟล์ ' + f.name + ' ไม่ได้ รองรับ txt, md, csv, json, docx และ pdf ที่เป็นข้อความ (ไม่ใช่สแกนรูป) ขนาดไม่เกิน 15 MB', 'err'); }
+    }
+    e.target.value = ''; $('intro')?.remove(); renderAtt();
+  };
+  async function runAct(p) {
+    const typed = input.value.trim();
+    const src = files.length ? files.map((f) => (files.length > 1 ? '### ' + f.name + '\n' : '') + f.text).join('\n\n') : typed;
+    if (!src) { input.placeholder = 'วางข้อความหรือแนบไฟล์ก่อน แล้วกดคำสั่งอีกครั้ง'; input.focus(); return; }
+    if (files.length && typed) p += '\nคำสั่งเพิ่มเติมจากผู้ใช้: ' + typed;
+    const mk = maskOn() ? mask(src) : { t: src, n: 0 }, parts = split(mk.t);
+    if (parts.length > 1 && !confirm('เอกสารยาว จะแบ่งเป็น ' + parts.length + ' ส่วน และใช้พลังงานประมาณ ' + parts.length + ' เท่า ดำเนินการต่อไหม?')) return;
+    input.value = ''; grow();
+    const label = (files.length ? '📎 ' + files.map((f) => f.name).join(', ') : 'ข้อความที่วาง') + ' · ' + p.slice(0, 30) + (mk.n ? ' · ปิดบัง ' + mk.n + ' จุด' : '');
+    for (let i = 0; i < parts.length; i++) {
+      const n = parts.length > 1 ? ' [' + (i + 1) + '/' + parts.length + ']' : '';
+      const r = await send(p + (n ? ' (ส่วนที่ ' + (i + 1) + ' จาก ' + parts.length + ' ของเอกสาร)' : '') + '\n\n' + parts[i], { show: label + n });
+      if (!r) break;
+    }
+  }
+  // ปิดบังข้อมูลส่วนตัวในเครื่อง ก่อนส่งให้ AI
+  try { if (localStorage.getItem('niv-mask') === '0') $('mask').checked = false; } catch {}
+  $('mask').onchange = () => { try { localStorage.setItem('niv-mask', $('mask').checked ? '1' : '0'); } catch {} };
+  const mask = (t) => { let n = 0; const r = (re, s) => { t = t.replace(re, () => { n++; return s; }); };
+    r(/(?<!\d)\d[- ]?\d{4}[- ]?\d{5}[- ]?\d{2}[- ]?\d(?!\d)/g, '[เลขบัตร]'); r(/(?<!\d)\d{3}[- ]\d[- ]\d{5}[- ]\d(?!\d)/g, '[เลขบัญชี]');
+    r(/(?<!\d)(?:\+66|0)\d{1,2}[- ]?\d{3}[- ]?\d{3,4}(?!\d)/g, '[เบอร์โทร]'); r(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, '[อีเมล]'); return { t, n }; };
+  const maskOn = () => $('mask').checked;
+  // จัดหมวดด้วยกฎในเครื่อง: ไม่ต้องเรียก AI ถ้ามั่นใจพอ
+  const RULES = [
+    ['การเงิน', /ใบเสนอราคา|ใบแจ้งหนี้|ใบเสร็จ|ใบกำกับภาษี|invoice|receipt|quotation|งบการเงิน|ค่าใช้จ่าย|ชำระเงิน/gi],
+    ['สัญญา', /สัญญา|ข้อตกลง|contract|agreement|\bnda\b/gi],
+    ['ประชุม', /รายงานการประชุม|วาระ|มติที่ประชุม|meeting|minutes/gi],
+    ['หนังสือราชการ', /หนังสือ|เรียน\s|อ้างถึง|ขอแสดงความนับถือ/gi],
+    ['บุคคล', /ใบลา|ลาป่วย|ลากิจ|ลาพักร้อน|resume|\bcv\b|สมัครงาน|ประวัติส่วนตัว|เงินเดือน/gi],
+    ['รายงาน', /รายงานผล|สรุปผล|report|ผลการดำเนินงาน/gi],
+  ];
+  function ruleCat(f) {
+    if (/\.csv$/i.test(f.name)) return 'ข้อมูลตาราง';
+    const body = f.text.slice(0, 2500), sc = RULES.map(([c, re]) => [c, 3 * (f.name.match(re) || []).length + (body.match(re) || []).length]).sort((a, b) => b[1] - a[1]);
+    return sc[0][1] >= 3 && sc[0][1] >= sc[1][1] + 2 ? sc[0][0] : null;
+  }
+  const sha = async (t) => { t = t.replace(/\s+/g, ' ').trim().toLowerCase(); try { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map((b) => b.toString(16).padStart(2, '0')).join(''); } catch { return t.length + ':' + t.slice(0, 300); } };
+  async function organize() {
+    const loc = [], rest = [], seen = new Map();
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i], base = f.name.replace(/\.[^.]+$/, ''), k = await sha(f.text);
+      if (seen.has(k)) { loc.push({ i, category: 'ซ้ำ', name: base, tags: ['ซ้ำกับ ' + files[seen.get(k)].name], summary: 'เนื้อหาเหมือนไฟล์อื่น' }); continue; }
+      seen.set(k, i); const c = ruleCat(f);
+      if (c) loc.push({ i, category: c, name: base, tags: [], summary: 'จัดด้วยกฎในเครื่อง ไม่ใช้พลังงาน AI' }); else rest.push(i);
+    }
+    const list = rest.map((i) => ({ i, n: files[i].name, t: (maskOn() ? mask : (x) => ({ t: x }))(files[i].text.replace(/\s+/g, ' ').slice(0, 700)).t })), batches = [];
+    let cur = [], len = 0;
+    list.forEach((x) => { const l = JSON.stringify(x).length; if (len + l > 5500 && cur.length) { batches.push(cur); cur = []; len = 0; } cur.push(x); len += l; });
+    if (cur.length) batches.push(cur);
+    if (batches.length > 1 && !confirm('จะส่งเป็น ' + batches.length + ' รอบ ใช้พลังงานประมาณ ' + batches.length + ' เท่า ดำเนินการต่อไหม?')) return;
+    const all = loc.slice();
+    for (const b of batches) {
+      const r = await send('จัดหมวดหมู่เอกสารต่อไปนี้ ตอบเป็น JSON array เท่านั้น ห้ามมีคำอธิบายอื่น รูปแบบ [{"i":เลขเดิม,"category":"ชื่อหมวดสั้น ๆ","name":"ชื่อไฟล์ใหม่ที่สื่อความหมาย ไม่มีนามสกุล","tags":["แท็ก"],"summary":"สรุป 1 บรรทัด"}] ถ้าเนื้อหาเรื่องเดียวกันให้ใช้ชื่อหมวดเดียวกัน\n\n' + JSON.stringify(b), { show: '📎 จัดหมวด ' + b.length + ' ไฟล์', hide: true });
+      const m = r && /\[[\s\S]*\]/.exec(r); if (!m) break;
+      try { all.push(...JSON.parse(m[0])); } catch { break; }
+    }
+    if (!all.length) { addMsg('assistant', 'จัดหมวดไม่สำเร็จ ลองใหม่อีกครั้ง หรือแนบทีละน้อยไฟล์', 'err'); return; }
+    showPlan(all);
+  }
+  function showPlan(rows) {
+    const safe = (s, d) => String(s || d).replace(/[\\/:*?"<>|]+/g, ' ').trim().slice(0, 80) || d;
+    const map = rows.filter((r) => files[r.i]).map((r) => { const f = files[r.i], ext = f.name.includes('.') ? f.name.slice(f.name.lastIndexOf('.')) : ''; return { f, cat: safe(r.category, 'อื่น ๆ'), name: new Date(f.blob.lastModified).toISOString().slice(0, 10) + '_' + safe(r.name, f.name.replace(/\.[^.]+$/, '')) + ext, tags: [].concat(r.tags || []).join(', '), sum: String(r.summary || '') }; });
+    const row = h('div', 'shrink-0 mt-6'), w = h('div', 'md w-full'), t = document.createElement('table'), hd = t.createTHead().insertRow();
+    ['หมวด', 'ชื่อใหม่', 'ไฟล์เดิม', 'แท็ก', 'สรุป'].forEach((x) => hd.appendChild(h('th', null, x)));
+    const tb = t.createTBody();
+    map.forEach((m) => { const r = tb.insertRow(); r._m = m;
+      [m.cat, m.name, m.f.name, m.tags, m.sum].forEach((x, c) => { const td = r.insertCell(); td.textContent = x;
+        if (c < 2) { td.contentEditable = 'true'; td.spellcheck = false; td.title = 'คลิกเพื่อแก้ไข'; td.style.cursor = 'text'; td.style.borderBottom = '1px dashed rgba(245,158,11,.6)'; td.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); td.blur(); } }; }
+      }); });
+    w.appendChild(t); row.appendChild(w); log.appendChild(row); tableCard(t);
+    const zb = h('button', 'mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 px-5 py-2.5 text-sm font-semibold text-white cursor-pointer', 'ดาวน์โหลด ZIP แยกโฟลเดอร์ตามหมวด'); zb.type = 'button';
+    zb.onclick = async () => {
+      if (!window.JSZip) await lib(CDN + 'jszip/3.10.1/jszip.min.js');
+      const z = new JSZip(), used = new Set();
+      [...tb.rows].forEach((r) => {
+        const m = r._m, ext = m.f.name.includes('.') ? m.f.name.slice(m.f.name.lastIndexOf('.')) : '';
+        const cat = safe(r.cells[0].textContent, 'อื่น ๆ'); let nm = safe(r.cells[1].textContent, m.name);
+        if (ext && !nm.toLowerCase().endsWith(ext.toLowerCase())) nm += ext;
+        let p = cat + '/' + nm, k = 1; while (used.has(p)) p = cat + '/' + (++k) + '_' + nm; used.add(p); z.file(p, m.f.blob);
+      });
+      const u = URL.createObjectURL(await z.generateAsync({ type: 'blob' })); download(u, 'nivread-organized.zip'); setTimeout(() => URL.revokeObjectURL(u), 4000);
+    };
+    row.appendChild(h('p', 'mt-3 text-xs text-slate-500 dark:text-neutral-400', 'คลิกช่อง “หมวด” หรือ “ชื่อใหม่” เพื่อแก้ไขก่อนดาวน์โหลด ใส่ชื่อหมวดเดียวกันเพื่อรวมไว้โฟลเดอร์เดียวกัน')); row.appendChild(zb); scrollEnd();
   }
 
   // ---------- ล้างแชท ----------
