@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html data-mode="general" lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Nivread AI แชท AI ภาษาไทย ถามตอบได้ทุกเรื่อง | nivread</title>
+<meta name="description" content="แชทกับ Nivread AI ผู้ช่วย AI ภาษาไทย ถามตอบได้ทุกเรื่อง อธิบายเรื่องยาก ช่วยเขียน แปลภาษา วางแผน พร้อมค้นข้อมูลล่าสุดให้ก่อนตอบ" id="seo-desc">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="canonical" href="https://nivread.com/ai" id="seo-canon">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Nivread">
+<meta property="og:title" content="Nivread AI - แชท AI ภาษาไทย ถามได้ทุกเรื่อง" id="seo-ogt">
+<meta property="og:description" content="แชทกับ Nivread AI ผู้ช่วย AI ภาษาไทย ถามตอบได้ทุกเรื่อง อธิบายเรื่องยาก ช่วยเขียน แปลภาษา วางแผน พร้อมค้นข้อมูลล่าสุดให้ก่อนตอบ" id="seo-ogd">
+<meta property="og:url" content="https://nivread.com/ai" id="seo-ogu">
+<meta property="og:locale" content="th_TH">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Nivread AI แชททั่วไป", "url": "https://nivread.com/ai", "description": "แชทกับ Nivread AI ผู้ช่วย AI ภาษาไทย ถามตอบได้ทุกเรื่อง อธิบายเรื่องยาก ช่วยเขียน แปลภาษา วางแผน พร้อมค้นข้อมูลล่าสุดให้ก่อนตอบ", "inLanguage": "th", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Web", "isPartOf": {"@type": "WebSite", "name": "Nivread", "url": "https://nivread.com"}}</script>
+<link rel="icon" href="/img/nivreadfavon.png" type="image/png">
+<link rel="apple-touch-icon" href="/img/nivreadfavon.png">
+<meta name="theme-color" content="#161616">
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --w: 50rem; }                       /* ความกว้างคอลัมน์อ่าน: ปรับค่าเดียวได้ทั้งหน้า */
+  body { font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; }
+  .hidden { display: none !important; }
+  :focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
+
+  /* คอลัมน์กลาง: พื้นที่เลื่อนเต็มจอ แต่เนื้อหาอยู่กลาง */
+  .col { padding-left: max(1rem, calc((100% - var(--w)) / 2)); padding-right: max(1rem, calc((100% - var(--w)) / 2)); }
+
+  /* ข้อความทั้งหมดใช้ฟอนต์อ่านยาว */
+  .read { font-family: 'Sarabun', 'Kanit', sans-serif; }
+
+  #log { overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(148,163,184,.35) transparent; }
+  #log > :first-child { margin-top: 0; }
+  .no-sb { scrollbar-width: none; } .no-sb::-webkit-scrollbar { display: none; }
+  .tab-on { color: #f59e0b !important; border-color: #f59e0b !important; }
+
+  .glass-card { background: rgba(255,255,255,.95); border: 1px solid rgba(226,232,240,.8); }
+  .dark .glass-card { background: #1f1f1f; border: 1px solid rgba(255,255,255,.1); }
+
+  footer, #main-footer, #site-footer, [id*="footer" i], [class*="site-footer" i], [class*="main-footer" i] { display: none !important; }
+  #main-header, body > nav { display: none !important; }
+  body { padding-bottom: 0 !important; padding-top: 0 !important; }
+
+  /* ---------- เนื้อหาตอบกลับของ AI (ไม่มีกรอบ) ---------- */
+  .md { color: #1e293b; }
+  .dark .md { color: #e7e5e4; }
+  .md > :first-child { margin-top: 0 } .md > :last-child { margin-bottom: 0 }
+  .md p { margin: .85em 0 }
+  .md ul, .md ol { margin: .8em 0; padding-left: 1.5rem }
+  .md ul { list-style: disc } .md ol { list-style: decimal }
+  .md li { margin: .3em 0; padding-left: .2rem } .md li > ul, .md li > ol { margin: .3em 0 }
+  .md li::marker { color: #94a3b8 }
+  .md h1, .md h2, .md h3, .md h4 { font-family: 'Kanit', sans-serif; font-weight: 500; line-height: 1.4; margin: 1.5em 0 .5em }
+  .md h1 { font-size: 1.45rem } .md h2 { font-size: 1.25rem } .md h3 { font-size: 1.1rem } .md h4 { font-size: 1rem }
+  .md strong { font-weight: 600 }
+  .md a { color: #d97706; text-decoration: underline; text-underline-offset: 3px }
+  .md hr { border: 0; border-top: 1px solid rgba(148,163,184,.3); margin: 1.6em 0 }
+  .md blockquote { margin: 1em 0; padding: .1em 0 .1em 1rem; border-left: 3px solid rgba(245,158,11,.6); color: #64748b }
+  .dark .md blockquote { color: #a8a29e }
+  .md code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em; background: rgba(148,163,184,.18); padding: .12em .4em; border-radius: .4rem }
+  .md pre { margin: 1em 0; background: rgba(148,163,184,.12); border: 1px solid rgba(148,163,184,.25); padding: .9rem 1rem; border-radius: .9rem; overflow-x: auto; line-height: 1.6 }
+  .md pre code { background: none; padding: 0; font-size: .85em }
+  .md table { display: block; overflow-x: auto; border-collapse: collapse; max-width: 100%; margin: 1em 0 }
+  .md th, .md td { border: 1px solid rgba(148,163,184,.35); padding: .45rem .8rem; text-align: left; font-size: .95em }
+  .md th { background: rgba(148,163,184,.12); font-weight: 600 }
+
+  /* จุดเรืองแสงท้ายข้อความขณะกำลังพิมพ์ */
+  .md.streaming > :last-child::after { content: ''; display: inline-block; width: .55em; height: .55em; margin-left: .35em; border-radius: 50%; background: #f59e0b; vertical-align: baseline; animation: pulse-dot 1s ease-in-out infinite; }
+  @keyframes pulse-dot { 0%,100% { opacity: .25; transform: scale(.8) } 50% { opacity: 1; transform: scale(1) } }
+
+
+  /* ---------- การ์ดข้อมูล: กราฟ / ตัวเลขสรุป / schema / ตาราง ---------- */
+  .md .dcard { margin: 1.3em 0; background: #fff; border: 1px solid rgba(148,163,184,.3); border-radius: 1.1rem; box-shadow: 0 1px 2px rgba(15,23,42,.05), 0 8px 24px -14px rgba(15,23,42,.2); overflow: hidden; font-size: .9rem; line-height: 1.5 }
+  .dark .md .dcard { background: #1c1c1c; border-color: rgba(255,255,255,.09); box-shadow: none }
+  .md .dcard.tint { background: #f8fafc } .dark .md .dcard.tint { background: #191919 }
+  .dcard-h { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .85rem .8rem .25rem 1.1rem; min-height: 2.9rem }
+  .dcard-h.ln { border-bottom: 1px solid rgba(148,163,184,.22); padding-bottom: .8rem }
+  .dcard-t { display: flex; align-items: center; gap: .55rem; min-width: 0; font-family: 'Kanit', sans-serif; font-weight: 500; font-size: .93rem }
+  .dcard-t svg { color: #f59e0b; flex-shrink: 0 }
+  .dcard-t .tt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+  .dcard-tools { display: flex; align-items: center; gap: .3rem; flex-shrink: 0 }
+  .dcard-btn { display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .55rem; border-radius: .6rem; font-size: .78rem; color: #94a3b8; cursor: pointer }
+  .dcard-btn:hover { background: rgba(148,163,184,.2); color: #0f172a }
+  .dark .dcard-btn:hover { color: #fff }
+  .dcard-search { width: 9.5rem; background: transparent; color: inherit; border: 1px solid rgba(148,163,184,.4); border-radius: .6rem; padding: .3rem .65rem; font-size: .8rem; outline: none }
+  .dcard-search:focus { border-color: #f59e0b }
+  .dcard-scroll { overflow: auto; max-height: 24rem }
+  .chip { display: inline-block; padding: .12rem .5rem; border-radius: .45rem; background: rgba(148,163,184,.2); color: #475569; font-size: .72rem; font-weight: 600; white-space: nowrap; line-height: 1.5 }
+  .dark .chip { color: #cbd5e1 }
+  .chip.up { background: #d1fae5; color: #047857 } .dark .chip.up { background: rgba(16,185,129,.18); color: #6ee7b7 }
+  .chip.down { background: #fee2e2; color: #b91c1c } .dark .chip.down { background: rgba(239,68,68,.18); color: #fca5a5 }
+  .chip.mono { font-family: ui-monospace, Menlo, monospace; font-weight: 500 }
+  .chip.ind { background: #e0e7ff; color: #4338ca; font-family: ui-monospace, Menlo, monospace; font-weight: 500 }
+  .dark .chip.ind { background: rgba(99,102,241,.22); color: #a5b4fc }
+
+  .md .dcard table { display: table; width: 100%; margin: 0; border-collapse: collapse }
+  .md .dcard th, .md .dcard td { border: 0; border-bottom: 1px solid rgba(148,163,184,.18); padding: .6rem 1rem; white-space: nowrap; font-size: .9rem }
+  .md .dcard tbody tr:last-child td { border-bottom: 0 }
+  .md .dcard tbody tr:hover { background: rgba(148,163,184,.08) }
+  .md .dcard th { position: sticky; top: 0; background: #f1f5f9; font-weight: 500; cursor: pointer; user-select: none; color: #475569 }
+  .dark .md .dcard th { background: #232323; color: #a8a29e }
+  .md .dcard th[data-dir="asc"]::after { content: ' ▲'; font-size: .65em; color: #f59e0b }
+  .md .dcard th[data-dir="desc"]::after { content: ' ▼'; font-size: .65em; color: #f59e0b }
+
+  .md .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)); gap: .75rem; margin: 1.3em 0 }
+  .md .stat { background: #f8fafc; border: 1px solid rgba(148,163,184,.3); border-radius: 1.1rem; padding: .95rem 1.1rem; box-shadow: 0 1px 2px rgba(15,23,42,.04) }
+  .dark .md .stat { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.09); box-shadow: none }
+  .md .stat small { display: block; color: #64748b; font-size: .82rem } .dark .md .stat small { color: #a8a29e }
+  .md .stat .row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .3rem .6rem; margin-top: .5rem }
+  .md .stat .chip { white-space: normal; text-align: right }
+  .md .stat strong { font-family: 'Kanit', sans-serif; font-weight: 600; font-size: 1.55rem; line-height: 1.2 }
+
+  .md .schema-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; padding: .7rem 1rem 1rem }
+  @media (max-width: 560px) { .md .schema-grid { grid-template-columns: 1fr } }
+  .md .schema-f { background: #fff; border: 1px solid rgba(148,163,184,.3); border-radius: .85rem; padding: .7rem .85rem }
+  .dark .md .schema-f { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.09) }
+  .md .schema-f .top { display: flex; align-items: center; justify-content: space-between; gap: .5rem }
+  .md .schema-f code { background: none; padding: 0; font-weight: 600; font-size: .86rem }
+  .md .schema-f p { margin: .35rem 0 0; font-size: .8rem; color: #64748b } .dark .md .schema-f p { color: #a8a29e }
+
+  .md > .dcard:first-child, .md > .stats:first-child { margin-top: 0 }
+  .md > .dcard:last-child, .md > .stats:last-child { margin-bottom: 0 }
+
+  .dark select, .dark input[type="time"] { color-scheme: dark; }
+  .bf-row { display: grid; grid-template-columns: 4.75rem 1fr 6.75rem; gap: .5rem }
+  .bf-fld { height: 2.9rem; width: 100%; border: 1px solid rgba(148,163,184,.5); border-radius: .9rem; background: #fff; color: inherit; padding: 0 .75rem; font-size: 16px; outline: none; font-family: 'Sarabun', sans-serif }
+  .dark .bf-fld { background: #1f1f1f; border-color: rgba(255,255,255,.15) }
+  .bf-fld:focus { border-color: #f59e0b }
+  .pill { padding: .45rem .95rem; border-radius: 9999px; border: 1px solid rgba(148,163,184,.5); font-size: .92rem; color: #475569; cursor: pointer; transition: border-color .15s, background .15s }
+  .dark .pill { color: #d6d3d1; border-color: rgba(255,255,255,.2) }
+  .pill:hover { border-color: #f59e0b }
+  .pill[aria-pressed="true"] { background: #f59e0b; border-color: #f59e0b; color: #fff }
+  /* ---------- ไพ่ทาโรต์ ---------- */
+  .tslot { flex: 1; max-width: 8.5rem; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: .55rem }
+  [data-n="1"] .tslot { max-width: 10rem }
+  .tlabel { font-size: .8rem; color: #64748b } .dark .tlabel { color: #a8a29e }
+  .tcard { position: relative; display: block; width: 100%; aspect-ratio: 2 / 3.3; perspective: 900px; background: none; border: 0; padding: 0; cursor: pointer; border-radius: .8rem }
+  .tcard-in { position: absolute; inset: 0; display: block; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2,.7,.2,1) }
+  .tcard.on .tcard-in { transform: rotateY(180deg) }
+  .tcard:not(.on):hover .tcard-in { transform: translateY(-5px) }
+  .tface { position: absolute; inset: 0; display: block; border-radius: .8rem; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 6px 18px -8px rgba(15,10,40,.55) }
+  .tback { background: repeating-conic-gradient(from 0deg at 50% 50%, #2a2050 0 10deg, #1a1433 10deg 20deg); border: 1px solid rgba(212,166,74,.65) }
+  .tback::before { content: ''; position: absolute; inset: 5px; border: 1px solid rgba(212,166,74,.35); border-radius: .55rem }
+  .tback::after { content: ''; position: absolute; left: 50%; top: 50%; width: 30%; aspect-ratio: 1; transform: translate(-50%,-50%) rotate(45deg); border: 1px solid #d4a64a; background: radial-gradient(circle, #e9c46a 0 16%, transparent 18%), #1a1433 }
+  .tfront { transform: rotateY(180deg); display: flex !important; flex-direction: column; align-items: center; justify-content: space-between; padding: .7rem .35rem .55rem; text-align: center; color: #f3e3b6;
+    background: radial-gradient(120% 70% at 50% 0%, hsla(var(--h), 70%, 55%, .38), transparent 62%), linear-gradient(165deg, #1d1736, #120e22); border: 1px solid rgba(212,166,74,.6) }
+  .tfront::before { content: ''; position: absolute; inset: 4px; border: 1px solid rgba(212,166,74,.28); border-radius: .55rem; pointer-events: none }
+  .tring { width: 64%; aspect-ratio: 1; margin-top: .3rem; border-radius: 50%; border: 1px solid rgba(212,166,74,.5); display: grid; place-items: center; background: radial-gradient(circle, hsla(var(--h), 70%, 55%, .28), transparent 70%) }
+  .tn { font-family: 'Kanit', sans-serif; font-weight: 500; font-size: clamp(1.1rem, 4.6vw, 1.7rem); color: #e9c46a; line-height: 1 }
+  .tn.rev { transform: rotate(180deg) }
+  .ttxt { display: block; position: relative }
+  .tth { display: block; font-family: 'Kanit', sans-serif; font-weight: 500; font-size: .76rem; line-height: 1.25 }
+  .ten { display: block; margin-top: .15rem; font-size: .5rem; letter-spacing: .08em; text-transform: uppercase; opacity: .7; line-height: 1.3 }
+  .trev { display: inline-block; margin-top: .25rem; font-size: .58rem; padding: .05rem .4rem; border-radius: .4rem; background: rgba(212,166,74,.22); color: #f3d58a }
+  .tstrip { display: flex; gap: .6rem; justify-content: flex-end; flex-wrap: wrap }
+  .tslot.sm { flex: none; width: 5.4rem }
+  .tcard.static { cursor: default; pointer-events: none }
+  .tcard.static .tcard-in { transform: none; transition: none }
+  .tcard.static .tfront { transform: none }
+  .tcard.static .tth { font-size: .66rem } .tcard.static .ten { display: none } .tcard.static .tn { font-size: 1.15rem }
+  @media (prefers-reduced-motion: reduce) { .tcard-in { transition: none } .tcard:not(.on):hover .tcard-in { transform: none } }
+  /* ---------- การ์ดดวงสรุป ---------- */
+  .md .fwrap { max-width: 26rem; margin: 1.3em 0 }
+  .md .fcard { position: relative; border-radius: 1.3rem; padding: 1.3rem 1.35rem 1rem; color: #f3e3b6; border: 1px solid rgba(212,166,74,.5);
+    background: radial-gradient(110% 70% at 0% 0%, rgba(245,158,11,.28), transparent 60%), radial-gradient(90% 70% at 100% 100%, rgba(99,102,241,.3), transparent 60%), linear-gradient(160deg, #1d1736, #120e22); box-shadow: 0 10px 30px -16px rgba(15,10,40,.7) }
+  .md .fcard::before { content: ''; position: absolute; inset: 5px; border: 1px solid rgba(212,166,74,.22); border-radius: 1rem; pointer-events: none }
+  .fcard .ft { font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 1.3rem; color: #e9c46a; line-height: 1.35 }
+  .fcard .fsub { margin-top: .2rem; font-size: .88rem; color: #cbbd96 }
+  .fcard .frows { margin-top: 1rem; display: grid; gap: .5rem }
+  .fcard .frow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-size: .98rem }
+  .fcard .stars { display: inline-flex; gap: .2rem; color: #e9c46a }
+  .fcard .stars svg { width: 1.05rem; height: 1.05rem } .fcard .stars .off { opacity: .25 }
+  .fcard .fchips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem }
+  .fcard .fchip { border: 1px solid rgba(212,166,74,.55); border-radius: 9999px; padding: .2rem .8rem; font-size: .86rem }
+  .fcard .fchip b { font-weight: 400; color: #cbbd96; margin-right: .4rem }
+  .md .fcard .fmsg { margin: 1rem 0 0; font-size: 1rem; line-height: 1.8; color: #f3e3b6 }
+  .fcard .ffoot { margin-top: 1.1rem; padding-top: .7rem; border-top: 1px solid rgba(212,166,74,.25); display: flex; justify-content: space-between; align-items: center; font-size: .72rem; color: #a99d7b }
+  .fcard .ffoot b { font-weight: 500; color: #e9c46a; font-size: .82rem }
+  .ftools { display: flex; gap: .25rem; margin-top: .45rem; margin-left: -.4rem }
+  .md > .fwrap:first-child { margin-top: 0 } .md > .fwrap:last-child { margin-bottom: 0 }
+  /* ---------- เมนูป๊อปอัป (+ และ ⋮) ---------- */
+  .menu { background: #fff; border: 1px solid rgba(148,163,184,.35); border-radius: 1.1rem; box-shadow: 0 14px 38px -14px rgba(15,23,42,.38); padding: .4rem }
+  .dark .menu { background: #1f1f1f; border-color: rgba(255,255,255,.1); box-shadow: 0 14px 38px -14px rgba(0,0,0,.75) }
+  .mitem { display: flex; align-items: center; gap: .75rem; width: 100%; padding: .55rem .75rem; border-radius: .8rem; text-align: left; cursor: pointer; font-size: .95rem }
+  .mitem:hover, .mitem:focus-visible { background: rgba(148,163,184,.18) }
+  .mitem b { display: block; font-weight: 500; line-height: 1.3 }
+  .mitem small { display: block; margin-top: .05rem; font-size: .75rem; color: #94a3b8 }
+  .mitem .chk { margin-left: auto; opacity: 0; display: flex }
+  .mitem.tab-on .chk { opacity: 1 }
+  #more-btn { position: relative }
+  #more-btn[data-e]::after { content: ''; position: absolute; top: .45rem; right: .45rem; width: .55rem; height: .55rem; border-radius: 50% }
+  #more-btn[data-e="low"]::after { background: #f59e0b } #more-btn[data-e="zero"]::after { background: #ef4444 }
+  @media (prefers-reduced-motion: reduce) { .animate-pulse, .md.streaming > :last-child::after { animation: none } }
+</style>
+</head>
+<body class="bg-[#fafafa] text-slate-900 dark:bg-[#161616] dark:text-white h-dvh flex flex-col relative overflow-hidden">
+
+<script>
+  // ลบแถบเมนู/footer ล่างที่ /nivread.js ฉีดเข้ามา โดยจับจากลักษณะ (ลอยติดขอบล่างจอ) ไม่ผูกกับชื่อ
+  (() => {
+    const SKIP = (el) => el.tagName === 'MAIN' || el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'LINK' || el.id === 'clr-modal';
+    const atBottom = (el) => {
+      const cs = getComputedStyle(el);
+      if (cs.position !== 'fixed' && cs.position !== 'sticky') return false;
+      const r = el.getBoundingClientRect();
+      return r.height > 0 && r.top > innerHeight * 0.55 && r.bottom >= innerHeight - 8;
+    };
+    const nameHit = (el) => el.tagName === 'FOOTER' || el.tagName === 'NAV' || /foot|bottom|tab-?bar|mobile-?nav/i.test(el.id + ' ' + el.className);
+    const sweep = () => {
+      [...document.body.children].forEach((el) => {
+        if (SKIP(el) || el.id === 'main-header') return;
+        if (nameHit(el) || atBottom(el)) { el.remove(); return; }
+        el.querySelectorAll('*').forEach((d) => { if (atBottom(d)) d.remove(); });
+      });
+      document.body.style.paddingBottom = '0';
+    };
+    let q = 0; const later = () => { if (!q) q = requestAnimationFrame(() => { q = 0; sweep(); }); };
+    new MutationObserver(later).observe(document.body, { childList: true, subtree: true });
+    document.addEventListener('DOMContentLoaded', later); window.addEventListener('load', later); window.addEventListener('resize', later);
+    setTimeout(sweep, 500); setTimeout(sweep, 1500);
+  })();
+</script>
+<header id="main-header" class="z-20 shrink-0"></header>
+
+<main class="flex-1 min-h-0 z-10 w-full flex flex-col">
+
+  <!-- แถบบน: ย้อนกลับ + ชื่อโหมด + เมนู ⋮ (พลังงาน / ล้างแชท) -->
+  <div class="col shrink-0 flex items-center gap-2 h-14 border-b border-slate-200 dark:border-white/10">
+    <button type="button" id="back-btn" aria-label="กลับ" class="shrink-0 -ml-2 w-9 h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 6 10l6 6"/></svg>
+    </button>
+    <div id="mode-name" class="flex-1 min-w-0 truncate text-[15px] font-medium">คุยทั่วไป</div>
+    <div class="relative shrink-0 -mr-2">
+      <button type="button" id="more-btn" aria-label="เมนูเพิ่มเติม" aria-haspopup="menu" aria-expanded="false" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="10" cy="4" r="1.7"/><circle cx="10" cy="10" r="1.7"/><circle cx="10" cy="16" r="1.7"/></svg>
+      </button>
+      <div id="more-menu" role="menu" aria-label="เมนูเพิ่มเติม" class="menu hidden absolute right-0 top-full mt-2 w-64 z-30">
+        <a id="menu-login" href="/login?redirect=/ai" data-login role="menuitem" class="mitem hidden"><span><b>เข้าสู่ระบบ</b><small>เพื่อเริ่มคุยกับ AI</small></span></a>
+        <div id="menu-acct" class="px-3 pt-2 pb-2">
+          <div class="text-xs text-slate-500 dark:text-neutral-400">พลังงานคงเหลือ</div>
+          <div id="energy" class="mt-0.5 text-2xl font-semibold tabular-nums text-amber-500">…</div>
+          <div id="energy-sub" class="mt-1 text-xs text-slate-400 dark:text-neutral-500"></div>
+          <p class="mt-2 text-xs leading-relaxed text-slate-400 dark:text-neutral-500">พิมพ์สั้น ๆ ใช้พลังงานน้อยกว่า</p>
+        </div>
+        <div class="menu-acct my-1 h-px bg-slate-200 dark:bg-white/10"></div>
+        <label id="mask-row" class="mitem hidden"><span><b>ปิดบังข้อมูลส่วนตัว</b><small>เลขบัตร เบอร์โทร อีเมล</small></span><input id="mask" type="checkbox" checked class="ml-auto w-4 h-4 accent-amber-500"></label>
+        <label id="peek-row" class="mitem hidden"><span><b>ดูก่อนส่งให้ AI</b><small>แสดงข้อความที่จะถูกส่งออกไป</small></span><input id="peek" type="checkbox" checked class="ml-auto w-4 h-4 accent-amber-500"></label>
+        <button id="clear-btn" type="button" role="menuitem" class="mitem text-red-500">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2M6 6l.7 10h6.6L14 6M9 9v4M11 9v4"/></svg>
+          <span>ล้างแชทโหมดนี้</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- พื้นที่ข้อความ: เลื่อนเต็มจอ ข้อความ AI ไม่มีกรอบ -->
+  <div id="log" class="col read flex-1 min-h-0 overflow-y-auto flex flex-col pt-6 pb-8" aria-live="polite"><div id="intro" class="my-auto shrink-0 pb-10"><h1 class="text-2xl sm:text-3xl font-medium tracking-tight">แชท AI ภาษาไทย ถามอะไรก็ได้</h1><p class="mt-3 max-w-xl text-[15px] leading-relaxed text-slate-500 dark:text-neutral-400">ช่วยคิด ช่วยเขียน ช่วยอธิบาย หรือแค่คุยเล่น เรื่องที่เปลี่ยนบ่อย เช่น ข่าวและราคา จะค้นข้อมูลล่าสุดให้ก่อนตอบ</p><ul class="mt-8 divide-y divide-slate-200 dark:divide-white/10 border-y border-slate-200 dark:border-white/10"><li class="py-3.5 text-[15px] text-slate-700 dark:text-neutral-200">ช่วยวางแผนวันนี้ให้หน่อย</li><li class="py-3.5 text-[15px] text-slate-700 dark:text-neutral-200">อธิบายดอกเบี้ยทบต้นให้เข้าใจง่าย</li><li class="py-3.5 text-[15px] text-slate-700 dark:text-neutral-200">ช่วยตรวจและแก้ภาษาข้อความนี้</li><li class="py-3.5 text-[15px] text-slate-700 dark:text-neutral-200">แนะนำวิธีจำคำศัพท์ภาษาอังกฤษ</li></ul></div></div>
+
+  <!-- ช่องพิมพ์ลอยด้านล่าง -->
+  <div class="col shrink-0 pt-2" style="padding-bottom:max(.5rem,env(safe-area-inset-bottom))">
+    <div id="docs-bar" class="hidden mb-2"><div id="att" class="flex gap-2 overflow-x-auto pb-1"></div></div>
+    <form id="form" class="flex items-end gap-2 rounded-[1.75rem] border border-slate-300 dark:border-white/15 bg-white dark:bg-[#1f1f1f] pl-2 pr-2 py-2 shadow-[0_2px_12px_rgba(15,23,42,.06)] dark:shadow-none transition-colors focus-within:border-amber-500/70">
+      <div class="relative shrink-0">
+        <button id="plus-btn" type="button" aria-label="เลือกโหมด" aria-haspopup="menu" aria-expanded="false" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
+        </button>
+        <div id="plus-menu" role="menu" aria-label="โหมดการคุย" class="menu hidden absolute left-0 bottom-full mb-3 w-64 z-30">
+          <div class="px-3 pt-1.5 pb-1.5 text-xs text-slate-500 dark:text-neutral-400">โหมดการคุย</div>
+          <button type="button" role="menuitemradio" aria-checked="true" data-tab="general" class="mitem">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h12a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>
+            <span><b>คุยทั่วไป</b><small>ถามได้ทุกเรื่อง</small></span><i class="chk" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14.5 16 6"/></svg></i>
+          </button>
+          <button type="button" role="menuitemradio" aria-checked="false" data-tab="docs" class="mitem">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h6l4 4v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M12 3v4h4M8 11h5M8 14h5"/></svg>
+            <span><b>จัดเอกสาร</b><small>สรุป ร่าง ปรับสำนวน</small></span><i class="chk" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14.5 16 6"/></svg></i>
+          </button>
+          <button type="button" role="menuitemradio" aria-checked="false" data-tab="fortune" class="mitem">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 12.5A7 7 0 1 1 7.5 4a5.5 5.5 0 0 0 8.5 8.5z"/></svg>
+            <span><b>ดูดวง</b><small>วันเกิด ไพ่ทาโรต์</small></span><i class="chk" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14.5 16 6"/></svg></i>
+          </button>
+        </div>
+      </div>
+      <button id="att-btn" type="button" aria-label="แนบไฟล์" title="แนบไฟล์" class="hidden shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 9-6.2 6.2a3.3 3.3 0 0 1-4.7-4.7L11.6 4a2.2 2.2 0 0 1 3.1 3.1l-6.5 6.5a1.1 1.1 0 0 1-1.6-1.6L12 7.3"/></svg></button>
+      <input id="file" type="file" multiple accept=".txt,.md,.csv,.json,.html,.docx,.pdf,.png,.jpg,.jpeg,.webp" class="hidden">
+      <textarea id="input" rows="1" aria-label="ข้อความ" class="read flex-1 min-w-0 bg-transparent outline-none resize-none max-h-48 px-1 py-2 leading-relaxed placeholder:text-slate-400 dark:placeholder:text-neutral-500" style="font-size:16px"></textarea>
+      <button id="stop" type="button" aria-label="หยุด" class="hidden shrink-0 w-10 h-10 rounded-full border border-slate-300 dark:border-white/20 text-slate-700 dark:text-white flex items-center justify-center hover:border-red-500 hover:text-red-500 cursor-pointer">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="2"/></svg>
+      </button>
+      <button id="send" type="submit" aria-label="ส่ง" class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white bg-gradient-to-br from-amber-500 to-orange-500 hover:brightness-105 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer" disabled>
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 16V4M4.5 9.5 10 4l5.5 5.5"/></svg>
+      </button>
+    </form>
+    <p class="mt-2 text-center text-[11px] text-slate-400 dark:text-neutral-500">AI อาจตอบผิดพลาด โปรดตรวจสอบข้อมูลสำคัญอีกครั้ง<span id="cc" class="ml-3 tabular-nums"></span></p>
+  </div>
+</main>
+
+<div id="view-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="vm-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative glass-card w-full max-w-5xl h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="vm-title">
+    <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-200 dark:border-white/10">
+      <h2 id="vm-title" class="font-medium truncate"></h2>
+      <button id="vm-close" type="button" aria-label="ปิด" class="shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg>
+      </button>
+    </div>
+    <div id="vm-body" class="relative flex-1 min-h-0 p-4"></div>
+  </div>
+</div>
+
+<div id="clr-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="clr-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative glass-card w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+    <h2 class="text-lg font-bold">ล้างแชทโหมดนี้</h2>
+    <p class="text-sm text-slate-600 dark:text-neutral-300 mt-3 leading-relaxed">ข้อความและความจำของโหมด<b id="clr-mode"></b>จะถูกลบทั้งหมด กู้คืนไม่ได้</p>
+    <div class="pt-6 flex gap-3">
+      <button id="clr-cancel" type="button" class="w-1/2 py-3 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 font-semibold text-sm cursor-pointer">ยกเลิก</button>
+      <button id="clr-ok" type="button" class="w-1/2 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 cursor-pointer">ล้างแชท</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="/nivread.js"></script>
+<script>
+(() => {
+  const s = NIV.session() || {};
+  const LOGGED_IN = !!(s.token && s.userId);          // ยังไม่ล็อกอินก็เปิดหน้าแชทได้ แต่ส่งข้อความไม่ได้
+  const LOGIN_URL = '/login?redirect=' + encodeURIComponent(location.pathname);
+  const API = 'https://api.fnnz.art/api/ai', Q = 'app=nivread';   // ถ้า NIV มีค่า base URL ของ API อยู่แล้ว ให้ใช้ค่านั้นแทน
+  const H = LOGGED_IN ? { Authorization: 'Bearer ' + s.token } : {};
+  const $ = (id) => document.getElementById(id);
+  const log = $('log'), input = $('input'), sendBtn = $('send'), stopBtn = $('stop'), form = $('form'), energyEl = $('energy');
+
+  const MODES = {
+    general: { name: 'คุยทั่วไป', max: 2000, ph: 'พิมพ์ข้อความ...', title: 'ถามอะไรก็ได้', hi: 'ช่วยคิด ช่วยเขียน ช่วยอธิบาย หรือแค่คุยเล่น เรื่องที่เปลี่ยนบ่อย เช่น ข่าวและราคา จะค้นข้อมูลล่าสุดให้ก่อนตอบ',
+      chips: ['ช่วยวางแผนวันนี้ให้หน่อย', 'อธิบายดอกเบี้ยทบต้นให้เข้าใจง่าย', 'ช่วยตรวจและแก้ภาษาข้อความนี้', 'แนะนำวิธีจำคำศัพท์ภาษาอังกฤษ'] },
+    docs: { name: 'จัดเอกสาร', max: 8000, ph: 'พิมพ์ข้อความ...', title: 'วางข้อความ แล้วบอกว่าจะให้ทำอะไร', hi: 'สรุป จัดหัวข้อ ปรับสำนวน หรือจัดหมวดไฟล์ วางข้อความ หรือกดปุ่มคลิปเพื่อแนบไฟล์',
+      chips: ['ร่างอีเมลขอเลื่อนนัดประชุมให้สุภาพ', 'จัดโน้ตประชุมเป็นรายงานพร้อมสิ่งที่ต้องทำ', 'เขียนจดหมายลากิจแบบเป็นทางการ', 'สรุปข้อความที่จะวางให้เหลือ 5 ข้อ'] },
+    fortune: { name: 'ดูดวง', max: 2000, ph: 'พิมพ์ข้อความ...', title: 'ดูดวงเพื่อความบันเทิง', hi: 'กรอกวันเกิด ระบบจะคำนวณวัน ราศี และปีนักษัตรให้ แล้วให้ AI ตีความ ใช้เป็นแนวคิดประกอบ ไม่ใช่คำตัดสิน',
+      chips: ['ดูดวงรายวันของวันนี้', 'ดวงการงานของคนเกิดวันจันทร์', 'เปิดไพ่ทาโรต์ 3 ใบเรื่องความรัก', 'ขอเลขมงคลประจำสัปดาห์นี้'] },
+  };
+  // SEO ต่อโหมด: แต่ละโหมดมี URL / title / description ของตัวเอง (ไฟล์ HTML แต่ละหน้าใส่ไว้แล้ว ส่วนนี้ใช้ตอนสลับโหมดในหน้า)
+  const SITE = 'https://nivread.com';
+  const SEO = {"general": {"title": "Nivread AI แชท AI ภาษาไทย ถามตอบได้ทุกเรื่อง | nivread", "desc": "แชทกับ Nivread AI ผู้ช่วย AI ภาษาไทย ถามตอบได้ทุกเรื่อง อธิบายเรื่องยาก ช่วยเขียน แปลภาษา วางแผน พร้อมค้นข้อมูลล่าสุดให้ก่อนตอบ", "og": "Nivread AI - แชท AI ภาษาไทย ถามได้ทุกเรื่อง", "h1": "แชท AI ภาษาไทย ถามอะไรก็ได้"}, "docs": {"title": "จัดเอกสารด้วย AI สรุป ย่อความ ร่างอีเมล ปรับสำนวนทางการ | Nivread AI", "desc": "ให้ Nivread AI ช่วยจัดเอกสารภาษาไทย สรุปและย่อความ จัดหัวข้อ ปรับสำนวนให้เป็นทางการ ร่างอีเมล จดหมาย รายงานการประชุม วางข้อความได้ครั้งละประมาณ 8,000 ตัวอักษร", "og": "จัดเอกสารด้วย AI - สรุป ร่างอีเมล ปรับสำนวน | Nivread AI", "h1": "จัดเอกสารด้วย AI สรุป ร่างอีเมล ปรับสำนวน"}, "fortune": {"title": "ดูดวงออนไลน์ ดวงรายวัน ไพ่ทาโรต์ ตามวันเกิดและราศี | Nivread AI", "desc": "ดูดวงออนไลน์กับ Nivread AI กรอกวันเกิดเพื่อดูดวงรายวัน ความรัก การงาน การเงิน พร้อมเปิดไพ่ทาโรต์และเลขมงคล เพื่อความบันเทิง ใช้ประกอบการตัดสินใจเท่านั้น", "og": "ดูดวงออนไลน์ ดวงรายวัน ไพ่ทาโรต์ | Nivread AI", "h1": "ดูดวงออนไลน์ ตามวันเกิดและไพ่ทาโรต์"}};
+  // หน้าเดียวเหมือน fnnz (/ai/chat?c=ชื่อ): โหมดอยู่ใน query → /ai?mode=docs ฐาน path ใช้ของหน้าปัจจุบันเสมอ
+  const BASE = location.pathname.replace(/\/+$/, '') || '/ai';
+  const pathOf = (m) => BASE + (m === 'general' ? '' : '?mode=' + m);
+  function applySeo(m) {
+    const d = SEO[m]; if (!d) return;
+    document.title = d.title;
+    const set = (id, attr, v) => { const el = $(id); if (el) el.setAttribute(attr, v); };
+    set('seo-desc', 'content', d.desc); set('seo-canon', 'href', SITE + pathOf(m));
+    set('seo-ogt', 'content', d.og); set('seo-ogd', 'content', d.desc); set('seo-ogu', 'content', SITE + pathOf(m));
+  }
+  const tabs = [...document.querySelectorAll('[data-tab]')];
+  let mode = 'general', ctrl = null, busy = false, loadId = 0, stick = true;
+
+  // รูปแบบข้อความ: ผู้ใช้ = กล่องเทาอ่อนชิดขวา / AI = ข้อความเต็มคอลัมน์ ไม่มีกรอบ
+  const BUB = {
+    user: 'ml-auto max-w-[85%] w-fit rounded-3xl bg-slate-200/70 dark:bg-white/10 px-4 py-2.5 text-[16px] leading-relaxed whitespace-pre-wrap',
+    assistant: 'md w-full text-[16px] sm:text-[17px] leading-[1.85]',
+    err: 'w-full border-l-2 border-red-500/70 pl-3 text-[15px] leading-relaxed text-red-500',
+  };
+  const nearBottom = () => log.scrollHeight - log.scrollTop - log.clientHeight < 120;
+  log.addEventListener('scroll', () => { stick = nearBottom(); });
+  // เลื่อนตามเฉพาะตอนผู้ใช้อยู่ท้ายแชท ถ้าเลื่อนขึ้นไปอ่านจะไม่ดึงกลับ
+  const scrollEnd = () => requestAnimationFrame(() => { if (stick) log.scrollTop = log.scrollHeight; });
+
+  // เอกสารต้องไม่มีคำลงท้ายแบบสนทนา (ครับ/ค่ะ/คะ): สั่ง AI ไม่ให้ใส่ และตัดทิ้งอีกชั้นตอนแสดงผล/ส่งออก
+  const DOC_RULE = '\n(เขียนเป็นเนื้อเอกสารทางการ ห้ามใส่คำลงท้าย ครับ ค่ะ คะ ห้ามทักทายหรือพูดกับผู้อ่าน ไม่ต้องมีคำเกริ่นหรือคำปิดท้าย)';
+  const tidy = (t) => t.replace(/(?:ครับ|ค่ะ|คะ)(?=[\s.!?…]|$)/gm, '').replace(/\sนะ(?=[\s.!?…]|$)/gm, '').replace(/[ \t]+$/gm, '');
+  function setText(b, role, text, live, m) {
+    if (role === 'assistant') {
+      if (m === 'docs') text = tidy(text);
+      // โหมดดูดวงไม่แสดงกราฟ/การ์ดข้อมูล: ตัดบล็อกพิเศษทิ้งทั้งหมด
+      if (m === 'fortune') {
+        text = text.replace(/```(chart|stats|schema)[\s\S]*?(```|$)/g, '');
+        if (live) text = text.replace(/```fortune[\s\S]*?(```|$)/g, '\n\n*กำลังสรุปการ์ดดวง…*\n\n');
+        else text = text.replace(/```fortune(?:(?!```)[\s\S])*$/, '');
+      }
+      // โหมดอื่นระหว่างสตรีม ซ่อนบล็อกที่ยังไม่เสร็จไว้ก่อน แล้วค่อยวาดตอนจบ
+      else if (live) text = text.replace(/```(chart|stats|schema)[\s\S]*?(```|$)/g, '\n\n*กำลังเตรียมข้อมูลสรุป…*\n\n');
+    }
+    if (role === 'assistant' && window.marked && window.DOMPurify) b.innerHTML = DOMPurify.sanitize(marked.parse(text, { breaks: true }));
+    else b.textContent = text;
+  }
+
+
+  // ---------- การ์ดข้อมูล: กราฟ / ตัวเลขสรุป / schema / ตารางโต้ตอบ ----------
+  const PAL = ['#0ea5e9', '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#ef4444', '#84cc16', '#8b5cf6'];
+  const isDark = () => document.documentElement.classList.contains('dark');
+  const cols = () => (isDark() ? { text: '#a8a29e', grid: 'rgba(255,255,255,.07)' } : { text: '#64748b', grid: 'rgba(15,23,42,.08)' });
+  const cardBg = () => (isDark() ? '#1c1c1c' : '#ffffff');
+  const SV = (d, n) => '<svg width="' + (n || 14) + '" height="' + (n || 14) + '" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  const ICON = {
+    dl: SV('<path d="M10 3v9m0 0-3.5-3.5M10 12l3.5-3.5M4 15v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1"/>'),
+    ex: SV('<path d="M12 3h5v5M8 17H3v-5M17 3l-5.5 5.5M3 17l5.5-5.5"/>'),
+    bar: SV('<path d="M4 16V9M10 16V4M16 16v-5"/>', 17),
+    line: SV('<path d="M3 16h14M4 12l4-4 3 3 5-6"/>', 17),
+    pie: SV('<path d="M10 3v7h7"/><path d="M17 10a7 7 0 1 1-7-7"/>', 17),
+    db: SV('<ellipse cx="10" cy="5" rx="6" ry="2.5"/><path d="M4 5v10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V5M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5"/>', 17),
+    tbl: SV('<rect x="3" y="4" width="14" height="12" rx="2"/><path d="M3 9h14M8 9v7"/>', 17),
+  };
+  const h = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  const titleEl = (icon, text, chip) => {
+    const t = h('div', 'dcard-t'); t.innerHTML = icon; t.appendChild(h('span', 'tt', text));
+    if (chip) t.appendChild(h('span', 'chip', chip)); return t;
+  };
+  const tool = (icon, label, title, fn) => {
+    const b = h('button', 'dcard-btn'); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.innerHTML = icon;
+    if (label) b.appendChild(h('span', null, label)); b.onclick = fn; return b;
+  };
+  const download = (href, name) => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+  let charts = [], vmChart = null;
+
+  function cleanChart(o) {
+    if (!o || typeof o !== 'object') return null;
+    const type = ['bar', 'line', 'pie', 'doughnut'].includes(o.type) ? o.type : 'bar';
+    const labels = (Array.isArray(o.labels) ? o.labels : []).slice(0, 60).map(String);
+    const datasets = (Array.isArray(o.datasets) ? o.datasets : []).slice(0, 8).map((d) => ({
+      label: String((d && d.label) || ''),
+      data: (Array.isArray(d && d.data) ? d.data : []).slice(0, 60).map((n) => { n = Number(n); return isFinite(n) ? n : 0; }),
+    }));
+    if (!labels.length || !datasets.length || !datasets.some((d) => d.data.length)) return null;
+    return { type, title: String(o.title || '').slice(0, 120), labels, datasets };
+  }
+  function applyTheme(ch) {
+    const c = cols(), o = ch.options, bg = cardBg();
+    if (o.plugins && o.plugins.legend && o.plugins.legend.labels) o.plugins.legend.labels.color = c.text;
+    if (o.scales) Object.values(o.scales).forEach((sc) => {
+      sc.ticks.color = c.text; if (sc.grid) sc.grid.color = c.grid; if (sc.border && sc.border.color) sc.border.color = c.grid;
+    });
+    ch.data.datasets.forEach((d) => { if (ch.config.type === 'pie' || ch.config.type === 'doughnut') d.borderColor = bg; else if (ch.config.type === 'line') d.pointBorderColor = bg; });
+    ch.update('none');
+  }
+  function makeChart(canvas, spec) {
+    const c = cols(), bg = cardBg(), pie = spec.type === 'pie' || spec.type === 'doughnut', line = spec.type === 'line', single = spec.datasets.length === 1;
+    Chart.defaults.font.family = "'Sarabun','Kanit',sans-serif"; Chart.defaults.font.size = 12;
+    const datasets = spec.datasets.map((d, i) => {
+      const col = PAL[i % PAL.length];
+      if (pie) return { label: d.label, data: d.data, backgroundColor: spec.labels.map((_, j) => PAL[j % PAL.length]), borderColor: bg, borderWidth: 3, hoverOffset: 8 };
+      if (line) return {
+        label: d.label, data: d.data, borderColor: col, borderWidth: 2.5, tension: .35, pointRadius: 4, pointHoverRadius: 6,
+        pointBackgroundColor: col, pointBorderColor: bg, pointBorderWidth: 2, fill: single,
+        backgroundColor: single ? (ctx) => {
+          const a = ctx.chart.chartArea; if (!a) return col + '22';
+          const g = ctx.chart.ctx.createLinearGradient(0, a.top, 0, a.bottom); g.addColorStop(0, col + '55'); g.addColorStop(1, col + '00'); return g;
+        } : col,
+      };
+      return { label: d.label, data: d.data, backgroundColor: col, borderRadius: 8, borderSkipped: false, maxBarThickness: 44 };
+    });
+    const opts = {
+      responsive: true, maintainAspectRatio: false,
+      animation: matchMedia('(prefers-reduced-motion: reduce)').matches ? false : { duration: 600 },
+      interaction: pie ? {} : { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: pie || datasets.length > 1, position: pie ? 'bottom' : 'top', align: pie ? 'center' : 'start',
+          labels: { color: c.text, usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10, boxHeight: 10, padding: 16 } },
+        tooltip: { backgroundColor: 'rgba(15,23,42,.94)', titleColor: '#fff', bodyColor: '#e2e8f0', padding: 10, cornerRadius: 10, boxPadding: 4 },
+      },
+      scales: pie ? {} : {
+        x: { ticks: { color: c.text }, grid: { display: false }, border: { color: c.grid } },
+        y: { ticks: { color: c.text }, grid: { color: c.grid }, border: { display: false }, beginAtZero: true },
+      },
+    };
+    if (spec.type === 'doughnut') opts.cutout = '58%';
+    return new Chart(canvas.getContext('2d'), { type: spec.type, data: { labels: spec.labels, datasets }, options: opts });
+  }
+  function savePng(ch, title) {
+    // วาดภาพในเบราว์เซอร์ล้วน ๆ (ไม่เรียกเซิร์ฟเวอร์/Workers) แล้วเติมแถบชื่อเว็บด้านล่าง
+    const src = ch.canvas, k = src.width / (src.clientWidth || src.width), pad = Math.round(30 * k);
+    const t = document.createElement('canvas'); t.width = src.width; t.height = src.height + pad;
+    const x = t.getContext('2d'); x.fillStyle = cardBg(); x.fillRect(0, 0, t.width, t.height); x.drawImage(src, 0, 0);
+    x.font = '500 ' + Math.round(13 * k) + "px Kanit, 'Sarabun', sans-serif"; x.textAlign = 'right'; x.textBaseline = 'middle';
+    x.fillStyle = '#f59e0b'; x.fillText('nivread.com', t.width - Math.round(16 * k), src.height + pad / 2 - 2 * k);
+    download(t.toDataURL('image/png'), 'nivread-' + (title || 'chart').replace(/[^\wก-๙-]+/g, '_') + '.png');
+  }
+  function expand(spec) {
+    $('vm-title').textContent = spec.title || ''; const body = $('vm-body'); body.innerHTML = '';
+    const cv = h('canvas'); body.appendChild(cv); $('view-modal').classList.remove('hidden');
+    vmChart = makeChart(cv, spec); charts.push(vmChart);
+  }
+  function closeView() {
+    $('view-modal').classList.add('hidden');
+    if (vmChart) { vmChart.destroy(); charts = charts.filter((c) => c !== vmChart); vmChart = null; }
+    $('vm-body').innerHTML = '';
+  }
+  function chartCard(o) {
+    const spec = cleanChart(o); if (!spec || !window.Chart) return null;
+    const card = h('div', 'dcard'), head = h('div', 'dcard-h'), tools = h('div', 'dcard-tools'), body = h('div'), canvas = h('canvas');
+    const pie = spec.type === 'pie' || spec.type === 'doughnut';
+    body.style.cssText = 'height:' + (pie ? '19rem' : '17.5rem') + ';padding:.5rem 1.1rem 1.1rem;position:relative'; body.appendChild(canvas);
+    let ch = null;
+    tools.append(tool(ICON.dl, '', 'บันทึกเป็นรูป', () => ch && savePng(ch, spec.title)), tool(ICON.ex, '', 'ขยาย', () => expand(spec)));
+    head.append(titleEl(ICON[pie ? 'pie' : spec.type], spec.title || 'กราฟ'), tools); card.append(head, body);
+    requestAnimationFrame(() => { if (canvas.isConnected) { ch = makeChart(canvas, spec); charts.push(ch); } });
+    return card;
+  }
+  function statsGrid(o) {
+    const arr = Array.isArray(o) ? o : o && o.items; if (!Array.isArray(arr) || !arr.length) return null;
+    const g = h('div', 'stats');
+    arr.slice(0, 4).forEach((x) => {
+      if (!x) return; const c = h('div', 'stat'), row = h('div', 'row');
+      row.appendChild(h('strong', null, String(x.value == null ? '' : x.value)));
+      if (x.change) { const t = String(x.change); row.appendChild(h('span', 'chip ' + (/^\+/.test(t) ? 'up' : /^[-−]/.test(t) ? 'down' : ''), t)); }
+      c.append(h('small', null, String(x.label == null ? '' : x.label)), row); g.appendChild(c);
+    });
+    return g.children.length ? g : null;
+  }
+  function schemaCard(o) {
+    if (!o || typeof o !== 'object') return null;
+    const f = (Array.isArray(o.fields) ? o.fields : []).slice(0, 24).filter((x) => x && x.name);
+    if (!f.length) return null;
+    const card = h('div', 'dcard tint'), head = h('div', 'dcard-h'), grid = h('div', 'schema-grid');
+    head.append(titleEl(ICON.db, String(o.title || 'โครงสร้างข้อมูล').slice(0, 80)), h('span', 'chip ind', f.length + ' ฟิลด์'));
+    f.forEach((x) => {
+      const b = h('div', 'schema-f'), top = h('div', 'top'); top.appendChild(h('code', null, String(x.name).slice(0, 60)));
+      if (x.type) top.appendChild(h('span', 'chip mono', String(x.type).slice(0, 24)));
+      b.appendChild(top); if (x.description) b.appendChild(h('p', null, String(x.description).slice(0, 200))); grid.appendChild(b);
+    });
+    card.append(head, grid); return card;
+  }
+  const collator = new Intl.Collator('th', { numeric: true });
+  const toNum = (t) => { const n = parseFloat(String(t).replace(/[,\s$฿%+]/g, '')); return isNaN(n) ? null : n; };
+  function tableCard(table) {
+    if (table.closest('.dcard') || !table.tBodies[0] || !table.tHead) return;
+    const tbody = table.tBodies[0], rows = [...tbody.rows], ths = [...table.tHead.rows[0].cells];
+    if (!rows.length) return;
+    const card = h('div', 'dcard'), head = h('div', 'dcard-h ln'), tools = h('div', 'dcard-tools'), scroll = h('div', 'dcard-scroll');
+    if (rows.length >= 6) {
+      const search = h('input', 'dcard-search'); search.type = 'search'; search.placeholder = 'ค้นหาในตาราง'; search.setAttribute('aria-label', 'ค้นหาในตาราง');
+      search.oninput = () => { const q = search.value.trim().toLowerCase(); rows.forEach((r) => { r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none'; }); };
+      tools.appendChild(search);
+    }
+    tools.appendChild(tool(ICON.dl, 'CSV', 'บันทึกเป็น CSV', () => {
+      const q = (v) => '"' + v.trim().replace(/"/g, '""') + '"';
+      const lines = [ths.map((c) => q(c.textContent)).join(',')].concat([...tbody.rows].map((r) => [...r.cells].map((c) => q(c.textContent)).join(',')));
+      download(URL.createObjectURL(new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })), 'nivread-table.csv');
+    }));
+    head.append(titleEl(ICON.tbl, 'ตารางข้อมูล', rows.length + ' แถว'), tools);
+    ths.forEach((th, i) => {
+      th.onclick = () => {
+        const dir = th.dataset.dir === 'asc' ? 'desc' : 'asc';
+        ths.forEach((x) => delete x.dataset.dir); th.dataset.dir = dir;
+        const k = dir === 'asc' ? 1 : -1;
+        [...tbody.rows].sort((a, b) => {
+          const x = a.cells[i].textContent, y = b.cells[i].textContent, nx = toNum(x), ny = toNum(y);
+          return k * (nx !== null && ny !== null ? nx - ny : collator.compare(x, y));
+        }).forEach((r) => tbody.appendChild(r));
+      };
+    });
+    table.replaceWith(card); scroll.appendChild(table); card.append(head, scroll);
+  }
+  // ---------- สร้างการ์ดตัวเลข + กราฟอัตโนมัติจากตาราง (ไม่ต้องให้ AI ส่งบล็อกพิเศษ) ----------
+  const NUM = /^[+\-−]?\s*[$฿]?\s*\d[\d,]*(\.\d+)?\s*(%|[kKmMbB]|ล้าน|พัน|หมื่น|แสน)?$/;
+  const strictNum = (t) => {
+    t = String(t == null ? '' : t).trim(); if (!NUM.test(t)) return null;
+    const n = parseFloat(t.replace(/−/g, '-').replace(/[,\s$฿]/g, '').replace(/[^\d.+-].*$/, '')); return isNaN(n) ? null : n;
+  };
+  const TIME = /^(q[1-4]|ไตรมาส|ม\.ค|ก\.พ|มี\.ค|เม\.ย|พ\.ค|มิ\.ย|ก\.ค|ส\.ค|ก\.ย|ต\.ค|พ\.ย|ธ\.ค|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d{4}|เดือน|ปี|วัน|สัปดาห์|week|day|month|year)/i;
+  const fmt = (n) => String(Math.round(n * 100) / 100);
+  function autoViz(table) {
+    if (!table.tHead || !table.tBodies[0]) return [];
+    const ths = [...table.tHead.rows[0].cells].map((c) => c.textContent.trim());
+    const rows = [...table.tBodies[0].rows].map((r) => [...r.cells].map((c) => c.textContent.trim()));
+    if (rows.length < 2 || rows.length > 24 || ths.length < 2) return [];
+    const numCols = [];
+    for (let c = 1; c < ths.length; c++) if (rows.filter((r) => strictNum(r[c]) !== null).length >= rows.length * 0.8) numCols.push(c);
+    if (!numCols.length) return [];
+    const lab = (r) => r[0] || '', val = (r, c) => { const v = strictNum(r[c]); return v === null ? 0 : v; };
+    let max = null, min = null, best = null;
+    rows.forEach((r) => {
+      let sum = 0, n = 0;
+      numCols.forEach((c) => { const v = strictNum(r[c]); if (v === null) return; sum += v; n++; if (!max || v > max.v) max = { v, r, c }; if (!min || v < min.v) min = { v, r, c }; });
+      if (n && (!best || sum / n > best.a)) best = { r, a: sum / n };
+    });
+    const out = [];
+    if (max && min && max.v !== min.v) {
+      const st = [];
+      if (numCols.length >= 2) st.push({ label: 'สูงสุดโดยเฉลี่ย', value: lab(best.r), change: 'เฉลี่ย ' + fmt(best.a) });
+      st.push({ label: 'ค่าสูงสุด', value: max.r[max.c], change: lab(max.r) + ' · ' + ths[max.c] });
+      st.push({ label: 'ค่าต่ำสุด', value: min.r[min.c], change: lab(min.r) + ' · ' + ths[min.c] });
+      const g = statsGrid(st); if (g) out.push(g);
+    }
+    const timeLike = numCols.length >= 3 && numCols.every((c) => TIME.test(ths[c]));
+    const spec = timeLike
+      ? { type: 'line', labels: numCols.map((c) => ths[c]), datasets: rows.slice(0, 8).map((r) => ({ label: lab(r), data: numCols.map((c) => val(r, c)) })) }
+      : { type: 'bar', labels: rows.map(lab), datasets: numCols.slice(0, 4).map((c) => ({ label: ths[c], data: rows.map((r) => val(r, c)) })) };
+    const prev = table.previousElementSibling;
+    spec.title = prev && /^H[1-6]$/.test(prev.tagName) ? prev.textContent.trim() : 'กราฟจากตาราง';
+    const ch = chartCard(spec); if (ch) out.push(ch);
+    return out;
+  }
+  // อัปเกรดเนื้อหา markdown ที่ render แล้ว: บล็อก ```chart / ```stats / ```schema และตารางทั้งหมด
+  function enhance(root, m) {
+    if (m === 'fortune') {
+      root.querySelectorAll('pre > code.language-fortune').forEach((code) => {
+        let o = null; try { o = JSON.parse(code.textContent); } catch {}
+        const el = o && fortuneCard(o); if (el) code.parentElement.replaceWith(el); else code.parentElement.remove();
+      });
+      return;
+    }
+    charts = charts.filter((c) => (c.canvas && c.canvas.isConnected) || (c.destroy(), false));
+    root.querySelectorAll('pre > code').forEach((code) => {
+      const m = /language-(chart|stats|schema)/.exec(code.className); if (!m) return;
+      let o; try { o = JSON.parse(code.textContent); } catch { return; }
+      const el = m[1] === 'chart' ? chartCard(o) : m[1] === 'stats' ? statsGrid(o) : schemaCard(o);
+      if (el) code.parentElement.replaceWith(el);
+    });
+    // ถ้า AI ไม่ได้ส่งกราฟมาเอง ให้สร้างตัวเลขสรุป + กราฟจากตาราง (สูงสุด 2 ตารางต่อคำตอบ)
+    const hasChart = !!root.querySelector('.dcard canvas'); let auto = 0;
+    root.querySelectorAll('table').forEach((t) => {
+      if (!t.closest('.dcard') && !hasChart && auto < 2) { const els = autoViz(t); if (els.length) { t.before(...els); auto++; } }
+      tableCard(t);
+    });
+  }
+  new MutationObserver(() => charts.forEach(applyTheme)).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+  function addMsg(role, text, kind) {
+    if (role === 'user') stick = true;
+    const row = document.createElement('div');
+    row.className = 'shrink-0 ' + (role === 'user' ? 'mt-7 flex' : 'mt-6');
+    if (role === 'user' && mode === 'fortune') {
+      const tk = /\s*\[ไพ่ ([0-9r,]+)\]\s*$/.exec(text), strip = tk && tarotStrip(tk[1]);
+      if (strip) { text = text.slice(0, tk.index); row.className = 'shrink-0 mt-7 flex flex-col items-end gap-3'; row.appendChild(strip); }
+      text = text.replace(/\s*\[\[[\s\S]*?\]\]\s*$/, '');
+    }
+    const b = document.createElement('div'); b.className = 'break-words ' + BUB[kind || role];
+    setText(b, kind === 'err' ? 'user' : role, text, false, mode); if (role === 'assistant' && kind !== 'err' && text) enhance(b, mode); row.appendChild(b); log.appendChild(row); scrollEnd(); return b;
+  }
+  // ---------- PDF ธีม Modern (กระดาษขาว สร้างและพิมพ์ในเครื่องผู้ใช้ ไม่ใช้เซิร์ฟเวอร์) ----------
+  const PDF_CSS = `@page{size:A4;margin:0}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;padding:0 15mm;font:11pt/1.8 Sarabun,"Noto Sans Thai",Tahoma,sans-serif;color:#292524}
+.hero{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;border-radius:14px;padding:16px 22px 20px;margin-bottom:18px}
+.top{display:flex;justify-content:space-between;align-items:center;font:500 9pt Prompt,Sarabun,sans-serif;color:#b45309;letter-spacing:.04em}
+.brand{display:flex;align-items:center;gap:7px;font-weight:600}.brand i{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#f97316)}
+h1{font:600 24pt/1.35 Prompt,Sarabun,sans-serif;margin:14px 0 0;color:#1c1917}
+h1::after{content:"";display:block;width:44px;height:4px;border-radius:4px;background:linear-gradient(90deg,#f59e0b,#f97316);margin-top:10px}
+h2{font:600 15pt/1.4 Prompt,Sarabun,sans-serif;margin:22px 0 8px;padding-left:12px;border-left:4px solid #f59e0b;color:#1c1917;break-after:avoid}
+h3{font:600 12.5pt/1.4 Prompt,Sarabun,sans-serif;margin:16px 0 6px;color:#b45309;break-after:avoid}
+p{margin:0 0 9px}ul,ol{margin:0 0 10px;padding-left:22px}li{margin:3px 0}li::marker{color:#f59e0b;font-weight:600}
+li:has(>input[type=checkbox]){list-style:none;margin-left:-20px}
+input[type=checkbox]{appearance:none;width:11px;height:11px;border:1.6px solid #f59e0b;border-radius:3px;margin:0 8px 0 0;vertical-align:-1px}
+input[type=checkbox]:checked{background:#f59e0b}
+blockquote{margin:12px 0;padding:10px 16px;background:#fff7ed;border-left:4px solid #f59e0b;border-radius:0 10px 10px 0;color:#7c2d12;break-inside:avoid}blockquote p:last-child{margin:0}
+table{width:100%;border-collapse:separate;border-spacing:0;margin:12px 0;font-size:10pt;border:1px solid #e7e5e4;border-radius:10px;overflow:hidden}
+th{background:#fef3c7;color:#92400e;font-weight:600;text-align:left;padding:7px 10px}td{padding:7px 10px;border-top:1px solid #f0eeec}tr:nth-child(even) td{background:#fafaf9}tr{break-inside:avoid}
+code{background:#f5f5f4;border-radius:5px;padding:1px 5px;font-size:.9em}pre{background:#f5f5f4;border-radius:10px;padding:12px 14px;white-space:pre-wrap;break-inside:avoid}pre code{background:none;padding:0}
+hr{border:0;border-top:1px solid #e7e5e4;margin:16px 0}strong{color:#1c1917}a{color:#b45309}
+table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-collapse:collapse;overflow:visible}
+.pg>thead>tr>td,.pg>tbody>tr>td,.pg>tfoot>tr>td{padding:0!important;border:0!important;background:none!important}
+.pg>tbody>tr{break-inside:auto}.sp.t{height:16mm}.sp.b{height:18mm}`;
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function pdfHtml(text) {
+    const doc = new DOMParser().parseFromString(DOMPurify.sanitize(marked.parse(text, { breaks: true })), 'text/html'), hd = doc.body.querySelector('h1, h2');
+    const title = (hd && doc.body.firstElementChild === hd && hd.textContent.trim()) || 'เอกสาร';
+    return '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>' + esc(title) + '</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet"><style>' + PDF_CSS + '</style></head><body><table class="pg"><thead><tr><td><div class="sp t"></div></td></tr></thead><tfoot><tr><td><div class="sp b"></div></td></tr></tfoot><tbody><tr><td><main>' + doc.body.innerHTML + '</main></td></tr></tbody></table></body></html>';
+  }
+  function printPdf(text) {
+    const w = window.open('', '_blank'); if (!w) return;
+    w.document.write(pdfHtml(text)); w.document.close();
+    let ok = false; const go = () => { if (!ok) { ok = true; w.print(); } };
+    w.addEventListener('load', () => (w.document.fonts ? w.document.fonts.ready : Promise.resolve()).then(() => setTimeout(go, 250)));
+    setTimeout(go, 4000);
+  }
+  // ปุ่มคัดลอกอยู่นอกเนื้อหา (ไม่ถูกเขียนทับตอน render markdown)
+  function addCopy(b, text) {
+    if (mode === 'docs') text = tidy(text);
+    const row = b.parentElement; row.querySelector('.acts')?.remove();
+    const bar = document.createElement('div'); bar.className = 'acts mt-3 -ml-2 flex items-center';
+    const c = document.createElement('button'); c.type = 'button';
+    c.className = 'inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-slate-500 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white cursor-pointer';
+    c.innerHTML = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg><span>คัดลอก</span>';
+    const lab = c.querySelector('span');
+    c.onclick = async () => { try { await navigator.clipboard.writeText(text.replace(/```fortune[\s\S]*?(```|$)/g, '').trim()); lab.textContent = 'คัดลอกแล้ว'; setTimeout(() => (lab.textContent = 'คัดลอก'), 1500); } catch {} };
+    bar.appendChild(c);
+    if (mode === 'docs') {
+      const page = () => '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:"TH Sarabun New",Tahoma,sans-serif;font-size:16pt;line-height:1.5}h2{color:#b45309}table{border-collapse:collapse}th{background:#fef3c7;color:#92400e}td,th{border:1px solid #d6d3d1;padding:4px 8px}</style></head><body>' + DOMPurify.sanitize(marked.parse(text, { breaks: true })) + '</body></html>';
+      [['Word', () => download(URL.createObjectURL(new Blob(['\ufeff', page()], { type: 'application/msword' })), 'เอกสาร.doc')],
+       ['Markdown', () => download(URL.createObjectURL(new Blob(['\ufeff' + text], { type: 'text/markdown;charset=utf-8' })), 'เอกสาร.md')],
+       ['PDF', () => printPdf(text)]
+      ].concat(dueDates(text).length ? [['ปฏิทิน', () => icsDownload(dueDates(text))]] : []).forEach(([l, fn]) => { const x = document.createElement('button'); x.type = 'button'; x.className = c.className; x.textContent = l; x.onclick = fn; bar.appendChild(x); });
+    }
+    row.appendChild(bar);
+  }
+  // ---------- โหมดดูดวง: ฟอร์มวันเกิด (คำนวณวัน/ราศี/ปีนักษัตรในเบราว์เซอร์ ไม่เปลืองพลังงาน AI) ----------
+  const TH_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  const TH_DAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+  const DAY_COLOR = ['แดง', 'เหลือง', 'ชมพู', 'เขียว', 'ส้ม', 'ฟ้า', 'ม่วง'];
+  const ANIMALS = ['วอก', 'ระกา', 'จอ', 'กุน', 'ชวด', 'ฉลู', 'ขาล', 'เถาะ', 'มะโรง', 'มะเส็ง', 'มะเมีย', 'มะแม'];   // index = ปี ค.ศ. mod 12
+  const SIGN_CUT = [[20, 'กุมภ์'], [19, 'มีน'], [21, 'เมษ'], [20, 'พฤษภ'], [21, 'เมถุน'], [21, 'กรกฎ'], [23, 'สิงห์'], [23, 'กันย์'], [23, 'ตุล'], [23, 'พิจิก'], [22, 'ธนู'], [22, 'มกร']];
+  const zodiac = (m, d) => (d >= SIGN_CUT[m - 1][0] ? SIGN_CUT[m - 1][1] : SIGN_CUT[(m + 10) % 12][1]);
+  const BIRTH_KEY = 'nivread_birth';
+  const loadBirth = () => { try { return JSON.parse(localStorage.getItem(BIRTH_KEY)) || null; } catch { return null; } };
+  const saveBirth = (v) => { try { v ? localStorage.setItem(BIRTH_KEY, JSON.stringify(v)) : localStorage.removeItem(BIRTH_KEY); } catch {} };
+
+  function birthInfo(d, m, be) {
+    const y = be - 543, dt = new Date(y, m - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+    const wd = dt.getDay();
+    return { wd: TH_DAYS[wd], color: DAY_COLOR[wd], sign: zodiac(m, d), animal: ANIMALS[((y % 12) + 12) % 12], early: m <= 2 };
+  }
+  function birthForm() {
+    const f = document.createElement('form'); f.className = 'mt-6 max-w-md space-y-5'; f.setAttribute('aria-label', 'ข้อมูลวันเกิด');
+    f.innerHTML =
+      '<div><div class="text-sm font-medium mb-2">วันเกิด (พ.ศ.)</div><div class="bf-row">' +
+      '<select data-f="d" class="bf-fld" aria-label="วัน"></select><select data-f="m" class="bf-fld" aria-label="เดือน"></select><select data-f="y" class="bf-fld" aria-label="ปี พ.ศ."></select></div></div>' +
+      '<div><label class="text-sm font-medium mb-2 block">เวลาเกิด <span class="font-normal text-slate-400">(ไม่บังคับ)</span></label><input data-f="t" type="time" class="bf-fld" style="width:10rem"></div>' +
+      '<div><div class="text-sm font-medium mb-2">ดูดวงช่วง</div><div class="flex flex-wrap gap-2" data-g="period"></div></div>' +
+      '<div><div class="text-sm font-medium mb-2">เรื่องที่อยากรู้</div><div class="flex flex-wrap gap-2" data-g="topic"></div></div>' +
+      '<p data-prev class="min-h-[1.5rem] text-sm leading-relaxed text-amber-600 dark:text-amber-400" aria-live="polite"></p>' +
+      '<div class="flex items-center gap-4"><button type="submit" class="h-12 px-8 rounded-full text-white font-medium bg-gradient-to-br from-amber-500 to-orange-500 hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" disabled>ดูดวง</button>' +
+      '<button type="button" data-forget class="hidden text-xs text-slate-500 dark:text-neutral-400 hover:text-red-500 cursor-pointer">ลบวันเกิดที่จำไว้</button></div>' +
+      '<p class="text-xs text-slate-400 dark:text-neutral-500">ราศีคำนวณตามปฏิทินสากล ผลดูดวงเป็นความบันเทิง ไม่ควรใช้ตัดสินใจเรื่องสำคัญ</p>';
+    const q = (k) => f.querySelector('[data-f="' + k + '"]'), selD = q('d'), selM = q('m'), selY = q('y'), selT = q('t');
+    const prev = f.querySelector('[data-prev]'), go = f.querySelector('button[type="submit"]'), forget = f.querySelector('[data-forget]');
+    const opt = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; return o; };
+    selM.appendChild(opt('', 'เดือน')); TH_MONTHS.forEach((t, i) => selM.appendChild(opt(i + 1, t)));
+    const nowBE = new Date().getFullYear() + 543; selY.appendChild(opt('', 'ปี พ.ศ.'));
+    for (let y = nowBE; y >= nowBE - 100; y--) selY.appendChild(opt(y, y));
+    const fillDays = () => {
+      const keep = selD.value, m = +selM.value, y = (+selY.value || nowBE) - 543, max = m ? new Date(y, m, 0).getDate() : 31;
+      selD.innerHTML = ''; selD.appendChild(opt('', 'วัน')); for (let d = 1; d <= max; d++) selD.appendChild(opt(d, d));
+      if (keep && +keep <= max) selD.value = keep;
+    };
+    const pills = (name, items, def) => {
+      const box = f.querySelector('[data-g="' + name + '"]');
+      items.forEach((t) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'pill'; b.textContent = t; b.setAttribute('aria-pressed', t === def ? 'true' : 'false');
+        b.onclick = () => box.querySelectorAll('.pill').forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); box.appendChild(b);
+      });
+    };
+    pills('period', ['วันนี้', 'สัปดาห์นี้', 'เดือนนี้', 'ปีนี้'], 'วันนี้');
+    pills('topic', ['ภาพรวม', 'การงาน', 'การเงิน', 'ความรัก', 'สุขภาพ'], 'ภาพรวม');
+    const chosen = (name) => f.querySelector('[data-g="' + name + '"] .pill[aria-pressed="true"]').textContent;
+    const info = () => (selD.value && selM.value && selY.value ? birthInfo(+selD.value, +selM.value, +selY.value) : null);
+    const refresh = () => {
+      const i = info(); go.disabled = !i || busy;
+      prev.textContent = i ? 'วัน' + i.wd + ' · ราศี' + i.sign + ' · ปี' + i.animal + ' · สีประจำวัน' + i.color + (i.early ? ' (คนเกิดช่วง ม.ค.–ก.พ. ปีนักษัตรอาจนับเป็นปีก่อนหน้าตามตรุษจีน)' : '') : '';
+    };
+    fillDays();
+    const sv = loadBirth();
+    if (sv) { selM.value = sv.m; selY.value = sv.y; fillDays(); selD.value = sv.d; selT.value = sv.t || ''; forget.classList.remove('hidden'); }
+    refresh();
+    selM.onchange = selY.onchange = () => { fillDays(); refresh(); }; selD.onchange = refresh;
+    forget.onclick = () => { saveBirth(null); selD.value = selM.value = selY.value = selT.value = ''; fillDays(); forget.classList.add('hidden'); refresh(); };
+    f.onsubmit = (e) => {
+      e.preventDefault(); const i = info(); if (!i || busy) return;
+      const d = +selD.value, m = +selM.value, y = +selY.value, t = selT.value, today = new Date();
+      saveBirth({ d, m, y, t });
+      const todayTxt = 'วัน' + TH_DAYS[today.getDay()] + 'ที่ ' + today.getDate() + ' ' + TH_MONTHS[today.getMonth()] + ' พ.ศ. ' + (today.getFullYear() + 543), topic = chosen('topic');
+      send('ดูดวง' + chosen('period') + (topic === 'ภาพรวม' ? 'ภาพรวม' : 'ด้าน' + topic) + ' | เกิดวัน' + i.wd + 'ที่ ' + d + ' ' + TH_MONTHS[m - 1] + ' พ.ศ. ' + y + (t ? ' เวลา ' + t + ' น.' : '') +
+        ' (ราศี' + i.sign + 'ตามสากล, ปี' + i.animal + ', สีประจำวัน' + i.color + ') | วันนี้คือ' + todayTxt + FX_BIRTH);
+    };
+    return f;
+  }
+  // ---------- โหมดดูดวง: จั่วไพ่ทาโรต์ (ไพ่ Major Arcana 22 ใบ สุ่มในเบราว์เซอร์ แล้วให้ AI ตีความ) ----------
+  const TAROT = [['เดอะฟูล (ผู้เริ่มต้น)', 'The Fool'], ['นักมายากล', 'The Magician'], ['นักบวชหญิง', 'The High Priestess'], ['จักรพรรดินี', 'The Empress'], ['จักรพรรดิ', 'The Emperor'],
+    ['ผู้นำทางศาสนา', 'The Hierophant'], ['คู่รัก', 'The Lovers'], ['รถศึก', 'The Chariot'], ['พลัง', 'Strength'], ['ฤๅษี', 'The Hermit'], ['วงล้อแห่งโชคชะตา', 'Wheel of Fortune'],
+    ['ความยุติธรรม', 'Justice'], ['ชายถูกแขวน', 'The Hanged Man'], ['ความตาย (การเปลี่ยนผ่าน)', 'Death'], ['ความพอดี', 'Temperance'], ['ปีศาจ', 'The Devil'], ['หอคอย', 'The Tower'],
+    ['ดวงดาว', 'The Star'], ['ดวงจันทร์', 'The Moon'], ['ดวงอาทิตย์', 'The Sun'], ['การพิพากษา', 'Judgement'], ['โลก', 'The World']];
+  const ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
+  const SPREAD = { 1: { label: 'ไพ่ 1 ใบ · คำตอบสั้น', pos: [''] }, 3: { label: 'ไพ่ 3 ใบ · อดีต ปัจจุบัน อนาคต', pos: ['อดีต', 'ปัจจุบัน', 'อนาคต'] } };
+  const rnd = (n) => (window.crypto && crypto.getRandomValues ? Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296 * n) : Math.floor(Math.random() * n));
+  function drawCards(n, allowRev) {
+    const pool = TAROT.map((_, i) => i), out = [];
+    for (let k = 0; k < n; k++) out.push({ i: pool.splice(rnd(pool.length), 1)[0], r: allowRev && rnd(2) === 1 });
+    return out;
+  }
+  function faceEl(i, rev) {
+    const f = h('span', 'tface tfront'); f.style.setProperty('--h', i * 16);
+    const ring = h('span', 'tring'), txt = h('span', 'ttxt');
+    ring.appendChild(h('span', 'tn' + (rev ? ' rev' : ''), ROMAN[i]));
+    txt.append(h('span', 'tth', TAROT[i][0]), h('span', 'ten', TAROT[i][1])); if (rev) txt.appendChild(h('span', 'trev', 'กลับหัว'));
+    f.append(ring, txt); return f;
+  }
+  // แถบไพ่ที่เปิดแล้ว แสดงเหนือข้อความของผู้ใช้ (อ่านจากรหัส [ไพ่ 6,16r,17] ท้ายข้อความ จึงแสดงซ้ำได้ตอนโหลดประวัติ)
+  function tarotStrip(codes) {
+    const parts = codes.split(','), cs = parts.map((x) => /^(\d{1,2})(r?)$/.exec(x)).filter(Boolean).map((m) => ({ i: +m[1], r: !!m[2] })).filter((c) => c.i < TAROT.length);
+    if (!cs.length || cs.length !== parts.length) return null;
+    const wrap = h('div', 'tstrip'), pos = (SPREAD[cs.length] || { pos: [] }).pos;
+    cs.forEach((c, k) => {
+      const slot = h('div', 'tslot sm'), card = h('span', 'tcard on static'), inn = h('span', 'tcard-in');
+      inn.appendChild(faceEl(c.i, c.r)); card.appendChild(inn); slot.appendChild(card);
+      if (pos[k]) slot.appendChild(h('span', 'tlabel', pos[k])); wrap.appendChild(slot);
+    });
+    return wrap;
+  }
+  function tarotPanel() {
+    const w = document.createElement('div'); w.className = 'mt-6 max-w-xl space-y-5';
+    w.innerHTML =
+      '<div><div class="text-sm font-medium mb-2">รูปแบบการเปิดไพ่</div><div class="flex flex-wrap gap-2" data-g="spread"></div></div>' +
+      '<div><label class="text-sm font-medium mb-2 block">คำถามในใจ <span class="font-normal text-slate-400">(ไม่บังคับ)</span></label><input data-q type="text" maxlength="150" class="bf-fld" placeholder="เช่น งานใหม่ที่กำลังสมัครจะเป็นอย่างไร"></div>' +
+      '<div><div class="text-sm font-medium mb-2">ไพ่กลับหัว</div><div class="flex flex-wrap gap-2" data-g="rev"></div></div>' +
+      '<div class="flex gap-3 justify-center pt-2" data-table></div>' +
+      '<p data-hint class="text-sm text-center text-slate-500 dark:text-neutral-400 min-h-[1.5rem]" aria-live="polite"></p>' +
+      '<div class="flex flex-wrap items-center justify-center gap-3"><button type="button" data-shuffle class="pill">สับไพ่ใหม่</button>' +
+      '<button type="button" data-ask class="hidden h-12 px-8 rounded-full text-white font-medium bg-gradient-to-br from-amber-500 to-orange-500 hover:brightness-105 cursor-pointer">ให้ AI ตีความ</button></div>';
+    const table = w.querySelector('[data-table]'), hint = w.querySelector('[data-hint]'), ask = w.querySelector('[data-ask]'), qIn = w.querySelector('[data-q]');
+    let n = 3, allowRev = true, cards = [], flips = 0;
+    const pills = (name, items, def, pick) => {
+      const box = w.querySelector('[data-g="' + name + '"]');
+      items.forEach(([label, val]) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'pill'; b.textContent = label; b.setAttribute('aria-pressed', val === def ? 'true' : 'false');
+        b.onclick = () => { box.querySelectorAll('.pill').forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); pick(val); render(); }; box.appendChild(b);
+      });
+    };
+    pills('spread', [[SPREAD[1].label, 1], [SPREAD[3].label, 3]], 3, (v) => { n = v; });
+    pills('rev', [['มีไพ่กลับหัว', true], ['ไม่มี', false]], true, (v) => { allowRev = v; });
+    const update = () => {
+      hint.textContent = flips === 0 ? 'ตั้งสมาธิกับคำถาม แล้วแตะไพ่ทีละใบเพื่อพลิก' : flips < n ? 'พลิกแล้ว ' + flips + '/' + n + ' ใบ' : 'พลิกครบแล้ว กด “ให้ AI ตีความ”';
+      ask.classList.toggle('hidden', flips < n);
+    };
+    function render() {
+      table.innerHTML = ''; table.dataset.n = n; cards = drawCards(n, allowRev); flips = 0;
+      cards.forEach((c, k) => {
+        const slot = h('div', 'tslot'), btn = document.createElement('button'), inn = h('span', 'tcard-in');
+        btn.type = 'button'; btn.className = 'tcard'; btn.setAttribute('aria-label', 'ไพ่ใบที่ ' + (k + 1) + ' คว่ำอยู่ กดเพื่อพลิก');
+        inn.append(h('span', 'tface tback'), faceEl(c.i, c.r)); btn.appendChild(inn);
+        btn.onclick = () => {
+          if (btn.classList.contains('on')) return; btn.classList.add('on'); flips++;
+          btn.setAttribute('aria-label', 'ไพ่ใบที่ ' + (k + 1) + ': ' + TAROT[c.i][1] + (c.r ? ' กลับหัว' : '')); update();
+        };
+        slot.appendChild(btn); const pos = SPREAD[n].pos[k]; if (pos) slot.appendChild(h('span', 'tlabel', pos)); table.appendChild(slot);
+      });
+      update();
+    }
+    w.querySelector('[data-shuffle]').onclick = render;
+    ask.onclick = () => {
+      if (busy || flips < n) return;
+      const pos = SPREAD[n].pos, q = qIn.value.trim();
+      const names = cards.map((c, k) => (pos[k] ? pos[k] + ' = ' : '') + TAROT[c.i][1] + ' (' + TAROT[c.i][0] + ') ' + (c.r ? 'กลับหัว' : 'ตั้งตรง')).join('; ');
+      send('จั่วไพ่ทาโรต์ ' + n + ' ใบ | คำถาม: ' + (q || 'ภาพรวมของฉันตอนนี้') + ' | ไพ่: ' + names +
+        ' | ช่วยตีความไพ่แต่ละใบตามตำแหน่ง แล้วสรุปภาพรวมสั้น ๆ (ไพ่ถูกสุ่มแล้ว ไม่ต้องสุ่มใหม่)' + FX_TAROT + ' [ไพ่ ' + cards.map((c) => c.i + (c.r ? 'r' : '')).join(',') + ']');
+    };
+    render(); return w;
+  }
+  // หน้าแรกโหมดดูดวง: สลับระหว่างฟอร์มวันเกิด กับจั่วไพ่
+  function fortuneHome() {
+    const w = document.createElement('div'), bar = h('div', 'flex flex-wrap gap-2 mt-7'), a = birthForm(), b = tarotPanel(); w.className = 'max-w-xl';
+    b.classList.add('hidden');
+    const mk = (label, on, show) => { const x = h('button', 'pill', label); x.type = 'button'; x.setAttribute('aria-pressed', on ? 'true' : 'false'); x.onclick = () => {
+      bar.querySelectorAll('.pill').forEach((y) => y.setAttribute('aria-pressed', y === x ? 'true' : 'false')); a.classList.toggle('hidden', show !== 'a'); b.classList.toggle('hidden', show !== 'b'); }; return x; };
+    bar.append(mk('ดูตามวันเกิด', true, 'a'), mk('จั่วไพ่ทาโรต์', false, 'b')); w.append(bar, a, b); return w;
+  }
+  // ---------- โหมดดูดวง: การ์ดดวงสรุป + บันทึก/แชร์เป็นรูป (วาดในเบราว์เซอร์ ไม่เรียกเซิร์ฟเวอร์) ----------
+  const FENCE = '```';
+  const fxHint = (shape) => ' [[คำสั่งหน้าเว็บ: ท้ายคำตอบให้แนบบล็อก ' + FENCE + 'fortune เป็น JSON ล้วนตามรูปแบบนี้ ' + shape + ' แล้วปิดบล็อกด้วย ' + FENCE + ' (คะแนน 1-5, message ไม่เกิน 150 ตัวอักษร, title ให้ตรงกับที่ขอ)]]';
+  const FX_BIRTH = fxHint('{"title":"ดวงวันนี้","subtitle":"วันพุธ · ราศีมีน · ปีชวด","ratings":{"การงาน":4,"การเงิน":3,"ความรัก":5,"สุขภาพ":4},"lucky":{"สี":"เขียว","เลข":"7","ทิศ":"ตะวันออก"},"message":"คำแนะนำสั้น ๆ"}');
+  const FX_TAROT = fxHint('{"title":"ไพ่ทาโรต์ 3 ใบ","subtitle":"ชื่อไพ่ทั้งหมดคั่นด้วย ·","message":"สรุปภาพรวมสั้น ๆ"}');
+  ICON.share = SV('<path d="M10 13V3m0 0L6.5 6.5M10 3l3.5 3.5M5 11v5a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-5"/>');
+  const STAR_SVG = '<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><polygon points="10,1.5 12.6,7.3 19,8 14.2,12.2 15.6,18.5 10,15.3 4.4,18.5 5.8,12.2 1,8 7.4,7.3"/></svg>';
+
+  function cleanFortune(o) {
+    if (!o || typeof o !== 'object') return null;
+    const pairs = (v, max, lk) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.entries(v) : []).slice(0, max).map(([k, x]) => [String(k).slice(0, lk), x]);
+    const ratings = pairs(o.ratings, 4, 14).map(([k, v]) => [k, Math.max(1, Math.min(5, Math.round(Number(v)) || 1))]);
+    const lucky = pairs(o.lucky, 4, 10).map(([k, v]) => [k, String(v).slice(0, 24)]).filter(([, v]) => v);
+    const message = String(o.message || '').slice(0, 200);
+    if (!message && !ratings.length) return null;
+    return { title: String(o.title || 'ดวงของคุณ').slice(0, 40), subtitle: String(o.subtitle || '').slice(0, 90), ratings, lucky, message };
+  }
+  function fortuneCard(o) {
+    const f = cleanFortune(o); if (!f) return null;
+    const wrap = h('div', 'fwrap'), card = h('div', 'fcard'), head = h('div', 'fh');
+    head.appendChild(h('div', 'ft', f.title)); if (f.subtitle) head.appendChild(h('div', 'fsub', f.subtitle)); card.appendChild(head);
+    if (f.ratings.length) {
+      const rows = h('div', 'frows');
+      f.ratings.forEach(([k, v]) => {
+        const r = h('div', 'frow'), st = h('span', 'stars'); st.setAttribute('role', 'img'); st.setAttribute('aria-label', v + ' จาก 5');
+        for (let i = 0; i < 5; i++) { const t = h('span'); t.innerHTML = STAR_SVG; t.firstChild.setAttribute('class', i < v ? '' : 'off'); st.appendChild(t.firstChild); }
+        r.append(h('span', null, k), st); rows.appendChild(r);
+      });
+      card.appendChild(rows);
+    }
+    if (f.lucky.length) { const chips = h('div', 'fchips'); f.lucky.forEach(([k, v]) => { const c = h('span', 'fchip'); c.append(h('b', null, k), document.createTextNode(v)); chips.appendChild(c); }); card.appendChild(chips); }
+    if (f.message) card.appendChild(h('p', 'fmsg', f.message));
+    const foot = h('div', 'ffoot'); foot.append(h('span', null, 'เพื่อความบันเทิง'), h('b', null, 'nivread.com')); card.appendChild(foot);
+    const tools = h('div', 'ftools');
+    tools.appendChild(tool(ICON.dl, 'บันทึกรูป', 'บันทึกเป็นรูป', () => fortuneImage(f, false)));
+    if (navigator.share) tools.appendChild(tool(ICON.share, 'แชร์', 'แชร์รูป', () => fortuneImage(f, true)));
+    wrap.append(card, tools); return wrap;
+  }
+  function rrect(x, X, Y, w, hh, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + hh, r); x.arcTo(X + w, Y + hh, X, Y + hh, r); x.arcTo(X, Y + hh, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
+  function star(x, cx, cy, R, on) {
+    x.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? R * 0.42 : R; x[i ? 'lineTo' : 'moveTo'](cx + r * Math.cos(a), cy + r * Math.sin(a)); }
+    x.closePath(); x.fillStyle = on ? '#e9c46a' : 'rgba(233,196,106,.25)'; x.fill();
+  }
+  async function fortuneImage(f, share) {
+    try { await Promise.all([document.fonts.load('500 40px Kanit'), document.fonts.load('400 30px Sarabun')]); } catch {}
+    const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d'), L = 120, R = W - 120, GOLD = '#e9c46a', SOFT = '#cbbd96', CREAM = '#f3e3b6';
+    const KA = "'Kanit', 'Sarabun', sans-serif", SA = "'Sarabun', 'Kanit', sans-serif";
+    let g = x.createLinearGradient(0, 0, W * 0.4, H); g.addColorStop(0, '#1d1736'); g.addColorStop(1, '#120e22'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    g = x.createRadialGradient(0, 0, 0, 0, 0, W * 0.9); g.addColorStop(0, 'rgba(245,158,11,.30)'); g.addColorStop(1, 'rgba(245,158,11,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    g = x.createRadialGradient(W, H, 0, W, H, W * 0.9); g.addColorStop(0, 'rgba(99,102,241,.32)'); g.addColorStop(1, 'rgba(99,102,241,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    x.strokeStyle = 'rgba(212,166,74,.6)'; x.lineWidth = 3; rrect(x, 36, 36, W - 72, H - 72, 36); x.stroke();
+    x.strokeStyle = 'rgba(212,166,74,.25)'; x.lineWidth = 2; rrect(x, 56, 56, W - 112, H - 112, 26); x.stroke();
+    // ตัดบรรทัดภาษาไทยตามคำ (ถ้าเบราว์เซอร์รองรับ Intl.Segmenter ไม่รองรับจะตัดทีละตัวอักษร)
+    const seg = window.Intl && Intl.Segmenter ? new Intl.Segmenter('th', { granularity: 'word' }) : null;
+    const lines = (txt, font, maxW) => {
+      x.font = font; const parts = seg ? [...seg.segment(txt)].map((q) => q.segment) : [...txt], out = []; let cur = '';
+      parts.forEach((q) => { const t = cur + q; if (cur && x.measureText(t).width > maxW) { out.push(cur.trimEnd()); cur = q.trimStart(); } else cur = t; });
+      if (cur) out.push(cur); return out;
+    };
+    const layout = (draw, y) => {
+      let cur = y; x.textAlign = 'left'; x.textBaseline = 'alphabetic';
+      lines(f.title, '500 66px ' + KA, R - L).forEach((t) => { if (draw) { x.fillStyle = GOLD; x.font = '500 66px ' + KA; x.fillText(t, L, cur + 60); } cur += 80; });
+      if (f.subtitle) lines(f.subtitle, '400 34px ' + SA, R - L).forEach((t) => { if (draw) { x.fillStyle = SOFT; x.font = '400 34px ' + SA; x.fillText(t, L, cur + 34); } cur += 50; });
+      cur += 30;
+      f.ratings.forEach(([k, v]) => {
+        if (draw) { x.fillStyle = CREAM; x.font = '500 40px ' + KA; x.fillText(k, L, cur + 44); for (let i = 0; i < 5; i++) star(x, R - 24 - (4 - i) * 62, cur + 28, 24, i < v); }
+        cur += 74;
+      });
+      if (f.ratings.length) cur += 12;
+      if (f.lucky.length) {
+        let px = L;
+        f.lucky.forEach(([k, v]) => {
+          x.font = '400 34px ' + SA; const wk = x.measureText(k).width; x.font = '500 34px ' + SA; const wv = x.measureText(v).width, cw = wk + 14 + wv + 56;
+          if (px > L && px + cw > R) { px = L; cur += 80; }
+          if (draw) { x.strokeStyle = 'rgba(212,166,74,.65)'; x.lineWidth = 2; rrect(x, px, cur, cw, 62, 31); x.stroke(); x.fillStyle = SOFT; x.font = '400 34px ' + SA; x.fillText(k, px + 28, cur + 42); x.fillStyle = GOLD; x.font = '500 34px ' + SA; x.fillText(v, px + 28 + wk + 14, cur + 42); }
+          px += cw + 18;
+        });
+        cur += 62;
+      }
+      if (f.message) { cur += 36; lines(f.message, '400 38px ' + SA, R - L).forEach((t) => { if (draw) { x.fillStyle = CREAM; x.font = '400 38px ' + SA; x.fillText(t, L, cur + 38); } cur += 64; }); }
+      return cur;
+    };
+    const total = layout(false, 0), y0 = Math.max(140, 140 + (H - 140 - 230 - total) / 2); layout(true, y0);
+    x.strokeStyle = 'rgba(212,166,74,.3)'; x.lineWidth = 2; x.beginPath(); x.moveTo(L, H - 190); x.lineTo(R, H - 190); x.stroke();
+    x.textBaseline = 'alphabetic'; x.fillStyle = '#a99d7b'; x.font = '400 28px ' + SA; x.textAlign = 'left'; x.fillText('เพื่อความบันเทิง', L, H - 122);
+    x.fillStyle = GOLD; x.font = '500 40px ' + KA; x.textAlign = 'right'; x.fillText('nivread.com', R, H - 118);
+    const blob = await new Promise((res) => c.toBlob(res, 'image/png')); if (!blob) return;
+    const name = 'nivread-' + f.title.replace(/[^\wก-๙-]+/g, '_') + '.png';
+    if (share && navigator.share) {
+      const file = new File([blob], name, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: f.title, text: 'nivread.com' }); } catch {} return; }
+    }
+    const url = URL.createObjectURL(blob); download(url, name); setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+  function intro() {
+    const m = MODES[mode], d = document.createElement('div'); d.id = 'intro'; d.className = 'my-auto shrink-0 pb-10';
+    d.innerHTML = '<h1 class="text-2xl sm:text-3xl font-medium tracking-tight"></h1><p class="mt-3 max-w-xl text-[15px] leading-relaxed text-slate-500 dark:text-neutral-400"></p><ul class="mt-8 divide-y divide-slate-200 dark:divide-white/10 border-y border-slate-200 dark:border-white/10"></ul>';
+    d.querySelector('h1').textContent = SEO[mode].h1; d.querySelector('p').textContent = m.hi;
+    if (mode === 'fortune') { d.querySelector('ul').replaceWith(fortuneHome()); log.appendChild(d); return; }
+    const box = d.querySelector('ul');
+    m.chips.forEach((t) => {
+      const li = document.createElement('li'), x = document.createElement('button'); x.type = 'button'; x.textContent = t;
+      x.className = 'w-full py-3.5 text-left text-[15px] text-slate-700 dark:text-neutral-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer';
+      x.onclick = () => { if (mode === 'docs') { input.value = t + '\n\n'; grow(); input.focus(); } else send(t); };
+      li.appendChild(x); box.appendChild(li);
+    });
+    log.appendChild(d);
+  }
+  const cnt = () => { const n = input.value.length, mx = MODES[mode].max, cc = $('cc'); cc.textContent = n >= mx * 0.7 ? n.toLocaleString() + '/' + mx.toLocaleString() : ''; cc.classList.toggle('text-red-500', n >= mx); };
+  const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 192) + 'px'; sync(); cnt(); };
+  const sync = () => { sendBtn.disabled = busy || !input.value.trim(); };
+  function showEnergy(h) {
+    if (!h) return; const f = Math.max(Number(h.free) || 0, 0), r = Math.max(Number(h.reserve) || 0, 0), n = f + r;
+    energyEl.textContent = n.toLocaleString(); energyEl.classList.toggle('text-red-500', n <= 0); energyEl.classList.toggle('text-amber-500', n > 0);
+    $('energy-sub').textContent = 'ฟรีวันนี้ ' + f.toLocaleString() + ' · สำรอง ' + r.toLocaleString();
+    const mb = $('more-btn'); if (n <= 0) mb.dataset.e = 'zero'; else if (n < 15) mb.dataset.e = 'low'; else mb.removeAttribute('data-e'); // จุดเตือนที่ปุ่ม ⋮ เมื่อพลังงานเหลือน้อย
+  }
+  // ---------- ต้องเข้าสู่ระบบก่อนถึงจะคุยได้ (เหมือน chat.html ของ fnnz.art) ----------
+  function showLoginGate() {
+    form.classList.add('hidden');
+    $('cc').textContent = '';
+    if ($('login-gate')) return;
+    const g = document.createElement('div');
+    g.id = 'login-gate';
+    g.className = 'rounded-[1.75rem] border border-slate-300 dark:border-white/15 bg-white dark:bg-[#1f1f1f] px-5 py-4 text-center shadow-[0_2px_12px_rgba(15,23,42,.06)]';
+    const p = document.createElement('p');
+    p.className = 'text-sm text-slate-600 dark:text-neutral-300';
+    p.textContent = 'ต้องเข้าสู่ระบบก่อนถึงจะคุยกับ AI ได้';
+    const a = document.createElement('a');
+    a.href = LOGIN_URL;
+    const ml0 = $('menu-login'); if (ml0) ml0.href = LOGIN_URL;
+    a.className = 'inline-block mt-3 px-6 py-2.5 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-white font-semibold text-sm hover:brightness-110';
+    a.textContent = 'เข้าสู่ระบบ';
+    g.append(p, a);
+    form.after(g);
+    const ml = $('menu-login'); if (ml) ml.classList.remove('hidden');
+  }
+  async function call(path, opt) {
+    const r = await fetch(API + path + (path.includes('?') ? '&' : '?') + Q, { ...opt, headers: { 'Content-Type': 'application/json', ...H } });
+    if (r.status === 401) { showLoginGate(); throw new Error('401'); }
+    return r;
+  }
+
+  async function load() {
+    const id = ++loadId; log.innerHTML = ''; stick = true;
+    tabs.forEach((t) => { const on = t.dataset.tab === mode; t.classList.toggle('tab-on', on); t.setAttribute('aria-checked', on ? 'true' : 'false'); });
+    $('mode-name').textContent = MODES[mode].name; applySeo(mode); $('att-btn').classList.toggle('hidden', mode !== 'docs'); $('mask-row').classList.toggle('hidden', mode !== 'docs'); $('peek-row').classList.toggle('hidden', mode !== 'docs'); renderAtt();
+    input.placeholder = MODES[mode].ph; input.maxLength = MODES[mode].max; cnt();
+    let msgs = [];
+    if (LOGGED_IN) { try { msgs = (await (await call('/history?chat=' + mode)).json()).messages || []; } catch {} }
+    if (id !== loadId) return;
+    if (!msgs.length) intro();
+    msgs.forEach((m) => { const b = addMsg(m.role, m.content); if (m.role === 'assistant') addCopy(b, m.content); });
+  }
+  const setMode = (m) => {
+    if (!MODES[m] || m === mode) return;
+    if (ctrl) ctrl.abort();
+    mode = m; history.replaceState(null, '', pathOf(m)); load();
+  };
+
+  async function send(text, opt = {}) {
+    text = (text || '').trim(); if (!text || busy) return;
+    if (!LOGGED_IN) { showLoginGate(); return; }
+    $('intro')?.remove(); addMsg('user', opt.show || text); input.value = ''; grow(); busy = true; sync();
+    sendBtn.classList.add('hidden'); stopBtn.classList.remove('hidden');
+    const bub = addMsg('assistant', '');
+    bub.innerHTML = '<span class="inline-flex gap-1.5 py-2"><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></i><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" style="animation-delay:.2s"></i><i class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" style="animation-delay:.4s"></i></span>';
+    ctrl = new AbortController();
+    let reply = '', raf = 0; const m0 = mode;
+    const paint = () => { raf = 0; if (reply) bub.classList.add('streaming'); setText(bub, 'assistant', opt.hide ? '*กำลังจัดหมวดหมู่…*' : reply, true, m0); scrollEnd(); };
+    const finish = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } bub.classList.remove('streaming'); if (opt.hide) return; setText(bub, 'assistant', reply, false, m0); enhance(bub, m0); scrollEnd(); };
+    try {
+      const res = await call('/chat', { method: 'POST', body: JSON.stringify({ message: text, mode }), signal: ctrl.signal });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        if (d.needPlan) showEnergy({ free: d.free, reserve: d.reserve });
+        bub.parentElement.remove(); addMsg('assistant', d.error || 'เชื่อมต่อไม่ได้ (' + res.status + ') ลองใหม่อีกครั้ง', 'err'); return;
+      }
+      const reader = res.body.getReader(), dec = new TextDecoder(); let buf = '';
+      for (;;) {
+        const { done, value } = await reader.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const evs = buf.split('\n\n'); buf = evs.pop();
+        for (const ev of evs) {
+          if (!ev.startsWith('data:')) continue;
+          let m; try { m = JSON.parse(ev.slice(5)); } catch { continue; }
+          if (m.t) { reply += m.t; if (!raf) raf = requestAnimationFrame(paint); }
+          if (m.done && m.hp) showEnergy(m.hp);
+        }
+      }
+      finish(); if (opt.hide) bub.parentElement.remove(); else if (reply) addCopy(bub, reply);
+    } catch (e) {
+      if (e.message === '401') return;
+      if (e.name === 'AbortError' && reply) { finish(); addCopy(bub, reply); }
+      else { bub.parentElement.remove(); if (e.name !== 'AbortError') addMsg('assistant', 'เครือข่ายมีปัญหา ลองใหม่อีกครั้ง', 'err'); }
+    } finally {
+      if (raf) cancelAnimationFrame(raf);
+      bub.classList.remove('streaming');
+      ctrl = null; busy = false; stopBtn.classList.add('hidden'); sendBtn.classList.remove('hidden'); sync(); input.focus();
+    }
+    return reply;
+  }
+
+  // ---------- โหมดจัดเอกสาร: แนบไฟล์ / คำสั่งจัดเอกสาร / แบ่งส่วนเอกสารยาว / จัดหมวดหลายไฟล์ + ZIP ----------
+  const files = [], LIM = 6500, CDN = 'https://cdnjs.cloudflare.com/ajax/libs/';
+  const lib = (u) => new Promise((ok, no) => { const s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  let ocrOk = null;
+  async function ocr(img) {
+    if (ocrOk === null) ocrOk = confirm('ไฟล์นี้เป็นภาพหรือเอกสารสแกน ต้องโหลดตัวอ่านภาษาไทยครั้งแรกประมาณ 10-20 MB ดำเนินการต่อไหม?');
+    if (!ocrOk) throw 0;
+    if (!window.Tesseract) await lib(CDN + 'tesseract.js/5.1.1/tesseract.min.js');
+    input.placeholder = 'กำลังอ่านเอกสารสแกน…';
+    return (await Tesseract.recognize(img, 'tha+eng')).data.text.replace(/(?<=[\u0E00-\u0E7F])[ \t]+(?=[\u0E00-\u0E7F])/g, '');
+  }
+  async function readFile(f) {
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (ext === 'docx') { if (!window.mammoth) await lib(CDN + 'mammoth/1.6.0/mammoth.browser.min.js'); return (await mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() })).value; }
+    if (/^(png|jpe?g|webp)$/.test(ext)) return ocr(f);
+    if (ext === 'pdf') {
+      if (!window.pdfjsLib) { await lib(CDN + 'pdf.js/3.11.174/pdf.min.js'); pdfjsLib.GlobalWorkerOptions.workerSrc = CDN + 'pdf.js/3.11.174/pdf.worker.min.js'; }
+      const pdf = await pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise; let t = '';
+      for (let i = 1; i <= pdf.numPages && t.length < 80000; i++) t += (await (await pdf.getPage(i)).getTextContent()).items.map((x) => x.str).join(' ') + '\n\n';
+      if (t.replace(/\s/g, '').length < 30) { t = ''; for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) { const pg = await pdf.getPage(i), vp = pg.getViewport({ scale: 2 }), cv = document.createElement('canvas'); cv.width = vp.width; cv.height = vp.height; await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise; t += (await ocr(cv)) + '\n\n'; } }
+      return t;
+    }
+    return f.text();
+  }
+  const split = (t) => { const o = []; let c = ''; for (const p of t.split(/\n{2,}/)) for (let s = p; s; s = s.slice(LIM)) { const q = s.slice(0, LIM); if (c.length + q.length + 2 > LIM) { o.push(c); c = ''; } c += (c ? '\n\n' : '') + q; } if (c) o.push(c); return o; };
+  $('att-btn').onclick = () => $('file').click();
+  function renderAtt() {
+    const a = $('att'); a.innerHTML = '';
+    files.forEach((f, i) => {
+      const c = h('span', 'shrink-0 max-w-[14rem] inline-flex items-center gap-1.5 rounded-full bg-slate-200/70 dark:bg-white/10 pl-3 pr-1 py-1 text-xs'); c.appendChild(h('span', 'truncate', f.name));
+      const x = h('button', 'shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'เอาออก');
+      x.onclick = () => { files.splice(i, 1); renderAtt(); }; c.appendChild(x); a.appendChild(c);
+    });
+    $('docs-bar').classList.toggle('hidden', mode !== 'docs' || !files.length); if (mode === 'docs') input.placeholder = files.length > 1 ? 'เช่น จัดหมวด หรือ เทียบ' : files.length ? 'ให้ทำอะไรกับไฟล์นี้' : MODES.docs.ph;
+  }
+  $('file').onchange = async (e) => {
+    for (const f of e.target.files) {
+      try { if (f.size > 15e6) throw 0; const t = (await readFile(f)).trim(); if (!t) throw 0; files.push({ name: f.name, text: t, blob: f }); }
+      catch { addMsg('assistant', 'อ่านไฟล์ ' + f.name + ' ไม่ได้ รองรับ txt, md, csv, json, docx, pdf และรูปภาพ ขนาดไม่เกิน 15 MB', 'err'); }
+    }
+    e.target.value = ''; $('intro')?.remove(); renderAtt();
+  };
+  // ---------- ดูก่อนส่ง / ดึงข้อมูลสำคัญ / ปฏิทิน / เทียบเอกสาร (ทำในเครื่องทั้งหมด) ----------
+  try { if (localStorage.getItem('niv-peek') === '0') $('peek').checked = false; } catch {}
+  $('peek').onchange = () => { try { localStorage.setItem('niv-peek', $('peek').checked ? '1' : '0'); } catch {} };
+  const peek = (t, n) => new Promise((ok) => {
+    if (!$('peek').checked) return ok(true);
+    const ov = h('div', 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm'), c = h('div', 'w-full max-w-2xl max-h-[85vh] flex flex-col rounded-3xl bg-white dark:bg-[#1f1f1f] shadow-2xl overflow-hidden');
+    const body = h('div', 'flex-1 min-h-0 overflow-y-auto px-5 py-4 text-sm leading-relaxed whitespace-pre-wrap break-words');
+    t.slice(0, 6000).split(/(\[(?:เลขบัตร|เลขบัญชี|เบอร์โทร|อีเมล)\])/).forEach((s, i) => body.appendChild(i % 2 ? h('mark', 'rounded bg-amber-400/30 px-1 text-inherit', s) : document.createTextNode(s)));
+    if (t.length > 6000) body.appendChild(document.createTextNode('\n… (แสดง 6,000 ตัวอักษรแรก)'));
+    const bar = h('div', 'flex gap-3 px-5 py-4 border-t border-slate-200 dark:border-white/10'), done = (v) => { ov.remove(); ok(v); };
+    const no = h('button', 'w-1/2 py-3 rounded-xl bg-slate-200 dark:bg-white/10 font-semibold text-sm cursor-pointer', 'ยกเลิก'), go = h('button', 'w-1/2 py-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white font-semibold text-sm cursor-pointer', 'ส่งให้ AI');
+    no.type = go.type = 'button'; no.onclick = () => done(false); go.onclick = () => done(true); bar.append(no, go);
+    c.append(h('div', 'px-5 pt-5 text-base font-medium', 'ข้อความที่จะส่งให้ AI'), h('div', 'px-5 pt-1 text-xs text-slate-500 dark:text-neutral-400', n ? 'ปิดบังข้อมูลส่วนตัวแล้ว ' + n + ' จุด (ไฮไลต์สีเหลือง)' : 'ไม่พบข้อมูลส่วนตัวที่ต้องปิดบัง'), body, bar); ov.appendChild(c); document.body.appendChild(ov); go.focus();
+  });
+  const TM = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  const ymd = (y, mo, d) => { y = +y; mo = +mo; d = d ? +d : 0; if (y > 2400) y -= 543; if (mo < 1 || mo > 12 || d > 31) return ''; return y + '-' + String(mo).padStart(2, '0') + (d ? '-' + String(d).padStart(2, '0') : ''); };
+  function facts(t) {
+    const o = {}; let m = new RegExp('(\\d{1,2})?\\s*(' + TM.join('|') + ')\\s*(\\d{4})').exec(t), d = '';
+    if (m) d = ymd(m[3], TM.indexOf(m[2]) + 1, m[1]); else if ((m = /(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(t))) d = ymd(m[3], m[2], m[1]);
+    if (d) o.date = d;
+    const a = /(?:รวมทั้งสิ้น|ยอดรวม|รวมเงิน|ยอดชำระ|ยอดค่าใช้บริการ|จำนวนเงิน|total)[^\d]{0,20}(\d[\d,]*(?:\.\d{1,2})?)/i.exec(t); if (a) o.amt = a[1].replace(/,/g, '');
+    return o;
+  }
+  function dueDates(t) {
+    const re = new RegExp('(ครบกำหนด|กำหนดชำระ|กำหนดส่ง|ภายในวันที่|ชำระภายใน|due)[^\\d\\n]{0,20}(\\d{1,2})\\s*(?:\\/\\s*(\\d{1,2})\\s*\\/|\\s+(' + TM.join('|') + ')\\s*)(\\d{4})', 'gi'), out = [], ttl = t.replace(/^[#*>\s-]+/, '').split('\n')[0].slice(0, 40);
+    let m; while ((m = re.exec(t))) { const d = ymd(m[5], m[3] || TM.indexOf(m[4]) + 1, m[2]); if (d.length === 10) out.push({ date: d, title: m[1] + ' · ' + ttl }); }
+    return out;
+  }
+  function icsDownload(ev) {
+    const nx = (s) => { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10).replace(/-/g, ''); }, q = (s) => s.replace(/[\\;,]/g, '\\$&');
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Docs//TH', 'CALSCALE:GREGORIAN'];
+    ev.forEach((e, i) => L.push('BEGIN:VEVENT', 'UID:' + Date.now() + i + '@docs', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d+/g, ''), 'DTSTART;VALUE=DATE:' + e.date.replace(/-/g, ''), 'DTEND;VALUE=DATE:' + nx(e.date), 'SUMMARY:' + q(e.title), 'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:' + q(e.title), 'END:VALARM', 'END:VEVENT'));
+    L.push('END:VCALENDAR'); const u = URL.createObjectURL(new Blob([L.join('\r\n')], { type: 'text/calendar;charset=utf-8' })); download(u, 'นัดหมาย.ics'); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  }
+  function compare(a, b) {
+    const sp = (t) => t.split(/\n+/).map((x) => x.trim()).filter(Boolean), A = sp(a.text), B = sp(b.text); $('intro')?.remove(); addMsg('user', 'เทียบ ' + a.name + ' กับ ' + b.name);
+    if (A.length > 3000 || B.length > 3000) { addMsg('assistant', 'เอกสารยาวเกินไปสำหรับเทียบในเครื่อง (เกิน 3,000 บรรทัด)', 'err'); return; }
+    const n = A.length, m = B.length, W = m + 1, dp = new Uint16Array((n + 1) * W), ops = []; let i = 0, j = 0;
+    for (let x = n - 1; x >= 0; x--) for (let y = m - 1; y >= 0; y--) dp[x * W + y] = A[x] === B[y] ? dp[(x + 1) * W + y + 1] + 1 : Math.max(dp[(x + 1) * W + y], dp[x * W + y + 1]);
+    while (i < n && j < m) { if (A[i] === B[j]) { ops.push(['=', A[i]]); i++; j++; } else if (dp[(i + 1) * W + j] >= dp[i * W + j + 1]) ops.push(['-', A[i++]]); else ops.push(['+', B[j++]]); }
+    while (i < n) ops.push(['-', A[i++]]); while (j < m) ops.push(['+', B[j++]]);
+    const line = 'border-t border-slate-200 dark:border-white/10', row = h('div', 'shrink-0 mt-6 w-full'), card = h('div', 'rounded-2xl border overflow-hidden text-[15px] leading-relaxed border-slate-200 dark:border-white/10');
+    const add = ops.filter((o) => o[0] === '+').length, del = ops.filter((o) => o[0] === '-').length; let same = 0;
+    card.appendChild(h('div', 'px-4 py-3 bg-slate-100/70 dark:bg-white/5 text-sm break-words', a.name + '  ↔  ' + b.name + ' · เพิ่ม ' + add + ' · ลบ ' + del + ' บรรทัด'));
+    const flush = () => { if (same) card.appendChild(h('div', 'px-4 py-1.5 text-xs text-slate-400 dark:text-neutral-500 ' + line, '… เหมือนเดิม ' + same + ' บรรทัด')); same = 0; };
+    ops.forEach(([k, t]) => { if (k === '=') { same++; return; } flush(); card.appendChild(h('div', 'px-4 py-2 break-words ' + line + (k === '+' ? ' bg-emerald-500/10 text-emerald-800 dark:text-emerald-300' : ' bg-red-500/10 text-red-700 dark:text-red-300'), (k === '+' ? '+ ' : '− ') + t)); }); flush();
+    row.appendChild(card); log.appendChild(row); scrollEnd();
+  }
+  async function runAct(p) {
+    const typed = input.value.trim();
+    const src = files.length ? files.map((f) => (files.length > 1 ? '### ' + f.name + '\n' : '') + f.text).join('\n\n') : typed;
+    if (!src) { input.placeholder = 'วางข้อความก่อน'; input.focus(); return; }
+    if (files.length && typed && p !== typed) p += '\nคำสั่งเพิ่มเติมจากผู้ใช้: ' + typed;
+    const mk = maskOn() ? mask(src) : { t: src, n: 0 }, parts = split(mk.t);
+    if (parts.length > 1 && !confirm('เอกสารยาว จะแบ่งเป็น ' + parts.length + ' ส่วน และใช้พลังงานประมาณ ' + parts.length + ' เท่า ดำเนินการต่อไหม?')) return;
+    if (!(await peek(mk.t, mk.n))) return;
+    input.value = ''; grow();
+    const label = (files.length ? '📎 ' + files.map((f) => f.name).join(', ') : 'ข้อความที่วาง') + ' · ' + p.slice(0, 30) + (mk.n ? ' · ปิดบัง ' + mk.n + ' จุด' : '');
+    for (let i = 0; i < parts.length; i++) {
+      const n = parts.length > 1 ? ' [' + (i + 1) + '/' + parts.length + ']' : '';
+      const r = await send(p + DOC_RULE + (n ? ' (ส่วนที่ ' + (i + 1) + ' จาก ' + parts.length + ' ของเอกสาร)' : '') + '\n\n' + parts[i], { show: label + n });
+      if (!r) break;
+    }
+  }
+  // ปิดบังข้อมูลส่วนตัวในเครื่อง ก่อนส่งให้ AI
+  try { if (localStorage.getItem('niv-mask') === '0') $('mask').checked = false; } catch {}
+  $('mask').onchange = () => { try { localStorage.setItem('niv-mask', $('mask').checked ? '1' : '0'); } catch {} };
+  const mask = (t) => { let n = 0; const r = (re, s) => { t = t.replace(re, () => { n++; return s; }); };
+    r(/(?<!\d)\d[- ]?\d{4}[- ]?\d{5}[- ]?\d{2}[- ]?\d(?!\d)/g, '[เลขบัตร]'); r(/(?<!\d)\d{3}[- ]\d[- ]\d{5}[- ]\d(?!\d)/g, '[เลขบัญชี]');
+    r(/(?<!\d)(?:\+66|0)\d{1,2}[- ]?\d{3}[- ]?\d{3,4}(?!\d)/g, '[เบอร์โทร]'); r(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, '[อีเมล]'); return { t, n }; };
+  const maskOn = () => $('mask').checked;
+  // จัดหมวดด้วยกฎในเครื่อง: ไม่ต้องเรียก AI ถ้ามั่นใจพอ
+  const RULES = [
+    ['การเงิน', /ใบเสนอราคา|ใบแจ้งหนี้|ใบเสร็จ|ใบกำกับภาษี|invoice|receipt|quotation|งบการเงิน|ค่าใช้จ่าย|ชำระเงิน/gi],
+    ['สัญญา', /สัญญา|ข้อตกลง|contract|agreement|\bnda\b/gi],
+    ['ประชุม', /รายงานการประชุม|วาระ|มติที่ประชุม|meeting|minutes/gi],
+    ['หนังสือราชการ', /หนังสือ|เรียน\s|อ้างถึง|ขอแสดงความนับถือ/gi],
+    ['บุคคล', /ใบลา|ลาป่วย|ลากิจ|ลาพักร้อน|resume|\bcv\b|สมัครงาน|ประวัติส่วนตัว|เงินเดือน/gi],
+    ['รายงาน', /รายงานผล|สรุปผล|report|ผลการดำเนินงาน/gi],
+  ];
+  function ruleCat(f) {
+    if (/\.csv$/i.test(f.name)) return 'ข้อมูลตาราง';
+    const body = f.text.slice(0, 2500), sc = RULES.map(([c, re]) => [c, 3 * (f.name.match(re) || []).length + (body.match(re) || []).length]).sort((a, b) => b[1] - a[1]);
+    return sc[0][1] >= 3 && sc[0][1] >= sc[1][1] + 2 ? sc[0][0] : null;
+  }
+  const sha = async (t) => { t = t.replace(/\s+/g, ' ').trim().toLowerCase(); try { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map((b) => b.toString(16).padStart(2, '0')).join(''); } catch { return t.length + ':' + t.slice(0, 300); } };
+  async function organize() {
+    const loc = [], rest = [], seen = new Map();
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i], base = f.name.replace(/\.[^.]+$/, ''), k = await sha(f.text);
+      if (seen.has(k)) { loc.push({ i, category: 'ซ้ำ', name: base, tags: ['ซ้ำกับ ' + files[seen.get(k)].name], summary: 'เนื้อหาเหมือนไฟล์อื่น' }); continue; }
+      seen.set(k, i); const c = ruleCat(f);
+      if (c) loc.push({ i, category: c, name: base, tags: [], summary: 'จัดด้วยกฎในเครื่อง ไม่ใช้พลังงาน AI' }); else rest.push(i);
+    }
+    const list = rest.map((i) => ({ i, n: files[i].name, t: (maskOn() ? mask : (x) => ({ t: x }))(files[i].text.replace(/\s+/g, ' ').slice(0, 700)).t })), batches = [];
+    let cur = [], len = 0;
+    list.forEach((x) => { const l = JSON.stringify(x).length; if (len + l > 5500 && cur.length) { batches.push(cur); cur = []; len = 0; } cur.push(x); len += l; });
+    if (cur.length) batches.push(cur);
+    if (batches.length > 1 && !confirm('จะส่งเป็น ' + batches.length + ' รอบ ใช้พลังงานประมาณ ' + batches.length + ' เท่า ดำเนินการต่อไหม?')) return;
+    if (rest.length && !(await peek(list.map((x) => x.n + ': ' + x.t).join('\n\n'), 0))) return;
+    const all = loc.slice();
+    for (const b of batches) {
+      const r = await send('จัดหมวดหมู่เอกสารต่อไปนี้ ตอบเป็น JSON array เท่านั้น ห้ามมีคำอธิบายอื่น รูปแบบ [{"i":เลขเดิม,"category":"ชื่อหมวดสั้น ๆ","name":"ชื่อไฟล์ใหม่ที่สื่อความหมาย ไม่มีนามสกุล","tags":["แท็ก"],"summary":"สรุป 1 บรรทัด"}] ถ้าเนื้อหาเรื่องเดียวกันให้ใช้ชื่อหมวดเดียวกัน\n\n' + JSON.stringify(b), { show: '📎 จัดหมวด ' + b.length + ' ไฟล์', hide: true });
+      const m = r && /\[[\s\S]*\]/.exec(r); if (!m) break;
+      try { all.push(...JSON.parse(m[0])); } catch { break; }
+    }
+    if (!all.length) { addMsg('assistant', 'จัดหมวดไม่สำเร็จ ลองใหม่อีกครั้ง หรือแนบทีละน้อยไฟล์', 'err'); return; }
+    all.forEach((r) => { const f = files[r.i]; if (f) Object.assign(r, facts(f.text)); });
+    showPlan(all);
+  }
+  function showPlan(rows) {
+    const safe = (s, d) => String(s || d).replace(/[\\/:*?"<>|]+/g, ' ').trim().slice(0, 80) || d;
+    const extOf = (n) => (n.includes('.') ? n.slice(n.lastIndexOf('.')) : '');
+    const map = rows.filter((r) => files[r.i]).map((r) => { const f = files[r.i]; return { f, cat: safe(r.category, 'อื่น ๆ'), name: (r.date || new Date(f.blob.lastModified).toISOString().slice(0, 10)) + '_' + safe(r.name, f.name.replace(/\.[^.]+$/, '')) + (r.amt ? '_' + r.amt + 'บาท' : ''), date: r.date || '', amt: r.amt || '', orig: f.name, sum: String(r.summary || '') }; });
+    const row = h('div', 'shrink-0 mt-6 w-full'), box = h('div', 'space-y-3'), foot = h('div', 'mt-4 flex flex-col sm:flex-row sm:items-center gap-3');
+    const FOLDER = SV('<path d="M3 6a1 1 0 0 1 1-1h4l2 2h6a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>', 17), line = 'border-slate-200 dark:border-white/10';
+    function draw() {
+      box.innerHTML = ''; const cats = [...new Set(map.map((m) => m.cat))];
+      cats.forEach((c) => {
+        const items = map.filter((m) => m.cat === c), g = h('section', 'rounded-2xl border overflow-hidden ' + line), hd = h('div', 'flex items-center gap-2.5 px-4 py-2.5 bg-slate-100/70 dark:bg-white/5 text-amber-600 dark:text-amber-400');
+        hd.innerHTML = FOLDER; const t = h('input', 'min-w-0 flex-1 bg-transparent outline-none text-[15px] font-medium text-slate-800 dark:text-neutral-100'); t.value = c; t.setAttribute('aria-label', 'ชื่อหมวด');
+        let done = false; t.onblur = () => { if (done) return; const v = safe(t.value, c); if (v === c) { t.value = c; return; } done = true; map.forEach((m) => { if (m.cat === c) m.cat = v; }); draw(); };
+        t.onkeydown = (e) => { if (e.key === 'Enter') t.blur(); };
+        hd.append(t, h('span', 'shrink-0 text-xs text-slate-500 dark:text-neutral-400', items.length + ' ไฟล์')); g.appendChild(hd);
+        items.forEach((m) => {
+          const r = h('div', 'px-4 py-3 border-t flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 ' + line), l = h('div', 'min-w-0 flex-1');
+          const n = h('input', 'w-full bg-transparent outline-none text-[15px] text-slate-800 dark:text-neutral-100'); n.value = m.name; n.setAttribute('aria-label', 'ชื่อไฟล์'); n.oninput = () => { m.name = n.value; };
+          l.append(n, h('div', 'mt-0.5 truncate text-xs text-slate-400 dark:text-neutral-500', m.f.name + (m.sum ? ' · ' + m.sum : '')));
+          const s = h('select', 'shrink-0 w-full sm:w-40 rounded-lg border bg-white dark:bg-[#1f1f1f] px-2 py-1.5 text-sm cursor-pointer ' + line); s.setAttribute('aria-label', 'ย้ายไปหมวด');
+          cats.forEach((x) => { const o = h('option', null, x); o.value = x; o.selected = x === c; s.appendChild(o); });
+          const nw = h('option', null, '+ หมวดใหม่'); nw.value = '\u0000'; s.appendChild(nw);
+          s.onchange = () => { m.cat = s.value === '\u0000' ? safe(prompt('ชื่อหมวดใหม่'), c) : s.value; draw(); };
+          r.append(l, s); g.appendChild(r);
+        });
+        box.appendChild(g);
+      });
+    }
+    draw();
+    const zb = h('button', 'w-full sm:w-auto shrink-0 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 px-6 py-3 text-sm font-semibold text-white cursor-pointer hover:brightness-105', 'ดาวน์โหลด ZIP'); zb.type = 'button';
+    zb.onclick = async () => {
+      if (!window.JSZip) await lib(CDN + 'jszip/3.10.1/jszip.min.js');
+      const z = new JSZip(), used = new Set();
+      map.forEach((m) => { const ext = extOf(m.f.name), cat = safe(m.cat, 'อื่น ๆ'); let nm = safe(m.name, 'ไฟล์'); if (ext && !nm.toLowerCase().endsWith(ext.toLowerCase())) nm += ext; let p = cat + '/' + nm, k = 1; while (used.has(p)) p = cat + '/' + (++k) + '_' + nm; used.add(p); z.file(p, m.f.blob); });
+      const u = URL.createObjectURL(await z.generateAsync({ type: 'blob' })); download(u, 'เอกสารจัดหมวด.zip'); setTimeout(() => URL.revokeObjectURL(u), 4000);
+    };
+    const cb = h('button', 'w-full sm:w-auto shrink-0 rounded-full border border-slate-300 dark:border-white/20 px-6 py-3 text-sm font-medium cursor-pointer', 'CSV สรุป'); cb.type = 'button';
+    cb.onclick = () => { const q = (v) => '"' + String(v).replace(/"/g, '""') + '"', L = [['หมวด', 'ชื่อใหม่', 'ไฟล์เดิม', 'วันที่ในเอกสาร', 'ยอดเงิน', 'สรุป']].concat(map.map((m) => [m.cat, m.name, m.orig, m.date, m.amt, m.sum])); const u = URL.createObjectURL(new Blob(['\uFEFF' + L.map((r) => r.map(q).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' })); download(u, 'สรุปเอกสาร.csv'); setTimeout(() => URL.revokeObjectURL(u), 4000); };
+    foot.append(h('p', 'flex-1 text-xs text-slate-500 dark:text-neutral-400', map.length + ' ไฟล์ · แก้ชื่อหมวดหรือชื่อไฟล์ หรือย้ายหมวดได้ก่อนดาวน์โหลด'), cb, zb);
+    row.append(box, foot); log.appendChild(row); scrollEnd();
+  }
+
+  // ---------- ล้างแชท ----------
+  const modal = $('clr-modal'), closeModal = () => modal.classList.add('hidden');
+  $('clear-btn').onclick = () => { closeMenus(); $('clr-mode').textContent = ' “' + MODES[mode].name + '” '; modal.classList.remove('hidden'); };
+  $('clr-cancel').onclick = $('clr-backdrop').onclick = closeModal;
+  $('clr-ok').onclick = async () => {
+    try { await call('/clear', { method: 'POST', body: JSON.stringify({ chat: mode }) }); } catch {}
+    closeModal(); load();
+  };
+
+  $('back-btn').onclick = () => { if (history.length > 1 && document.referrer) history.back(); else location.href = '/'; };
+  $('vm-close').onclick = $('vm-backdrop').onclick = closeView;
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeView(); closeModal(); } });
+  // เมนูป๊อปอัป: + (เลือกโหมด) และ ⋮ (พลังงาน / ล้างแชท)
+  const menus = [['plus-btn', 'plus-menu'], ['more-btn', 'more-menu']].map(([b, m]) => ({ btn: $(b), menu: $(m) }));
+  function closeMenus() { menus.forEach(({ btn, menu }) => { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); }); }
+  menus.forEach(({ btn, menu }) => {
+    btn.onclick = () => {
+      const willOpen = menu.classList.contains('hidden'); closeMenus();
+      if (willOpen) { menu.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); const f = menu.querySelector('.tab-on, button[role^="menuitem"]'); if (f) f.focus(); }
+    };
+    menu.addEventListener('keydown', (e) => {
+      const items = [...menu.querySelectorAll('button[role^="menuitem"]')], i = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+      else if (e.key === 'Escape') { e.stopPropagation(); closeMenus(); btn.focus(); }
+    });
+  });
+  document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.menu, #plus-btn, #more-btn')) closeMenus(); });
+  tabs.forEach((t) => (t.onclick = () => { closeMenus(); setMode(t.dataset.tab); input.focus(); }));
+  stopBtn.onclick = () => ctrl && ctrl.abort();
+  form.onsubmit = (e) => { e.preventDefault(); const t = input.value.trim(); if (mode === 'docs' && files.length && t && !busy) { if (files.length > 1 && /เทียบ|เปรียบเทียบ|ต่างกัน/.test(t)) { input.value = ''; grow(); compare(files[0], files[1]); } else if (files.length > 1 && /จัดหมวด|จัดเรียง|จัดระเบียบ|แยกโฟลเดอร์|ตั้งชื่อ/.test(t)) { input.value = ''; grow(); organize(); } else runAct(t); return; } if (mode === 'docs' && t && t.length < 7800) send(t + DOC_RULE, { show: t }); else send(input.value); };
+  input.addEventListener('input', grow);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
+  window.addEventListener('hashchange', () => setMode(location.hash.slice(1)));
+
+  // โหมดเริ่มต้นจาก ?mode=docs ; ลิงก์เก่าแบบ /ai#fortune ยังใช้ได้และจะถูกแปลงเป็น URL ใหม่
+  const qm = new URLSearchParams(location.search).get('mode'), hm = location.hash.slice(1);
+  mode = MODES[qm] ? qm : MODES[hm] ? hm : 'general';
+  if (hm && MODES[hm]) history.replaceState(null, '', pathOf(mode));
+  load();
+  if (LOGGED_IN) call('/status').then((r) => r.json()).then((d) => showEnergy({ free: d.free, reserve: d.reserve })).catch(() => {});
+  else { showLoginGate(); $('menu-acct').classList.add('hidden'); document.querySelectorAll('.menu-acct').forEach((e) => e.classList.add('hidden')); $('clear-btn').classList.add('hidden'); }
+})();
+</script>
+</body>
+</html>
