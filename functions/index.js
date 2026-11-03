@@ -68,7 +68,6 @@ export async function onRequestGet({ request, env }) {
   const jsonld = [
     {
       '@context': 'https://schema.org', '@type': 'WebSite', name: 'nivread', url: origin + '/',
-      potentialAction: { '@type': 'SearchAction', target: `${origin}/search?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
     },
     {
       '@context': 'https://schema.org', '@type': 'CollectionPage', name: title, url: origin + path,

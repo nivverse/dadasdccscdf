@@ -5,8 +5,23 @@ import { imageGallery, postImages } from './gallery.js';
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-export const fmtDate = (ms) =>
-  new Date(ms).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Bangkok' });
+// แปลงเวลา (ms / ตัวเลขในรูปข้อความ / ISO string) เป็น ISO 8601 — คืน null ถ้าไม่มีค่าหรือค่าไม่ถูกต้อง (กัน RangeError: Invalid time value)
+export const isoDate = (v) => {
+  if (v == null || v === '') return null;
+  const d = new Date(typeof v === 'string' && /^\d+$/.test(v) ? Number(v) : v);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+};
+
+export const fmtDate = (ms) => {
+  const d = new Date(ms);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Bangkok' });
+};
+
+// แท็กเวลาในการ์ด: ถ้าวันที่ใช้ไม่ได้ก็ข้ามไป (ไม่ให้ทั้งหน้าล่ม)
+const timeTag = (v) => {
+  const iso = isoDate(v);
+  return iso ? `<time datetime="${iso}">${esc(ago(v))}</time>` : '';
+};
 
 export const catHref = (name) => `/category/${encodeURIComponent(name)}`;
 
@@ -28,6 +43,7 @@ export function categoryBar(cats, active = '') {
 }
 
 export function ago(ms) {
+  if (Number.isNaN(Date.now() - ms)) return '';
   const s = Math.max(1, ((Date.now() - ms) / 1000) | 0);
   if (s < 60) return 'เมื่อสักครู่';
   const m = (s / 60) | 0; if (m < 60) return `${m} นาทีที่แล้ว`;
@@ -95,7 +111,7 @@ function postHead(p) {
         ? `<div class="flex items-center gap-1 min-w-0"><a href="${profile}" class="font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a></div>`
         : `<div class="font-semibold text-sm text-slate-900 dark:text-white truncate">${who}</div>`}
       <div class="text-xs text-slate-500 dark:text-neutral-400">
-        <time datetime="${new Date(p.published_at).toISOString()}">${esc(ago(p.published_at))}</time>
+        ${timeTag(p.published_at || p.updated_at)}
         ${p.category ? `<a href="${catHref(p.category)}" class="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">${esc(p.category)}</a>` : ''}
       </div>
     </div>
@@ -151,7 +167,7 @@ function cardHtml(p, origin, first = false) {
     ${(p.content_len || 0) > 160 ? `<a href="${href}" class="inline-block mt-1 px-2 -ml-2 text-lg leading-none tracking-widest text-amber-600 dark:text-amber-400 hover:text-amber-500" aria-label="อ่านโพสต์ต่อ" title="อ่านโพสต์ต่อ">...</a>` : ''}
     ${(p.lock_count || 0) > 0 ? `<div class="mt-2"><a href="${href}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">🔒 มีเนื้อหาที่ถูกล็อก${Number(p.lock_count) > 1 ? ' ' + Number(p.lock_count) + ' กล่อง' : ''} · กดเพื่อปลดล็อก</a></div>` : ''}
   </div>
-  ${(p.videos && p.videos.length) ? videoGallery(p.videos, p.title, true, first, href) : imageGallery(postImages(p), p.title, first, href, p.live)}
+  ${(p.videos && p.videos.length) ? videoGallery(p.videos, p.title, true, first, href) : imageGallery(postImages(p), p.title, first, href)}
   ${postBar(p, origin)}
 </article>`;
 }

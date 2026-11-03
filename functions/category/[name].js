@@ -46,6 +46,11 @@ export async function onRequestGet({ request, env, params }) {
     );
   }
 
+  // หน้าเกินจำนวนจริง → 404 (ไม่ให้ Google เก็บหน้าว่าง)
+  if (page > 1 && data.posts.length === 0) {
+    return htmlResponse('<!DOCTYPE html><meta charset="utf-8"><meta name="robots" content="noindex"><title>ไม่พบหน้านี้</title><p>ไม่พบหน้านี้ <a href="' + esc(base) + '">กลับไปหน้าหมวดหมู่</a></p>', 404, 'public, max-age=60');
+  }
+
   const shownName = (cats?.categories || []).find((c) => String(c.name).toLowerCase() === name.toLowerCase())?.name || name;
   const totalPages = Math.max(1, Math.ceil(data.total / PER_PAGE));
   const path = page === 1 ? base : `${base}?page=${page}`;

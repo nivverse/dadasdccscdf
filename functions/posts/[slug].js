@@ -1,5 +1,5 @@
 // functions/posts/[slug].js — หน้าโพสต์เดี่ยว /posts/<slug> (SSR + meta + JSON-LD)
-import { api, esc, fmtDate, shell, htmlResponse, postHead, postBar, postCard } from '../_lib/render.js';
+import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard } from '../_lib/render.js';
 import { videoGallery, videoLd } from '../_lib/videos.js';
 import { imageGallery, postImages } from '../_lib/gallery.js';
 
@@ -50,8 +50,8 @@ export async function onRequestGet({ request, env, params }) {
       url,
       mainEntityOfPage: { '@type': 'WebPage', '@id': url },
       image: postImages(p).length ? postImages(p) : undefined,
-      datePublished: new Date(p.published_at).toISOString(),
-      dateModified: new Date(p.updated_at || p.published_at).toISOString(),
+      datePublished: isoDate(p.published_at || p.updated_at) || undefined,
+      dateModified: isoDate(p.updated_at || p.published_at) || undefined,
       inLanguage: 'th',
       articleSection: p.category || undefined,
       author: { '@type': 'Person', name: author, url: origin + '/user?id=' + encodeURIComponent(p.author_id || '') },
@@ -68,7 +68,7 @@ export async function onRequestGet({ request, env, params }) {
     },
   ];
 
-  jsonld.push(...videoLd(p.videos, { title: p.title, desc, uploadDate: new Date(p.published_at).toISOString() }));
+  jsonld.push(...videoLd(p.videos, { title: p.title, desc, uploadDate: isoDate(p.published_at || p.updated_at) || undefined }));
 
   const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
   <nav aria-label="breadcrumb" class="mb-4 text-xs text-slate-500 dark:text-neutral-400">
@@ -80,7 +80,7 @@ export async function onRequestGet({ request, env, params }) {
       <h1 class="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
       <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">เผยแพร่ ${esc(fmtDate(p.published_at))}${p.updated_at - p.published_at > 86400000 ? ` · อัปเดต ${esc(fmtDate(p.updated_at))}` : ''}</p>
     </div>
-    ${imageGallery(postImages(p), p.title, true, undefined, p.live)}
+    ${imageGallery(postImages(p), p.title, true)}
     <div id="post-body" class="px-4 py-6 space-y-5 text-[15px]">
 ${paragraphs}
     </div>
@@ -101,9 +101,14 @@ ${paragraphs}
 <script>document.addEventListener('DOMContentLoaded',function(){if(window.NIV&&NIV.countView)NIV.countView(${JSON.stringify(p.slug).replace(/</g, '\\u003c')});});</script>
 </main>`;
 
+  const pubIso = isoDate(p.published_at || p.updated_at);
+  const modIso = isoDate(p.updated_at || p.published_at);
   return htmlResponse(shell({
     origin, apiBase: env.API_BASE, path, title, desc, image: p.cover_url, type: 'article', jsonld, body,
-    head: `<meta property="article:published_time" content="${new Date(p.published_at).toISOString()}">
-<meta property="article:modified_time" content="${new Date(p.updated_at || p.published_at).toISOString()}">${p.category ? `\n<meta property="article:section" content="${esc(p.category)}">` : ''}`,
+    head: [
+      pubIso && `<meta property="article:published_time" content="${pubIso}">`,
+      modIso && `<meta property="article:modified_time" content="${modIso}">`,
+      p.category && `<meta property="article:section" content="${esc(p.category)}">`,
+    ].filter(Boolean).join('\n'),
   }));
 }
