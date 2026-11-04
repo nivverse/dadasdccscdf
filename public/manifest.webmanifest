@@ -1,0 +1,77 @@
+{
+  "name": "nivread",
+  "short_name": "nivread",
+  "description": "nivread ชุมชนนักอ่านและนักเขียน อ่านบทความ ข่าว และเรื่องเล่าวงการอนิเมะ พร้อมเขียนโพสต์แชร์เรื่องราวได้ฟรี",
+  "lang": "th",
+  "dir": "ltr",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0d0d0d",
+  "background_color": "#0d0d0d",
+  "categories": [
+    "news",
+    "entertainment",
+    "social"
+  ],
+  "icons": [
+    {
+      "src": "/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "เขียนโพสต์",
+      "short_name": "เขียน",
+      "url": "/write",
+      "icons": [
+        {
+          "src": "/img/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ค้นหา",
+      "short_name": "ค้นหา",
+      "url": "/search",
+      "icons": [
+        {
+          "src": "/img/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "โพสต์ทั้งหมด",
+      "short_name": "โพสต์",
+      "url": "/posts",
+      "icons": [
+        {
+          "src": "/img/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
