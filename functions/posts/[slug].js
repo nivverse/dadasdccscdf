@@ -1,0 +1,114 @@
+// functions/posts/[slug].js — หน้าโพสต์เดี่ยว /posts/<slug> (SSR + meta + JSON-LD)
+import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard } from '../_lib/render.js';
+import { videoGallery, videoLd } from '../_lib/videos.js';
+import { imageGallery, postImages } from '../_lib/gallery.js';
+
+const stripText = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+// ตัวคั่นกล่องล็อกในเนื้อหา [[lock:k1]] — ไม่ให้โผล่ใน meta/JSON-LD และวาดเป็นช่องว่างให้ /lock-box.js เติมกล่องทีหลัง (ข้อความที่ซ่อนไม่อยู่ใน HTML นี้)
+const LOCK_MARK = /\[\[lock:(k[1-9])\]\]/g;
+const stripLocks = (s) => String(s || '').replace(LOCK_MARK, ' ');
+
+export async function onRequestGet({ request, env, params }) {
+  const origin = new URL(request.url).origin;
+  const slug = String(params.slug || '');
+
+  const data = await api(env, `/api/blog/post?slug=${encodeURIComponent(slug)}`);
+
+  if (data?.notFound || (data && data.success === false && !data.error?.startsWith('api'))) {
+    return htmlResponse(
+      shell({
+        origin, apiBase: env.API_BASE, path: `/posts/${slug}`, title: 'ไม่พบโพสต์ | nivread', desc: 'ไม่พบโพสต์ที่คุณต้องการ',
+        robots: 'noindex, follow',
+        body: '<main class="flex-1 max-w-2xl w-full mx-auto px-4 py-16 z-10 text-center"><h1 class="text-2xl font-bold">ไม่พบโพสต์นี้</h1><p class="mt-2 text-slate-500 dark:text-neutral-400">โพสต์อาจถูกลบหรือย้ายแล้ว</p><a href="/posts" class="inline-block mt-6 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-sm">กลับไปหน้าโพสต์</a></main>',
+      }),
+      404, 'public, max-age=60'
+    );
+  }
+  if (!data || data.error || !data.post) {
+    return htmlResponse('<!DOCTYPE html><meta charset="utf-8"><title>ระบบขัดข้อง</title><p>กรุณาลองใหม่อีกครั้ง</p>', 503, 'no-store');
+  }
+
+  const p = data.post;
+  const path = `/posts/${p.slug}`;
+  const url = origin + path;
+  const desc = stripText(stripLocks(p.excerpt)) || stripText(stripLocks(p.content)).slice(0, 155);
+  const title = `${p.title} | nivread`;
+  const author = p.display_name || 'nivread';
+
+  const paraHtml = (chunk) => String(chunk).split(/\n{2,}/).map((t) => t.trim()).filter(Boolean)
+    .map((t) => `<p class="leading-8 text-slate-800 dark:text-neutral-200">${esc(t).replace(/\n/g, '<br>')}</p>`).join('\n');
+  // split แบบมี capture: ตำแหน่งคู่ = ข้อความ, ตำแหน่งคี่ = key ของกล่อง (k1-k9 ผ่าน regex แล้ว ปลอดภัยใส่ใน attribute)
+  const paragraphs = String(p.content).split(LOCK_MARK)
+    .map((seg, i) => (i % 2 ? `<div data-lock="${seg}"></div>` : paraHtml(seg))).filter(Boolean).join('\n');
+
+  const jsonld = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: p.title.slice(0, 110),
+      description: desc,
+      url,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+      image: postImages(p).length ? postImages(p) : undefined,
+      datePublished: isoDate(p.published_at || p.updated_at) || undefined,
+      dateModified: isoDate(p.updated_at || p.published_at) || undefined,
+      inLanguage: 'th',
+      articleSection: p.category || undefined,
+      author: { '@type': 'Person', name: author, url: origin + '/user?id=' + encodeURIComponent(p.author_id || '') },
+      publisher: { '@type': 'Organization', name: 'nivread', url: origin + '/', logo: { '@type': 'ImageObject', url: origin + '/img/icon-192.png' } },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'nivread', item: origin + '/' },
+        { '@type': 'ListItem', position: 2, name: 'โพสต์', item: origin + '/posts' },
+        { '@type': 'ListItem', position: 3, name: p.title, item: url },
+      ],
+    },
+  ];
+
+  jsonld.push(...videoLd(p.videos, { title: p.title, desc, uploadDate: isoDate(p.published_at || p.updated_at) || undefined }));
+
+  const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
+  <nav aria-label="breadcrumb" class="mb-4 text-xs text-slate-500 dark:text-neutral-400">
+    <a href="/" class="hover:text-amber-500">หน้าแรก</a> / <a href="/posts" class="hover:text-amber-500">โพสต์</a>
+  </nav>
+  <article class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
+    ${postHead(p)}
+    <div class="px-4 pb-4">
+      <h1 class="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
+      <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">เผยแพร่ ${esc(fmtDate(p.published_at))}${p.updated_at - p.published_at > 86400000 ? ` · อัปเดต ${esc(fmtDate(p.updated_at))}` : ''}</p>
+    </div>
+    ${imageGallery(postImages(p), p.title, true)}
+    <div id="post-body" class="px-4 py-6 space-y-5 text-[15px]">
+${paragraphs}
+    </div>
+    ${videoGallery(p.videos, p.title)}
+    ${postBar(p, origin)}
+  </article>
+  <div class="mt-2 text-right"><button type="button" data-report-post="${esc(p.slug)}" class="text-xs text-slate-400 hover:text-amber-500 hover:opacity-70 cursor-pointer">รายงานโพสต์นี้</button></div>
+
+  <section id="comments" class="mt-6 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4" data-comments-for="post:${esc(p.slug)}" data-author="${esc(p.author_id || '')}">
+    <h2 class="font-bold">ความคิดเห็น (<span id="comment-count">${p.comment_count || 0}</span>)</h2>
+    <div id="comment-box" class="mt-3"></div>
+    <div id="comment-list" class="mt-4 space-y-4"></div>
+  </section>
+
+<script src="/comments.js" defer></script>
+<script src="/lock-box.js" defer></script>
+<script>document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('post-body');if(b&&window.NIVLocks)NIVLocks.mount(b,${JSON.stringify(p.slug).replace(/</g, '\\u003c')});});</script>
+<script>document.addEventListener('DOMContentLoaded',function(){if(window.NIV&&NIV.countView)NIV.countView(${JSON.stringify(p.slug).replace(/</g, '\\u003c')});});</script>
+</main>`;
+
+  const pubIso = isoDate(p.published_at || p.updated_at);
+  const modIso = isoDate(p.updated_at || p.published_at);
+  return htmlResponse(shell({
+    origin, apiBase: env.API_BASE, path, title, desc, image: p.cover_url, type: 'article', jsonld, body,
+    head: [
+      pubIso && `<meta property="article:published_time" content="${pubIso}">`,
+      modIso && `<meta property="article:modified_time" content="${modIso}">`,
+      p.category && `<meta property="article:section" content="${esc(p.category)}">`,
+    ].filter(Boolean).join('\n'),
+  }));
+}
