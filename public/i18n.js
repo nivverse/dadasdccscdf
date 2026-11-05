@@ -18,6 +18,7 @@
     th: { name: 'ไทย', locale: 'th-TH' },
     en: { name: 'English', locale: 'en-US' },
     ja: { name: '日本語', locale: 'ja-JP' },
+    ms: { name: 'Bahasa Melayu', locale: 'ms-MY' },
   };
   const SOURCE = 'th';      // ภาษาของข้อความในโค้ด
   const FALLBACK = 'en';    // ภาษาที่ใช้เมื่อเครื่องใช้ภาษาที่เว็บยังไม่รองรับ
