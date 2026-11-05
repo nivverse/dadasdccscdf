@@ -1,645 +1,678 @@
-0|Bahasa
-1|Automatik (bahasa peranti)
-2|Baru sahaja
-3|{0} min lalu
-4|{0} jam lalu
-5|{0} hari lalu
-6|Semalam
-7|Hari ini
-8|{0} hari
-9|{0} jam
-10|{0} min
-11|{0} saat
-12|Baharu
-13|Terkini
-14|Popular
-15|Semua
-16|Kembali
-17|Log masuk
-18|Hantar
-19|Tutup
-20|Batal
-21|Salin
-22|Disalin
-23|(pilihan)
-24|pendua
-25|Lain-lain
-26|Memuatkan...
-27|Sedang diproses...
-28|Menyimpan...
-29|Menyimpan…
-30|Memadam...
-31|Menghantar...
-32|Simpan
-33|Disimpan
-34|Padam
-35|Sunting
-36|Tambah
-37|Letak
-38|Hidup
-39|item
-40|orang
-41|kali
-42|aksara
-43|Sesuatu telah berlaku
-44|Sila cuba lagi
-45|Cuba lagi
-46|Sistem sedang dikemas kini
-47|Tidak dapat bersambung. Sila cuba lagi.
-48|Tidak dapat bersambung. Sila cuba lagi.
-49|Tidak dapat bersambung ke pelayan
-50|Tidak dapat bersambung ke pelayan. Sila cuba lagi.
-51|Pelayan belum tersedia
-52|Tindakan gagal
-53|Gagal dimuatkan
-54|Gagal memuatkan data
-55|Gagal memuatkan senarai
-56|Ralat berlaku (status {0})
-57|Sesi anda telah tamat. Sila log masuk semula.
-58|Sila log masuk
-59|Pentadbir sahaja
-60|Pentadbir
-61|Menu
-62|Menu utama
-63|Menu pantas
-64|Tutup menu
-65|Tukar mod warna
-66|Mod gelap
-67|Mod cerah
-68|Laman utama
-69|Profil
-70|Profil saya
-71|Pergi ke profil saya
-72|Lihat profil saya
-73|Tetapan akaun
-74|Pemberitahuan
-75|Pemberitahuan ({0} baharu)
-76|Log keluar
-77|Log masuk / Daftar
-78|Tulis hantaran
-79|Tulis
-80|Cari
-81|Cari hantaran atau nama pengguna
-82|Cari hantaran atau nama pengguna
-83|Semua hantaran
-84|Semua hantaran →
-85|Hantaran
-86|{0} hantaran
-87|{0} hantaran ·
-88|Kategori
-89|/ Kategori
-90|Semua kategori
-91|Semua kategori →
-92|Sembang
-93|Togol tema Halloween
-94|Tema Halloween
-95|Ikut
-96|Mengikuti
-97|Ikut {0}
-98|Profil {0}
-99|Sunting hantaran
-100|Suka
-101|Komen
-102|{0} komen
-103|Komen ({0})
-104|Hantar semula
-105|Tontonan
-106|{0} tontonan
-107|Kongsi
-108|menghantar semula hantaran anda
-109|dan {0} lagi menghantar semula
-110|{0} menghantar semula
-111|dan {0} lagi
-112|Baca lagi
-113|🔒 Mengandungi kandungan berkunci
-114|🔒 {0} kotak berkunci · ketik untuk membuka kunci
-115|🔒 {0} kotak berkunci · ketik untuk membuka kunci
-116|· ketik untuk membuka kunci
-117|Lihat imej penuh
-118|Buka hantaran
-119|Buka hantaran {0}
-120|Lihat imej {0}
-121|Lihat imej
-122|Imej sebelumnya
-123|Imej seterusnya
-124|{0} imej {1}
-125|Video
-126|Lihat semua
-127|Lihat semua {0} klip
-128|{0} klip
-129|Pilih video
-130|Main video
-131|Main video {0}
-132|{0} — video {1}
-133|Main
-134|Bunyi
-135|Nyahbisu
-136|Bisukan
-137|Penulis
-138|Laporkan
-139|Laporkan hantaran ini
-140|Laporkan hantaran
-141|Laporkan komen
-142|Laporkan pengguna
-143|Spam / pengiklanan
-144|Gangguan / bahasa kesat
-145|Maklumat palsu / mengelirukan
-146|Kandungan tidak sesuai
-147|Pelanggaran hak cipta
-148|Pilih sebab. Pentadbir akan menyemaknya.
-149|Butiran tambahan (pilihan)
-150|Hantar laporan
-151|Gagal menghantar laporan
-152|Anda sudah melaporkan ini. Pentadbir sedang menyemaknya.
-153|Laporan dihantar. Terima kasih kerana membantu menjaga komuniti.
-154|Batalkan hantar semula
-155|Anda tidak boleh menghantar semula hantaran sendiri
-156|Pautan disalin
-157|Salin pautan ini
-158|Mesej dikemas kini
-159|Dihantar semula dengan mesej — pengikut anda akan melihatnya
-160|Dihantar semula — pengikut anda akan melihatnya
-161|Buat asal
-162|Hantar semula dibatalkan
-163|Kongsi dengan pengikut anda serta-merta
-164|Hantar semula dengan mesej
-165|Tambah pendapat anda (sehingga {0} aksara)
-166|Tambah pendapat anda (sehingga
-167|Tambah / sunting mesej
-168|Sunting nota yang dilampirkan pada hantar semula ini
-169|Alih keluar daripada profil dan suapan pengikut anda
-170|Sunting mesej hantar semula
-171|Tambah pendapat anda… (boleh dibiarkan kosong)
-172|Mesej hantar semula
-173|🔥 Wajib baca
-174|😂 Kelakar sangat
-175|🤔 Menarik untuk difikirkan
-176|👏 Setuju
-177|😭 Menyentuh hati
-178|Sedang menghantar semula…
-179|Buang apa yang telah anda tulis?
-180|Apa yang anda fikirkan?
-181|Log masuk untuk menulis hantaran anda
-182|Tidak dapat memuatkan lagi hantaran
-183|Suapan anda
-184|Belum ada hantaran baharu daripada yang anda ikuti
-185|Lihat semua hantaran
-186|Anda telah melihat semua hantaran dalam suapan anda
-187|Anda telah melihat semua hantaran
-188|Anda telah melihat semua hantaran dalam kategori ini
-189|Sebelumnya
-190|Seterusnya
-191|Halaman {0} / {1}
-192|Navigasi halaman hantaran
-193|Hantaran dalam kategori
-194|Pengikut
-195|Kembali ke hantaran
-196|Kembali ke kategori
-197|Kembali ke laman utama
-198|Halaman tidak ditemui
-199|Kategori tidak ditemui
-200|Kategori tidak ditemui
-201|Kategori tidak ditemui | nivread
-202|Belum ada hantaran dalam kategori ini
-203|Semua kategori | nivread
-204|Layari mengikut topik kegemaran anda
-205|Belum ada kategori. Kategori akan dipaparkan di sini apabila orang menambahkannya pada hantaran.
-206|Tidak dapat memuatkan hantaran. Sila cuba lagi.
-207|Hantaran tidak ditemui | nivread
-208|Hantaran yang anda cari tidak ditemui
-209|Hantaran tidak ditemui
-210|Hantaran mungkin telah dipadam atau dialihkan
-211|Diterbitkan {0}
-212|· Dikemas kini {0}
-213|{0} halaman {1} | nivread
-214|{0} — hantaran dalam {1} | nivread
-215|nivread — artikel, berita dan kisah dari dunia anime
-216|nivread — artikel dan hantaran terkini
-217|Hantaran terkini di nivread
-218|Hantaran terkini, berita dan artikel anime | nivread
-219|Hantaran terkini, halaman {0} | nivread
-220|nivread — hantaran terkini, halaman {0}
-221|nivread — komuniti pembaca dan penulis. Baca artikel, berita dan kisah dari dunia anime, dan tulis hantaran anda sendiri secara percuma.
-222|Log masuk | nivread
-223|Log masuk untuk menulis hantaran, menyukai dan mengulas
-224|Log masuk untuk mengulas, membalas dan menyukai
-225|E-mel
-226|Kata laluan
-227|Sekurang-kurangnya 6 aksara
-228|atau
-229|Dengan log masuk atau mendaftar, anda bersetuju dengan
-230|Syarat Perkhidmatan
-231|nivread
-232|Belum ada akaun?
-233|Daftar
-234|Cipta akaun untuk mula menulis hantaran anda
-235|Sudah ada akaun?
-236|Pendaftaran gagal
-237|Log masuk gagal
-238|Berjaya log masuk
-239|Log masuk dengan Google...
-240|Log masuk Google gagal
-241|Log masuk untuk mengikut
-242|Sisipkan {0}
-243|Balas
-244|Balas kepada @{0}
-245|Balas kepada @{0}...
-246|Lihat lagi
-247|Tunjuk kurang
-248|Belum ada komen. Jadilah yang pertama!
-249|Sembunyikan balasan
-250|Lihat {0} balasan
-251|Lihat balasan
-252|Tunjuk lagi komen ({0} lagi)
-253|Padam balasan ini?
-254|Padam komen ini (termasuk semua balasan)?
-255|Tidak dapat memadam
-256|Dipadam
-257|Tulis komen... (taip /gif untuk menyisipkan GIF)
-258|Hantar komen
-259|Memuatkan komen...
-260|Tidak dapat memuatkan komen. Cuba muat semula halaman.
-261|Alih keluar GIF
-262|🎬 Cari GIF
-263|Taip untuk mencari...
-264|Tiada GIF ditemui
-265|Sisip
-266|Sisipkan GIF (atau taip /gif)
-267|Gagal dihantar
-268|Kotak ini tidak wujud lagi
-269|Tidak dapat memuatkan kotak berkunci. Cuba muat semula halaman.
-270|Tekan dan tahan teks untuk menyalin
-271|Anda dapat melihat ini kerana anda pemilik hantaran
-272|Ikut penulis untuk membuka kunci mesej ini
-273|Ikut untuk membuka kunci
-274|Tidak dapat membuka kunci
-275|Masukkan kod 4 digit untuk membuka kunci
-276|Kod 4 digit
-277|Buka kunci
-278|Dibuka pada {0}
-279|Masukkan kod 4 digit
-280|Dibuka dalam {0}
-281|Masa sudah tiba, sedang membuka...
-282|Tidak dapat dibuka. Cuba muat semula halaman.
-283|🔒 Kandungan berkunci
-284|Sembang | nivread
-285|Cari rakan
-286|Pilih rakan daripada senarai untuk mula bersembang
-287|Anda hanya boleh bersembang dengan orang yang saling mengikut
-288|Taip mesej
-289|Anda:
-290|Mulakan perbualan
-291|Tiada nama yang sepadan
-292|Belum ada rakan sembang
-293|Anda perlu saling mengikut untuk bersembang
-294|Sembang hanya dibuka kepada akaun yang diluluskan oleh pentadbir
-295|Muatkan mesej lama
-296|Dibaca
-297|Sembang ini tidak lagi tersedia
-298|Anda perlu saling mengikut dengan @{0} sebelum boleh bersembang
-299|Tidak dapat memuatkan mesej
-300|Pemberitahuan | nivread
-301|Muat semula
-302|Senarai pemberitahuan
-303|Muatkan lagi
-304|Tetapan pemberitahuan
-305|Pemberitahuan pada peranti ini
-306|Terima pemberitahuan serta-merta walaupun laman ditutup (tiada permintaan tambahan) · ditetapkan bagi setiap peranti
-307|Hidupkan pemberitahuan pada peranti ini
-308|Matikan pada peranti ini
-309|Hantar mesej ujian
-310|Apakah yang ingin anda dimaklumkan?
-311|menyukai hantaran anda
-312|mengulas pada hantaran anda
-313|membalas komen anda
-314|menyebut anda dalam komen
-315|mula mengikut anda
-316|menyukai komen anda
-317|Hantaran baharu
-318|Mesej daripada pasukan
-319|Belum dibaca
-320|Terlalu banyak ketikan. Sila tunggu sebentar dan cuba lagi.
-321|Gagal dimuatkan. Ketik muat semula untuk cuba lagi.
-322|Dikemas kini {0}
-323|Dikemas kini
-324|Belum ada pemberitahuan
-325|Apabila seseorang menyukai, mengulas atau mengikut anda, ia akan dipaparkan di sini
-326|Seseorang menyukai hantaran saya
-327|Seseorang mengulas pada hantaran saya
-328|Seseorang membalas komen saya
-329|Seseorang menyebut saya (@)
-330|Saya mendapat pengikut baharu
-331|Seseorang menghantar semula hantaran saya
-332|Seseorang menyukai komen saya
-333|Hantaran baharu daripada orang dan kategori yang saya ikuti
-334|Tidak dapat menyimpan. Sila cuba lagi.
-335|Pada iPhone/iPad: ketik Kongsi → “Tambah ke Skrin Utama”, kemudian buka laman daripada ikon itu untuk mengaktifkan pemberitahuan (memerlukan iOS 16.4 atau lebih baharu)
-336|Pelayar ini tidak menyokong pemberitahuan tolak (anda masih boleh melihat pemberitahuan di halaman ini)
-337|Anda telah menyekat pemberitahuan untuk laman ini dalam pelayar. Untuk menghidupkannya, buka tetapan laman (ikon mangga di sebelah alamat) dan benarkan pemberitahuan.
-338|✓ Pemberitahuan dihidupkan untuk peranti ini
-339|Kami mengesyorkan membuka laman daripada ikon Skrin Utama dahulu, kemudian hidupkan pemberitahuan
-340|Belum dihidupkan untuk peranti ini
-341|Sedang menghidupkan…
-342|Anda tidak membenarkan pemberitahuan
-343|Pemberitahuan belum dibenarkan
-344|Tidak dapat mendaftarkan peranti ini
-345|Tidak dapat menghidupkan: {0}
-346|Sedang menghantar mesej ujian…
-347|✓ Dihantar. Jika tidak kelihatan, semak tetapan pemberitahuan pelayar/sistem anda.
-348|Tidak dapat memuatkan tetapan. Tutup dan buka semula halaman.
-349|Dalam hantaran: {0}
-350|Profil | nivread
-351|Profil pengguna | nivread
-352|Gambar profil
-353|Menu profil
-354|Tulis hantaran baharu
-355|Maklumat peribadi
-356|Keselamatan
-357|Akaun
-358|Nama paparan anda dipaparkan pada hantaran dan komen anda
-359|E-mel akaun
-360|Nama paparan
-361|Simpan perubahan
-362|Perubahan disimpan
-363|Tukar kata laluan
-364|Kata laluan ditukar
-365|Anda boleh menukarnya setiap 15 hari. Masukkan kata laluan semasa untuk mengesahkan.
-366|Akaun ini menggunakan log masuk Google, jadi tiada kata laluan untuk ditukar
-367|Kata laluan semasa
-368|Kata laluan baharu
-369|Kata laluan semasa
-370|Halaman pentadbir
-371|Semak laporan tentang hantaran, komen dan pengguna
-372|Buka halaman pentadbir
-373|Tamatkan sesi pada peranti ini
-374|Zon bahaya
-375|Padam akaun secara kekal
-376|Semua hantaran dan komen anda juga akan dipadam. Tindakan ini tidak boleh dibuat asal.
-377|Padam akaun
-378|Sahkan pemadaman akaun secara kekal
-379|Tindakan ini
-380|tidak boleh dibuat asal
-381|Profil, hantaran, komen dan semua yang berkaitan akan dipadam serta-merta
-382|Taip ID anda ({0}) untuk mengesahkan
-383|Sahkan dengan Google
-384|Disahkan
-385|Tidak dapat memuatkan pengesahan Google. Sila muat semula halaman dan cuba lagi.
-386|Tidak dapat memadam akaun: {0}
-387|Pelayan tidak menyimpan nilai ini
-388|Disimpan ke akaun anda
-389|Sunting profil
-390|Suka diterima
-391|Kategori dalam profil
-392|Pengguna tidak ditemui
-393|Pengguna tidak ditemui
-394|Belum ada pengikut
-395|Belum mengikut sesiapa
-396|Padam hantaran
-397|Padam hantaran ini secara kekal?
-398|Belum ada hantaran
-399|Had suntingan dicapai (2)
-400|Sunting hantaran ({0} lagi)
-401|Anda belum menyukai sebarang hantaran
-402|Anda belum menghantar semula sebarang hantaran
-403|Pengguna ini belum menghantar semula sebarang hantaran
-404|Pengguna
-405|Pilih foto daripada peranti anda
-406|JPG / PNG / WebP · imej dimampatkan secara automatik
-407|Muat naik gambar profil
-408|Muat naik imej muka depan
-409|Imej akan dipotong menjadi segi empat sama
-410|Imej akan dipotong menjadi sepanduk 3:1
-411|Kembali ke gambar asal
-412|Tidak dapat memulihkan gambar asal
-413|Gambar yang dipilih
-414|Tidak dapat membuka imej ini (fail mungkin rosak atau tidak disokong)
-415|Zum
-416|Seret imej untuk mengubah kedudukan, dan gunakan peluncur di bawah untuk zum
-417|Pilih foto lain
-418|Guna imej ini
-419|Memampatkan imej ...
-420|Fail terlalu besar. Cuba imej lain.
-421|Menyemak kandungan ...
-422|Imej gagal pemeriksaan kandungan (imej eksplisit tidak dibenarkan)
-423|Memuat naik {0} KB ...
-424|Memuat naik {0} MB ...
-425|Memuat naik
-426|Menyimpan ke akaun anda ...
-427|Tidak dapat memproses imej ini
-428|Laraskan gambar profil
-429|Laraskan imej muka depan
-430|GIF tidak disokong — gunakan JPG / PNG / WebP
-431|Hanya imej JPG / PNG / WebP disokong
-432|Fail melebihi 15 MB
-433|Imej muka depan
-434|Belum ada imej muka depan
-435|Tukar imej muka depan
-436|Imej muka depan dialih keluar
-437|Tidak dapat mengalih keluar imej muka depan
-438|Tukar gambar profil
-439|Muat naik gagal
-440|Cari | nivread
-441|Kata carian
-442|Tajuk hantaran, kandungan, kategori atau nama pengguna
-443|Taip sekurang-kurangnya 2 aksara untuk mencari hantaran atau nama pengguna
-444|Carian gagal. Sila cuba lagi.
-445|Tiada hasil untuk
-446|Ditemui {0} kategori, {1} pengguna dan {2} hantaran
-447|Kandungan
-448|Tulis hantaran | nivread
-449|Hantaran anda akan dipaparkan di halaman hantaran dan boleh dicari di Google sebaik sahaja anda menghantarnya
-450|Tajuk
-451|Tajuk yang jelas menunjukkan perkara yang dibincangkan dalam hantaran
-452|Taip sendiri, atau pilih kategori sedia ada
-453|Tinggalkan satu baris kosong untuk memulakan perenggan baharu
-454|Teks biasa, sekurang-kurangnya 50 aksara
-455|Tambah pada hantaran
-456|Muat naik imej (sehingga 3)
-457|Muat naik imej
-458|Pautan imej atau GIF
-459|Video YouTube
-460|Muat naik video (sehingga 30 saat)
-461|Muat naik video
-462|Kotak berkunci (menyembunyikan teks sehingga dibuka)
-463|Kotak berkunci
-464|Tampal pautan imej atau GIF (GIF daripada GIPHY / Tenor), beberapa sekali gus
-465|Tampal pautan YouTube, beberapa sekali gus
-466|Pautan YouTube
-467|Kotak diletakkan di tempat kursor anda dalam kandungan. Pembaca hanya melihat label pada kotak; teks di dalamnya kekal tersembunyi sehingga dibuka. Contohnya, tulis “Kod diskaun percuma — ikut kami sahaja untuk menuntutnya” dan letakkan kotak selepasnya.
-468|Label kotak, cth. 🎁 Kod diskaun
-469|Label kotak
-470|Teks tersembunyi, cth. kod diskaun FNNZ20 atau pautan untuk diberikan
-471|Teks tersembunyi
-472|Cara membuka kunci
-473|Ikut kami
-474|Tetapkan masa
-475|Kod 4 digit
-476|Kod buka kunci 4 digit
-477|Tarikh dan masa buka kunci
-478|Jangan letak kata laluan atau maklumat peribadi dalam kotak — sesiapa yang memenuhi syarat boleh melihat teks
-479|Tambah kotak pada kandungan
-480|Batal sunting kotak
-481|Menyokong JPG / PNG / WebP / HEIC
-482|Hantar sekarang
-483|Batal suntingan
-484|Muka depan
-485|Alih ke hadapan
-486|Alih ke belakang
-487|10 imej dicapai
-488|{0} imej ditambah
-489|{0} klip ditambah
-490|{0} pautan tidak sah (mesti bermula dengan https://)
-491|{0} GIF bukan daripada GIPHY / Tenor
-492|{0} pendua
-493|{0} melebihi had
-494|{0} melebihi had muat naik
-495|{0}: tampal GIF sebagai pautan sebaliknya
-496|{0} bukan imej JPG/PNG/WebP/HEIC
-497|Memampat dan memuat naik {0}/{1} ...
-498|{0} gagal pemeriksaan kandungan (imej eksplisit tidak dibenarkan)
-499|{0}: tidak dapat menukar fail HEIC. Cuba eksport sebagai JPG dan muat naik semula.
-500|{0}: tidak dapat memproses imej
-501|{0} imej dimuat naik
-502|Tiada imej dimuat naik
-503|Imej
-504|Video {0}
-505|Video yang dimuat naik
-506|Alih ke atas
-507|Alih ke bawah
-508|15 klip dicapai
-509|{0} pautan bukan YouTube
-510|Pilih fail video sahaja
-511|Memampatkan video {0}% (jangan tutup halaman ini)
-512|Muat naik video gagal
-513|Video dimuat naik
-514|Video lebih panjang daripada 30 saat
-515|Masih terlalu besar selepas pemampatan. Cuba klip yang lebih pendek.
-516|Pelayar ini belum boleh memampatkan video (cuba Chrome atau Safari terkini)
-517|Tidak dapat memproses video (fail mungkin rosak atau tidak disokong)
-518|Pembaca mesti log masuk dan mengikut anda untuk melihat teks (mereka boleh mengikut terus daripada butang dalam kotak)
-519|Pembaca mesti memasukkan kod 4 digit yang anda tetapkan — kongsikan kod dalam kandungan atau saluran lain anda
-520|Teks menjadi kelihatan kepada semua orang pada masa yang ditetapkan (masa peranti anda)
-521|Biarkan kosong = kekalkan kod semasa
-522|Dibuka apabila mereka mengikut kami
-523|Dibuka dengan kod 4 digit
-524|· belum diletakkan dalam kandungan
-525|Letak kotak pada kursor
-526|Sunting kotak
-527|Simpan kotak
-528|Padam kotak
-529|{0} kotak dicapai
-530|Masukkan teks yang ingin disembunyikan dahulu
-531|Tetapkan kod berangka 4 digit
-532|Pilih tarikh dan masa buka kunci
-533|Masa buka kunci mesti pada masa hadapan
-534|Kotak disimpan
-535|Tidak dapat menambah kotak. Cuba alih keluar penanda [[lock:...]] yang tertinggal dalam kandungan dahulu.
-536|Kotak ditambah dan diletakkan pada kursor
-537|Menghantar hantaran...
-538|Tidak dapat menghantar hantaran
-539|Lihat hantaran
-540|Hantaran saya
-541|Suntingan disimpan
-542|Suntingan disimpan ({0} suntingan lagi)
-543|({0} suntingan lagi)
-544|Diterbitkan
-545|Hantaran dihantar
-546|Simpan perubahan
-547|Memuatkan hantaran...
-548|Tidak dapat memuatkan hantaran
-549|Pentadbir boleh menyunting tanpa had
-550|Anda boleh menyunting hantaran sehingga 2 kali — {0} lagi
-551|Hantaran ini telah mencapai had 2 suntingan
-552|Cipta kategori baharu
-553|Cipta kategori baharu "{0}"
-554|Laporan | pentadbir nivread
-555|Laporan daripada ahli — hantaran, komen dan pengguna
-556|Status laporan
-557|Menunggu semakan
-558|Disemak
-559|Akses video
-560|Akses sembang
-561|Kandungan dipadam dan laporan ditutup
-562|Laporan ditutup
-563|Tiada laporan menunggu semakan
-564|Tersembunyi
-565|Kandungan ini telah dipadam
-566|{0} laporan
-567|Pemilik: {0}
-568|Padam kandungan
-569|Padam komen ini secara kekal?
-570|Padam pengguna ini secara kekal?
-571|Nyahlarang pengguna
-572|Larang pengguna
-573|Sebab melarang @{0} (pilihan) — semua hantaran pengguna akan disembunyikan, dan mereka tidak boleh menghantar, mengulas atau memuat naik
-574|Nyahlarang @{0} dan pulihkan hantaran yang disembunyikan oleh larangan?
-575|Larangan dibatalkan
-576|Dilarang ({0} hantaran disembunyikan)
-577|Tutup laporan
-578|Tiada pelanggaran ditemui
-579|Keputusan: {0}
-580|Tiada pelanggaran ditemui / ditutup
-581|Akaun yang boleh memuat naik video
-582|Video sehingga 30 saat. Hanya akaun dalam senarai ini boleh memuat naik (pentadbir sentiasa boleh).
-583|Akaun yang boleh menggunakan sembang
-584|Sembang hanya dibuka kepada akaun dalam senarai ini (pentadbir sentiasa boleh), dan hanya antara pasangan yang saling mengikut dan kedua-duanya diluluskan.
-585|Worker belum dikemas kini. Sila deploy.
-586|Nama pengguna
-587|Nama pengguna
-588|Benarkan
-589|Tarik balik
-590|Akses @{0} ditarik balik
-591|@{0} dibenarkan
-592|Belum ada akaun dibenarkan
-593|Akaun ini sudah dibenarkan
-594|Belum ada laporan yang disemak
-595|Dalam hantaran:
-596|Pemilik:
-597|Sembang am Nivread AI
-598|Sembang am
-599|Pilihan lain
-600|Tenaga berbaki
-601|Mesej yang lebih pendek menggunakan kurang tenaga
-602|Sembunyikan maklumat peribadi
-603|Nombor kad pengenalan, nombor telefon, e-mel
-604|Pratonton sebelum dihantar kepada AI
-605|Tunjukkan teks yang akan dihantar
-606|Kosongkan sembang mod ini
-607|Sembang AI — tanya apa sahaja
-608|Bantu saya merancang hari ini
-609|Terangkan faedah kompaun dengan mudah
-610|Semak dan betulkan teks ini
-611|Cadangkan cara menghafal perbendaharaan kata Inggeris
-612|Pilih mod
-613|Mod sembang
-614|Tanya apa sahaja
-615|Lampirkan fail
-616|Mesej
-617|Henti
-618|AI boleh membuat kesilapan. Sila semak semula maklumat penting.
-619|Mesej dan memori mod
-620|akan dipadam semuanya dan tidak boleh dipulihkan
-621|Kosongkan sembang
-622|Taip mesej...
-623|Tanya apa sahaja
-624|Anda perlu log masuk sebelum boleh bersembang dengan AI
-625|Tidak dapat bersambung ({0}). Sila cuba lagi.
-626|Masalah rangkaian. Sila cuba lagi.
-627|Hantar kepada AI
-628|Teks yang akan dihantar kepada AI
-629|{0} item peribadi disembunyikan (diserlahkan dengan warna kuning)
-630|Tiada maklumat peribadi ditemui untuk disembunyikan
-631|Alih keluar
-632|Muat turun ZIP
-633|Simpan sebagai imej
-634|Simpan imej
-635|Kongsi imej
-636|Kembangkan
-637|Carta
-638|Jadual data
-639|Cari dalam jadual
-640|Simpan sebagai CSV
-641|Purata
-642|Maksimum
-643|Minimum
-644|Kalendar
+// public/locales/ms.js — Kamus Bahasa Melayu (key = teks asal Thai, {0} {1} = pembolehubah yang dimasukkan semasa berjalan)
+// Teks yang tiada di sini akan dipaparkan dalam bahasa Thai seperti asal — boleh ditambah pada bila-bila masa tanpa mengubah kod halaman web
+NIV_I18N.register('ms', {
+  /* ---------- Umum / Masa ---------- */
+  "ภาษา": "Bahasa",
+  "อัตโนมัติ (ตามภาษาของอุปกรณ์)": "Automatik (bahasa peranti)",
+  "เมื่อสักครู่": "Baru sahaja",
+  "{0} นาทีที่แล้ว": "{0} min lalu",
+  "{0} ชั่วโมงที่แล้ว": "{0} jam lalu",
+  "{0} วันที่แล้ว": "{0} hari lalu",
+  "เมื่อวาน": "Semalam",
+  "วันนี้": "Hari ini",
+  "{0} วัน": "{0} hari",
+  "{0} ชม.": "{0} jam",
+  "{0} นาที": "{0} min",
+  "{0} วินาที": "{0} saat",
+  "ใหม่": "Baharu",
+  "ล่าสุด": "Terkini",
+  "ยอดนิยม": "Popular",
+  "ทั้งหมด": "Semua",
+  "กลับ": "Kembali",
+  "เข้าสู่ระบบ": "Log masuk",
+  "ส่ง": "Hantar",
+  "ปิด": "Tutup",
+  "ยกเลิก": "Batal",
+  "คัดลอก": "Salin",
+  "คัดลอกแล้ว": "Disalin",
+  "(ไม่บังคับ)": "(pilihan)",
+  "ซ้ำ": "pendua",
+  "อื่น ๆ": "Lain-lain",
+  "กำลังโหลด...": "Memuatkan...",
+  "กำลังดำเนินการ...": "Sedang diproses...",
+  "กำลังบันทึก...": "Menyimpan...",
+  "กำลังบันทึก…": "Menyimpan…",
+  "กำลังลบ...": "Memadam...",
+  "กำลังส่ง...": "Menghantar...",
+  "บันทึก": "Simpan",
+  "บันทึกแล้ว": "Disimpan",
+  "ลบ": "Padam",
+  "แก้ไข": "Sunting",
+  "เพิ่ม": "Tambah",
+  "วาง": "Letak",
+  "เปิด": "Buka",
+  "รายการ": "item",
+  "คน": "orang",
+  "ครั้ง": "kali",
+  "ตัวอักษร": "aksara",
+  "ระบบขัดข้อง": "Sistem mengalami masalah",
+  "กรุณาลองใหม่อีกครั้ง": "Sila cuba lagi",
+  "ลองใหม่อีกครั้ง": "Cuba lagi",
+  "ระบบกำลังอัปเดต": "Sistem sedang dikemas kini",
+  "เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง": "Tidak dapat menyambung. Sila cuba lagi.",
+  "เชื่อมต่อไม่ได้ กรุณาลองใหม่": "Tidak dapat menyambung. Sila cuba lagi.",
+  "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้": "Tidak dapat menyambung ke pelayan",
+  "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่": "Tidak dapat menyambung ke pelayan. Sila cuba lagi.",
+  "เซิร์ฟเวอร์ยังไม่พร้อมใช้งาน": "Pelayan belum sedia digunakan",
+  "ทำรายการไม่สำเร็จ": "Tindakan gagal",
+  "โหลดไม่สำเร็จ": "Gagal memuatkan",
+  "โหลดข้อมูลไม่สำเร็จ": "Gagal memuatkan data",
+  "โหลดรายการไม่สำเร็จ": "Gagal memuatkan senarai",
+  "เกิดข้อผิดพลาด (status {0})": "Ralat berlaku (status {0})",
+  "หมดอายุการเข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่": "Sesi anda telah tamat. Sila log masuk semula.",
+  "กรุณาเข้าสู่ระบบ": "Sila log masuk",
+  "เฉพาะแอดมินเท่านั้น": "Khusus untuk admin sahaja",
+  "ผู้ดูแลระบบ": "Pentadbir",
+
+  /* ---------- Menu / header / footer ---------- */
+  "เมนู": "Menu",
+  "เมนูหลัก": "Menu utama",
+  "เมนูด่วน": "Menu pantas",
+  "ปิดเมนู": "Tutup menu",
+  "สลับโหมดสี": "Tukar mod warna",
+  "โหมดกลางคืน": "Mod gelap",
+  "โหมดกลางวัน": "Mod cerah",
+  "หน้าแรก": "Utama",
+  "โปรไฟล์": "Profil",
+  "โปรไฟล์ของฉัน": "Profil saya",
+  "ไปที่โปรไฟล์ของฉัน": "Pergi ke profil saya",
+  "ดูโปรไฟล์ของฉัน": "Lihat profil saya",
+  "ตั้งค่าบัญชี": "Tetapan akaun",
+  "การแจ้งเตือน": "Pemberitahuan",
+  "การแจ้งเตือน ({0} รายการใหม่)": "Pemberitahuan ({0} baharu)",
+  "ออกจากระบบ": "Log keluar",
+  "เข้าสู่ระบบ / สมัครสมาชิก": "Log masuk / Daftar",
+  "เขียนโพสต์": "Tulis hantaran",
+  "เขียน": "Tulis",
+  "ค้นหา": "Cari",
+  "ค้นหาโพสต์หรือไอดีผู้ใช้": "Cari hantaran atau nama pengguna",
+  "ค้นหาโพสต์ หรือไอดีผู้ใช้": "Cari hantaran atau nama pengguna",
+  "โพสต์ทั้งหมด": "Semua hantaran",
+  "โพสต์ทั้งหมด →": "Semua hantaran →",
+  "โพสต์": "Hantaran",
+  "{0} โพสต์": "{0} hantaran",
+  "{0} โพสต์ ·": "{0} hantaran ·",
+  "หมวดหมู่": "Kategori",
+  "/ หมวดหมู่": "/ Kategori",
+  "หมวดหมู่ทั้งหมด": "Semua kategori",
+  "ดูทุกหมวด →": "Semua kategori →",
+  "แชท": "Sembang",
+  "เปิดหรือปิดธีมฮาโลวีน": "Tukar tema Halloween",
+  "ธีมฮาโลวีน": "Tema Halloween",
+
+  /* ---------- Kad hantaran / Butang interaksi ---------- */
+  "ติดตาม": "Ikut",
+  "กำลังติดตาม": "Mengikuti",
+  "ติดตาม {0}": "Ikut {0}",
+  "โปรไฟล์ {0}": "Profil {0}",
+  "แก้ไขโพสต์": "Sunting hantaran",
+  "ถูกใจ": "Suka",
+  "ความคิดเห็น": "Komen",
+  "{0} ความคิดเห็น": "{0} komen",
+  "ความคิดเห็น ({0})": "Komen ({0})",
+  "รีโพสต์": "Siarkan semula",
+  "ยอดวิว": "Tontonan",
+  "ยอดวิว {0}": "{0} tontonan",
+  "แชร์": "Kongsi",
+  "รีโพสต์โพสต์ของคุณ": "telah menyiarkan semula hantaran anda",
+  "รีโพสต์ และอีก {0} คน": "menyiarkan semula dan {0} yang lain",
+  "รีโพสต์ {0}": "menyiarkan semula {0}",
+  "และอีก {0} คน": "dan {0} yang lain",
+  "อ่านโพสต์ต่อ": "Baca lagi",
+  "🔒 มีเนื้อหาที่ถูกล็อก": "🔒 Mengandungi kandungan terkunci",
+  "🔒 มีเนื้อหาที่ถูกล็อก {0} กล่อง · กดเพื่อปลดล็อก": "🔒 {0} kotak terkunci · ketik untuk buka kunci",
+  "🔒 มีเนื้อหาที่ถูกล็อก{0} กล่อง · กดเพื่อปลดล็อก": "🔒 {0} kotak terkunci · ketik untuk buka kunci",
+  "· กดเพื่อปลดล็อก": "· ketik untuk buka kunci",
+  "ดูรูปเต็ม": "Lihat imej penuh",
+  "เปิดโพสต์": "Buka hantaran",
+  "เปิดโพสต์ {0}": "Buka hantaran {0}",
+  "ดูรูปที่ {0}": "Lihat imej {0}",
+  "ดูรูปภาพ": "Lihat imej",
+  "รูปก่อนหน้า": "Imej sebelumnya",
+  "รูปถัดไป": "Imej seterusnya",
+  "{0} รูปที่ {1}": "{0} imej {1}",
+  "วิดีโอ": "Video",
+  "ดูทั้งหมด": "Lihat semua",
+  "ดูทั้งหมด {0} คลิป": "Lihat semua {0} klip",
+  "{0} คลิป": "{0} klip",
+  "เลือกวิดีโอ": "Pilih video",
+  "เล่นวิดีโอ": "Mainkan video",
+  "เล่นวิดีโอที่ {0}": "Mainkan video {0}",
+  "{0} — วิดีโอ {1}": "{0} — video {1}",
+  "เล่น": "Main",
+  "เสียง": "Bunyi",
+  "เปิดเสียง": "Nyahredam",
+  "ปิดเสียง": "Redam",
+  "ผู้เขียน": "Penulis",
+  "รายงาน": "Lapor",
+  "รายงานโพสต์นี้": "Lapor hantaran ini",
+  "รายงานโพสต์": "Lapor hantaran",
+  "รายงานความคิดเห็น": "Lapor komen",
+  "รายงานผู้ใช้": "Lapor pengguna",
+  "สแปม / โฆษณา": "Spam / iklan",
+  "ล่วงละเมิด / คำหยาบคาย": "Gangguan / bahasa kesat",
+  "ข้อมูลเท็จ / ทำให้เข้าใจผิด": "Maklumat palsu / mengelirukan",
+  "เนื้อหาไม่เหมาะสม": "Kandungan tidak sesuai",
+  "ละเมิดลิขสิทธิ์": "Pelanggaran hak cipta",
+  "เลือกเหตุผล แอดมินจะตรวจสอบให้": "Pilih sebab. Admin akan menyemaknya.",
+  "รายละเอียดเพิ่มเติม (ไม่บังคับ)": "Butiran tambahan (pilihan)",
+  "ส่งรายงาน": "Hantar laporan",
+  "ส่งรายงานไม่สำเร็จ": "Gagal menghantar laporan",
+  "คุณรายงานเรื่องนี้ไว้แล้ว แอดมินกำลังตรวจสอบ": "Anda telah melaporkan perkara ini. Admin sedang menyemaknya.",
+  "ส่งรายงานแล้ว ขอบคุณที่ช่วยดูแลชุมชน": "Laporan dihantar. Terima kasih kerana membantu menjaga komuniti.",
+  "ยกเลิกรีโพสต์": "Batal siaran semula",
+  "รีโพสต์โพสต์ของตัวเองไม่ได้": "Anda tidak boleh menyiarkan semula hantaran anda sendiri",
+  "คัดลอกลิงก์แล้ว": "Pautan disalin",
+  "คัดลอกลิงก์นี้": "Salin pautan ini",
+  "แก้ข้อความแล้ว": "Mesej dikemas kini",
+  "รีโพสต์พร้อมข้อความแล้ว — ผู้ติดตามของคุณจะเห็น": "Disiarkan semula dengan mesej — pengikut anda akan melihatnya",
+  "รีโพสต์แล้ว — ผู้ติดตามของคุณจะเห็น": "Disiarkan semula — pengikut anda akan melihatnya",
+  "เลิกทำ": "Ubat",
+  "ยกเลิกรีโพสต์แล้ว": "Siaran semula dibatalkan",
+  "แชร์ให้ผู้ติดตามของคุณทันที": "Kongsi dengan pengikut anda serta-merta",
+  "รีโพสต์พร้อมข้อความ": "Siarkan semula dengan mesej",
+  "เพิ่มความเห็นของคุณ (ไม่เกิน {0} ตัวอักษร)": "Tambah pandangan anda (sehingga {0} aksara)",
+  "เพิ่มความเห็นของคุณ (ไม่เกิน": "Tambah pandangan anda (sehingga",
+  "เพิ่ม / แก้ไขข้อความ": "Tambah / sunting mesej",
+  "ปรับความเห็นที่แนบกับรีโพสต์นี้": "Sunting nota yang dilampirkan pada siaran semula ini",
+  "ลบออกจากโปรไฟล์และฟีดของผู้ติดตาม": "Buang daripada profil dan suapan pengikut anda",
+  "แก้ไขข้อความรีโพสต์": "Sunting mesej siaran semula",
+  "เพิ่มความเห็นของคุณ… (เว้นว่างไว้ก็ได้)": "Tambah pandangan anda… (anda boleh kosongkan ini)",
+  "ข้อความรีโพสต์": "Mesej siaran semula",
+  "🔥 ต้องอ่านเลย": "🔥 Mesti baca",
+  "😂 ฮาจัด": "😂 Kelakar",
+  "🤔 น่าคิด": "🤔 Perlu difikirkan",
+  "👏 เห็นด้วย": "👏 Setuju",
+  "😭 ซึ้ง": "😭 Menyentuh hati",
+  "กำลังรีโพสต์…": "Menyiarkan semula…",
+  "ทิ้งข้อความที่เขียนไว้?": "Buang apa yang telah anda tulis?",
+  "เขียนอะไรดี": "Apakah fikiran anda?",
+  "เข้าสู่ระบบเพื่อเขียนโพสต์ของคุณ": "Log masuk untuk menulis hantaran anda",
+  "โหลดโพสต์เพิ่มไม่สำเร็จ": "Tidak dapat memuatkan lebih banyak hantaran",
+
+  /* ---------- Halaman utama / Suapan / Kategori / Hantaran ---------- */
+  "ฟีดของคุณ": "Suapan anda",
+  "ยังไม่มีโพสต์ใหม่จากสิ่งที่คุณติดตาม": "Tiada hantaran baharu daripada yang anda ikuti buat masa ini",
+  "ดูโพสต์ทั้งหมด": "Lihat semua hantaran",
+  "ดูครบทุกโพสต์ในฟีดแล้ว": "Anda telah melihat semua hantaran dalam suapan",
+  "ดูครบทุกโพสต์แล้ว": "Anda telah melihat semua hantaran",
+  "ดูครบทุกโพสต์ในหมวดนี้แล้ว": "Anda telah melihat semua hantaran dalam kategori ini",
+  "ก่อนหน้า": "Sebelumnya",
+  "ถัดไป": "Seterusnya",
+  "หน้า {0} / {1}": "Halaman {0} / {1}",
+  "การนำทางหน้าโพสต์": "Navigasi halaman hantaran",
+  "รวมโพสต์ในหมวด": "Hantaran dalam kategori",
+  "ผู้ติดตาม": "Pengikut",
+  "กลับไปหน้าโพสต์": "Kembali ke halaman hantaran",
+  "กลับไปหน้าหมวดหมู่": "Kembali ke kategori",
+  "กลับหน้าแรก": "Kembali ke halaman utama",
+  "ไม่พบหน้านี้": "Halaman tidak dijumpai",
+  "ไม่พบหมวดหมู่ที่ต้องการ": "Kategori tidak dijumpai",
+  "ไม่พบหมวดหมู่นี้": "Kategori tidak dijumpai",
+  "ไม่พบหมวดหมู่ | nivread": "Kategori tidak dijumpai | nivread",
+  "หมวดหมู่นี้ยังไม่มีโพสต์": "Kategori ini belum mempunyai hantaran",
+  "หมวดหมู่ทั้งหมด | nivread": "Semua kategori | nivread",
+  "เลือกอ่านตามหัวข้อที่สนใจ": "Baca mengikut topik yang anda minati",
+  "ยังไม่มีหมวดหมู่ เมื่อมีคนใส่หมวดหมู่ในโพสต์ จะแสดงที่นี่": "Belum ada kategori. Ia akan muncul di sini apabila seseorang menambah kategori pada hantaran.",
+  "ไม่สามารถโหลดโพสต์ได้ กรุณาลองใหม่": "Tidak dapat memuatkan hantaran. Sila cuba lagi.",
+  "ไม่พบโพสต์ | nivread": "Hantaran tidak dijumpai | nivread",
+  "ไม่พบโพสต์ที่คุณต้องการ": "Hantaran yang anda cari tidak dijumpai",
+  "ไม่พบโพสต์นี้": "Hantaran tidak dijumpai",
+  "โพสต์อาจถูกลบหรือย้ายแล้ว": "Hantaran mungkin telah dipadam atau dialih",
+  "เผยแพร่ {0}": "Diterbitkan {0}",
+  "· อัปเดต {0}": "· Dikemas kini {0}",
+  "{0} หน้า {1} | nivread": "{0} halaman {1} | nivread",
+  "{0} — โพสต์หมวด {1} | nivread": "{0} — hantaran dalam kategori {1} | nivread",
+  "nivread — ฟีดบทความ ข่าว และเรื่องเล่าวงการอนิเมะ": "nivread — artikel, berita dan cerita dunia anime",
+  "nivread — ฟีดบทความและโพสต์ล่าสุด": "nivread — artikel dan hantaran terkini",
+  "โพสต์ล่าสุด nivread": "Hantaran terkini di nivread",
+  "โพสต์ล่าสุด ข่าวและบทความอนิเมะ | nivread": "Hantaran terkini, berita dan artikel anime | nivread",
+  "โพสต์ล่าสุด หน้า {0} | nivread": "Hantaran terkini, halaman {0} | nivread",
+  "nivread — โพสต์ล่าสุด หน้า {0}": "nivread — hantaran terkini, halaman {0}",
+  "nivread ชุมชนนักอ่านและนักเขียน อ่านบทความ ข่าว และเรื่องเล่าวงการอนิเมะ พร้อมเขียนโพสต์แชร์เรื่องราวได้ฟรี": "nivread — komuniti pembaca dan penulis. Baca artikel, berita dan cerita dunia anime, serta tulis hantaran anda sendiri secara percuma.",
+
+  /* ---------- Log masuk / Daftar ---------- */
+  "เข้าสู่ระบบ | nivread": "Log masuk | nivread",
+  "เข้าสู่ระบบเพื่อเขียนโพสต์ ถูกใจ และแสดงความคิดเห็น": "Log masuk untuk menulis hantaran, menyukai dan mengomen",
+  "เข้าสู่ระบบเพื่อแสดงความคิดเห็น ตอบกลับ และกดถูกใจ": "Log masuk untuk mengomen, membalas dan menyukai",
+  "อีเมล": "E-mel",
+  "รหัสผ่าน": "Kata laluan",
+  "อย่างน้อย 6 ตัวอักษร": "Sekurang-kurangnya 6 aksara",
+  "หรือ": "atau",
+  "การเข้าสู่ระบบหรือสมัครสมาชิก ถือว่าคุณยอมรับ": "Dengan log masuk atau mendaftar, anda bersetuju dengan",
+  "ข้อตกลงการใช้บริการ": "Syarat Perkhidmatan",
+  "ของ nivread": "nivread",
+  "ยังไม่มีบัญชี?": "Belum mempunyai akaun?",
+  "สมัครสมาชิก": "Daftar",
+  "สร้างบัญชีเพื่อเริ่มเขียนโพสต์ของคุณ": "Cipta akaun untuk mula menulis hantaran anda",
+  "มีบัญชีอยู่แล้ว?": "Sudah mempunyai akaun?",
+  "สมัครสมาชิกไม่สำเร็จ": "Pendaftaran gagal",
+  "เข้าสู่ระบบไม่สำเร็จ": "Log masuk gagal",
+  "เข้าสู่ระบบสำเร็จ": "Berjaya log masuk",
+  "กำลังเข้าสู่ระบบด้วย Google...": "Sedang log masuk dengan Google...",
+  "เข้าสู่ระบบด้วย Google ไม่สำเร็จ": "Log masuk Google gagal",
+  "เข้าสู่ระบบเพื่อติดตาม": "Log masuk untuk mengikuti",
+
+  /* ---------- Komen ---------- */
+  "แทรก {0}": "Sisipkan {0}",
+  "ตอบกลับ": "Balas",
+  "ตอบกลับ @{0}": "Balas kepada @{0}",
+  "ตอบกลับ @{0}...": "Balas kepada @{0}...",
+  "ดูเพิ่มเติม": "Lihat lagi",
+  "ย่อลง": "Tunjuk sedikit",
+  "ยังไม่มีความคิดเห็น มาเป็นคนแรกได้เลย": "Belum ada komen lagi. Jadilah yang pertama!",
+  "ซ่อนการตอบกลับ": "Sembunyikan balasan",
+  "ดูการตอบกลับ {0} รายการ": "Lihat {0} balasan",
+  "ดูการตอบกลับ": "Lihat balasan",
+  "แสดงความคิดเห็นเพิ่มเติม (เหลืออีก {0} รายการ)": "Tunjukkan lebih banyak komen ({0} lagi)",
+  "ลบการตอบกลับนี้ใช่ไหม?": "Padam balasan ini?",
+  "ลบความคิดเห็นนี้ (รวมการตอบกลับทั้งหมด) ใช่ไหม?": "Padam komen ini (termasuk semua balasan)?",
+  "ลบไม่สำเร็จ": "Tidak dapat memadam",
+  "ลบแล้ว": "Dipadam",
+  "แสดงความคิดเห็นของคุณ... (พิมพ์ /gif เพื่อแทรก GIF)": "Tulis komen... (taip /gif untuk sisipkan GIF)",
+  "ส่งความคิดเห็น": "Hantar komen",
+  "กำลังโหลดความคิดเห็น...": "Memuatkan komen...",
+  "โหลดความคิดเห็นไม่สำเร็จ ลองรีเฟรชหน้า": "Tidak dapat memuatkan komen. Cuba muat semula halaman.",
+  "เอา GIF ออก": "Buang GIF",
+  "🎬 ค้นหา GIF": "🎬 Cari GIF",
+  "พิมพ์คำค้นหา...": "Taip untuk mencari...",
+  "ไม่พบ GIF": "Tiada GIF dijumpai",
+  "แทรก": "Sisip",
+  "แทรก GIF (หรือพิมพ์ /gif)": "Sisip GIF (atau taip /gif)",
+  "ส่งไม่สำเร็จ": "Gagal menghantar",
+
+  /* ---------- Kotak terkunci ---------- */
+  "กล่องนี้ไม่มีอยู่แล้ว": "Kotak ini sudah tiada",
+  "โหลดกล่องล็อกไม่สำเร็จ ลองรีเฟรชหน้านี้": "Tidak dapat memuatkan kotak terkunci. Cuba muat semula halaman ini.",
+  "กดค้างที่ข้อความเพื่อคัดลอก": "Tekan dan tahan teks untuk menyalin",
+  "คุณเห็นข้อความนี้เพราะเป็นเจ้าของโพสต์": "Anda melihat ini kerana anda pemilik hantaran ini",
+  "ติดตามผู้โพสต์เพื่อปลดล็อกข้อความนี้": "Ikuti penulis untuk membuka kunci mesej ini",
+  "ติดตามเพื่อปลดล็อก": "Ikuti untuk membuka kunci",
+  "ปลดล็อกไม่สำเร็จ": "Tidak dapat membuka kunci",
+  "กรอกรหัสตัวเลข 4 หลักเพื่อปลดล็อก": "Masukkan kod 4 digit untuk membuka kunci",
+  "รหัส 4 หลัก": "Kod 4 digit",
+  "ปลดล็อก": "Buka kunci",
+  "ปลดล็อก {0}": "Membuka kunci {0}",
+  "กรอกรหัสตัวเลข 4 หลัก": "Masukkan kod 4 digit",
+  "ปลดล็อกในอีก {0}": "Buka kunci dalam masa {0}",
+  "ถึงเวลาแล้ว กำลังเปิด...": "Masa sudah tiba, sedang dibuka...",
+  "เปิดไม่สำเร็จ ลองรีเฟรชหน้านี้": "Tidak dapat membuka. Cuba muat semula halaman ini.",
+  "🔒 เนื้อหาที่ถูกล็อก": "🔒 Kandungan terkunci",
+
+  /* ---------- Sembang ---------- */
+  "แชท | nivread": "Sembang | nivread",
+  "ค้นหาเพื่อน": "Cari rakan",
+  "เลือกเพื่อนจากรายการเพื่อเริ่มแชท": "Pilih rakan dari senarai untuk mula bersembang",
+  "แชทได้เฉพาะคนที่ติดตามกันและกัน": "Anda hanya boleh bersembang dengan orang yang saling mengikuti",
+  "พิมพ์ข้อความ": "Taip mesej",
+  "คุณ:": "Anda:",
+  "เริ่มคุยกันเลย": "Mula berbual",
+  "ไม่พบชื่อที่ค้นหา": "Tiada nama sepadan",
+  "ยังไม่มีเพื่อนแชท": "Tiada rakan sembang lagi",
+  "ต้องติดตามกันและกัน จึงจะแชทกันได้": "Anda perlu saling mengikuti untuk bersembang",
+  "แชทเปิดให้เฉพาะบัญชีที่แอดมินอนุญาต": "Sembang hanya dibuka untuk akaun yang diluluskan oleh admin",
+  "โหลดข้อความเก่า": "Muat mesej lama",
+  "อ่านแล้ว": "Dibaca",
+  "แชทนี้ใช้ไม่ได้แล้ว": "Sembang ini tidak lagi tersedia",
+  "ต้องติดตามกันและกันกับ @{0} ก่อน จึงจะแชทกันได้": "Anda perlu saling mengikuti dengan @{0} sebelum boleh bersembang",
+  "โหลดข้อความไม่สำเร็จ": "Tidak dapat memuatkan mesej",
+
+  /* ---------- Pemberitahuan ---------- */
+  "การแจ้งเตือน | nivread": "Pemberitahuan | nivread",
+  "รีเฟรช": "Muat semula",
+  "รายการแจ้งเตือน": "Senarai pemberitahuan",
+  "โหลดเพิ่ม": "Muat lagi",
+  "ตั้งค่าการแจ้งเตือน": "Tetapan pemberitahuan",
+  "แจ้งเตือนบนอุปกรณ์นี้": "Pemberitahuan pada peranti ini",
+  "รับแจ้งเตือนทันทีแม้ปิดเว็บอยู่ (ไม่กินคำขอเพิ่ม) · ตั้งค่าแยกตามอุปกรณ์": "Dapatkan pemberitahuan serta-merta walaupun laman web ditutup (tiada permintaan tambahan) · tetapan mengikut peranti",
+  "เปิดแจ้งเตือนบนอุปกรณ์นี้": "Hidupkan pemberitahuan pada peranti ini",
+  "ปิดบนอุปกรณ์นี้": "Matikan pada peranti ini",
+  "ส่งข้อความทดสอบ": "Hantar mesej ujian",
+  "อยากรับแจ้งเรื่องอะไรบ้าง": "Apakah pemberitahuan yang anda ingin terima?",
+  "ถูกใจโพสต์ของคุณ": "menyukai hantaran anda",
+  "แสดงความคิดเห็นในโพสต์ของคุณ": "mengomen pada hantaran anda",
+  "ตอบกลับความคิดเห็นของคุณ": "membalas komen anda",
+  "กล่าวถึงคุณในความคิดเห็น": "menyebut anda dalam komen",
+  "เริ่มติดตามคุณ": "mula mengikuti anda",
+  "ถูกใจความคิดเห็นของคุณ": "menyukai komen anda",
+  "มีโพสต์ใหม่": "Hantaran baharu",
+  "แจ้งจากทีมงาน": "Mesej daripada pasukan",
+  "ยังไม่ได้อ่าน": "Belum dibaca",
+  "กดถี่เกินไป กรุณารอสักครู่แล้วลองใหม่": "Terlalu kerap ditekan. Sila tunggu sebentar dan cuba lagi.",
+  "โหลดไม่สำเร็จ กดรีเฟรชเพื่อลองใหม่": "Gagal memuatkan. Tekan muat semula untuk cuba lagi.",
+  "อัปเดตล่าสุด {0}": "Kemas kini terakhir {0}",
+  "อัปเดตล่าสุด": "Kemas kini terakhir",
+  "ยังไม่มีการแจ้งเตือน": "Tiada pemberitahuan lagi",
+  "เมื่อมีคนถูกใจ คอมเมนต์ หรือติดตามคุณ จะแสดงที่นี่": "Apabila seseorang menyukai, mengomen atau mengikuti anda, ia akan dipaparkan di sini",
+  "มีคนถูกใจโพสต์ของฉัน": "Seseorang menyukai hantaran saya",
+  "มีคอมเมนต์ในโพสต์ของฉัน": "Seseorang mengomen pada hantaran saya",
+  "มีคนตอบกลับคอมเมนต์ของฉัน": "Seseorang membalas komen saya",
+  "มีคนกล่าวถึงฉัน (@)": "Seseorang menyebut saya (@)",
+  "มีผู้ติดตามใหม่": "Saya mendapat pengikut baharu",
+  "มีคนรีโพสต์โพสต์ของฉัน": "Seseorang menyiarkan semula hantaran saya",
+  "มีคนถูกใจคอมเมนต์ของฉัน": "Seseorang menyukai komen saya",
+  "โพสต์ใหม่จากคนและหมวดที่ฉันติดตาม": "Hantaran baharu daripada orang dan kategori yang saya ikuti",
+  "บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง": "Tidak dapat menyimpan. Sila cuba lagi.",
+  "บน iPhone/iPad: กดปุ่มแชร์ → “เพิ่มลงในหน้าจอโฮม” แล้วเปิดเว็บจากไอคอนนั้น จึงจะเปิดแจ้งเตือนได้ (ต้องใช้ iOS 16.4 ขึ้นไป)": "Pada iPhone/iPad: ketik butang Kongsi → “Tambah ke Skrin Utama”, kemudian buka laman web daripada ikon tersebut untuk mendayakan pemberitahuan (memerlukan iOS 16.4 atau lebih baharu)",
+  "เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบ push (ยังดูรายการแจ้งเตือนในหน้านี้ได้ตามปกติ)": "Pelayar ini tidak menyokong pemberitahuan push (anda masih boleh melihat pemberitahuan di halaman ini)",
+  "คุณบล็อกการแจ้งเตือนของเว็บนี้ไว้ในเบราว์เซอร์ หากต้องการเปิดให้ไปที่การตั้งค่าไซต์ (รูปแม่กุญแจข้างที่อยู่เว็บ) แล้วอนุญาตการแจ้งเตือน": "Anda telah menyekat pemberitahuan untuk laman ini dalam pelayar anda. Untuk menghidupkannya, buka tetapan laman (ikon mangga di sebelah alamat web) dan benarkan pemberitahuan.",
+  "✓ เปิดแจ้งเตือนบนอุปกรณ์นี้อยู่": "✓ Pemberitahuan dihidupkan untuk peranti ini",
+  "แนะนำให้เปิดเว็บจากไอคอนบนหน้าจอโฮมก่อน แล้วค่อยกดเปิดแจ้งเตือน": "Syor buka laman web dari ikon Skrin Utama terlebih dahulu, kemudian hidupkan pemberitahuan",
+  "ยังไม่ได้เปิดบนอุปกรณ์นี้": "Belum dihidupkan pada peranti ini",
+  "กำลังเปิด…": "Sedang dihidupkan…",
+  "คุณไม่อนุญาตการแจ้งเตือน": "Anda tidak membenarkan pemberitahuan",
+  "ยังไม่ได้อนุญาตการแจ้งเตือน": "Pemberitahuan belum dibenarkan",
+  "ลงทะเบียนอุปกรณ์ไม่สำเร็จ": "Gagal mendaftarkan peranti ini",
+  "เปิดไม่สำเร็จ: {0}": "Gagal menghidupkan: {0}",
+  "กำลังส่งข้อความทดสอบ…": "Sedang menghantar mesej ujian…",
+  "✓ ส่งแล้ว ถ้าไม่เห็นการแจ้งเตือน ให้ตรวจการตั้งค่าแจ้งเตือนของเบราว์เซอร์/ระบบ": "✓ Dihantar. Jika anda tidak melihatnya, semak tetapan pemberitahuan pelayar/sistem anda.",
+  "โหลดการตั้งค่าไม่สำเร็จ ปิดแล้วเปิดใหม่อีกครั้ง": "Gagal memuatkan tetapan. Tutup dan buka semula halaman.",
+  "ในโพสต์: {0}": "Dalam hantaran: {0}",
+
+  /* ---------- Profil / Tetapan akaun ---------- */
+  "โปรไฟล์ | nivread": "Profil | nivread",
+  "โปรไฟล์ผู้ใช้ | nivread": "Profil pengguna | nivread",
+  "รูปโปรไฟล์": "Gambar profil",
+  "เมนูโปรไฟล์": "Menu profil",
+  "เขียนโพสต์ใหม่": "Tulis hantaran baharu",
+  "ข้อมูลส่วนตัว": "Maklumat peribadi",
+  "ความปลอดภัย": "Keselamatan",
+  "บัญชี": "Akaun",
+  "ชื่อที่แสดงจะขึ้นบนโพสต์และความคิดเห็นของคุณ": "Nama paparan anda akan muncul pada hantaran dan komen anda",
+  "อีเมลบัญชี": "E-mel akaun",
+  "ชื่อที่แสดง": "Nama paparan",
+  "บันทึกข้อมูล": "Simpan perubahan",
+  "บันทึกข้อมูลสำเร็จ": "Perubahan disimpan",
+  "เปลี่ยนรหัสผ่าน": "Tukar kata laluan",
+  "เปลี่ยนรหัสผ่านสำเร็จ": "Kata laluan ditukar",
+  "เปลี่ยนได้ทุก 15 วัน ต้องกรอกรหัสผ่านเดิมเพื่อยืนยัน": "Boleh ditukar setiap 15 hari. Masukkan kata laluan semasa untuk mengesahkan.",
+  "บัญชีนี้ล็อกอินด้วย Google จึงไม่มีรหัสผ่านให้เปลี่ยน": "Akaun ini log masuk menggunakan Google, jadi tiada kata laluan untuk ditukar",
+  "รหัสผ่านเดิม": "Kata laluan semasa",
+  "รหัสผ่านใหม่": "Kata laluan baharu",
+  "รหัสผ่านปัจจุบัน": "Kata laluan semasa",
+  "หน้าแอดมิน": "Halaman admin",
+  "ตรวจสอบรายงานโพสต์ ความคิดเห็น และผู้ใช้": "Semak laporan pada hantaran, komen dan pengguna",
+  "เปิดหน้าแอดมิน": "Buka halaman admin",
+  "จบเซสชันบนอุปกรณ์นี้": "Tamatkan sesi pada peranti ini",
+  "โซนอันตราย": "Zon bahaya",
+  "ลบบัญชีถาวร": "Padam akaun selama-lamanya",
+  "โพสต์และความคิดเห็นทั้งหมดของคุณจะถูกลบด้วย กู้คืนไม่ได้": "Semua hantaran dan komen anda juga akan dipadam. Ini tidak boleh dipulihkan.",
+  "ลบบัญชี": "Padam akaun",
+  "ยืนยันการลบบัญชีถาวร": "Sahkan pemadaman akaun kekal",
+  "การกระทำนี้": "Tindakan ini",
+  "ไม่สามารถกู้คืนได้": "tidak boleh dipulihkan",
+  "โปรไฟล์ โพสต์ ความคิดเห็น และทุกอย่างที่เกี่ยวข้องจะถูกลบทันที": "Profil, hantaran, komen dan segala yang berkaitan akan dipadam serta-merta",
+  "พิมพ์ ID ของคุณ ({0}) เพื่อยืนยัน": "Taip ID anda ({0}) untuk mengesahkan",
+  "ยืนยันตัวตนด้วย Google": "Sahkan dengan Google",
+  "ยืนยันตัวตนสำเร็จ": "Disahkan",
+  "โหลดระบบยืนยันตัวตนของ Google ไม่สำเร็จ กรุณารีเฟรชหน้าแล้วลองใหม่": "Tidak dapat memuatkan pengesahan Google. Sila muat semula halaman dan cuba lagi.",
+  "ลบบัญชีไม่สำเร็จ: {0}": "Gagal memadam akaun: {0}",
+  "เซิร์ฟเวอร์ไม่ได้บันทึกค่านี้": "Pelayan tidak menyimpan nilai ini",
+  "บันทึกลงบัญชีแล้ว": "Disimpan ke akaun anda",
+  "แก้ไขโปรไฟล์": "Sunting profil",
+  "ไลก์ที่ได้รับ": "Tanda suka diterima",
+  "หมวดในโปรไฟล์": "Kategori dalam profil",
+  "ไม่พบผู้ใช้": "Pengguna tidak dijumpai",
+  "ไม่พบผู้ใช้นี้": "Pengguna tidak dijumpai",
+  "ยังไม่มีผู้ติดตาม": "Belum ada pengikut",
+  "ยังไม่ได้ติดตามใคร": "Belum mengikuti sesiapa",
+  "ลบโพสต์": "Padam hantaran",
+  "ลบโพสต์นี้ถาวรใช่ไหม?": "Padam hantaran ini secara kekal?",
+  "ยังไม่มีโพสต์": "Belum ada hantaran",
+  "แก้ไขครบ 2 ครั้งแล้ว": "Had suntingan dicapai (2)",
+  "แก้ไขโพสต์ (เหลือ {0} ครั้ง)": "Sunting hantaran ({0} lagi)",
+  "ยังไม่ได้กดถูกใจโพสต์ไหนเลย": "Anda belum menyukai sebarang hantaran",
+  "ยังไม่ได้รีโพสต์โพสต์ไหนเลย": "Anda belum menyiarkan semula sebarang hantaran",
+  "ผู้ใช้นี้ยังไม่มีรีโพสต์": "Pengguna ini belum mempunyai siaran semula",
+  "ผู้ใช้": "Pengguna",
+
+  /* ---------- Gambar profil / Gambar muka depan ---------- */
+  "เลือกรูปจากเครื่อง": "Pilih foto dari peranti",
+  "JPG / PNG / WebP · ระบบจะบีบรูปให้อัตโนมัติ": "JPG / PNG / WebP · imej dimampatkan secara automatik",
+  "อัปโหลดรูปโปรไฟล์": "Muat naik gambar profil",
+  "อัปโหลดภาพปก": "Muat naik gambar muka depan",
+  "ภาพจะถูกครอปเป็นรูปสี่เหลี่ยมจัตุรัส": "Imej akan dipotong menjadi bentuk segi empat sama",
+  "ภาพจะถูกครอปเป็นแถบกว้าง 3:1": "Imej akan dipotong menjadi jalur lebar 3:1",
+  "กลับไปใช้รูปเดิม": "Kembali kepada gambar asal",
+  "คืนรูปเดิมไม่สำเร็จ": "Gagal memulihkan gambar asal",
+  "รูปที่เลือก": "Gambar dipilih",
+  "เปิดรูปนี้ไม่ได้ (ไฟล์อาจเสียหรือรูปแบบไม่รองรับ)": "Tidak dapat membuka imej ini (fail mungkin rosak atau format tidak disokong)",
+  "ซูม": "Zum",
+  "ลากภาพเพื่อเลื่อนตำแหน่ง และใช้แถบด้านล่างเพื่อซูม": "Seret imej untuk mengalih kedudukan, dan guna gelongsor di bawah untuk zum",
+  "เลือกรูปอื่น": "Pilih foto lain",
+  "ใช้ภาพนี้": "Guna gambar ini",
+  "กำลังบีบรูป ...": "Memampatkan imej ...",
+  "ไฟล์ใหญ่เกินไป ลองรูปอื่น": "Fail terlalu besar. Cuba foto lain.",
+  "กำลังตรวจสอบเนื้อหา ...": "Menyemak kandungan ...",
+  "รูปไม่ผ่านการตรวจสอบเนื้อหา (ไม่อนุญาตภาพลามก)": "Imej gagal semakan kandungan (imej lucah tidak dibenarkan)",
+  "กำลังอัปโหลด {0} KB ...": "Muat naik {0} KB ...",
+  "กำลังอัปโหลด {0} MB ...": "Muat naik {0} MB ...",
+  "กำลังอัปโหลด": "Muat naik",
+  "กำลังบันทึกลงบัญชี ...": "Menyimpan ke akaun ...",
+  "ประมวลผลรูปนี้ไม่ได้": "Tidak dapat memproses imej ini",
+  "ปรับตำแหน่งรูปโปรไฟล์": "Laraskan kedudukan gambar profil",
+  "ปรับตำแหน่งภาพปก": "Laraskan kedudukan gambar muka depan",
+  "ไม่รองรับ GIF — ใช้ JPG / PNG / WebP": "GIF tidak disokong — guna JPG / PNG / WebP",
+  "รองรับเฉพาะรูป JPG / PNG / WebP": "Hanya imej JPG / PNG / WebP disokong",
+  "ไฟล์ใหญ่เกิน 15 MB": "Fail melebihi 15 MB",
+  "ภาพปก": "Gambar muka depan",
+  "ยังไม่มีภาพปก": "Belum ada gambar muka depan",
+  "เปลี่ยนภาพปก": "Tukar gambar muka depan",
+  "ลบภาพปกแล้ว": "Gambar muka depan dipadam",
+  "ลบภาพปกไม่สำเร็จ": "Gagal memadam gambar muka depan",
+  "เปลี่ยนรูปโปรไฟล์": "Tukar gambar profil",
+  "อัปโหลดไม่สำเร็จ": "Muat naik gagal",
+
+  /* ---------- Carian ---------- */
+  "ค้นหา | nivread": "Cari | nivread",
+  "คำค้นหา": "Kata carian",
+  "ชื่อโพสต์ เนื้อหา หมวดหมู่ หรือไอดีผู้ใช้": "Tajuk hantaran, kandungan, kategori atau nama pengguna",
+  "พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาโพสต์หรือไอดีผู้ใช้": "Taip sekurang-kurangnya 2 aksara untuk mencari hantaran atau nama pengguna",
+  "ค้นหาไม่สำเร็จ กรุณาลองใหม่": "Carian gagal. Sila cuba lagi.",
+  "ไม่พบผลลัพธ์สำหรับ": "Tiada keputusan untuk",
+  "พบ {0} หมวดหมู่ {1} ผู้ใช้ และ {2} โพสต์": "Ditemui {0} kategori, {1} pengguna dan {2} hantaran",
+  "เนื้อหา": "Kandungan",
+
+  /* ---------- Tulis hantaran ---------- */
+  "เขียนโพสต์ | nivread": "Tulis hantaran | nivread",
+  "โพสต์ของคุณจะแสดงบนหน้าโพสต์และค้นหาได้บน Google ทันทีหลังกดส่ง": "Hantaran anda akan dipaparkan di halaman hantaran dan boleh dicari di Google serta-merta selepas dihantar",
+  "หัวข้อ": "Tajuk",
+  "หัวข้อที่บอกได้ชัดว่าโพสต์นี้เกี่ยวกับอะไร": "Tajuk yang menerangkan dengan jelas tentang hantaran ini",
+  "พิมพ์เอง หรือเลือกจากหมวดที่มีอยู่": "Taip sendiri, atau pilih daripada kategori sedia ada",
+  "เว้นบรรทัดว่างหนึ่งบรรทัดเพื่อขึ้นย่อหน้าใหม่": "Tinggalkan satu baris kosong untuk memulakan perenggan baharu",
+  "เนื้อหาเป็นข้อความล้วน ยาวอย่างน้อย 50 ตัวอักษร": "Kandungan teks biasa, sekurang-kurangnya 50 aksara",
+  "เพิ่มในโพสต์": "Tambah ke hantaran",
+  "อัปโหลดรูป (สูงสุด 3 รูป)": "Muat naik imej (maksimum 3)",
+  "อัปโหลดรูป": "Muat naik imej",
+  "ลิงก์รูปหรือ GIF": "Pautan imej atau GIF",
+  "วิดีโอ YouTube": "Video YouTube",
+  "อัปโหลดวิดีโอ (ไม่เกิน 30 วินาที)": "Muat naik video (tidak melebihi 30 saat)",
+  "อัปโหลดวิดีโอ": "Muat naik video",
+  "กล่องล็อก (ซ่อนข้อความจนกว่าจะปลดล็อก)": "Kotak terkunci (sembunyi teks sehingga dibuka kunci)",
+  "กล่องล็อก": "Kotak terkunci",
+  "วางลิงก์รูปหรือ GIF (GIF จาก GIPHY / Tenor) ได้ครั้งละหลายลิงก์": "Tampal pautan imej atau GIF (GIF dari GIPHY / Tenor), boleh banyak pautan sekali gus",
+  "วางลิงก์ YouTube ได้ครั้งละหลายลิงก์": "Tampal pautan YouTube, boleh banyak pautan sekali gus",
+  "ลิงก์ YouTube": "Pautan YouTube",
+  "กล่องจะถูกวางตรงตำแหน่งเคอร์เซอร์ในเนื้อหา ผู้อ่านเห็นแค่ป้ายบนกล่อง ข้อความข้างในซ่อนอยู่จนกว่าจะปลดล็อก เช่น เขียนว่า “แจกโค้ดส่วนลด กดรับง่ายๆ แค่ติดตามเรา” แล้ววางกล่องต่อท้าย": "Kotak akan diletakkan pada kedudukan kursor dalam kandungan. Pembaca hanya melihat label pada kotak; teks di dalamnya kekal tersembunyi sehingga dibuka kunci. Contohnya, tulis “Pemberian kod diskaun — ikuti kami untuk tebus” dan letakkan kotak di belakangnya.",
+  "ป้ายบนกล่อง เช่น 🎁 โค้ดส่วนลด": "Label pada kotak, cth. 🎁 Kod diskaun",
+  "ป้ายบนกล่อง": "Label pada kotak",
+  "ข้อความที่ซ่อน เช่น โค้ดส่วนลด FNNZ20 หรือลิงก์ที่จะแจก": "Teks tersembunyi, cth. kod diskaun FNNZ20 atau pautan untuk diberikan",
+  "ข้อความที่ซ่อน": "Teks tersembunyi",
+  "วิธีปลดล็อก": "Cara buka kunci",
+  "ติดตามเรา": "Ikuti kami",
+  "ตั้งเวลา": "Tetapkan masa",
+  "รหัสตัวเลข 4 หลัก": "Kod 4 digit",
+  "รหัสปลดล็อก 4 หลัก": "Kod buka kunci 4 digit",
+  "วันและเวลาที่จะปลดล็อก": "Tarikh dan masa untuk membuka kunci",
+  "อย่าใส่รหัสผ่านหรือข้อมูลส่วนตัวในกล่อง — ใครผ่านเงื่อนไขก็เห็นข้อความได้": "Jangan masukkan kata laluan atau maklumat peribadi dalam kotak — sesiapa yang memenuhi syarat boleh melihat teks tersebut",
+  "เพิ่มกล่องในเนื้อหา": "Tambah kotak ke kandungan",
+  "ยกเลิกการแก้ไขกล่อง": "Batal suntingan kotak",
+  "รองรับ JPG / PNG / WebP / HEIC": "Menyokong JPG / PNG / WebP / HEIC",
+  "โพสต์เลย": "Siarkan sekarang",
+  "ยกเลิกการแก้ไข": "Batal suntingan",
+  "ปก": "Muka depan",
+  "เลื่อนไปก่อน": "Pindah ke awal",
+  "เลื่อนไปหลัง": "Pindah ke akhir",
+  "ครบ 10 รูปแล้ว": "Sudah mencapai 10 imej",
+  "เพิ่มแล้ว {0} รูป": "Ditambah {0} imej",
+  "เพิ่มแล้ว {0} คลิป": "Ditambah {0} klip",
+  "{0} ลิงก์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย https://)": "{0} pautan tidak sah (mesti bermula dengan https://)",
+  "{0} GIF ไม่ได้มาจาก GIPHY / Tenor": "{0} GIF bukan daripada GIPHY / Tenor",
+  "{0} ซ้ำ": "{0} pendua",
+  "{0} เกินจำนวนสูงสุด": "{0} melebihi jumlah maksimum",
+  "{0} เกินจำนวนที่อัปโหลดได้": "{0} melebihi had muat naik",
+  "{0} GIF ให้วางเป็นลิงก์แทน": "{0}: tampal GIF sebagai pautan",
+  "{0} ไม่ใช่รูป JPG/PNG/WebP/HEIC": "{0} bukan imej JPG/PNG/WebP/HEIC",
+  "กำลังบีบและอัปโหลด {0}/{1} ...": "Memampatkan dan memuat naik {0}/{1} ...",
+  "{0} ไม่ผ่านการตรวจสอบเนื้อหา (ไม่อนุญาตภาพลามก)": "{0} gagal semakan kandungan (imej lucah tidak dibenarkan)",
+  "{0}: แปลงไฟล์ HEIC ไม่สำเร็จ ลองส่งออกเป็น JPG แล้วอัปโหลดใหม่": "{0}: gagal menukar fail HEIC. Cuba eksport sebagai JPG dan muat naik semula.",
+  "{0}: ประมวลผลรูปไม่ได้": "{0}: tidak dapat memproses imej",
+  "อัปโหลดแล้ว {0} รูป": "Dimuat naik {0} imej",
+  "ไม่มีรูปที่อัปโหลด": "Tiada imej dimuat naik",
+  "รูป": "Imej",
+  "วิดีโอที่ {0}": "Video {0}",
+  "วิดีโอที่อัปโหลด": "Video dimuat naik",
+  "เลื่อนขึ้น": "Pindah ke atas",
+  "เลื่อนลง": "Pindah ke bawah",
+  "ครบ 15 คลิปแล้ว": "Sudah mencapai 15 klip",
+  "{0} ลิงก์ไม่ใช่ YouTube": "{0} pautan bukan YouTube",
+  "เลือกไฟล์วิดีโอเท่านั้น": "Pilih fail video sahaja",
+  "กำลังบีบวิดีโอ {0}% (ห้ามปิดหน้านี้)": "Memampatkan video {0}% (jangan tutup halaman ini)",
+  "อัปโหลดวิดีโอไม่สำเร็จ": "Muat naik video gagal",
+  "อัปโหลดวิดีโอแล้ว": "Video dimuat naik",
+  "วิดีโอยาวเกิน 30 วินาที": "Video melebihi 30 saat",
+  "บีบแล้วไฟล์ยังใหญ่เกินไป ลองคลิปที่สั้นลง": "Fail masih terlalu besar selepas dimampatkan. Cuba klip yang lebih pendek.",
+  "เบราว์เซอร์นี้ยังบีบวิดีโอไม่ได้ (ลองใช้ Chrome หรือ Safari รุ่นใหม่)": "Pelayar ini belum boleh memampatkan video (cuba Chrome atau Safari versi baharu)",
+  "ประมวลผลวิดีโอไม่ได้ (ไฟล์อาจเสียหรือรูปแบบไม่รองรับ)": "Tidak dapat memproses video (fail mungkin rosak atau format tidak disokong)",
+  "ผู้อ่านต้องเข้าสู่ระบบและติดตามคุณก่อนจึงเห็นข้อความ (กดปุ่มในกล่องแล้วติดตามได้ทันที)": "Pembaca mesti log masuk dan mengikuti anda dahulu untuk melihat mesej (tekan butang dalam kotak untuk terus ikuti)",
+  "ผู้อ่านต้องกรอกรหัสตัวเลข 4 หลักที่คุณตั้ง — บอกรหัสในเนื้อหาหรือช่องทางอื่นของคุณ": "Pembaca mesti memasukkan kod 4 digit yang anda tetapkan — beritahu kod tersebut dalam kandungan atau saluran lain anda",
+  "ข้อความเปิดให้ทุกคนเห็นเมื่อถึงเวลาที่ตั้ง (ตามเวลาในเครื่องของคุณ)": "Mesej dibuka untuk dilihat semua orang apabila tiba masa yang ditetapkan (mengikut masa pada peranti anda)",
+  "เว้นว่าง = ใช้รหัสเดิม": "Kosongkan = guna kod asal",
+  "ปลดล็อกเมื่อติดตามเรา": "Buka kunci apabila mengikuti kami",
+  "ปลดล็อกด้วยรหัส 4 หลัก": "Buka kunci dengan kod 4 digit",
+  "· ยังไม่ได้วางในเนื้อหา": "· belum diletakkan dalam kandungan",
+  "วางกล่องที่ตำแหน่งเคอร์เซอร์": "Letak kotak pada kedudukan kursor",
+  "แก้ไขกล่อง": "Sunting kotak",
+  "บันทึกกล่อง": "Simpan kotak",
+  "ลบกล่อง": "Padam kotak",
+  "ครบ {0} กล่องแล้ว": "Sudah mencapai {0} kotak",
+  "ใส่ข้อความที่ต้องการซ่อนก่อน": "Masukkan teks yang ingin disembunyikan dahulu",
+  "ตั้งรหัสเป็นตัวเลข 4 หลัก": "Tetapkan kod sebagai nombor 4 digit",
+  "เลือกวันและเวลาที่จะปลดล็อก": "Pilih tarikh dan masa untuk membuka kunci",
+  "เวลาปลดล็อกต้องอยู่ในอนาคต": "Masa buka kunci mestilah pada masa depan",
+  "บันทึกกล่องแล้ว": "Kotak disimpan",
+  "เพิ่มกล่องไม่ได้ ลองลบตัวคั่น [[lock:...]] ที่ค้างในเนื้อหาก่อน": "Tidak dapat menambah kotak. Cuba padam penanda [[lock:...]] yang tinggal dalam kandungan dahulu.",
+  "เพิ่มกล่องแล้ว วางไว้ที่เคอร์เซอร์ในเนื้อหา": "Kotak ditambah dan diletakkan pada kursor dalam kandungan",
+  "กำลังส่งโพสต์...": "Menghantar hantaran...",
+  "ส่งโพสต์ไม่สำเร็จ": "Gagal menghantar hantaran",
+  "เปิดดูโพสต์": "Buka untuk melihat hantaran",
+  "โพสต์ของฉัน": "Hantaran saya",
+  "บันทึกการแก้ไขแล้ว": "Suntingan disimpan",
+  "บันทึกการแก้ไขแล้ว (เหลือแก้ไขได้อีก {0} ครั้ง)": "Suntingan disimpan ({0} suntingan lagi)",
+  "(เหลือแก้ไขได้อีก {0} ครั้ง)": "({0} suntingan lagi)",
+  "เผยแพร่แล้ว": "Diterbitkan",
+  "ส่งโพสต์แล้ว": "Hantaran dihantar",
+  "บันทึกการแก้ไข": "Simpan suntingan",
+  "กำลังโหลดโพสต์...": "Memuatkan hantaran...",
+  "โหลดโพสต์ไม่สำเร็จ": "Tidak dapat memuatkan hantaran",
+  "แอดมินแก้ไขได้ไม่จำกัด": "Admin boleh menyunting tanpa had",
+  "แก้ไขโพสต์ได้ไม่เกิน 2 ครั้ง — เหลืออีก {0} ครั้ง": "Anda boleh menyunting hantaran sehingga 2 kali — {0} lagi",
+  "โพสต์นี้แก้ไขครบ 2 ครั้งแล้ว": "Hantaran ini telah mencapai had 2 kali suntingan",
+  "สร้างหมวดใหม่": "Cipta kategori baharu",
+  "สร้างหมวดใหม่ \"{0}\"": "Cipta kategori baharu \"{0}\"",
+
+  /* ---------- Admin ---------- */
+  "รายงาน | nivread แอดมิน": "Laporan | nivread admin",
+  "เรื่องที่สมาชิกรายงานเข้ามา — โพสต์ ความคิดเห็น และผู้ใช้": "Laporan yang dihantar oleh ahli — hantaran, komen dan pengguna",
+  "สถานะรายงาน": "Status laporan",
+  "รอตรวจสอบ": "Menunggu semakan",
+  "ตรวจแล้ว": "Telah disemak",
+  "สิทธิ์วิดีโอ": "Akses video",
+  "สิทธิ์แชท": "Akses sembang",
+  "ลบเนื้อหาและปิดเรื่องแล้ว": "Kandungan dipadam dan kes ditutup",
+  "ปิดเรื่องแล้ว": "Kes ditutup",
+  "ไม่มีรายงานที่รอตรวจสอบ": "Tiada laporan menunggu semakan",
+  "ซ่อนอยู่": "Tersembunyi",
+  "เนื้อหานี้ถูกลบไปแล้ว": "Kandungan ini telah dipadam",
+  "{0} รายงาน": "{0} laporan",
+  "เจ้าของ: {0}": "Pemilik: {0}",
+  "ลบเนื้อหา": "Padam kandungan",
+  "ลบความคิดเห็นนี้ถาวรใช่ไหม?": "Padam komen ini secara kekal?",
+  "ลบผู้ใช้นี้ถาวรใช่ไหม?": "Padam pengguna ini secara kekal?",
+  "ปลดแบนผู้ใช้": "Nyahsekat pengguna",
+  "แบนผู้ใช้": "Sekat pengguna",
+  "เหตุผลที่แบน @{0} (ไม่บังคับ) — โพสต์ทั้งหมดของผู้ใช้จะถูกซ่อน และโพสต์/คอมเมนต์/อัปโหลดไม่ได้": "Sebab menyekat @{0} (pilihan) — semua hantaran pengguna akan disembunyikan, dan mereka tidak boleh menyiarkan, mengomen atau memuat naik",
+  "ปลดแบน @{0} และคืนโพสต์ที่ถูกซ่อนจากการแบน?": "Nyahsekat @{0} dan pulihkan hantaran yang disembunyikan akibat sekatan?",
+  "ปลดแบนแล้ว": "Dinyahsekat",
+  "แบนแล้ว (ซ่อนโพสต์ {0} รายการ)": "Disekat (menyembunyikan {0} hantaran)",
+  "ปิดเรื่อง": "Tutup kes",
+  "ไม่พบความผิด": "Tiada kesalahan dijumpai",
+  "ผลการตรวจ: {0}": "Keputusan semakan: {0}",
+  "ไม่พบความผิด / ปิดเรื่อง": "Tiada kesalahan / kes ditutup",
+  "บัญชีที่อัปโหลดวิดีโอได้": "Akaun yang boleh memuat naik video",
+  "วิดีโอยาวไม่เกิน 30 วินาที อัปโหลดได้เฉพาะบัญชีในรายการนี้ (แอดมินอัปโหลดได้เสมอ)": "Video tidak melebihi 30 saat. Hanya akaun dalam senarai ini boleh memuat naik (admin sentiasa boleh).",
+  "บัญชีที่ใช้แชทได้": "Akaun yang boleh menggunakan sembang",
+  "หน้าแชทเปิดให้เฉพาะบัญชีในรายการนี้ (แอดมินใช้ได้เสมอ) และแชทกันได้เฉพาะคู่ที่ติดตามกันและกันและได้รับอนุญาตทั้งคู่": "Halaman sembang dibuka hanya untuk akaun dalam senarai ini (admin sentiasa boleh), dan hanya antara pasangan yang saling mengikuti dan kedua-duanya diluluskan.",
+  "Worker ยังไม่ได้อัปเดต กรุณา deploy": "Worker belum dikemas kini. Sila lancarkan (deploy).",
+  "ไอดีผู้ใช้ (username)": "Nama pengguna",
+  "ไอดีผู้ใช้": "Nama pengguna",
+  "อนุญาต": "Benarkan",
+  "ถอนสิทธิ์": "Tarik balik akses",
+  "ถอนสิทธิ์ @{0} แล้ว": "Akses ditarik balik daripada @{0}",
+  "อนุญาต @{0} แล้ว": "Dibenarkan @{0}",
+  "ยังไม่มีบัญชีที่ได้รับอนุญาต": "Belum ada akaun yang dibenarkan",
+  "บัญชีนี้ได้รับอนุญาตอยู่แล้ว": "Akaun ini sudah dibenarkan",
+  "ยังไม่มีรายงานที่ตรวจแล้ว": "Tiada laporan yang telah disemak",
+  "ในโพสต์:": "Dalam hantaran:",
+  "เจ้าของ:": "Pemilik:",
+
+  /* ---------- AI (Khusus bahagian menu/butang umum) ---------- */
+  "Nivread AI แชททั่วไป": "Sembang am Nivread AI",
+  "คุยทั่วไป": "Perbualan am",
+  "เมนูเพิ่มเติม": "Lebih banyak pilihan",
+  "พลังงานคงเหลือ": "Tenaga baki",
+  "พิมพ์สั้น ๆ ใช้พลังงานน้อยกว่า": "Mesej pendek menggunakan lebih sedikit tenaga",
+  "ปิดบังข้อมูลส่วนตัว": "Sembunyikan maklumat peribadi",
+  "เลขบัตร เบอร์โทร อีเมล": "Nombor kad, nombor telefon, e-mel",
+  "ดูก่อนส่งให้ AI": "Pratonton sebelum hantar kepada AI",
+  "แสดงข้อความที่จะถูกส่งออกไป": "Tunjukkan teks yang akan dihantar",
+  "ล้างแชทโหมดนี้": "Kosongkan sembang mod ini",
+  "แชท AI ภาษาไทย ถามอะไรก็ได้": "Sembang AI — tanya apa sahaja",
+  "ช่วยวางแผนวันนี้ให้หน่อย": "Bantu rancang hari saya",
+  "อธิบายดอกเบี้ยทบต้นให้เข้าใจง่าย": "Terangkan faedah kompaun dengan mudah",
+  "ช่วยตรวจและแก้ภาษาข้อความนี้": "Semak dan betulkan bahasa teks ini",
+  "แนะนำวิธีจำคำศัพท์ภาษาอังกฤษ": "Cadangkan cara menghafal kosa kata Bahasa Inggeris",
+  "เลือกโหมด": "Pilih mod",
+  "โหมดการคุย": "Mod perbualan",
+  "ถามได้ทุกเรื่อง": "Tanya apa sahaja",
+  "แนบไฟล์": "Lampirkan fail",
+  "ข้อความ": "Mesej",
+  "หยุด": "Berhenti",
+  "AI อาจตอบผิดพลาด โปรดตรวจสอบข้อมูลสำคัญอีกครั้ง": "AI mungkin membuat kesilapan. Sila semak semula maklumat penting.",
+  "ข้อความและความจำของโหมด": "Mesej dan ingatan mod",
+  "จะถูกลบทั้งหมด กู้คืนไม่ได้": "akan dipadam sepenuhnya dan tidak boleh dipulihkan",
+  "ล้างแชท": "Kosongkan sembang",
+  "พิมพ์ข้อความ...": "Taip mesej...",
+  "ถามอะไรก็ได้": "Tanya apa sahaja",
+  "ต้องเข้าสู่ระบบก่อนถึงจะคุยกับ AI ได้": "Anda perlu log masuk sebelum boleh bersembang dengan AI",
+  "เชื่อมต่อไม่ได้ ({0}) ลองใหม่อีกครั้ง": "Tidak dapat menyambung ({0}). Sila cuba lagi.",
+  "เครือข่ายมีปัญหา ลองใหม่อีกครั้ง": "Masalah rangkaian. Sila cuba lagi.",
+  "ส่งให้ AI": "Hantar kepada AI",
+  "ข้อความที่จะส่งให้ AI": "Teks yang akan dihantar kepada AI",
+  "ปิดบังข้อมูลส่วนตัวแล้ว {0} จุด (ไฮไลต์สีเหลือง)": "{0} maklumat peribadi disembunyikan (diserlahkan dengan warna kuning)",
+  "ไม่พบข้อมูลส่วนตัวที่ต้องปิดบัง": "Tiada maklumat peribadi dijumpai untuk disembunyikan",
+  "เอาออก": "Buang",
+  "ดาวน์โหลด ZIP": "Muat turun ZIP",
+  "บันทึกเป็นรูป": "Simpan sebagai imej",
+  "บันทึกรูป": "Simpan imej",
+  "แชร์รูป": "Kongsi imej",
+  "ขยาย": "Besarkan",
+  "กราฟ": "Graf",
+  "ตารางข้อมูล": "Jadual data",
+  "ค้นหาในตาราง": "Cari dalam jadual",
+  "บันทึกเป็น CSV": "Simpan sebagai CSV",
+  "เฉลี่ย": "Purata",
+  "ค่าสูงสุด": "Maksimum",
+  "ค่าต่ำสุด": "Minimum",
+  "ปฏิทิน": "Kalendar",
+});
