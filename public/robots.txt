@@ -6,5 +6,7 @@ Disallow: /admin
 Disallow: /notifications
 Disallow: /search
 Disallow: /*?feed=1
+Disallow: /novel-admin
 
 Sitemap: https://nivread.com/sitemap-posts.xml
+Sitemap: https://nivread.com/sitemap-novels.xml
