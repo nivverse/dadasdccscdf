@@ -650,17 +650,17 @@
   // ---------- Progress bar วิ่งตามขอบกรอบวิดีโอ (.uv = วิดีโออัปโหลดเอง ทั้ง SSR และการ์ดฝั่งเบราว์เซอร์) ----------
   // ถ้า JS ไม่ทำงาน จะยังเหลือ controls เดิมของเบราว์เซอร์ (ลบทิ้งตอน enhance เท่านั้น)
   if (!document.getElementById('niv-bp')) {
-    const BP_R = 18, BP_SW = 2, BP_PAD = 5;
+    const BP_R = 18, BP_SW = 2, BP_PAD = 0;
     const bpStyle = document.createElement('style');
     bpStyle.id = 'niv-bp';
     bpStyle.textContent = `
-.uv.bp{position:relative;padding:${BP_PAD}px;border-radius:${BP_R}px;background:#0b1020;cursor:pointer;touch-action:manipulation;outline:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.uv.bp{position:relative;padding:${BP_PAD}px;border-radius:${BP_R}px;background:transparent;cursor:pointer;touch-action:manipulation;outline:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .uv.bp video{-webkit-touch-callout:none}
 .uv.bp video{display:block;width:100%;border-radius:${BP_R - BP_PAD}px;background:#000}
 .uv.bp:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .bp-svg rect,.bp-svg path{fill:none}
-.bp-track{stroke:rgba(255,255,255,.08);stroke-width:${BP_SW}}
+.bp-track{stroke:transparent;stroke-width:${BP_SW}}
 .bp-fill{stroke:#f59e0b;stroke-opacity:.55;stroke-width:${BP_SW};stroke-linecap:butt;transition:stroke-width .15s,stroke-opacity .15s}
 .bp-hit{stroke:transparent;stroke-width:${BP_PAD * 2 + 6};pointer-events:stroke;cursor:pointer;touch-action:none}
 .uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:${BP_SW + 1};stroke-opacity:.85}
@@ -749,7 +749,7 @@
       const svg = box.querySelector('.bp-svg'), rects = svg.querySelectorAll('rect'), fills = svg.querySelectorAll('.bp-fill');
       const hit = box.querySelector('.bp-hit');
       const time = box.querySelector('.bp-time'), mute = box.querySelector('.bp-mute');
-      const I = BP_SW / 2 + 2;
+      const I = BP_SW / 2;
       let len = 1, W = 0, H = 0, drag = false, raf = 0;
 
       let lastD = -1, lastKey = '', lastM = null;
