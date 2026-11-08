@@ -2,7 +2,15 @@
 // ความปลอดภัย: ข้อความผู้ใช้ทุกชิ้นใส่ด้วย textContent เท่านั้น (ไม่ใช้ innerHTML กับข้อมูลผู้ใช้)
 (() => {
   if (!window.NIV || window.NovelSocial) return;
-  const { api, el, session, avatarEl, userUrl } = NIV;
+  const { api: rawApi, el, session, avatarEl, userUrl } = NIV;
+  // API ของนิยายตอบ success:true เสมอเมื่อสำเร็จ — ถ้าไม่ใช่ (เช่น Worker ยังไม่อัปเดต แล้วไปเจอ catch-all
+  // ที่ตอบ 200 {"message":"...Ready!"}) ให้ถือว่าล้มเหลวพร้อมข้อความที่เข้าใจได้ แทนที่จะปล่อยให้โค้ดพังเงียบๆ
+  async function api(path, opts) {
+    let r;
+    try { r = await rawApi(path, opts); } catch { return { ok: false, status: 0, data: { error: 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่' } }; }
+    if (r.ok && r.data.success !== true) return { ok: false, status: r.status, data: { error: 'เซิร์ฟเวอร์ยังไม่รองรับฟีเจอร์นี้ (Worker ยังไม่ได้อัปเดต)' } };
+    return r;
+  }
   const enc = encodeURIComponent;
   const num = (n) => Number(n || 0).toLocaleString('th-TH');
   const loginHref = () => '/login?redirect=' + enc(location.pathname + location.search);
@@ -12,8 +20,14 @@
     heart: '<path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 000-7.8z"/>',
     reply: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 016 6v3"/>',
     trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+    star: '<path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
+    book: '<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>',
+    x: '<path d="M18 6L6 18M6 6l12 12"/>',
+    send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
+    lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>',
   };
-  const ico = (name, cls) => { const t = document.createElement('span'); t.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${PATHS[name]}</svg>`; const s = t.firstChild; if (cls) s.setAttribute('class', cls); return s; };
+  // SVG คงที่ (ไม่มีข้อมูลผู้ใช้) เส้นตาม currentColor ขนาดตามคลาส .nv-i
+  const ico = (name, cls) => { if (!PATHS[name]) console.warn('NovelSocial.ico: ไม่มีไอคอน', name); const t = document.createElement('span'); t.innerHTML = `<svg class="${cls || 'nv-i'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${PATHS[name]}</svg>`; return t.firstChild; };
 
   function ago(ms) {
     const d = Math.max(0, Date.now() - ms) / 1000;
@@ -26,10 +40,11 @@
 
   // ---------- ทอสต์ ----------
   let toastEl, toastT;
+  const hideToast = () => { if (toastEl) toastEl.classList.remove('show'); };
   function toast(msg, action) {
     if (!toastEl) { toastEl = el('div', 'nv-toast'); toastEl.setAttribute('role', 'status'); document.body.append(toastEl); }
-    const hide = () => toastEl.classList.remove('show');
-    toastEl.replaceChildren(document.createTextNode(msg));
+    const hide = hideToast;
+    toastEl.replaceChildren(el('span', '', msg));
     if (action) { const b = el('button', '', action.label); b.type = 'button'; b.onclick = () => { action.fn(); hide(); }; toastEl.append(b); }
     requestAnimationFrame(() => toastEl.classList.add('show'));
     clearTimeout(toastT); toastT = setTimeout(hide, action ? 6000 : 2600);
@@ -42,12 +57,24 @@
     const bg = el('div', 'nv-sheet-bg');
     const box = el('div', 'nv-sheet'); box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
     const head = el('div', 'nv-sheet-head'); const title = el('h3', 'font-bold text-base truncate');
-    const x = el('button', 'nv-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'ปิด');
+    const x = el('button', 'nv-x'); x.type = 'button'; x.setAttribute('aria-label', 'ปิด'); x.append(ico('x'));
     head.append(title, x);
     const body = el('div', 'nv-sheet-body');
     box.append(head, body); document.body.append(bg, box);
     sh = { bg, box, title, body, x };
     bg.addEventListener('click', closeSheet); x.addEventListener('click', closeSheet);
+    // ลากหัวแผงลงเพื่อปิด (มือถือ) · เขียนแค่ transform จึงไม่กระตุก
+    let sy = 0, dy = 0, dragging = false;
+    head.addEventListener('pointerdown', (e) => { if (innerWidth >= 768 || e.target.closest('button')) return; dragging = true; sy = e.clientY; dy = 0; box.style.transition = 'none'; try { head.setPointerCapture(e.pointerId); } catch {} });
+    head.addEventListener('pointermove', (e) => { if (!dragging) return; dy = Math.max(0, e.clientY - sy); box.style.transform = `translate3d(0,${dy}px,0)`; bg.style.opacity = String(Math.max(0, 1 - dy / 420)); });
+    const endDrag = () => { if (!dragging) return; dragging = false; box.style.transition = ''; bg.style.opacity = ''; box.style.transform = ''; if (dy > 90) closeSheet(); };
+    head.addEventListener('pointerup', endDrag); head.addEventListener('pointercancel', endDrag);
+    // แป้นพิมพ์มือถือเด้งขึ้น: ยกแผงหนี ไม่ให้ช่องพิมพ์ถูกบัง
+    if (window.visualViewport) {
+      const vv = window.visualViewport;
+      const adj = () => { if (!box.classList.contains('open')) return; const kb = Math.max(0, innerHeight - vv.height - vv.offsetTop); box.style.bottom = kb > 40 ? kb + 'px' : ''; };
+      vv.addEventListener('resize', adj); vv.addEventListener('scroll', adj);
+    }
     document.addEventListener('keydown', (e) => {
       if (!box.classList.contains('open')) return;
       if (e.key === 'Escape') return closeSheet();
@@ -60,8 +87,10 @@
     });
     return sh;
   }
-  function openSheet({ title, render, onClose }) {
+  function openSheet({ title, render, onClose, dock }) {
     const s = ensureSheet();
+    hideToast();
+    s.box.classList.toggle('dock', !!dock); s.body.classList.toggle('dock', !!dock);   // dock = ช่องพิมพ์ปักล่างสุด รายการเลื่อนอยู่ด้านบน
     s.title.textContent = title; s.body.replaceChildren(); s.body.scrollTop = 0;
     onCloseCb = onClose || null; render(s.body);
     lastFocus = document.activeElement;
@@ -107,27 +136,30 @@
   }
 
   // ---------- คอมเมนต์ ----------
-  const TA = 'w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm leading-6 resize-none focus:outline-none focus:border-amber-500 transition-colors';
-  const GOBTN = 'px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold disabled:opacity-50 transition-transform active:scale-95';
+  const TA = 'flex-1 min-w-0 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 resize-none focus:outline-none focus:border-amber-500 transition-colors';
 
   function buildComposer({ placeholder, onSend }) {
     const root = el('div', 'nv-composer');
     if (!authed()) {
-      const a = el('a', 'block text-center text-sm px-4 py-3 rounded-xl border border-dashed border-slate-300 dark:border-white/15 text-slate-500 dark:text-neutral-400 hover:border-amber-500 hover:text-amber-600 transition-colors', 'เข้าสู่ระบบเพื่อแสดงความคิดเห็น');
+      const a = el('a', 'block text-center text-sm px-4 py-3.5 rounded-2xl border border-dashed border-slate-300 dark:border-white/15 text-slate-500 dark:text-neutral-400 hover:border-amber-500 hover:text-amber-600 transition-colors', 'เข้าสู่ระบบเพื่อแสดงความคิดเห็น');
       a.href = loginHref(); root.append(a);
       return { el: root, setReply() {}, focus() {} };
     }
     let reply = null;
-    const bar = el('div', 'hidden items-center justify-between text-xs text-slate-500 dark:text-neutral-400 mb-1.5 px-1');
-    const barTxt = el('span'); const barX = el('button', 'nv-mini', 'ยกเลิก'); barX.type = 'button';
+    const bar = el('div', 'hidden items-center justify-between gap-2 text-xs text-slate-600 dark:text-neutral-300 mb-2 px-3 py-1.5 rounded-xl bg-slate-200/70 dark:bg-white/5');
+    const barTxt = el('span', 'truncate'); const barX = el('button', 'nv-mini', 'ยกเลิก'); barX.type = 'button'; barX.style.margin = '0';
     bar.append(barTxt, barX);
-    const ta = el('textarea', TA); ta.rows = 2; ta.maxLength = 1000; ta.placeholder = placeholder;
-    const foot = el('div', 'flex items-center justify-between mt-2');
-    const cnt = el('span', 'text-xs text-slate-400', '0 / 1000');
-    const btn = el('button', GOBTN, 'ส่ง'); btn.type = 'button'; btn.disabled = true;
-    foot.append(cnt, btn); root.append(bar, ta, foot);
-    const fit = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 220) + 'px'; };
-    ta.addEventListener('input', () => { cnt.textContent = ta.value.length + ' / 1000'; btn.disabled = !ta.value.trim(); fit(); });
+    const row = el('div', 'nv-composer-row');
+    const ta = el('textarea', TA); ta.rows = 1; ta.maxLength = 1000; ta.placeholder = placeholder; ta.setAttribute('aria-label', placeholder);
+    const btn = el('button', 'nv-send'); btn.type = 'button'; btn.disabled = true; btn.setAttribute('aria-label', 'ส่งความคิดเห็น'); btn.append(ico('send'));
+    row.append(ta, btn);
+    const cnt = el('p', 'hidden mt-1 pr-14 text-right text-xs text-slate-400');
+    root.append(bar, row, cnt);
+    const fit = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 144) + 'px'; };
+    ta.addEventListener('input', () => {
+      btn.disabled = !ta.value.trim(); fit();
+      cnt.classList.toggle('hidden', ta.value.length < 800); cnt.textContent = ta.value.length + ' / 1000';   // ตัวนับโผล่เมื่อใกล้เต็มเท่านั้น
+    });
     const setReply = (t) => {
       reply = t;
       bar.classList.toggle('hidden', !t); bar.classList.toggle('flex', !!t);
@@ -136,16 +168,16 @@
     barX.addEventListener('click', () => setReply(null));
     btn.addEventListener('click', async () => {
       const text = ta.value.trim(); if (!text) return;
-      btn.disabled = true; btn.textContent = 'กำลังส่ง…';
+      btn.disabled = true; ta.disabled = true;
       const ok = await onSend(text, reply);
-      btn.textContent = 'ส่ง';
-      if (ok) { ta.value = ''; cnt.textContent = '0 / 1000'; fit(); setReply(null); } else btn.disabled = !ta.value.trim();
+      ta.disabled = false;
+      if (ok) { ta.value = ''; fit(); cnt.classList.add('hidden'); setReply(null); } else btn.disabled = !ta.value.trim();
     });
     ta.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !btn.disabled) btn.click(); });
     return { el: root, setReply, focus: () => ta.focus() };
   }
 
-  function mountComments(root, { slug, no = 0, para = 0, onTotal, placeholder }) {
+  function mountComments(root, { slug, no = 0, para = 0, onTotal, placeholder, dock }) {
     root.replaceChildren();
     const st = { before: 0, hasMore: false, loading: false, viewer: null, gen: 0 };
     const list = el('div', 'mt-4 space-y-5');
@@ -157,17 +189,26 @@
       onSend: async (text, reply) => {
         const r = await api('/api/novel/comment', { method: 'POST', body: { userId: uid(), slug, no, para, content: text, replyTo: reply ? reply.id : undefined } });
         if (!r.ok) { toast(r.data.error || 'ส่งความคิดเห็นไม่สำเร็จ'); return false; }
-        const c = r.data.comment; empty.classList.add('hidden');
+        const c = r.data.comment;
+        if (!c) { toast('ส่งความคิดเห็นไม่สำเร็จ'); return false; }
+        empty.classList.add('hidden');
         if (c.parent_id) {
           const box = list.querySelector(`[data-thread="${c.parent_id}"] [data-replies]`);
           if (box) box.append(itemEl(c, true));
           else list.prepend(itemEl({ ...c, replies: [] }, false));
-        } else list.prepend(itemEl(c, false));
+        } else { list.prepend(itemEl(c, false)); if (scroller) scroller.scrollTop = 0; }
         if (onTotal) onTotal(+1);
         return true;
       },
     });
-    root.append(comp.el, list, empty, more);
+    let scroller = null;
+    if (dock) {                                   // แผงเลื่อน: รายการเลื่อนอยู่บน ช่องพิมพ์ปักล่างสุด
+      root.className = 'flex flex-col flex-1 min-h-0';
+      scroller = el('div', 'flex-1 min-h-0 overflow-y-auto pb-2'); list.className = 'space-y-5'; empty.classList.add('py-6');
+      scroller.append(list, empty, more);
+      comp.el.classList.add('flex-none', 'pt-3', 'border-t', 'border-slate-200', 'dark:border-white/10');
+      root.append(scroller, comp.el);
+    } else root.append(comp.el, list, empty, more);
 
     const canDelete = (c) => st.viewer && (st.viewer.id === c.user_id || st.viewer.can_moderate);
 
@@ -238,7 +279,7 @@
       if (gen !== st.gen) return;
       st.loading = false; more.disabled = false;
       if (!append) list.replaceChildren();
-      if (!r.ok) { list.append(el('p', 'text-sm text-center text-slate-500', r.data.error || 'โหลดความคิดเห็นไม่สำเร็จ')); return; }
+      if (!r.ok || !Array.isArray(r.data.comments)) { list.append(el('p', 'text-sm text-center text-slate-500', r.data.error || 'โหลดความคิดเห็นไม่สำเร็จ')); more.classList.add('hidden'); return; }
       st.viewer = r.data.viewer; st.hasMore = r.data.hasMore; st.before = r.data.next_before;
       r.data.comments.forEach((c) => list.append(itemEl(c, false)));
       empty.classList.toggle('hidden', !!list.children.length);
@@ -249,5 +290,5 @@
     return { reload: () => load(false), focus: comp.focus };
   }
 
-  window.NovelSocial = { toast, openSheet, closeSheet, mountComments, toggle, rate, me, view, share, ago, num, loginHref, authed, ico };
+  window.NovelSocial = { call: api, toast, openSheet, closeSheet, mountComments, toggle, rate, me, view, share, ago, num, loginHref, authed, ico };
 })();

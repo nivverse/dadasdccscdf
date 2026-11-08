@@ -68,6 +68,13 @@
   wire('act-bm', 'bookmark', 'bookmarked');
 
   // ---------- ดาวให้คะแนน ----------
+  const setRatingText = (d) => {                      // ใช้ DOM + ไอคอน SVG (ค่าเป็นตัวเลขจาก API)
+    const box = $('rating-sum'); if (!box) return; box.replaceChildren();
+    const mk = (cls, txt) => { const e = document.createElement('span'); e.className = cls; if (txt) e.textContent = txt; return e; };
+    if (!d.rating_count) { box.append(mk('opacity-70', 'ยังไม่มีคะแนน')); return; }
+    const a = mk('inline-flex items-center gap-1 text-amber-500 font-semibold'); a.append(NS.ico('star', 'nv-i nv-i-fill'), document.createTextNode(String(Number(d.rating_avg))));
+    box.append(a, mk('opacity-70', '· ' + NS.num(d.rating_count) + ' คะแนน'));
+  };
   const stars = $('stars');
   let mine = 0;
   const paintStars = () => stars && stars.querySelectorAll('button').forEach((b) => {
@@ -80,7 +87,7 @@
     mine = next; paintStars();
     const d = await NS.rate(slug, next);
     if (!d) { mine = prev; paintStars(); return; }
-    $('rating-sum').textContent = d.rating_count ? `★ ${d.rating_avg} · ${NS.num(d.rating_count)} คะแนน` : 'ยังไม่มีคะแนน';
+    setRatingText(d);
     NS.toast(next ? 'ขอบคุณสำหรับคะแนน' : 'ถอนคะแนนแล้ว');
   });
 
@@ -92,7 +99,8 @@
     const done = pct >= 95 && tocNos.has(no + 1);
     const target = done ? no + 1 : no;
     start.href = `/novels/${encodeURIComponent(slug)}/${target}`;
-    start.textContent = done ? `อ่านต่อ ตอนที่ ${target}` : (pct > 2 && pct < 95 ? `อ่านต่อ ตอนที่ ${no} · ${pct}%` : `อ่านต่อ ตอนที่ ${no}`);
+    const label = start.querySelector('span') || start;     // เก็บไอคอนไว้ เปลี่ยนเฉพาะข้อความ
+    label.textContent = done ? `อ่านต่อ ตอนที่ ${target}` : (pct > 2 && pct < 95 ? `อ่านต่อ ตอนที่ ${no} · ${pct}%` : `อ่านต่อ ตอนที่ ${no}`);
     document.querySelectorAll('.nv-toc a[data-no]').forEach((a) => {
       const n = Number(a.dataset.no);
       if (n < no || (n === no && pct >= 95)) { if (!a.querySelector('.nv-read-dot')) { const d = document.createElement('span'); d.className = 'nv-read-dot'; d.setAttribute('aria-label', 'อ่านแล้ว'); a.firstElementChild.prepend(d); } }
@@ -111,6 +119,13 @@
       mine = d.rating || 0; paintStars();
       if (d.progress && (!local || d.progress.updated_at >= (local.t || 0))) setResume(d.progress.chapter_no, d.progress.pct);
     });
+  }
+
+  // ---------- เรื่องย่อ: มือถือย่อ 4 บรรทัด + ปุ่มอ่านเพิ่มเติม (โชว์ปุ่มเฉพาะเมื่อข้อความยาวเกินจริง) ----------
+  const syn = $('syn'), synMore = $('syn-more');
+  if (syn && synMore && matchMedia('(max-width: 639px)').matches && syn.scrollHeight > syn.clientHeight + 2) {
+    synMore.classList.remove('hidden');
+    synMore.addEventListener('click', () => { const open = syn.classList.toggle('open'); synMore.textContent = open ? 'ย่อเรื่องย่อ' : 'อ่านเพิ่มเติม'; });
   }
 
   // ---------- คอมเมนต์ทั้งเรื่อง ----------

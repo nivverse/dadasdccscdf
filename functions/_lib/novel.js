@@ -13,19 +13,25 @@ export const compact = (n) => {
   return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
 };
 
-// ไอคอน SVG คงที่ (stroke ตาม currentColor)
-const svg = (d, extra = '') => `<svg viewBox="0 0 24 24" aria-hidden="true" ${extra}>${d}</svg>`;
+// ไอคอน SVG คงที่ (เส้นตาม currentColor · ขนาดตามตัวอักษรด้วยคลาส .nv-i ใน novel.css) — ไม่ใช้อิโมจิ/ตัวอักษรแทนไอคอน
+const svg = (d, cls = 'nv-i') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
+const P_STAR = '<path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>';
 export const ICON = {
-  eye: svg('<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>', 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'),
+  eye: svg('<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>'),
   heart: svg('<path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 000-7.8z"/>'),
   bookmark: svg('<path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>'),
   share: svg('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>'),
   chat: svg('<path d="M21 11.5a8.4 8.4 0 01-12.2 7.5L3 21l2-5.8A8.4 8.4 0 1121 11.5z"/>'),
-  star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>',
+  star: svg(P_STAR, 'nv-i nv-i-fill'),                       // ดาวทึบ (ข้อความคะแนน)
+  starBtn: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + P_STAR + '</svg>',   // ดาวในปุ่มให้คะแนน (CSS เติมสี)
+  lock: svg('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>'),
+  book: svg('<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>'),
   prev: svg('<path d="M15 18l-6-6 6-6"/>'),
   next: svg('<path d="M9 18l6-6-6-6"/>'),
+  arrowRight: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
   list: svg('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'),
   sliders: svg('<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>'),
+  clock: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
 };
 
 // <head> ร่วมของหน้านิยาย: สไตล์ + ธง nv-js (เอฟเฟกต์เปิดตัวทำงานเฉพาะเมื่อ JS ทำงาน ไม่ซ่อนเนื้อหาจากคนที่ปิด JS)
@@ -44,8 +50,8 @@ if(F){s.setProperty('--rd-font',F[0]);if(F[1]){var l=document.createElement('lin
 }catch(e){}})();</script>`;
 
 const CARD = 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm';
-export const BTN = 'inline-block px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold text-sm shadow-md shadow-amber-500/25 transition';
-export const BTN2 = 'inline-block px-5 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 text-sm font-semibold hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400 transition';
+export const BTN = 'inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold text-sm shadow-md shadow-amber-500/25 transition';
+export const BTN2 = 'inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-300 dark:border-white/15 text-sm font-semibold hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400 transition';
 export { CARD };
 
 export const novelHref = (slug, no) => `/novels/${encodeURIComponent(slug)}${no ? '/' + no : ''}`;
@@ -59,18 +65,19 @@ export function coverImg(n, cls = '') {
 }
 
 export function novelCard(n, i = 0) {
+  const st = (icon, txt, cls = '') => `<span class="inline-flex items-center gap-1 ${cls}">${icon}${txt}</span>`;
   const stats = [
-    n.rating_count > 0 ? `<span class="text-amber-500">★ ${esc(String(n.rating_avg))}</span>` : '',
-    `<span>👁 ${compact(n.views)}</span>`,
-    n.like_count > 0 ? `<span>♥ ${compact(n.like_count)}</span>` : '',
-  ].filter(Boolean).join('<span aria-hidden="true">·</span>');
+    n.rating_count > 0 ? st(ICON.star, esc(String(n.rating_avg)), 'text-amber-500') : '',
+    st(ICON.eye, compact(n.views)),
+    n.like_count > 0 ? st(ICON.heart, compact(n.like_count)) : '',
+  ].filter(Boolean).join('');
   return `<a href="${novelHref(n.slug)}" class="nv-card nv-reveal group block ${CARD} overflow-hidden hover:border-amber-500/60" style="--i:${Math.min(i, 8)}">
   <div class="overflow-hidden">${coverImg(n)}</div>
-  <div class="p-3">
+  <div class="p-2.5 sm:p-3">
     <h3 class="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-amber-600 dark:group-hover:text-amber-400">${esc(n.title)}</h3>
     <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(n.display_name || '')}</p>
     <p class="mt-1 text-[11px] text-slate-400 dark:text-neutral-500">${fmtNum(n.chapter_count)} ตอน · ${esc(STATUS_TH[n.status] || '')}</p>
-    <p class="mt-1 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-neutral-400">${stats}</p>
+    <p class="mt-1.5 flex items-center gap-2.5 text-[11px] text-slate-500 dark:text-neutral-400">${stats}</p>
   </div></a>`;
 }
 

@@ -7,7 +7,8 @@
 (() => {
   const art = document.getElementById('reader');
   if (!art || !window.NIV || !window.NovelSocial) return;
-  const NS = NovelSocial, { api, el, session } = NIV;
+  const NS = NovelSocial, { el, session } = NIV;
+  const api = NS.call;      // ตัวห่อที่ตรวจรูปแบบคำตอบ (ดู novel-social.js)
   const enc = encodeURIComponent;
   const root = document.documentElement;
   const slug = art.dataset.slug, no = Number(art.dataset.no);
@@ -121,11 +122,12 @@
     const bub = p.querySelector('.rd-pb');
     NS.openSheet({
       title: 'ความคิดเห็นย่อหน้าที่ ' + n,
+      dock: true,
       render: (body) => {
-        const q = el('blockquote', 'text-sm leading-6 px-3 py-2 mb-4 rounded-lg border-l-4 border-amber-500 bg-amber-500/10 text-slate-600 dark:text-neutral-300');
-        const t = paraText(p); q.textContent = t.length > 160 ? t.slice(0, 160) + '…' : t; body.append(q);
+        const q = el('blockquote', 'flex-none px-3 py-2 mb-3 rounded-lg border-l-4 border-amber-500 bg-amber-500/10 text-slate-600 dark:text-neutral-300');
+        const qt = el('p', 'text-sm leading-6 line-clamp-2'); qt.textContent = paraText(p); q.append(qt); body.append(q);   // ตัดบรรทัดที่ข้อความด้านใน ไม่ใช่กล่องที่มี padding (กันบรรทัดที่สามโผล่)
         const box = el('div'); body.append(box);
-        NS.mountComments(box, { slug, no, para: n, placeholder: 'พูดถึงย่อหน้านี้…',
+        NS.mountComments(box, { slug, no, para: n, dock: true, placeholder: 'พูดถึงย่อหน้านี้…',
           onTotal: (d) => { const c = Math.max(0, (parseInt(bub.dataset.c, 10) || 0) + d); bub.dataset.c = String(c); bub.textContent = c ? (c > 99 ? '99+' : String(c)) : ''; } });
       },
     });
@@ -150,7 +152,7 @@
       if (saved > 3 && saved < 97 && scrollY < 60) {
         requestAnimationFrame(() => {
           scrollToP(saved / 100);
-          NS.toast('กลับมาอ่านต่อจากจุดเดิม', { label: 'เริ่มใหม่', fn: () => window.scrollTo({ top: 0, behavior: 'smooth' }) });
+          NS.toast('กลับมาอ่านต่อจากเดิม', { label: 'เริ่มใหม่', fn: () => window.scrollTo({ top: 0, behavior: 'smooth' }) });
         });
       }
     }
@@ -203,7 +205,9 @@
         const li = el('li'); const a = el('a', 'flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm');
         a.href = `/novels/${enc(slug)}/${c.no}`;
         const l = el('span', 'min-w-0 truncate'); l.append(el('span', 'text-slate-400 mr-2', String(c.no)), document.createTextNode(c.title));
-        a.append(l, el('span', 'shrink-0 text-xs text-amber-600 dark:text-amber-400', c.price > 0 ? '🔒 ' + c.price : ''));
+        const pr = el('span', 'shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400');
+        if (c.price > 0) pr.append(NS.ico('lock'), document.createTextNode(String(c.price)));
+        a.append(l, pr);
         if (c.no === no) { a.setAttribute('aria-current', 'true'); cur = a; }
         li.append(a); ul.append(li);
       });

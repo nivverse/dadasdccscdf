@@ -23,27 +23,49 @@
 .nv-tilt .nv-glare { position: absolute; inset: 0; pointer-events: none; opacity: 0; transform: translate3d(var(--gx, 0%), 0, 0); background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, .3) 50%, transparent 62%); transition: opacity .3s; }
 .nv-tilt.moving .nv-glare { opacity: 1; }
 
-/* ---------- ตัวเลขสถิติ ---------- */
-.nv-stats { display: flex; flex-wrap: wrap; gap: .5rem; }
-.nv-stat { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .7rem; border-radius: 999px; font-size: .78rem; border: 1px solid rgba(148, 163, 184, .35); }
-.nv-stat svg { width: .95rem; height: .95rem; flex: none; }
+/* ---------- ไอคอน SVG (ขนาดตามตัวอักษรรอบข้าง) ---------- */
+.nv-i { width: 1.1em; height: 1.1em; flex: none; display: inline-block; vertical-align: -.2em; }
+.nv-i-fill { fill: currentColor; stroke: none; }
 
-/* ---------- ปุ่มกระทำ (ถูกใจ / ชั้นหนังสือ / แชร์) ---------- */
-.nv-act { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem 1rem; border-radius: .9rem; font-size: .875rem; font-weight: 600; border: 1px solid rgba(148, 163, 184, .45); background: transparent; color: inherit; cursor: pointer; transition: transform .15s var(--nv-ease), background-color .25s, border-color .25s, color .25s; -webkit-tap-highlight-color: transparent; }
-.nv-act:active { transform: scale(.94); }
-.nv-act svg { width: 1.1rem; height: 1.1rem; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.nv-act[aria-pressed="true"] { border-color: var(--nv-amber); color: #d97706; background: rgba(245, 158, 11, .12); }
-.nv-act[aria-pressed="true"] svg { fill: currentColor; animation: nv-pop .5s var(--nv-ease); }
+/* ---------- ปุ่มหลัก "อ่าน/อ่านต่อ" เต็มความกว้างบนมือถือ ---------- */
+.nv-cta { display: flex; align-items: center; justify-content: center; gap: .6rem; min-height: 3.25rem; padding: .75rem 1.5rem; border-radius: 1rem; font-weight: 700; font-size: 1rem; color: #fff; background: linear-gradient(90deg, #f59e0b, #ea580c); box-shadow: 0 10px 24px -10px rgba(234, 88, 12, .7); transition: transform .15s var(--nv-ease), filter .2s; -webkit-tap-highlight-color: transparent; }
+.nv-cta:active { transform: scale(.98); filter: brightness(.95); }
+.nv-cta .nv-i { width: 1.25rem; height: 1.25rem; }
+@media (min-width: 640px) { .nv-cta { display: inline-flex; align-self: flex-start; } }
+
+/* ---------- ปุ่มกระทำ (ถูกใจ / เก็บเข้าชั้น / แชร์): มือถือ = 3 ช่องเท่ากัน ไอคอนบน ตัวหนังสือล่าง ---------- */
+.nv-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+.nv-act { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .25rem; min-height: 3.6rem; padding: .55rem .35rem; border-radius: 1rem; font-size: .78rem; font-weight: 600; border: 1px solid rgba(148, 163, 184, .4); background: rgba(148, 163, 184, .06); color: inherit; cursor: pointer; transition: transform .15s var(--nv-ease), background-color .25s, border-color .25s, color .25s; -webkit-tap-highlight-color: transparent; }
+.nv-act:active { transform: scale(.95); }
+.nv-act .nv-i { width: 1.4rem; height: 1.4rem; transition: fill .2s; }
+.nv-act .nv-tx { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 0 .35rem; line-height: 1.25; }
+.nv-act .nv-ct { opacity: .7; font-weight: 400; font-variant-numeric: tabular-nums; }
+.nv-act[aria-pressed="true"] { border-color: var(--nv-amber); color: #d97706; background: rgba(245, 158, 11, .14); }
+.nv-act[aria-pressed="true"] .nv-i { fill: currentColor; animation: nv-pop .5s var(--nv-ease); }
 .nv-act[disabled] { opacity: .6; cursor: progress; }
-@keyframes nv-pop { 0% { transform: scale(1); } 35% { transform: scale(1.45) rotate(-8deg); } 70% { transform: scale(.9); } 100% { transform: scale(1); } }
 html.dark .nv-act[aria-pressed="true"] { color: #fbbf24; }
+@keyframes nv-pop { 0% { transform: scale(1); } 35% { transform: scale(1.45) rotate(-8deg); } 70% { transform: scale(.9); } 100% { transform: scale(1); } }
+@media (min-width: 640px) {
+  .nv-actions { display: flex; flex-wrap: wrap; }
+  .nv-act { flex-direction: row; gap: .5rem; min-height: 0; padding: .65rem 1.1rem; font-size: .875rem; border-radius: .9rem; }
+  .nv-act .nv-i { width: 1.15rem; height: 1.15rem; }
+}
+
+/* ลิงก์ "อยู่ในชั้นหนังสือของคุณแล้ว" */
+.nv-shelf { display: flex; align-items: center; gap: .6rem; padding: .7rem .9rem; border-radius: .9rem; font-size: .85rem; font-weight: 600; color: #b45309; background: rgba(245, 158, 11, .12); border: 1px solid rgba(245, 158, 11, .35); transition: background-color .2s, transform .15s; -webkit-tap-highlight-color: transparent; }
+.nv-shelf:active { transform: scale(.985); }
+.nv-shelf.hidden { display: none; }
+html.dark .nv-shelf { color: #fbbf24; }
+
+/* เรื่องย่อ: มือถือย่อ 4 บรรทัด แล้วมีปุ่ม "อ่านเพิ่มเติม" (JS เปิดปุ่มเฉพาะเมื่อข้อความยาวเกินจริง) */
+@media (max-width: 639px) { .nv-clamp:not(.open) { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; } }
 
 /* ---------- ดาวให้คะแนน (เติมสีด้วย CSS ล้วนผ่าน row-reverse + ~) ---------- */
-.nv-stars { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; }
-.nv-stars button { background: none; border: 0; padding: .15rem; cursor: pointer; color: rgba(148, 163, 184, .6); transition: color .15s, transform .15s var(--nv-ease); -webkit-tap-highlight-color: transparent; }
-.nv-stars button svg { width: 1.6rem; height: 1.6rem; fill: currentColor; display: block; }
+.nv-stars { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; margin-left: -.35rem; }
+.nv-stars button { background: none; border: 0; padding: .5rem .4rem; cursor: pointer; color: rgba(148, 163, 184, .55); transition: color .15s, transform .15s var(--nv-ease); -webkit-tap-highlight-color: transparent; }
+.nv-stars button svg { width: 1.7rem; height: 1.7rem; fill: currentColor; stroke: none; display: block; }
 .nv-stars button:hover, .nv-stars button:hover ~ button, .nv-stars button.on, .nv-stars button.on ~ button { color: var(--nv-amber); }
-.nv-stars button:active { transform: scale(.85); }
+.nv-stars button:active { transform: scale(.82); }
 
 /* ---------- แถวสารบัญ ---------- */
 .nv-toc li { content-visibility: auto; contain-intrinsic-size: auto 48px; }
@@ -52,23 +74,30 @@ html.dark .nv-act[aria-pressed="true"] { color: #fbbf24; }
 .nv-toc a[aria-current="true"] { background: rgba(245, 158, 11, .14); }
 .nv-read-dot { width: .45rem; height: .45rem; border-radius: 999px; background: var(--nv-amber); display: inline-block; margin-right: .5rem; }
 
-/* ---------- ทอสต์ ---------- */
-.nv-toast { position: fixed; left: 50%; bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px)); z-index: 90; transform: translate3d(-50%, 20px, 0); opacity: 0; pointer-events: none; padding: .6rem 1.1rem; border-radius: 999px; background: rgba(23, 23, 23, .94); color: #fff; font-size: .85rem; box-shadow: 0 10px 30px rgba(0, 0, 0, .3); transition: opacity .3s, transform .35s var(--nv-ease); max-width: 90vw; }
+/* ---------- ทอสต์ (บรรทัดเดียว ปุ่มอยู่ท้ายบรรทัด) ---------- */
+.nv-toast { position: fixed; left: 50%; bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px)); z-index: 90; transform: translate3d(-50%, 20px, 0); opacity: 0; pointer-events: none; display: flex; align-items: center; gap: .9rem; padding: .65rem 1.1rem; border-radius: 999px; background: rgba(23, 23, 23, .95); color: #fff; font-size: .85rem; white-space: nowrap; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); transition: opacity .3s, transform .35s var(--nv-ease); max-width: calc(100vw - 1.5rem); }
 .nv-toast.show { opacity: 1; transform: translate3d(-50%, 0, 0); pointer-events: auto; }
-.nv-toast button { margin-left: .75rem; color: #fbbf24; font-weight: 600; background: none; border: 0; cursor: pointer; }
+.nv-toast span { overflow: hidden; text-overflow: ellipsis; }
+.nv-toast button { flex: none; color: #fbbf24; font-weight: 700; background: none; border: 0; padding: .25rem 0; cursor: pointer; }
 
-/* ---------- แผงเลื่อน (สารบัญ / ตั้งค่า / คอมเมนต์ย่อหน้า) ---------- */
-.nv-sheet-bg { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, .5); opacity: 0; visibility: hidden; transition: opacity .3s, visibility 0s .3s; }
+/* ---------- แผงเลื่อน (สารบัญ / ตั้งค่า / คอมเมนต์ย่อหน้า): มือถือ = bottom sheet ลากลงเพื่อปิด ---------- */
+.nv-sheet-bg { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, .55); opacity: 0; visibility: hidden; transition: opacity .3s, visibility 0s .3s; }
 .nv-sheet-bg.open { opacity: 1; visibility: visible; transition-delay: 0s; }
-.nv-sheet { position: fixed; z-index: 61; left: 0; right: 0; bottom: 0; max-height: 84vh; display: flex; flex-direction: column; background: #fff; color: #0f172a; border-radius: 1.25rem 1.25rem 0 0; box-shadow: 0 -12px 40px rgba(0, 0, 0, .25); transform: translate3d(0, 104%, 0); visibility: hidden; transition: transform .38s var(--nv-ease), visibility 0s .38s; padding-bottom: env(safe-area-inset-bottom, 0px); overscroll-behavior: contain; }
+.nv-sheet { position: fixed; z-index: 61; left: 0; right: 0; bottom: 0; max-height: 88vh; max-height: 88dvh; display: flex; flex-direction: column; background: #fff; color: #0f172a; border-radius: 1.4rem 1.4rem 0 0; box-shadow: 0 -12px 40px rgba(0, 0, 0, .3); transform: translate3d(0, 104%, 0); visibility: hidden; transition: transform .38s var(--nv-ease), visibility 0s .38s; padding-bottom: env(safe-area-inset-bottom, 0px); overscroll-behavior: contain; }
 .nv-sheet.open { transform: none; visibility: visible; transition-delay: 0s; }
+.nv-sheet.dock { height: min(88vh, 44rem); height: min(88dvh, 44rem); }
 html.dark .nv-sheet { background: #171717; color: #f5f5f5; }
-.nv-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem .75rem; border-bottom: 1px solid rgba(148, 163, 184, .25); }
-.nv-sheet-body { overflow-y: auto; padding: 1rem 1.25rem 1.25rem; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-.nv-x { background: none; border: 0; font-size: 1.5rem; line-height: 1; cursor: pointer; color: inherit; opacity: .6; padding: .25rem .5rem; }
-.nv-x:hover { opacity: 1; }
+.nv-sheet-head { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 1rem .6rem 1.25rem; border-bottom: 1px solid rgba(148, 163, 184, .22); touch-action: none; cursor: grab; flex: none; }
+.nv-sheet-head::before { content: ""; position: absolute; top: .45rem; left: 50%; width: 2.5rem; height: .3rem; margin-left: -1.25rem; border-radius: 999px; background: rgba(148, 163, 184, .5); }
+.nv-sheet-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 1rem 1.25rem 1.25rem; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.nv-sheet-body.dock { display: flex; flex-direction: column; overflow: hidden; padding-bottom: .75rem; }
+.nv-x { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 999px; background: none; border: 0; cursor: pointer; color: inherit; opacity: .65; transition: opacity .2s, background-color .2s; flex: none; }
+.nv-x:hover { opacity: 1; background: rgba(148, 163, 184, .18); }
+.nv-x .nv-i { width: 1.3rem; height: 1.3rem; }
 @media (min-width: 768px) {
   .nv-sheet { left: auto; top: 0; bottom: 0; width: 27rem; max-height: none; border-radius: 1.25rem 0 0 1.25rem; transform: translate3d(104%, 0, 0); }
+  .nv-sheet.dock { height: auto; }
+  .nv-sheet-head { cursor: default; padding-top: 1rem; } .nv-sheet-head::before { display: none; }
 }
 
 /* ---------- คอมเมนต์ ---------- */
@@ -77,12 +106,12 @@ html.dark .nv-sheet { background: #171717; color: #f5f5f5; }
 .nv-pulse { animation: nv-pulse 1.3s ease-in-out infinite; }
 @keyframes nv-pulse { 50% { opacity: .45; } }
 .nv-cm-text { white-space: pre-wrap; overflow-wrap: anywhere; }
-.nv-mini { background: none; border: 0; padding: .1rem .15rem; cursor: pointer; color: inherit; opacity: .65; font-size: .78rem; display: inline-flex; align-items: center; gap: .25rem; transition: opacity .2s, color .2s, transform .15s; }
-.nv-mini:hover { opacity: 1; }
+.nv-mini { background: none; border: 0; padding: .4rem .55rem; min-height: 2.2rem; margin-left: -.55rem; border-radius: .6rem; cursor: pointer; color: inherit; opacity: .7; font-size: .82rem; display: inline-flex; align-items: center; gap: .35rem; transition: opacity .2s, color .2s, transform .15s, background-color .2s; -webkit-tap-highlight-color: transparent; }
+.nv-mini:hover { opacity: 1; background: rgba(148, 163, 184, .14); }
 .nv-mini:active { transform: scale(.92); }
 .nv-mini[aria-pressed="true"] { color: #e11d48; opacity: 1; }
 .nv-mini[aria-pressed="true"] svg { fill: currentColor; animation: nv-pop .45s var(--nv-ease); }
-.nv-mini svg { width: .95rem; height: .95rem; fill: none; stroke: currentColor; stroke-width: 2; }
+.nv-mini svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 2; }
 
 /* ===================== หน้าอ่าน ===================== */
 html { --rd-size: 18px; --rd-lh: 2; }
@@ -152,3 +181,47 @@ html.dark .rd-bar { background: rgba(23, 23, 23, .86); border-color: rgba(255, 2
   .nv-act[aria-pressed="true"] svg, .nv-mini[aria-pressed="true"] svg, .nv-in, .rd-text p.rd-flash { animation: none !important; }
   .nv-card:hover { transform: none; }
 }
+
+/* ---------- ช่องพิมพ์คอมเมนต์: แถวเดียว + ปุ่มส่งเป็นไอคอน ---------- */
+.nv-composer-row { display: flex; align-items: flex-end; gap: .5rem; }
+.nv-composer textarea { font-size: 16px; line-height: 1.5; min-height: 2.75rem; max-height: 9rem; }
+@media (min-width: 640px) { .nv-composer textarea { font-size: .875rem; } }
+.nv-send { flex: none; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 999px; border: 0; cursor: pointer; color: #fff; background: linear-gradient(135deg, #f59e0b, #ea580c); transition: transform .15s var(--nv-ease), opacity .2s; -webkit-tap-highlight-color: transparent; }
+.nv-send:active { transform: scale(.9); }
+.nv-send:disabled { opacity: .35; cursor: default; }
+.nv-send .nv-i { width: 1.2rem; height: 1.2rem; }
+
+/* ---------- แถบเลื่อนแนวนอน (แท็บ/ชิป) มีขอบจางด้านขวาบอกว่าเลื่อนต่อได้ ---------- */
+.nv-scrollx { scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 1.75rem), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 1.75rem), transparent); padding-right: 1.5rem; }
+.nv-scrollx::-webkit-scrollbar { display: none; }
+
+/* ---------- ปุ่มเปลี่ยนตอน (ใต้เนื้อหา) ---------- */
+.nv-nav { display: flex; align-items: center; justify-content: center; gap: .5rem; min-height: 3.25rem; padding: .7rem 1rem; border-radius: 1rem; font-size: .9rem; font-weight: 600; border: 1px solid rgba(148, 163, 184, .45); color: inherit; transition: transform .15s var(--nv-ease), border-color .2s, background-color .2s; -webkit-tap-highlight-color: transparent; }
+.nv-nav:active { transform: scale(.97); }
+.nv-nav .nv-i { width: 1.15rem; height: 1.15rem; }
+@media (hover: hover) { .nv-nav:not(.nv-nav-off):hover { border-color: var(--nv-amber); } }
+.nv-nav-primary { color: #fff; border-color: transparent; background: linear-gradient(90deg, #f59e0b, #ea580c); box-shadow: 0 10px 24px -12px rgba(234, 88, 12, .7); }
+.nv-nav-off { opacity: .35; pointer-events: none; }
+
+/* ---------- แผงตอนที่ล็อก ---------- */
+.nv-lock { display: flex; flex-direction: column; align-items: center; gap: .6rem; text-align: center; padding: 1.5rem .5rem; }
+.nv-lock-ic { display: grid; place-items: center; width: 4rem; height: 4rem; border-radius: 999px; background: rgba(245, 158, 11, .16); color: #d97706; }
+html.dark .nv-lock-ic { color: #fbbf24; }
+.nv-lock-ic .nv-i { width: 1.9rem; height: 1.9rem; }
+.nv-lock-price { font-size: 2.2rem; font-weight: 800; line-height: 1; background: linear-gradient(90deg, #f59e0b, #ea580c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.nv-lock-price span { font-size: 1rem; font-weight: 600; }
+.nv-lock-btns { display: flex; flex-direction: column; gap: .6rem; width: 100%; max-width: 20rem; margin-top: .5rem; }
+
+/* ===================== ปรับสำหรับมือถือ ===================== */
+@media (max-width: 639px) {
+  /* การ์ดอ่านกว้างขึ้น: ลดขอบและช่องว่างข้างย่อหน้า */
+  .rd-card { padding: 1.1rem .9rem; border-radius: 1rem; }
+  .rd-text p { padding-right: 1.7rem; }
+  .rd-pb { min-width: 1.45rem; height: 1.45rem; font-size: 10px; top: .55em; }
+  .rd-bar { width: min(92vw, 24rem); }
+  .nv-toast { max-width: calc(100vw - 1rem); font-size: .8rem; padding: .6rem .95rem; gap: .7rem; }
+}
+
+/* ตัวที่สคริปต์สลับด้วยคลาส .hidden ต้องซ่อนได้แน่นอน แม้มีคลาส display อื่น (inline-flex ฯลฯ) อยู่บนปุ่มเดียวกัน
+   (ใช้ id คุมความจำเพาะ จึงไม่ขึ้นกับลำดับ CSS ของ Tailwind และไม่ไปทับ sm:inline / sm:hidden ของส่วนอื่น) */
+#lock-panel .hidden, #shelf-link.hidden, #syn-more.hidden { display: none; }

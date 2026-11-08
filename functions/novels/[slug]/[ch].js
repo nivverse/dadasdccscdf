@@ -2,7 +2,7 @@
 // ตอนฟรี: เนื้อหาอยู่ใน HTML เลย (SEO + เร็ว) · ตอนที่มีราคา: SSR ไม่มีเนื้อหา ให้ /novel-reader.js โหลดหลังล็อกอิน
 // ส่วนอื่นเติมฝั่งเบราว์เซอร์: ตั้งค่าการอ่าน ความคืบหน้า คอมเมนต์รายย่อหน้า สารบัญ
 import { api, esc, shell, htmlResponse } from '../../_lib/render.js';
-import { novelHref, notFoundPage, unavailable, isMissing, isBroken, paragraphs, fmtNum, flat, posInt, CARD, BTN, BTN2, ICON, READER_HEAD } from '../../_lib/novel.js';
+import { novelHref, notFoundPage, unavailable, isMissing, isBroken, paragraphs, fmtNum, flat, posInt, BTN, ICON, READER_HEAD } from '../../_lib/novel.js';
 
 export async function onRequestGet({ request, env, params }) {
   const origin = new URL(request.url).origin;
@@ -21,18 +21,23 @@ export async function onRequestGet({ request, env, params }) {
   const title = `${n.title} ${heading} | nivread`;
   const desc = locked ? `${n.title} ${heading} — ปลดล็อกด้วย ${fmtNum(c.price)} coin` : (flat(c.content).slice(0, 155) || heading);
 
-  const navBtns = `<nav class="flex items-center justify-between gap-3" aria-label="เปลี่ยนตอน">
-    ${prev ? `<a rel="prev" href="${novelHref(n.slug, prev.no)}" class="${BTN2}">← ตอนก่อนหน้า</a>` : '<span></span>'}
-    <a href="${novelHref(n.slug)}" class="text-sm text-slate-500 dark:text-neutral-400 hover:text-amber-500">สารบัญ</a>
-    ${next ? `<a rel="next" href="${novelHref(n.slug, next.no)}" class="${BTN}">ตอนถัดไป →</a>` : '<span></span>'}
+  // ปุ่มเปลี่ยนตอนใต้เนื้อหา: 2 ช่องเท่ากัน (ไม่มีตอนก่อน/ถัดไปก็ยังคงช่องไว้แบบจาง ไม่ให้เลย์เอาต์เด้ง) + ลิงก์สารบัญอยู่ตรงกลางแถวล่าง
+  const navBtn = (rel, target, label, icon, primary) => target
+    ? `<a rel="${rel}" href="${novelHref(n.slug, target.no)}" class="nv-nav ${primary ? 'nv-nav-primary' : ''}">${rel === 'prev' ? icon + '<span>' + label + '</span>' : '<span>' + label + '</span>' + icon}</a>`
+    : `<span class="nv-nav nv-nav-off" aria-disabled="true">${rel === 'prev' ? icon + '<span>' + label + '</span>' : '<span>' + label + '</span>' + icon}</span>`;
+  const navBtns = `<nav aria-label="เปลี่ยนตอน">
+    <div class="grid grid-cols-2 gap-3">${navBtn('prev', prev, 'ตอนก่อนหน้า', ICON.prev, false)}${navBtn('next', next, 'ตอนถัดไป', ICON.next, true)}</div>
+    <a href="${novelHref(n.slug)}" class="mt-3 flex items-center justify-center gap-2 py-2 text-sm text-slate-500 dark:text-neutral-400 hover:text-amber-500">${ICON.list}กลับไปหน้าสารบัญ</a>
   </nav>`;
 
-  const lockPanel = `<div id="lock-panel" data-price="${Number(c.price) || 0}" class="text-center py-4">
-      <p class="text-lg font-semibold">🔒 ตอนนี้ราคา ${fmtNum(c.price)} coin</p>
-      <p id="lock-msg" class="mt-2 text-sm opacity-70" role="status">กำลังตรวจสอบสิทธิ์…</p>
-      <div class="mt-4 flex justify-center gap-3">
-        <button id="unlock-btn" type="button" class="${BTN} hidden">ปลดล็อกตอนนี้</button>
-        <a id="login-link" href="/login?redirect=${encodeURIComponent(path)}" class="${BTN} hidden">เข้าสู่ระบบเพื่ออ่าน</a>
+  const lockPanel = `<div id="lock-panel" data-price="${Number(c.price) || 0}" class="nv-lock">
+      <span class="nv-lock-ic">${ICON.lock}</span>
+      <p class="text-lg font-bold">ตอนนี้ต้องปลดล็อกก่อนอ่าน</p>
+      <p class="nv-lock-price">${fmtNum(c.price)} <span>coin</span></p>
+      <p id="lock-msg" class="text-sm opacity-70" role="status">กำลังตรวจสอบสิทธิ์…</p>
+      <div class="nv-lock-btns">
+        <button id="unlock-btn" type="button" class="${BTN} hidden w-full">${ICON.lock}ปลดล็อกตอนนี้</button>
+        <a id="login-link" href="/login?redirect=${encodeURIComponent(path)}" class="${BTN} hidden w-full">เข้าสู่ระบบเพื่ออ่าน</a>
       </div>
     </div>`;
 
@@ -48,9 +53,9 @@ export async function onRequestGet({ request, env, params }) {
   </nav>`;
 
   const body = `<div id="rd-prog" class="rd-prog" aria-hidden="true"><i></i></div>
-<main style="max-width:var(--rd-w,48rem)" class="flex-1 w-full mx-auto px-4 sm:px-6 py-6 pb-28 z-10 transition-[max-width] duration-300">
-  <nav class="text-sm text-slate-500 dark:text-neutral-400" aria-label="เส้นทาง"><a href="/novels" class="hover:text-amber-500">นิยาย</a> <span aria-hidden="true">/</span> <a href="${novelHref(n.slug)}" class="hover:text-amber-500">${esc(n.title)}</a></nav>
-  <h1 class="mt-3 text-2xl font-extrabold tracking-tight">${esc(heading)}</h1>
+<main style="max-width:var(--rd-w,48rem)" class="flex-1 w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-36 sm:pb-28 z-10 transition-[max-width] duration-300">
+  <nav class="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 truncate" aria-label="เส้นทาง"><a href="/novels" class="hover:text-amber-500">นิยาย</a> <span aria-hidden="true">/</span> <a href="${novelHref(n.slug)}" class="hover:text-amber-500">${esc(n.title)}</a></nav>
+  <h1 class="mt-3 text-xl sm:text-2xl font-extrabold tracking-tight leading-snug">${esc(heading)}</h1>
   <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">${fmtNum(c.chars)} ตัวอักษร</p>
   <article id="reader" data-slug="${esc(n.slug)}" data-no="${c.no}" class="rd-card mt-6">${locked ? lockPanel : `<div class="rd-text">${paragraphs(c.content)}</div>`}</article>
   <div class="mt-6">${navBtns}</div>
