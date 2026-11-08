@@ -423,6 +423,8 @@
 .gal-5{grid-template-columns:repeat(6,1fr);grid-template-rows:3fr 2fr;aspect-ratio:1/1}
 .gal-5 .gal-t:nth-child(-n+2){grid-column:span 3}.gal-5 .gal-t:nth-child(n+3){grid-column:span 2}
 .gal-s:not(.ok){min-height:11rem}
+.gal-s.ok{width:fit-content;max-width:100%;margin-left:auto;margin-right:auto;background:transparent}
+.gal-s.ok .bg{display:none}
 .gal-s:not(.ok)::before,.gal-t:not(.ok)::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#e4e4de 25%,#f2f2ed 50%,#e4e4de 75%) 0 0/200% 100%;animation:gal-sh 1.3s linear infinite}
 .dark .gal-s:not(.ok)::before,.dark .gal-t:not(.ok)::before{background:linear-gradient(90deg,#1a1a1a 25%,#262626 50%,#1a1a1a 75%) 0 0/200% 100%}
 @keyframes gal-sh{to{background-position:-200% 0}}
@@ -740,6 +742,16 @@
       box.classList.add('bp');
       // บังคับ inline !important: กันสไตล์เก่า/แคช/CSS อื่นในหน้าที่ทำให้มีกรอบดำรอบวิดีโอ
       ['padding:0','background:transparent','border:0','box-shadow:none','outline:0'].forEach((d) => { const [k, val] = d.split(':'); box.style.setProperty(k, val, 'important'); });
+      // ให้กรอบ (และเส้นส้ม) พอดีกับวิดีโอ: คลิปแนวตั้งจะแคบลงและอยู่กลาง ไม่เหลือที่ว่างข้างๆ (ความสูงสูงสุด = 36rem เท่ากับ CSS ของวิดีโอ)
+      const fitBox = (w, h) => {
+        if (!w || !h) return;
+        const maxH = 36 * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16);
+        box.style.maxWidth = Math.round(maxH * w / h) + 'px';
+        box.style.marginLeft = 'auto'; box.style.marginRight = 'auto';
+      };
+      if (v.videoWidth) fitBox(v.videoWidth, v.videoHeight);
+      v.addEventListener('loadedmetadata', () => fitBox(v.videoWidth, v.videoHeight));
+      if (v.poster) { const pi = new Image(); pi.onload = () => { if (!v.videoWidth) fitBox(pi.naturalWidth, pi.naturalHeight); }; pi.src = v.poster; } // ยังไม่โหลดวิดีโอ → ใช้สัดส่วนของโปสเตอร์ก่อน
       v.style.setProperty('background', 'transparent', 'important'); v.style.setProperty('border', '0', 'important'); v.style.setProperty('border-radius', BP_R + 'px', 'important'); v.style.setProperty('display', 'block', 'important');
       box.tabIndex = 0;
       box.setAttribute('role', 'group');
