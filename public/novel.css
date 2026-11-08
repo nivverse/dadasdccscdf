@@ -1,0 +1,154 @@
+/* novel.css — หน้านิยาย/หน้าอ่าน
+   หลักการไม่ให้กระตุก: แอนิเมชันใช้เฉพาะ transform + opacity (GPU, ไม่ทำ layout/paint ซ้ำ)
+   · scroll handler เขียนแค่ transform ของแถบความคืบหน้า · เคารพ prefers-reduced-motion
+   · ไม่ซ่อนเนื้อหาถ้า JS ไม่ทำงาน (เอฟเฟกต์ขึ้นกับคลาส .nv-js ที่ JS ใส่ให้) */
+
+:root { --nv-ease: cubic-bezier(.22, .8, .24, 1); --nv-amber: #f59e0b; --nv-amber2: #ea580c; }
+
+/* ---------- เปิดตัวทีละชิ้นตอนเลื่อนมาถึง ---------- */
+.nv-js .nv-reveal { opacity: 0; transform: translate3d(0, 16px, 0); transition: opacity .55s var(--nv-ease), transform .55s var(--nv-ease); transition-delay: calc(var(--i, 0) * 45ms); }
+.nv-js .nv-reveal.in { opacity: 1; transform: none; }
+
+/* ---------- การ์ดนิยาย (ยกขึ้นเล็กน้อยตอน hover · เงาใช้ opacity แทนการเปลี่ยน box-shadow) ---------- */
+.nv-card { position: relative; transition: transform .28s var(--nv-ease), border-color .28s; }
+.nv-card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; box-shadow: 0 16px 34px -14px rgba(245, 158, 11, .5); transition: opacity .28s; }
+@media (hover: hover) { .nv-card:hover { transform: translate3d(0, -5px, 0); } .nv-card:hover::after { opacity: 1; } }
+.nv-card img, .nv-card .nv-cover-ph { transition: transform .5s var(--nv-ease); }
+@media (hover: hover) { .nv-card:hover img, .nv-card:hover .nv-cover-ph { transform: scale(1.04); } }
+
+/* ---------- ปกหน้านิยาย: เอียงตามเมาส์ + แสงสะท้อน (เฉพาะอุปกรณ์ที่มีเมาส์) ---------- */
+.nv-tilt-wrap { perspective: 900px; }
+.nv-tilt { position: relative; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .45s var(--nv-ease); will-change: transform; overflow: hidden; }
+.nv-tilt.moving { transition: transform .08s linear; }
+.nv-tilt .nv-glare { position: absolute; inset: 0; pointer-events: none; opacity: 0; transform: translate3d(var(--gx, 0%), 0, 0); background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, .3) 50%, transparent 62%); transition: opacity .3s; }
+.nv-tilt.moving .nv-glare { opacity: 1; }
+
+/* ---------- ตัวเลขสถิติ ---------- */
+.nv-stats { display: flex; flex-wrap: wrap; gap: .5rem; }
+.nv-stat { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .7rem; border-radius: 999px; font-size: .78rem; border: 1px solid rgba(148, 163, 184, .35); }
+.nv-stat svg { width: .95rem; height: .95rem; flex: none; }
+
+/* ---------- ปุ่มกระทำ (ถูกใจ / ชั้นหนังสือ / แชร์) ---------- */
+.nv-act { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem 1rem; border-radius: .9rem; font-size: .875rem; font-weight: 600; border: 1px solid rgba(148, 163, 184, .45); background: transparent; color: inherit; cursor: pointer; transition: transform .15s var(--nv-ease), background-color .25s, border-color .25s, color .25s; -webkit-tap-highlight-color: transparent; }
+.nv-act:active { transform: scale(.94); }
+.nv-act svg { width: 1.1rem; height: 1.1rem; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.nv-act[aria-pressed="true"] { border-color: var(--nv-amber); color: #d97706; background: rgba(245, 158, 11, .12); }
+.nv-act[aria-pressed="true"] svg { fill: currentColor; animation: nv-pop .5s var(--nv-ease); }
+.nv-act[disabled] { opacity: .6; cursor: progress; }
+@keyframes nv-pop { 0% { transform: scale(1); } 35% { transform: scale(1.45) rotate(-8deg); } 70% { transform: scale(.9); } 100% { transform: scale(1); } }
+html.dark .nv-act[aria-pressed="true"] { color: #fbbf24; }
+
+/* ---------- ดาวให้คะแนน (เติมสีด้วย CSS ล้วนผ่าน row-reverse + ~) ---------- */
+.nv-stars { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; }
+.nv-stars button { background: none; border: 0; padding: .15rem; cursor: pointer; color: rgba(148, 163, 184, .6); transition: color .15s, transform .15s var(--nv-ease); -webkit-tap-highlight-color: transparent; }
+.nv-stars button svg { width: 1.6rem; height: 1.6rem; fill: currentColor; display: block; }
+.nv-stars button:hover, .nv-stars button:hover ~ button, .nv-stars button.on, .nv-stars button.on ~ button { color: var(--nv-amber); }
+.nv-stars button:active { transform: scale(.85); }
+
+/* ---------- แถวสารบัญ ---------- */
+.nv-toc li { content-visibility: auto; contain-intrinsic-size: auto 48px; }
+.nv-toc a { transition: background-color .2s, padding-left .25s var(--nv-ease); }
+@media (hover: hover) { .nv-toc a:hover { padding-left: 1.4rem; } }
+.nv-toc a[aria-current="true"] { background: rgba(245, 158, 11, .14); }
+.nv-read-dot { width: .45rem; height: .45rem; border-radius: 999px; background: var(--nv-amber); display: inline-block; margin-right: .5rem; }
+
+/* ---------- ทอสต์ ---------- */
+.nv-toast { position: fixed; left: 50%; bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px)); z-index: 90; transform: translate3d(-50%, 20px, 0); opacity: 0; pointer-events: none; padding: .6rem 1.1rem; border-radius: 999px; background: rgba(23, 23, 23, .94); color: #fff; font-size: .85rem; box-shadow: 0 10px 30px rgba(0, 0, 0, .3); transition: opacity .3s, transform .35s var(--nv-ease); max-width: 90vw; }
+.nv-toast.show { opacity: 1; transform: translate3d(-50%, 0, 0); pointer-events: auto; }
+.nv-toast button { margin-left: .75rem; color: #fbbf24; font-weight: 600; background: none; border: 0; cursor: pointer; }
+
+/* ---------- แผงเลื่อน (สารบัญ / ตั้งค่า / คอมเมนต์ย่อหน้า) ---------- */
+.nv-sheet-bg { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, .5); opacity: 0; visibility: hidden; transition: opacity .3s, visibility 0s .3s; }
+.nv-sheet-bg.open { opacity: 1; visibility: visible; transition-delay: 0s; }
+.nv-sheet { position: fixed; z-index: 61; left: 0; right: 0; bottom: 0; max-height: 84vh; display: flex; flex-direction: column; background: #fff; color: #0f172a; border-radius: 1.25rem 1.25rem 0 0; box-shadow: 0 -12px 40px rgba(0, 0, 0, .25); transform: translate3d(0, 104%, 0); visibility: hidden; transition: transform .38s var(--nv-ease), visibility 0s .38s; padding-bottom: env(safe-area-inset-bottom, 0px); overscroll-behavior: contain; }
+.nv-sheet.open { transform: none; visibility: visible; transition-delay: 0s; }
+html.dark .nv-sheet { background: #171717; color: #f5f5f5; }
+.nv-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem .75rem; border-bottom: 1px solid rgba(148, 163, 184, .25); }
+.nv-sheet-body { overflow-y: auto; padding: 1rem 1.25rem 1.25rem; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.nv-x { background: none; border: 0; font-size: 1.5rem; line-height: 1; cursor: pointer; color: inherit; opacity: .6; padding: .25rem .5rem; }
+.nv-x:hover { opacity: 1; }
+@media (min-width: 768px) {
+  .nv-sheet { left: auto; top: 0; bottom: 0; width: 27rem; max-height: none; border-radius: 1.25rem 0 0 1.25rem; transform: translate3d(104%, 0, 0); }
+}
+
+/* ---------- คอมเมนต์ ---------- */
+.nv-in { animation: nv-in .4s var(--nv-ease) both; }
+@keyframes nv-in { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
+.nv-pulse { animation: nv-pulse 1.3s ease-in-out infinite; }
+@keyframes nv-pulse { 50% { opacity: .45; } }
+.nv-cm-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.nv-mini { background: none; border: 0; padding: .1rem .15rem; cursor: pointer; color: inherit; opacity: .65; font-size: .78rem; display: inline-flex; align-items: center; gap: .25rem; transition: opacity .2s, color .2s, transform .15s; }
+.nv-mini:hover { opacity: 1; }
+.nv-mini:active { transform: scale(.92); }
+.nv-mini[aria-pressed="true"] { color: #e11d48; opacity: 1; }
+.nv-mini[aria-pressed="true"] svg { fill: currentColor; animation: nv-pop .45s var(--nv-ease); }
+.nv-mini svg { width: .95rem; height: .95rem; fill: none; stroke: currentColor; stroke-width: 2; }
+
+/* ===================== หน้าอ่าน ===================== */
+html { --rd-size: 18px; --rd-lh: 2; }
+.rd-card { --rd-bg: #ffffff; --rd-fg: #1e293b; --rd-mut: #64748b; --rd-line: #e2e8f0;
+  background: var(--rd-bg); color: var(--rd-fg); border: 1px solid var(--rd-line); border-radius: 1.25rem; padding: 1.25rem 1.05rem; transition: background-color .35s, color .35s, border-color .35s; }
+html.dark .rd-card { --rd-bg: rgba(255, 255, 255, .05); --rd-fg: #e5e5e5; --rd-mut: #a3a3a3; --rd-line: rgba(255, 255, 255, .1); }
+html[data-rt="light"] .rd-card { --rd-bg: #ffffff; --rd-fg: #1e293b; --rd-mut: #64748b; --rd-line: #e2e8f0; }
+html[data-rt="sepia"] .rd-card { --rd-bg: #f4ecd8; --rd-fg: #433422; --rd-mut: #8a7556; --rd-line: #e3d6b6; }
+html[data-rt="dark"] .rd-card { --rd-bg: #161616; --rd-fg: #d4d4d4; --rd-mut: #8a8a8a; --rd-line: #2a2a2a; }
+html[data-rt="black"] .rd-card { --rd-bg: #000000; --rd-fg: #bdbdbd; --rd-mut: #777777; --rd-line: #1f1f1f; }
+@media (min-width: 640px) { .rd-card { padding: 2rem 2.25rem; } }
+.rd-text { font-family: var(--rd-font, inherit); font-size: var(--rd-size); line-height: var(--rd-lh); }
+.rd-text p { position: relative; margin: 0 0 1.1em; padding-right: 2rem; overflow-wrap: anywhere; text-wrap: pretty; color: inherit; }
+html[data-par="off"] .rd-text p { padding-right: 0; }
+.rd-text p::selection { background: rgba(245, 158, 11, .35); }
+/* ตอนเปิดอ่านจากลิงก์ย่อหน้า */
+.rd-text p.rd-flash { animation: rd-flash 1.8s ease-out; }
+@keyframes rd-flash { 0%, 40% { background-color: rgba(245, 158, 11, .22); } 100% { background-color: transparent; } }
+
+/* ฟองคอมเมนต์ย่อหน้า: อยู่ในช่องว่างขวาที่จองไว้ จึงไม่ทำให้ข้อความขยับ */
+.rd-pb { position: absolute; right: 0; top: .45em; min-width: 1.55rem; height: 1.55rem; padding: 0 .35rem; border-radius: 999px; border: 0; cursor: pointer; font: 600 11px/1 inherit; display: flex; align-items: center; justify-content: center; background: var(--rd-line); color: var(--rd-mut); opacity: 0; transform: scale(.7); transition: opacity .2s, transform .25s var(--nv-ease), background-color .2s; -webkit-tap-highlight-color: transparent; }
+.rd-pb[data-c]:not([data-c="0"]) { opacity: 1; transform: none; background: rgba(245, 158, 11, .22); color: #b45309; }
+html.dark .rd-pb[data-c]:not([data-c="0"]) { color: #fbbf24; }
+html[data-par="all"] .rd-pb { opacity: .7; transform: none; }
+html[data-par="off"] .rd-pb { display: none; }
+@media (hover: hover) { .rd-text p:hover > .rd-pb { opacity: 1; transform: none; } }
+.rd-pb:hover { background: var(--nv-amber); color: #fff; }
+.rd-pb[data-c="0"]::before, .rd-pb:not([data-c])::before { content: "+"; font-size: 14px; }
+
+/* แถบความคืบหน้าบนสุด: อัปเดตแค่ transform */
+.rd-prog { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 70; pointer-events: none; }
+.rd-prog i { display: block; height: 100%; transform-origin: 0 50%; transform: scaleX(0); background: linear-gradient(90deg, var(--nv-amber), var(--nv-amber2)); will-change: transform; }
+
+/* แถบเครื่องมือล่าง: ซ่อน/แสดงด้วย transform ตามทิศการเลื่อน */
+.rd-bar { position: fixed; z-index: 55; left: 50%; bottom: calc(.75rem + env(safe-area-inset-bottom, 0px)); width: min(94vw, 26rem); transform: translate3d(-50%, 0, 0); transition: transform .38s var(--nv-ease), opacity .3s;
+  display: flex; align-items: center; justify-content: space-between; gap: .25rem; padding: .35rem; border-radius: 1.1rem;
+  background: rgba(255, 255, 255, .88); border: 1px solid rgba(148, 163, 184, .35); box-shadow: 0 10px 34px -8px rgba(0, 0, 0, .3); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+html.dark .rd-bar { background: rgba(23, 23, 23, .86); border-color: rgba(255, 255, 255, .12); }
+.rd-bar.hide { transform: translate3d(-50%, 160%, 0); opacity: .0; }
+.rd-bar a, .rd-bar button { flex: 1; display: grid; place-items: center; height: 2.7rem; border-radius: .8rem; border: 0; background: none; color: inherit; cursor: pointer; transition: background-color .2s, transform .15s var(--nv-ease); -webkit-tap-highlight-color: transparent; position: relative; }
+.rd-bar a:hover, .rd-bar button:hover { background: rgba(245, 158, 11, .14); }
+.rd-bar a:active, .rd-bar button:active { transform: scale(.9); }
+.rd-bar svg { width: 1.3rem; height: 1.3rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.rd-bar [aria-disabled="true"] { opacity: .3; pointer-events: none; }
+.rd-bar .rd-badge { position: absolute; top: .15rem; right: .3rem; min-width: 1rem; height: 1rem; padding: 0 .25rem; border-radius: 999px; background: var(--nv-amber); color: #fff; font-size: 10px; font-weight: 700; line-height: 1rem; text-align: center; }
+
+/* มือถือ: เว็บมีแถบเมนูล่างของตัวเอง (#niv-tabbar สูง 3.5rem + safe area) ให้แถบเครื่องมือลอยอยู่เหนือมัน */
+@media (max-width: 639px) {
+  .rd-bar { bottom: calc(4.4rem + env(safe-area-inset-bottom, 0px)); }
+  .nv-toast { bottom: calc(8.2rem + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ตัวเลือกในแผงตั้งค่า */
+.rd-set { display: grid; gap: 1.1rem; }
+.rd-set h4 { font-size: .8rem; opacity: .65; margin: 0 0 .45rem; font-weight: 500; }
+.rd-seg { display: flex; gap: .4rem; flex-wrap: wrap; }
+.rd-seg button { flex: 1; min-width: 4.2rem; padding: .55rem .7rem; border-radius: .8rem; border: 1px solid rgba(148, 163, 184, .45); background: transparent; color: inherit; font-size: .85rem; cursor: pointer; transition: border-color .2s, background-color .2s, transform .15s; }
+.rd-seg button:active { transform: scale(.95); }
+.rd-seg button[aria-pressed="true"] { border-color: var(--nv-amber); background: rgba(245, 158, 11, .14); font-weight: 600; }
+.rd-sw { display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 50%; vertical-align: -.2rem; margin-right: .35rem; border: 1px solid rgba(148, 163, 184, .6); }
+.rd-sample { padding: .9rem 1rem; border-radius: .9rem; background: rgba(148, 163, 184, .1); font-family: var(--rd-font, inherit); font-size: var(--rd-size); line-height: var(--rd-lh); }
+
+/* ---------- ลดการเคลื่อนไหวตามที่ผู้ใช้ตั้งไว้ในระบบ ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .nv-js .nv-reveal { opacity: 1; transform: none; transition: none; }
+  .nv-card, .nv-card img, .nv-tilt, .nv-act, .rd-bar, .nv-sheet, .nv-toast, .nv-sheet-bg, .rd-pb { transition: none !important; animation: none !important; }
+  .nv-act[aria-pressed="true"] svg, .nv-mini[aria-pressed="true"] svg, .nv-in, .rd-text p.rd-flash { animation: none !important; }
+  .nv-card:hover { transform: none; }
+}

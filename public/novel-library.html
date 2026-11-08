@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<script src="/i18n.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ชั้นหนังสือของฉัน | nivread</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d0d0d">
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+  document.documentElement.classList.add('nv-js');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/novel.css">
+<style>body{font-family:'Kanit',sans-serif}</style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+<header id="main-header" class="z-20"></header>
+
+<main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
+  <h1 class="text-3xl font-extrabold tracking-tight">ชั้นหนังสือของฉัน</h1>
+  <p class="text-sm text-slate-600 dark:text-neutral-400 mt-1">นิยายที่เก็บไว้ พร้อมปุ่มอ่านต่อจากตอนที่ค้างอยู่ — ซิงก์ข้ามอุปกรณ์</p>
+  <div id="shelf" class="mt-6 grid gap-3 sm:grid-cols-2"></div>
+  <p id="empty" class="hidden mt-10 text-center text-slate-500 dark:text-neutral-400">ยังไม่มีนิยายในชั้น · <a href="/novels" class="text-amber-600 dark:text-amber-400 hover:underline">ไปเลือกอ่านกัน</a></p>
+</main>
+
+<div id="main-footer" class="z-10"></div>
+<script src="/nivread.js"></script>
+<script src="/novel-social.js"></script>
+<script>
+(() => {
+  const { session, api, el } = NIV, NS = window.NovelSocial;
+  const s = session();
+  if (!s.token || !s.userId) { location.replace('/login?redirect=/novel-library'); return; }
+  const shelf = document.getElementById('shelf'), empty = document.getElementById('empty');
+  const enc = encodeURIComponent;
+
+  function card(n, i) {
+    const a = el('div', 'nv-card nv-reveal rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md p-3 flex gap-3');
+    a.style.setProperty('--i', String(Math.min(i, 8)));
+    const cover = el('a', 'shrink-0 w-20 aspect-[2/3] rounded-lg overflow-hidden bg-gradient-to-br from-amber-500/30 to-orange-600/30 grid place-items-center text-2xl font-bold text-amber-700 dark:text-amber-300');
+    cover.href = '/novels/' + enc(n.slug); cover.setAttribute('aria-label', n.title);
+    if (n.cover_url && /^https:\/\//.test(n.cover_url)) { const im = el('img', 'w-full h-full object-cover'); im.src = n.cover_url; im.alt = ''; im.loading = 'lazy'; cover.append(im); }
+    else cover.textContent = Array.from(n.title)[0] || '?';
+    const col = el('div', 'min-w-0 flex-1 flex flex-col');
+    const t = el('a', 'font-semibold leading-snug line-clamp-2 hover:text-amber-500', n.title); t.href = '/novels/' + enc(n.slug);
+    col.append(t, el('p', 'text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate', n.display_name || ''));
+    if (n.has_new) col.append(el('span', 'mt-1 self-start px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold', 'มีตอนใหม่'));
+    const pct = Math.max(0, Math.min(100, n.pct || 0));
+    if (n.read_no) {
+      col.append(el('p', 'mt-2 text-xs text-slate-500 dark:text-neutral-400', 'อ่านถึงตอนที่ ' + n.read_no + (pct ? ' · ' + pct + '%' : '') + (n.read_at ? ' · ' + (NS ? NS.ago(n.read_at) : '') : '')));
+      const bar = el('div', 'mt-1 h-1.5 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden'); const fill = el('div', 'h-full w-full origin-left bg-gradient-to-r from-amber-500 to-orange-500');
+      fill.style.transform = 'scaleX(' + (pct / 100) + ')'; bar.append(fill); col.append(bar);
+    }
+    const row = el('div', 'mt-auto pt-2 flex items-center gap-3');
+    const go = el('a', 'px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold', n.read_no ? 'อ่านต่อ' : 'เริ่มอ่าน');
+    go.href = '/novels/' + enc(n.slug) + '/' + (n.read_no ? (pct >= 95 && n.has_new ? n.read_no + 1 : n.read_no) : 1);
+    const rm = el('button', 'text-xs text-slate-400 hover:text-rose-500 transition-colors', 'เอาออก'); rm.type = 'button';
+    rm.addEventListener('click', async () => {
+      const r = await api('/api/novel/bookmark', { method: 'POST', body: { userId: s.userId, slug: n.slug, on: false } });
+      if (!r.ok) return NS && NS.toast(r.data.error || 'ไม่สำเร็จ');
+      a.remove(); if (!shelf.children.length) empty.classList.remove('hidden');
+    });
+    row.append(go, rm); col.append(row); a.append(cover, col); return a;
+  }
+
+  (async () => {
+    const r = await api('/api/novel/library?userId=' + enc(s.userId));
+    if (!r.ok) { shelf.append(el('p', 'text-slate-500', r.data.error || 'โหลดชั้นหนังสือไม่สำเร็จ')); return; }
+    if (!r.data.novels.length) return empty.classList.remove('hidden');
+    r.data.novels.forEach((n, i) => shelf.append(card(n, i)));
+    requestAnimationFrame(() => shelf.querySelectorAll('.nv-reveal').forEach((n) => n.classList.add('in')));
+  })();
+})();
+</script>
+</body>
+</html>
