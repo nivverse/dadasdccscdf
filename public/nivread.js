@@ -1102,6 +1102,8 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
     out: '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>',
     close: '<path d="M18 6L6 18M6 6l12 12"/>',
     bell: '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/>',
+    novel: '<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>',
+    shelf: '<path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>',
   };
   const svg = (n, cls = '') => `<svg class="${cls}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
 
@@ -1120,8 +1122,10 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
       { href: '/', label: 'หน้าแรก', ic: 'home', on: path === '/' },
       { href: '/posts', label: 'โพสต์ทั้งหมด', ic: 'posts', on: path === '/posts' || path.startsWith('/posts/') },
       { href: '/categories', label: 'หมวดหมู่', ic: 'tag', on: path === '/categories' || path.startsWith('/category/') },
+      { href: '/novels', label: 'นิยาย', ic: 'novel', on: path === '/novels' || path.startsWith('/novels/') },
       { href: '/search', label: 'ค้นหา', ic: 'search', on: path === '/search' },
       ...(loggedIn ? [
+        { href: '/novel-library', label: 'ชั้นหนังสือ', ic: 'shelf', on: path === '/novel-library' },
         { href: '/write', label: 'เขียนโพสต์', ic: 'write', on: path === '/write' },
         { href: '/notifications', label: 'การแจ้งเตือน', ic: 'bell', on: path === '/notifications', id: 'niv-nav-bell' },
         { href: userUrl(s.userId), label: 'โปรไฟล์ของฉัน', ic: 'user', on: isMyProfile(s.userId) },

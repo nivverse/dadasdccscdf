@@ -40,6 +40,9 @@
   // ---------- แชร์ ----------
   $('act-share')?.addEventListener('click', () => NS.share({ title, url: location.origin + location.pathname }));
 
+  // ลิงก์ "ดูในชั้นหนังสือของฉัน" ค้างอยู่ใต้ปุ่มตลอดเมื่อเรื่องนี้อยู่ในชั้น (ไม่หายไปเหมือนทอสต์)
+  const showShelfLink = (on) => $('shelf-link')?.classList.toggle('hidden', !on);
+
   // ---------- ถูกใจ / เก็บเข้าชั้น ----------
   function wire(id, kind, key) {
     const btn = $(id); if (!btn) return;
@@ -54,7 +57,11 @@
       btn.disabled = false;
       if (!d) { btn.setAttribute('aria-pressed', String(was)); if (ct) ct.textContent = NS.num(cur); return; }
       btn.setAttribute('aria-pressed', String(!!d[key])); if (ct) ct.textContent = NS.num(d.count);
-      if (kind === 'bookmark') NS.toast(d.bookmarked ? 'เพิ่มเข้าชั้นหนังสือแล้ว' : 'เอาออกจากชั้นหนังสือแล้ว');
+      if (kind === 'bookmark') {
+        showShelfLink(d.bookmarked);
+        NS.toast(d.bookmarked ? 'เพิ่มเข้าชั้นหนังสือแล้ว' : 'เอาออกจากชั้นหนังสือแล้ว',
+          d.bookmarked ? { label: 'ไปที่ชั้นหนังสือ', fn: () => { location.href = '/novel-library'; } } : undefined);
+      }
     });
   }
   wire('act-like', 'like', 'liked');
@@ -100,7 +107,7 @@
     NS.me(slug).then((d) => {
       if (!d) return;
       const set = (id, on) => $(id)?.setAttribute('aria-pressed', String(!!on));
-      set('act-like', d.liked); set('act-bm', d.bookmarked);
+      set('act-like', d.liked); set('act-bm', d.bookmarked); showShelfLink(d.bookmarked);
       mine = d.rating || 0; paintStars();
       if (d.progress && (!local || d.progress.updated_at >= (local.t || 0))) setResume(d.progress.chapter_no, d.progress.pct);
     });

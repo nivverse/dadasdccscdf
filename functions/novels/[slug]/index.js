@@ -70,6 +70,7 @@ export async function onRequestGet({ request, env, params }) {
         ${act('act-bm', ICON.bookmark, 'เก็บเข้าชั้น', n.bookmark_count)}
         ${act('act-share', ICON.share, 'แชร์')}
       </div>
+      <p id="shelf-link" class="hidden mt-3 text-sm"><a href="/novel-library" class="text-amber-600 dark:text-amber-400 hover:underline">📚 อยู่ในชั้นหนังสือของคุณแล้ว — ดูชั้นหนังสือ →</a></p>
       ${last && last !== first ? `<p class="nv-reveal mt-3 text-sm" style="--i:4"><a href="${novelHref(n.slug, last.no)}" class="text-slate-500 dark:text-neutral-400 hover:text-amber-500">ไปที่ตอนล่าสุด (ตอนที่ ${fmtNum(last.no)}) →</a></p>` : ''}
       ${synopsis ? `<h2 class="nv-reveal mt-6 font-semibold">เรื่องย่อ</h2><div class="nv-reveal mt-1 space-y-2 text-sm leading-7 text-slate-700 dark:text-neutral-300">${String(n.synopsis).split(/\n+/).filter((t) => t.trim()).map((t) => `<p>${esc(t.trim())}</p>`).join('')}</div>` : ''}
     </div>
