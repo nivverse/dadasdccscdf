@@ -444,6 +444,12 @@
     st.id = 'niv-gal';
     st.textContent = GALCSS;
     if (!document.getElementById('niv-css')) document.head.appendChild(st); // หน้า SSR โหลด /niv.css ใน <head> แล้ว
+    // PC: รูปเดี่ยวซูมเต็มกรอบ (ครอปส่วนเกิน) — ฉีดเสมอ เพราะหน้า SSR ใช้ /niv.css (ข้อความข้างบนข้าม GALCSS) จึงไม่ได้รับ CSS ชุดนี้
+    if (!document.getElementById('niv-fit')) {
+      const fit = document.createElement('style'); fit.id = 'niv-fit';
+      fit.textContent = '@media (min-width:768px){.gal-s .bg{display:none!important}.gal-s{background:transparent!important}.gal-s img.fg{width:100%!important;height:auto!important;max-width:100%!important;max-height:36rem!important;object-fit:cover!important}}';
+      document.head.appendChild(fit);
+    }
 
     // รูปโหลดเสร็จ/พลาด → เอา skeleton ออก
     const markOk = (img) => { const c = img.closest && img.closest('.gal-s,.gal-t'); if (c) c.classList.add('ok'); };
