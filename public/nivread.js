@@ -257,7 +257,7 @@
   };
   const cardIcon = (n, cls = 'w-5 h-5') => '<svg class="' + cls + '" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' + CARD_IC[n] + '</svg>';
   // ปุ่ม/ตัวเลขในแถบท้ายการ์ด — class เดียวกับ postBar() ใน render.js (btn)
-  const BAR_BTN = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-500 dark:text-neutral-400';
+  const BAR_BTN = 'inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-2 rounded-xl text-sm font-medium text-slate-500 dark:text-neutral-400';
   const BAR_HOVER = ' hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 transition-colors';
   // tag: 'a' (ลิงก์จริง) | 'span' (แสดงอย่างเดียว ไม่มี hover เพราะกดไม่ได้ในหน้านี้)
   const statEl = (icon, text, label, href) => {
@@ -318,13 +318,13 @@
     const vid = videoEl(p.videos, p.title, '/posts/' + p.slug);
     if (vid) card.append(vid);
     else { const gal = galleryEl(imgs, p.title, '/posts/' + p.slug); if (gal) card.append(gal); }
-    const foot = el('div', 'px-3 py-2 flex items-center justify-between border-t border-slate-200 dark:border-white/10');
-    const left = el('div', 'flex items-center gap-1');
+    const foot = el('div', 'px-2 sm:px-3 py-2 flex items-center justify-between gap-1 border-t border-slate-200 dark:border-white/10');
+    const left = el('div', 'flex flex-wrap items-center gap-x-0.5 sm:gap-x-1 min-w-0');
     left.append(statEl('heart', p.like_count || 0, 'ถูกใจ'));
     left.append(statEl('chat', p.comment_count || 0, 'ความคิดเห็น', '/posts/' + p.slug + '#comments'));
     if (p.repost_count != null) left.append(statEl('repost', p.repost_count || 0, 'รีโพสต์'));
     if (p.view_count != null) left.append(statEl('eye', Number(p.view_count || 0).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH'), 'ยอดวิว'));
-    const sh = el('button', BAR_BTN + BAR_HOVER + ' cursor-pointer');
+    const sh = el('button', BAR_BTN + BAR_HOVER + ' flex-shrink-0 cursor-pointer');
     sh.type = 'button'; sh.title = 'แชร์'; sh.setAttribute('aria-label', 'แชร์');
     sh.dataset.nivShare = location.origin + '/posts/' + p.slug; sh.dataset.shareTitle = p.title || '';
     sh.insertAdjacentHTML('beforeend', cardIcon('share'));

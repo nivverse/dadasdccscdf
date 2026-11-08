@@ -121,15 +121,15 @@ function postHead(p) {
 
 function postBar(p, origin) {
   const href = `/posts/${p.slug}`;
-  const btn = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 transition-colors';
-  return `<div class="px-3 py-2 flex items-center justify-between border-t border-slate-200 dark:border-white/10">
-      <div class="flex items-center gap-1">
+  const btn = 'inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-2 rounded-xl text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 transition-colors';
+  return `<div class="px-2 sm:px-3 py-2 flex items-center justify-between gap-1 border-t border-slate-200 dark:border-white/10">
+      <div class="flex flex-wrap items-center gap-x-0.5 sm:gap-x-1 min-w-0">
         <button type="button" data-like="${esc(p.slug)}" class="${btn}" aria-pressed="false" aria-label="ถูกใจ" title="ถูกใจ">${icon('heart')}<span data-like-count="${esc(p.slug)}" class="tabular-nums">${p.like_count || 0}</span></button>
         <a href="${href}#comments" class="${btn}" aria-label="ความคิดเห็น" title="ความคิดเห็น">${icon('chat')}<span class="tabular-nums">${p.comment_count || 0}</span></a>
         <button type="button" data-repost="${esc(p.slug)}" data-author="${esc(p.author_id || '')}" class="${btn}" aria-pressed="false" aria-label="รีโพสต์" title="รีโพสต์">${icon('repost')}<span data-repost-count="${esc(p.slug)}" class="tabular-nums">${p.repost_count || 0}</span></button>
-        ${p.view_count != null ? `<span class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-500 dark:text-neutral-400" title="ยอดวิว" aria-label="ยอดวิว ${Number(p.view_count || 0)}">${icon('eye')}<span class="tabular-nums">${Number(p.view_count || 0).toLocaleString('th-TH')}</span></span>` : ''}
+        ${p.view_count != null ? `<span class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-2 text-sm font-medium text-slate-500 dark:text-neutral-400" title="ยอดวิว" aria-label="ยอดวิว ${Number(p.view_count || 0)}">${icon('eye')}<span class="tabular-nums">${Number(p.view_count || 0).toLocaleString('th-TH')}</span></span>` : ''}
       </div>
-      <button type="button" data-share data-url="${esc(origin + href)}" data-title="${esc(p.title)}" class="${btn}" aria-label="แชร์" title="แชร์">${icon('share')}</button>
+      <button type="button" data-share data-url="${esc(origin + href)}" data-title="${esc(p.title)}" class="${btn} flex-shrink-0" aria-label="แชร์" title="แชร์">${icon('share')}</button>
     </div>`;
 }
 
