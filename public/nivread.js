@@ -738,6 +738,9 @@
       v.removeAttribute('controls');
       if (!bpMuted && bpActive()) v.muted = false;
       box.classList.add('bp');
+      // บังคับ inline !important: กันสไตล์เก่า/แคช/CSS อื่นในหน้าที่ทำให้มีกรอบดำรอบวิดีโอ
+      ['padding:0','background:transparent','border:0','box-shadow:none','outline:0'].forEach((d) => { const [k, val] = d.split(':'); box.style.setProperty(k, val, 'important'); });
+      v.style.setProperty('background', 'transparent', 'important'); v.style.setProperty('border', '0', 'important'); v.style.setProperty('border-radius', BP_R + 'px', 'important'); v.style.setProperty('display', 'block', 'important');
       box.tabIndex = 0;
       box.setAttribute('role', 'group');
       box.setAttribute('aria-label', v.getAttribute('aria-label') || 'วิดีโอ');
