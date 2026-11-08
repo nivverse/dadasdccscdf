@@ -649,14 +649,14 @@
 
   // ---------- Progress bar วิ่งตามขอบกรอบวิดีโอ (.uv = วิดีโออัปโหลดเอง ทั้ง SSR และการ์ดฝั่งเบราว์เซอร์) ----------
   // ถ้า JS ไม่ทำงาน จะยังเหลือ controls เดิมของเบราว์เซอร์ (ลบทิ้งตอน enhance เท่านั้น)
-  if (!document.getElementById('niv-bp')) {
+  if (!document.getElementById('niv-bp2')) {
     const BP_R = 18, BP_SW = 2, BP_PAD = 0;
     const bpStyle = document.createElement('style');
-    bpStyle.id = 'niv-bp';
+    bpStyle.id = 'niv-bp2';
     bpStyle.textContent = `
-.uv.bp{position:relative;padding:${BP_PAD}px;border-radius:${BP_R}px;background:transparent;cursor:pointer;touch-action:manipulation;outline:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.uv.bp{position:relative;padding:0!important;border-radius:${BP_R}px;background:transparent!important;border:0!important;box-shadow:none;cursor:pointer;touch-action:manipulation;outline:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .uv.bp video{-webkit-touch-callout:none}
-.uv.bp video{display:block;width:100%;border-radius:${BP_R - BP_PAD}px;background:#000}
+.uv.bp video{display:block;width:100%;border-radius:${BP_R}px;background:transparent!important;border:0}
 .uv.bp:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .bp-svg rect,.bp-svg path{fill:none}
