@@ -1124,13 +1124,8 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
       { href: '/posts', label: 'โพสต์ทั้งหมด', ic: 'posts', on: path === '/posts' || path.startsWith('/posts/') },
       { href: '/categories', label: 'หมวดหมู่', ic: 'tag', on: path === '/categories' || path.startsWith('/category/') },
       { href: '/novels', label: 'นิยาย', ic: 'novel', on: path === '/novels' || path.startsWith('/novels/') },
-      { href: '/search', label: 'ค้นหา', ic: 'search', on: path === '/search' },
       ...(loggedIn ? [
         { href: '/novel-library', label: 'ชั้นหนังสือ', ic: 'shelf', on: path === '/novel-library' },
-        { href: '/write', label: 'เขียนโพสต์', ic: 'write', on: path === '/write' },
-        { href: '/notifications', label: 'การแจ้งเตือน', ic: 'bell', on: path === '/notifications', id: 'niv-nav-bell' },
-        { href: userUrl(s.userId), label: 'โปรไฟล์ของฉัน', ic: 'user', on: isMyProfile(s.userId) },
-        { href: '/profile', label: 'ตั้งค่าบัญชี', ic: 'cog', on: path === '/profile' },
       ] : []),
     ];
 
@@ -1189,7 +1184,6 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
       <nav class="mt-1 flex flex-col gap-1" aria-label="เมนูหลัก">
         ${nav.map((it, i) => `<a ${it.id ? `id="${it.id}"` : ''} href="${it.href}" class="nv-link nv-in${it.on ? ' is-active' : ''}${it.hidden ? ' hidden' : ''}" style="--i:${i + 2}"${it.on ? ' aria-current="page"' : ''}>${svg(it.ic)}<span>${it.label}</span></a>`).join('')}
       </nav>
-      <div id="niv-lang-slot" class="mt-4 px-1"></div>
     </div>
     <div class="flex-none border-t border-slate-200 dark:border-white/10 p-4" style="padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))">
       ${loggedIn ? `
@@ -1198,14 +1192,11 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
           <span class="min-w-0"><span id="niv-me-name" class="block text-sm font-semibold truncate"></span><span id="niv-me-id" class="block text-xs text-slate-500 dark:text-neutral-400 truncate"></span></span>
         </a>
         <button id="niv-logout" type="button" class="mt-3 w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer">${svg('out', 'w-4 h-4')}ออกจากระบบ</button>`
-      : `<a href="/login?redirect=${here}" class="w-full inline-flex items-center justify-center py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25">เข้าสู่ระบบ / สมัครสมาชิก</a>`}
+      : `<a href="/login?redirect=${here}" class="w-full inline-flex items-center justify-center py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25">เข้าสู่ระบบ</a>`}
       <p class="mt-3 text-center text-[11px] opacity-50">© ${new Date().getFullYear()} nivread</p>
     </div>
   </aside>
 </div>`;
-
-    // ---- ตัวเลือกภาษา (ตามเครื่อง / ไทย / English) ----
-    window.NIV_I18N?.mountSwitcher(document.getElementById('niv-lang-slot'));
 
     // ---- เปิด/ปิดเมนู ----
     const drawer = document.getElementById('niv-drawer');
@@ -1344,7 +1335,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
   if (footer) {
     footer.innerHTML = `
 <div class="mt-12 border-t border-slate-200 dark:border-white/10 py-6 text-center text-xs text-slate-500 dark:text-neutral-400">
-  © ${new Date().getFullYear()} nivread · <a href="/" class="hover:text-amber-500">หน้าแรก</a> · <a href="/posts" class="hover:text-amber-500">โพสต์ทั้งหมด</a> · <a href="/categories" class="hover:text-amber-500">หมวดหมู่</a> · <a href="/search" class="hover:text-amber-500">ค้นหา</a> · <a href="/write" class="hover:text-amber-500">เขียนโพสต์</a>
+  © ${new Date().getFullYear()} nivread
 </div>`;
   }
 })();
