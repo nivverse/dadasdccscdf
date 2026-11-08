@@ -238,18 +238,30 @@
   paintFollows();
   loadFollows();
 
-  // ไอคอน SVG ของการ์ด (ใช้แทนอีโมจิ ♥ 🔁 👁 🔒 — อีโมจิหน้าตาต่างกันตามเครื่อง ดูไม่เป็นมืออาชีพ)
+  document.addEventListener('click', async (e) => {
+    const b = e.target.closest && e.target.closest('[data-niv-share]');
+    if (!b) return;
+    const url = b.dataset.nivShare, title = b.dataset.shareTitle || '';
+    if (navigator.share) { try { await navigator.share({ title, url }); } catch {} return; }
+    try { await navigator.clipboard.writeText(url); toast('คัดลอกลิงก์แล้ว'); } catch { toast('คัดลอกลิงก์ไม่สำเร็จ'); }
+  });
+
+  // ไอคอน SVG ของการ์ด — คัดลอกจาก ICON / icon() ใน functions/_lib/render.js ตรง ๆ (ต้องตรงกับการ์ดฝั่งเซิร์ฟเวอร์เสมอ)
   const CARD_IC = {
-    heart: '<path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 000-7.8z"/>',
-    repost: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>',
-    eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
-    comment: '<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>',
-    lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
+  heart: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>',
+  chat: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>',
+  repost: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 1l4 4-4 4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 11V9a4 4 0 014-4h14"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 23l-4-4 4-4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13v2a4 4 0 01-4 4H3"/>',
+  eye: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>',
+  share: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>',
+    lock: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>',
   };
-  const cardIcon = (n, cls = 'w-5 h-5') => '<svg class="' + cls + ' flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">' + CARD_IC[n] + '</svg>';
-  // ตัวเลขสถิติพร้อมไอคอน (tag = span หรือ a)
+  const cardIcon = (n, cls = 'w-5 h-5') => '<svg class="' + cls + '" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' + CARD_IC[n] + '</svg>';
+  // ปุ่ม/ตัวเลขในแถบท้ายการ์ด — class เดียวกับ postBar() ใน render.js (btn)
+  const BAR_BTN = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-500 dark:text-neutral-400';
+  const BAR_HOVER = ' hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 transition-colors';
+  // tag: 'a' (ลิงก์จริง) | 'span' (แสดงอย่างเดียว ไม่มี hover เพราะกดไม่ได้ในหน้านี้)
   const statEl = (icon, text, label, href) => {
-    const n = el(href ? 'a' : 'span', 'inline-flex items-center gap-1.5' + (href ? ' hover:opacity-70' : ''));
+    const n = el(href ? 'a' : 'span', BAR_BTN + (href ? BAR_HOVER : ''));
     if (href) n.href = href;
     n.title = label; n.setAttribute('aria-label', label + ' ' + text);
     n.insertAdjacentHTML('beforeend', cardIcon(icon));
@@ -306,11 +318,17 @@
     const vid = videoEl(p.videos, p.title, '/posts/' + p.slug);
     if (vid) card.append(vid);
     else { const gal = galleryEl(imgs, p.title, '/posts/' + p.slug); if (gal) card.append(gal); }
-    const foot = el('div', 'px-4 py-3 flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400');
-    foot.append(statEl('heart', p.like_count || 0, 'ไลก์'));
-    foot.append(statEl('comment', p.comment_count || 0, 'ความคิดเห็น', '/posts/' + p.slug + '#comments'));
-    if (p.repost_count != null) foot.append(statEl('repost', p.repost_count || 0, 'รีโพสต์'));
-    if (p.view_count != null) foot.append(statEl('eye', Number(p.view_count || 0).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH'), 'ยอดวิว'));
+    const foot = el('div', 'px-3 py-2 flex items-center justify-between border-t border-slate-200 dark:border-white/10');
+    const left = el('div', 'flex items-center gap-1');
+    left.append(statEl('heart', p.like_count || 0, 'ถูกใจ'));
+    left.append(statEl('chat', p.comment_count || 0, 'ความคิดเห็น', '/posts/' + p.slug + '#comments'));
+    if (p.repost_count != null) left.append(statEl('repost', p.repost_count || 0, 'รีโพสต์'));
+    if (p.view_count != null) left.append(statEl('eye', Number(p.view_count || 0).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH'), 'ยอดวิว'));
+    const sh = el('button', BAR_BTN + BAR_HOVER + ' cursor-pointer');
+    sh.type = 'button'; sh.title = 'แชร์'; sh.setAttribute('aria-label', 'แชร์');
+    sh.dataset.nivShare = location.origin + '/posts/' + p.slug; sh.dataset.shareTitle = p.title || '';
+    sh.insertAdjacentHTML('beforeend', cardIcon('share'));
+    foot.append(left, sh);
     card.append(foot);
     return card;
   }
@@ -1355,7 +1373,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
   if (footer) {
     footer.innerHTML = `
 <div class="mt-12 border-t border-slate-200 dark:border-white/10 py-6 text-center text-xs text-slate-500 dark:text-neutral-400">
-  © ${new Date().getFullYear()} nivread เขียนเรื่องราวของคุณ 
+  © ${new Date().getFullYear()} nivread write your story
 </div>`;
   }
 })();
