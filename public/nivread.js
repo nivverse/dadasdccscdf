@@ -238,6 +238,25 @@
   paintFollows();
   loadFollows();
 
+  // ไอคอน SVG ของการ์ด (ใช้แทนอีโมจิ ♥ 🔁 👁 🔒 — อีโมจิหน้าตาต่างกันตามเครื่อง ดูไม่เป็นมืออาชีพ)
+  const CARD_IC = {
+    heart: '<path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 000-7.8z"/>',
+    repost: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>',
+    eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+    comment: '<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>',
+    lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
+  };
+  const cardIcon = (n, cls = 'w-5 h-5') => '<svg class="' + cls + ' flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">' + CARD_IC[n] + '</svg>';
+  // ตัวเลขสถิติพร้อมไอคอน (tag = span หรือ a)
+  const statEl = (icon, text, label, href) => {
+    const n = el(href ? 'a' : 'span', 'inline-flex items-center gap-1.5' + (href ? ' hover:opacity-70' : ''));
+    if (href) n.href = href;
+    n.title = label; n.setAttribute('aria-label', label + ' ' + text);
+    n.insertAdjacentHTML('beforeend', cardIcon(icon));
+    n.append(el('span', 'tabular-nums', String(text)));
+    return n;
+  };
+
   // การ์ดโพสต์สำหรับหน้าที่เรนเดอร์ฝั่งเบราว์เซอร์ (ค้นหา / โปรไฟล์ผู้ใช้) — หน้าฟีดหลักเรนเดอร์ฝั่งเซิร์ฟเวอร์เพื่อ SEO
   function postCardEl(p) {
     const card = el('article', 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden');
@@ -276,7 +295,9 @@
     }
     if ((p.lock_count || 0) > 0) {
       const lw = el('div', 'mt-2');
-      const lk = el('a', 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', '🔒 มีเนื้อหาที่ถูกล็อก' + (p.lock_count > 1 ? ' ' + p.lock_count + ' กล่อง' : '') + ' · กดเพื่อปลดล็อก');
+      const lk = el('a', 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors');
+      lk.insertAdjacentHTML('beforeend', cardIcon('lock', 'w-3.5 h-3.5'));
+      lk.append(el('span', '', 'มีเนื้อหาที่ถูกล็อก' + (p.lock_count > 1 ? ' ' + p.lock_count + ' กล่อง' : '') + ' · กดเพื่อปลดล็อก'));
       lk.href = '/posts/' + p.slug; lw.append(lk); body.append(lw);
     }
     card.append(body);
@@ -286,11 +307,10 @@
     if (vid) card.append(vid);
     else { const gal = galleryEl(imgs, p.title, '/posts/' + p.slug); if (gal) card.append(gal); }
     const foot = el('div', 'px-4 py-3 flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400');
-    foot.append(el('span', '', '♥ ' + (p.like_count || 0)));
-    if (p.repost_count != null) foot.append(el('span', '', '🔁 ' + (p.repost_count || 0)));
-    if (p.view_count != null) foot.append(el('span', '', '👁 ' + Number(p.view_count || 0).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH')));
-    const ca2 = el('a', 'hover:opacity-70', (p.comment_count || 0) + ' ความคิดเห็น'); ca2.href = '/posts/' + p.slug + '#comments';
-    foot.append(ca2);
+    foot.append(statEl('heart', p.like_count || 0, 'ไลก์'));
+    foot.append(statEl('comment', p.comment_count || 0, 'ความคิดเห็น', '/posts/' + p.slug + '#comments'));
+    if (p.repost_count != null) foot.append(statEl('repost', p.repost_count || 0, 'รีโพสต์'));
+    if (p.view_count != null) foot.append(statEl('eye', Number(p.view_count || 0).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH'), 'ยอดวิว'));
     card.append(foot);
     return card;
   }
@@ -1335,7 +1355,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
   if (footer) {
     footer.innerHTML = `
 <div class="mt-12 border-t border-slate-200 dark:border-white/10 py-6 text-center text-xs text-slate-500 dark:text-neutral-400">
-  © ${new Date().getFullYear()} nivread
+  © ${new Date().getFullYear()} nivread เขียนเรื่องราวของคุณ 
 </div>`;
   }
 })();
