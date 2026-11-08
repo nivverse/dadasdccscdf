@@ -9,7 +9,24 @@
   const list = $('my-feed-list');
   // ความสนใจที่เบราว์เซอร์จดไว้ (NIV.interestParam) — จดค่า ณ ตอนเปิดหน้าไว้ชุดเดียว เพื่อให้เลื่อนไปหน้าถัดไปแล้วลำดับไม่เปลี่ยน
   const interest = (window.NIV && NIV.interestParam && NIV.interestParam()) || '';
-  const url = (page) => `/?feed=1&page=${page}&userId=${encodeURIComponent(uid)}${interest ? '&i=' + encodeURIComponent(interest) : ''}`;
+  // โพสต์ที่เห็นแล้ว (เก็บในเบราว์เซอร์ ไม่เขียนฐานข้อมูล):
+  //   shown   = เห็นในเซสชันนี้ → ส่งเป็น x ให้เซิร์ฟเวอร์ตัดออก (เลื่อนหน้าถัดไปไม่ซ้ำ/ไม่ข้าม)
+  //   seenOld = เคยเห็นก่อนเปิดหน้านี้ → ส่งเป็น s ให้เซิร์ฟเวอร์ลดอันดับ (รีเฟรชแล้วเห็นของใหม่ก่อน) · จดค่า ณ ตอนเปิดหน้าไว้ชุดเดียว
+  const SEEN_KEY = 'fy_seen_v1';
+  const readSeen = () => { try { const a = JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); return Array.isArray(a) ? a.filter((s) => typeof s === 'string').slice(0, 150) : []; } catch { return []; } };
+  const seenOld = readSeen();
+  const shown = [];
+  const remember = (slugs) => {
+    slugs.forEach((s) => { if (s && !shown.includes(s)) shown.push(s); });
+    try { localStorage.setItem(SEEN_KEY, JSON.stringify([...new Set([...slugs, ...readSeen()])].slice(0, 150))); } catch {}
+  };
+  const url = (page) => {
+    let u = `/?feed=1&page=${page}&userId=${encodeURIComponent(uid)}`;
+    if (interest) u += '&i=' + encodeURIComponent(interest);
+    if (shown.length) u += '&x=' + encodeURIComponent(shown.slice(-100).join(','));
+    if (seenOld.length) u += '&s=' + encodeURIComponent(seenOld.slice(0, 100).join(','));
+    return u;
+  };
   const get = (page) => fetch(url(page), { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
   const refresh = () => { window.NIV_refreshFeed && window.NIV_refreshFeed(); };
 
@@ -30,7 +47,9 @@
     t.content.querySelectorAll('[data-view-slug]').forEach((c) => {
       if (list.querySelector(`[data-view-slug="${CSS.escape(c.dataset.viewSlug)}"]`)) c.remove();
     });
+    const fresh = [...t.content.querySelectorAll('[data-view-slug]')].map((c) => c.dataset.viewSlug);
     list.append(t.content);
+    remember(fresh);
   };
 
   async function more() {
