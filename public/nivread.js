@@ -1058,11 +1058,11 @@
 @media (max-width:639px){body{padding-bottom:calc(3.5rem + env(safe-area-inset-bottom))}}
 #niv-drawer{position:fixed;inset:0;z-index:50;visibility:hidden;pointer-events:none;transition:visibility 0s linear .3s}
 #niv-drawer.is-open{visibility:visible;pointer-events:auto;transition:visibility 0s}
-#niv-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);opacity:0;transition:opacity .3s ease}
+#niv-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;transition:opacity .3s ease;will-change:opacity}
 #niv-drawer.is-open #niv-backdrop{opacity:1}
 #niv-drawer aside{position:absolute;top:0;right:0;width:20rem;max-width:88vw;height:100%;max-height:100dvh;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s ease-in-out;
-  background:radial-gradient(120% 55% at 100% 0%,rgba(245,158,11,.16),transparent 60%),rgba(255,255,255,.88);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%)}
-.dark #niv-drawer aside{background:radial-gradient(120% 55% at 100% 0%,rgba(245,158,11,.18),transparent 60%),rgba(18,18,18,.86)}
+  background:radial-gradient(120% 55% at 100% 0%,rgba(245,158,11,.16),transparent 60%),rgba(255,255,255,.97);will-change:transform}
+.dark #niv-drawer aside{background:radial-gradient(120% 55% at 100% 0%,rgba(245,158,11,.18),transparent 60%),rgba(18,18,18,.97)}
 #niv-drawer.is-open aside{transform:none}
 .nv-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:.75rem 1rem 1rem;scrollbar-width:none}
 .nv-scroll::-webkit-scrollbar{display:none}
@@ -1085,6 +1085,7 @@
 .nv-mode-d{display:none}html:not(.dark) .nv-mode-d{display:inline}html:not(.dark) .nv-mode-n{display:none}
 html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s ease,border-color .4s ease!important}
 @media (prefers-reduced-motion:reduce){.nv-in,#niv-drawer.is-open .nv-in{opacity:1;transform:none;transition-delay:0s}#niv-drawer aside{transition-duration:.01ms}}
+html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-go,html.nv-menu-open .gal-s:not(.ok)::before,html.nv-menu-open .gal-t:not(.ok)::before,html.nv-menu-open .vg-play img,html.nv-menu-open .vg-eq s{animation-play-state:paused!important}
 `;
 
   // ---------- ไอคอน ----------
@@ -1209,12 +1210,21 @@ html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s
     // ---- เปิด/ปิดเมนู ----
     const drawer = document.getElementById('niv-drawer');
     const burger = document.getElementById('niv-burger');
+    let lockT = 0;
     const setOpen = (open) => {
       drawer.classList.toggle('is-open', open);
       drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
       burger.setAttribute('aria-expanded', open ? 'true' : 'false');
       document.getElementById('niv-burger-m')?.setAttribute('aria-expanded', open ? 'true' : 'false');
-      document.documentElement.style.overflow = open ? 'hidden' : '';
+      // งานหนัก (ล็อกสกอลล์ = เลย์เอาต์ทั้งหน้า) ย้ายไปทำหลังแอนิเมชันจบ เพื่อให้เมนูเลื่อนลื่น
+      const root = document.documentElement;
+      clearTimeout(lockT);
+      if (open) {
+        root.classList.add('nv-menu-open');
+        lockT = setTimeout(() => { root.style.overflow = 'hidden'; }, 320);
+      } else {
+        lockT = setTimeout(() => { root.style.overflow = ''; root.classList.remove('nv-menu-open'); }, 320);
+      }
     };
     burger.addEventListener('click', () => setOpen(!drawer.classList.contains('is-open')));
     document.getElementById('niv-burger-m')?.addEventListener('click', () => setOpen(!drawer.classList.contains('is-open')));
