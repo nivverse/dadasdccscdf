@@ -78,7 +78,21 @@
     like: 'ถูกใจโพสต์ของคุณ', comment: 'แสดงความคิดเห็นในโพสต์ของคุณ', reply: 'ตอบกลับความคิดเห็นของคุณ', mention: 'กล่าวถึงคุณในความคิดเห็น',
     follow: 'เริ่มติดตามคุณ', repost: 'รีโพสต์โพสต์ของคุณ', comment_like: 'ถูกใจความคิดเห็นของคุณ', new_post: 'มีโพสต์ใหม่',
   };
-  const ICON = { like: '❤️', comment: '💬', reply: '↩️', mention: '＠', follow: '👤', repost: '🔁', comment_like: '👍', new_post: '🆕', moderation: '🛡️' };
+  // ไอคอน SVG (ชุดเดียวกับเมนู/การ์ดโพสต์ของเว็บ) แทนอีโมจิ — มีแต่ค่าคงที่ในโค้ด จึงใช้ innerHTML ได้อย่างปลอดภัย
+  const ICON = {
+    like: '<path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>',
+    comment: '<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>',
+    reply: '<path d="M9 14L4 9l5-5"/><path d="M20 20v-7a4 4 0 00-4-4H4"/>',
+    mention: '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 006 0v-1a10 10 0 10-3.92 7.94"/>',
+    follow: '<path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/>',
+    repost: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>',
+    comment_like: '<path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>',
+    new_post: '<path d="M4 4h13a1 1 0 011 1v14a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><path d="M8 8h6M8 12h6M8 16h4"/>',
+    moderation: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+    bell: '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/>',
+  };
+  const ICOLOR = { like: 'text-rose-500', repost: 'text-orange-500', moderation: 'text-red-500' }; // ที่เหลือใช้สีอำพัน
+  const svgIc = (type, cls, sw = 2) => '<svg class="' + cls + '" fill="none" stroke="currentColor" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">' + (ICON[type] || ICON.bell) + '</svg>';
   const whoText = (it) => {
     const names = it.actors.map((a) => a.name);
     const rest = Math.max(0, it.n - names.length);
@@ -91,11 +105,19 @@
     a.href = it.url || '/notifications';
 
     const av = el('div', 'relative flex-shrink-0');
-    if (it.type === 'moderation' || !it.actors.length) av.append(el('div', 'w-10 h-10 rounded-full grid place-items-center bg-slate-200 dark:bg-white/10 text-lg', ICON[it.type] || '🔔'));
+    if (it.type === 'moderation' || !it.actors.length) {
+      const ph = el('div', 'w-10 h-10 rounded-full grid place-items-center bg-slate-200 dark:bg-white/10 ' + (ICOLOR[it.type] || 'text-amber-500'));
+      ph.innerHTML = svgIc(it.type, 'w-5 h-5');
+      av.append(ph);
+    }
     else {
       const u = it.actors[0];
       av.append(avatarEl({ id: u.id, display_name: u.name, avatar_url: u.avatar }, 'w-10 h-10'));
-      av.append(el('span', 'absolute -bottom-1 -right-1 text-[11px] leading-none rounded-full p-0.5 bg-white dark:bg-[#1c1c1c]', ICON[it.type] || ''));
+      if (ICON[it.type]) {
+        const bd = el('span', 'absolute -bottom-1 -right-1 grid place-items-center w-[18px] h-[18px] rounded-full bg-white dark:bg-[#1c1c1c] ring-1 ring-slate-200 dark:ring-white/10 ' + (ICOLOR[it.type] || 'text-amber-500'));
+        bd.innerHTML = svgIc(it.type, 'w-3 h-3', 2.5);
+        av.append(bd);
+      }
     }
 
     const tx = el('div', 'min-w-0 flex-1');
@@ -143,7 +165,9 @@
         status.textContent = 'อัปเดตล่าสุด ' + stamp();
         if (!d.items.length) {
           const e = el('div', 'text-center py-14 text-slate-500 dark:text-neutral-400');
-          e.append(el('div', 'text-4xl', '🔔'), el('p', 'mt-3 font-semibold', 'ยังไม่มีการแจ้งเตือน'), el('p', 'mt-1 text-sm', 'เมื่อมีคนถูกใจ คอมเมนต์ หรือติดตามคุณ จะแสดงที่นี่'));
+          const bellBox = el('div', 'mx-auto w-12 h-12 text-slate-400 dark:text-neutral-500');
+          bellBox.innerHTML = svgIc('bell', 'w-12 h-12', 1.5);
+          e.append(bellBox, el('p', 'mt-3 font-semibold', 'ยังไม่มีการแจ้งเตือน'), el('p', 'mt-1 text-sm', 'เมื่อมีคนถูกใจ คอมเมนต์ หรือติดตามคุณ จะแสดงที่นี่'));
           list.append(e);
         }
       }
@@ -187,6 +211,8 @@
 
   // ---------- Web Push ของอุปกรณ์นี้ ----------
   const pushSec = $('push-sec'), pushMsg = $('push-msg'), bOn = $('push-on'), bOff = $('push-off'), bTest = $('push-test');
+  // ข้อความสำเร็จพร้อมไอคอนติ๊กถูก SVG (ข้อความเป็น textContent เสมอ ไม่ผ่าน innerHTML)
+  const setOk = (t) => { pushMsg.textContent = ''; pushMsg.insertAdjacentHTML('beforeend', '<svg class="inline-block w-4 h-4 mr-1 -mt-0.5 text-emerald-500" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>'); pushMsg.append(document.createTextNode(t)); };
   const ua = navigator.userAgent;
   const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
@@ -203,13 +229,13 @@
     bOn.hidden = bOff.hidden = bTest.hidden = true;
     if (!supported) {
       pushMsg.textContent = isIOS && !standalone
-        ? 'บน iPhone/iPad: กดปุ่มแชร์ → “เพิ่มลงในหน้าจอโฮม” แล้วเปิดเว็บจากไอคอนนั้น จึงจะเปิดแจ้งเตือนได้ (ต้องใช้ iOS 16.4 ขึ้นไป)'
+        ? 'บน iPhone/iPad: กดปุ่มแชร์ แล้วเลือก “เพิ่มลงในหน้าจอโฮม” แล้วเปิดเว็บจากไอคอนนั้น จึงจะเปิดแจ้งเตือนได้ (ต้องใช้ iOS 16.4 ขึ้นไป)'
         : 'เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบ push (ยังดูรายการแจ้งเตือนในหน้านี้ได้ตามปกติ)';
       return;
     }
     if (Notification.permission === 'denied') { pushMsg.textContent = 'คุณบล็อกการแจ้งเตือนของเว็บนี้ไว้ในเบราว์เซอร์ หากต้องการเปิดให้ไปที่การตั้งค่าไซต์ (รูปแม่กุญแจข้างที่อยู่เว็บ) แล้วอนุญาตการแจ้งเตือน'; return; }
     const sub = await currentSub();
-    if (sub && Notification.permission === 'granted') { pushMsg.textContent = '✓ เปิดแจ้งเตือนบนอุปกรณ์นี้อยู่'; bOff.hidden = bTest.hidden = false; }
+    if (sub && Notification.permission === 'granted') { setOk('เปิดแจ้งเตือนบนอุปกรณ์นี้อยู่'); bOff.hidden = bTest.hidden = false; }
     else { pushMsg.textContent = isIOS && !standalone ? 'แนะนำให้เปิดเว็บจากไอคอนบนหน้าจอโฮมก่อน แล้วค่อยกดเปิดแจ้งเตือน' : 'ยังไม่ได้เปิดบนอุปกรณ์นี้'; bOn.hidden = false; }
   }
   bOn.addEventListener('click', async () => {
@@ -244,7 +270,7 @@
   bTest.addEventListener('click', async () => {
     bTest.disabled = true; pushMsg.textContent = 'กำลังส่งข้อความทดสอบ…';
     const r = await api('/api/blog/push-test', { method: 'POST', body: { userId: s.userId } });
-    pushMsg.textContent = r.ok ? '✓ ส่งแล้ว ถ้าไม่เห็นการแจ้งเตือน ให้ตรวจการตั้งค่าแจ้งเตือนของเบราว์เซอร์/ระบบ' : (r.data.error || 'ส่งไม่สำเร็จ');
+    if (r.ok) setOk('ส่งแล้ว ถ้าไม่เห็นการแจ้งเตือน ให้ตรวจการตั้งค่าแจ้งเตือนของเบราว์เซอร์/ระบบ'); else pushMsg.textContent = r.data.error || 'ส่งไม่สำเร็จ';
     setTimeout(() => { bTest.disabled = false; }, 4000);
   });
 
