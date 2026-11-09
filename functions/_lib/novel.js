@@ -71,13 +71,15 @@ export function novelCard(n, i = 0) {
     st(ICON.eye, compact(n.views)),
     n.like_count > 0 ? st(ICON.heart, compact(n.like_count)) : '',
   ].filter(Boolean).join('');
-  return `<a href="${novelHref(n.slug)}" class="nv-card nv-reveal group block ${CARD} overflow-hidden hover:border-amber-500/60" style="--i:${Math.min(i, 8)}">
-  <div class="overflow-hidden">${coverImg(n)}</div>
-  <div class="p-2.5 sm:p-3">
-    <h3 class="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-amber-600 dark:group-hover:text-amber-400">${esc(n.title)}</h3>
+  // การ์ดเป็น flex คอลัมน์สูงเท่ากันทั้งแถว: ชื่อจองที่ไว้ 2 บรรทัดเสมอ (ชื่อสั้นก็ไม่ทำให้บรรทัดถัดไปเลื่อนขึ้น)
+  // และแถวสถิติถูกตรึงไว้ล่างสุดของการ์ด จึงเรียงตรงกันทุกใบ
+  return `<a href="${novelHref(n.slug)}" class="nv-card nv-reveal group flex flex-col h-full ${CARD} overflow-hidden hover:border-amber-500/60" style="--i:${Math.min(i, 8)}">
+  <div class="overflow-hidden flex-none">${coverImg(n)}</div>
+  <div class="flex flex-col flex-1 p-2.5 sm:p-3">
+    <h3 class="nv-ttl font-semibold text-sm leading-normal line-clamp-2 min-h-[3em] group-hover:text-amber-600 dark:group-hover:text-amber-400">${esc(n.title)}</h3>
     <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(n.display_name || '')}</p>
-    <p class="mt-1 text-[11px] text-slate-400 dark:text-neutral-500">${fmtNum(n.chapter_count)} ตอน · ${esc(STATUS_TH[n.status] || '')}</p>
-    <p class="mt-1.5 flex items-center gap-2.5 text-[11px] text-slate-500 dark:text-neutral-400">${stats}</p>
+    <p class="mt-1 text-[11px] text-slate-400 dark:text-neutral-500 truncate">${fmtNum(n.chapter_count)} ตอน · ${esc(STATUS_TH[n.status] || '')}</p>
+    <p class="mt-auto pt-2 flex items-center gap-2.5 text-[11px] text-slate-500 dark:text-neutral-400">${stats}</p>
   </div></a>`;
 }
 

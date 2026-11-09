@@ -61,7 +61,7 @@
     if (n.cover_url && /^https:\/\//.test(n.cover_url)) { const im = el('img', 'w-full h-full object-cover'); im.src = n.cover_url; im.alt = ''; im.loading = 'lazy'; cover.append(im); }
     else cover.textContent = Array.from(n.title)[0] || '?';
     const col = el('div', 'min-w-0 flex-1 flex flex-col');
-    const t = el('a', 'font-semibold leading-snug line-clamp-2 hover:text-amber-500', n.title); t.href = '/novels/' + enc(n.slug);
+    const t = el('a', 'nv-ttl block font-semibold leading-normal line-clamp-2 hover:text-amber-500', n.title); t.href = '/novels/' + enc(n.slug);
     col.append(t, el('p', 'text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate', n.display_name || ''));
     if (n.has_new) col.append(el('span', 'mt-1.5 self-start px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[11px] font-bold', 'มีตอนใหม่'));
     const pct = Math.max(0, Math.min(100, n.pct || 0));
