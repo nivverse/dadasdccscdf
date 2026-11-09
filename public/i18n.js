@@ -116,7 +116,9 @@
 
   // ---------- แปลทั้งหน้า ----------
   const SKIP_TAG = /^(SCRIPT|STYLE|TEXTAREA|CODE|PRE|NOSCRIPT)$/;
-  const skipEl = (el) => !el || SKIP_TAG.test(el.tagName) || (el.closest && el.closest('[data-no-i18n],[contenteditable=""],[contenteditable="true"]'));
+  const optOut = (el) => !!(el && el.closest && el.closest('[data-no-i18n]'));
+  // ข้อความ: ข้าม script/style/textarea/code และพื้นที่พิมพ์ได้ (ไม่แตะสิ่งที่ผู้ใช้พิมพ์)
+  const skipEl = (el) => !el || SKIP_TAG.test(el.tagName) || optOut(el) || (el.closest && !!el.closest('[contenteditable=""],[contenteditable="true"]'));
   const ATTRS = ['placeholder', 'title', 'aria-label', 'alt'];
 
   const doText = (node) => {
@@ -126,7 +128,8 @@
     if (n !== v) node.nodeValue = n;
   };
   const doAttrs = (el) => {
-    if (skipEl(el)) return;
+    // placeholder/title/aria-label เป็นข้อความของระบบ แปลได้แม้อยู่บน textarea/input — ยกเว้นเมื่อสั่ง data-no-i18n
+    if (!el || optOut(el) || /^(SCRIPT|STYLE)$/.test(el.tagName)) return;
     for (const a of ATTRS) {
       const v = el.getAttribute && el.getAttribute(a);
       if (v && hasThai(v)) { const n = t(v); if (n !== v) el.setAttribute(a, n); }
