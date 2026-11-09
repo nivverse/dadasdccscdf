@@ -192,7 +192,7 @@
             ov.onclick = e => { if (e.target === ov && !busy) close(); };
             document.addEventListener('keydown', onKey);
 
-            const file = el('input'); file.type = 'file'; file.accept = isAv ? 'image/jpeg,image/png,image/webp' : 'image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime'; file.className = 'hidden';
+            const file = el('input'); file.type = 'file'; file.accept = 'image/jpeg,image/png,image/webp'; file.className = 'hidden';   // อัปโหลดได้เฉพาะรูป · วิดีโอปกเลือกจากวิดีโอที่เคยโพสต์
 
             const header = (title, desc) => {
                 const wrap = el('div', 'flex items-start gap-3 mb-4');
@@ -210,9 +210,14 @@
                 const drop = el('button', 'w-full flex flex-col items-center justify-center gap-2 py-10 rounded-2xl border-2 border-dashed border-slate-300 dark:border-white/15 text-slate-600 dark:text-neutral-300 cursor-pointer transition-colors ' + T.hover);
                 drop.type = 'button';
                 drop.innerHTML = ic('upload', 'w-8 h-8');
-                drop.append(el('span', 'text-sm font-semibold', isAv ? 'เลือกรูปจากเครื่อง' : 'เลือกรูปหรือวิดีโอจากเครื่อง'), el('span', sub, isAv ? 'JPG / PNG / WebP · ระบบจะบีบรูปให้อัตโนมัติ' : `JPG / PNG / WebP / MP4 / WebM · วิดีโอไม่เกิน ${MAX_VIDEO_SEC} วินาที ${MAX_VIDEO / 1048576} MB`));
+                drop.append(el('span', 'text-sm font-semibold', 'เลือกรูปจากเครื่อง'), el('span', sub, 'JPG / PNG / WebP · ระบบจะบีบรูปให้อัตโนมัติ'));
                 drop.onclick = () => { nsfwModel(); file.click(); };   // เริ่มโหลดโมเดลตรวจภาพรอไว้
-                const parts = [header(isAv ? 'อัปโหลดรูปโปรไฟล์' : 'อัปโหลดปก (รูป / วิดีโอ)', isAv ? 'ภาพจะถูกครอปเป็นรูปสี่เหลี่ยมจัตุรัส' : 'รูปจะถูกครอปเป็นแถบกว้าง 2:1 · วิดีโอเล่นวนซ้ำแบบไม่มีเสียง'), drop];
+                const parts = [header(isAv ? 'อัปโหลดรูปโปรไฟล์' : 'ภาพปก (รูป / วิดีโอที่เคยโพสต์)', isAv ? 'ภาพจะถูกครอปเป็นรูปสี่เหลี่ยมจัตุรัส' : 'อัปโหลดรูปได้ หรือเลือกวิดีโอที่คุณเคยโพสต์มาเป็นปก · วิดีโอเล่นวนซ้ำแบบไม่มีเสียง'), drop];
+                if (!isAv) {
+                    const vb = iconBtn('mt-3 w-full px-4 py-3 rounded-xl text-sm font-semibold border border-slate-300 dark:border-white/15 text-slate-700 dark:text-neutral-200 ' + T.hover, 'image', 'ใช้วิดีโอที่เคยโพสต์เป็นปก');
+                    vb.onclick = () => pickPostedVideo();
+                    parts.push(vb);
+                }
                 if (note) parts.push(el('p', 'text-xs text-rose-500 text-center mt-3', note));
                 panel.replaceChildren(file, ...parts);
                 if (isAv) addRevert();
@@ -293,59 +298,75 @@
                 panel.replaceChildren(file, header(isAv ? 'ปรับตำแหน่งรูปโปรไฟล์' : 'ปรับตำแหน่งภาพปก', f.name), frame, status, rng, row);
             }
 
-            function editVideo(f) {
-                if (objUrl) URL.revokeObjectURL(objUrl);
-                objUrl = URL.createObjectURL(f);
-                const frame = el('div', 'relative mx-auto overflow-hidden bg-black rounded-xl ring-1 ring-white/10');
-                frame.style.cssText = `width:${FW}px;height:${FH}px;max-width:100%`;
-                const v = el('video', 'absolute inset-0 w-full h-full object-cover');
-                v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
-                v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
-                frame.append(v);
-                const status = el('p', sub + ' text-center mt-4 min-h-[1rem]', 'กำลังโหลดวิดีโอ ...');
-                const row = el('div', 'flex gap-2 mt-5');
-                const back = iconBtn('flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20', 'arrowLeft', 'เลือกไฟล์อื่น');
-                const ok = iconBtn('flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold ' + T.primary, 'check', 'ใช้วิดีโอนี้');
-                ok.disabled = true;
-                const setStatus = (t, bad) => { status.textContent = t; status.className = (bad ? 'text-xs text-rose-500' : sub) + ' text-center mt-4 min-h-[1rem]'; };
-                v.onloadedmetadata = () => {
-                    if (v.duration > MAX_VIDEO_SEC + 0.5) return start(`วิดีโอยาว ${Math.round(v.duration)} วินาที — ต้องไม่เกิน ${MAX_VIDEO_SEC} วินาที`);
-                    ok.disabled = false;
-                    setStatus(`ยาว ${v.duration.toFixed(1)} วินาที · ${(f.size / 1048576).toFixed(1)} MB · ภาพจะถูกจัดกึ่งกลางพอดีกรอบปก`);
-                };
-                v.onerror = () => start('เปิดวิดีโอนี้ไม่ได้ (ไฟล์อาจเสียหรือรูปแบบไม่รองรับ)');
-                v.src = objUrl;
-                back.onclick = () => { if (!busy) start(); };
-                ok.onclick = async () => {
-                    busy = true; ok.disabled = back.disabled = true;
-                    try {
-                        setStatus('กำลังตรวจสอบเนื้อหา ...');
-                        let frames = [];
-                        try { frames = await sampleFrames(objUrl, v.duration); } catch (e) {}
-                        for (const fr of frames) if (await looksNsfw(fr)) throw new Error('วิดีโอไม่ผ่านการตรวจสอบเนื้อหา (ไม่อนุญาตภาพลามก)');
-                        setStatus('กำลังอัปโหลด ' + (f.size / 1048576).toFixed(1) + ' MB ...');
-                        const url = await uploadBlob(f);
-                        setStatus('กำลังบันทึกลงบัญชี ...');
-                        await applyUploaded(kind, url);
-                        busy = false; close();
-                    } catch (e) {
-                        busy = false; ok.disabled = back.disabled = false;
-                        setStatus(e.message || 'อัปโหลดไม่สำเร็จ', true);
+            // ---- เลือกวิดีโอที่เคยโพสต์มาเป็นปก (ไม่อัปโหลดไฟล์ใหม่) ----
+            // ดึงลิงก์วิดีโอจากโพสต์ของผู้ใช้เอง โดยสแกนทุกฟิลด์ของโพสต์ (video_url / เนื้อหา HTML ที่มี <video src>)
+            const VID_SCAN = /https?:\/\/[^\s"'<>\\)]+?\.(?:mp4|webm|mov|m4v)(?:\?[^\s"'<>\\)]*)?/gi;
+            async function fetchPostedVideos() {
+                const r = await fetch(`${API}/api/blog/user?id=${encodeURIComponent(uid)}`, { headers: authHdr() });
+                const d = await r.json().catch(() => ({}));
+                if (!r.ok) throw new Error(d.error || 'โหลดโพสต์ไม่สำเร็จ');
+                const seen = new Set(), out = [];
+                // posts[].videos = รายการวิดีโอของโพสต์ (YouTube id หรือ URL วิดีโอที่อัปโหลดเอง) — ใช้ได้เฉพาะวิดีโออัปโหลด (คลิป Live Photo ไม่นับ)
+                for (const p of (d.posts || [])) {
+                    for (const u of (Array.isArray(p.videos) ? p.videos : [])) {
+                        if (typeof u !== 'string' || !VIDEO_RE.test(u) || seen.has(u)) continue;
+                        seen.add(u); out.push({ url: u, title: p.title || '' });
                     }
-                };
-                row.append(back, ok);
-                panel.replaceChildren(file, header('ตัวอย่างวิดีโอปก', f.name), frame, status, row);
+                }
+                return out;
+            }
+
+            // บันทึกลิงก์วิดีโอเดิมเป็นปก — ห้ามเรียก discard เพราะไฟล์นี้เป็นของโพสต์ ไม่ใช่ไฟล์ที่เพิ่งอัปโหลด
+            async function applyExistingVideo(url) {
+                const d = await saveRemote({ coverUrl: url });
+                if (!d.success) throw new Error(d.error || 'เซิร์ฟเวอร์ไม่ได้บันทึกค่านี้');
+                const finalUrl = d.coverUrl || url;
+                coverSet(finalUrl);
+                if (profile) profile.cover_url = finalUrl;
+                toast('ตั้งวิดีโอเป็นภาพปกแล้ว');
+            }
+
+            async function pickPostedVideo() {
+                const status = el('p', sub + ' text-center py-8', 'กำลังโหลดวิดีโอจากโพสต์ของคุณ ...');
+                const backBtn = iconBtn('mt-4 w-full px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20', 'arrowLeft', 'กลับ');
+                backBtn.onclick = () => { if (!busy) start(); };
+                panel.replaceChildren(file, header('เลือกวิดีโอเป็นปก', 'วิดีโอจากโพสต์ที่คุณเคยเผยแพร่'), status, backBtn);
+                let vids;
+                try { vids = await fetchPostedVideos(); }
+                catch (e) { status.textContent = e.message || 'โหลดไม่สำเร็จ'; status.className = 'text-xs text-rose-500 text-center py-8'; return; }
+                if (!panel.isConnected) return;
+                if (!vids.length) { status.textContent = 'ยังไม่มีวิดีโอในโพสต์ของคุณ — โพสต์วิดีโอก่อน หรืออัปโหลดรูปแทน'; return; }
+                status.textContent = 'แตะวิดีโอที่ต้องการใช้เป็นภาพปก';
+                status.className = sub + ' text-center mb-3';
+                const grid = el('div', 'grid grid-cols-2 gap-3');
+                for (const v of vids) {
+                    const b = el('button', 'relative rounded-xl overflow-hidden bg-black ring-1 ring-white/10 cursor-pointer text-left disabled:opacity-50 ' + T.hover);
+                    b.type = 'button'; b.title = v.title || 'วิดีโอ';
+                    const vd = el('video', 'w-full aspect-[2/1] object-cover pointer-events-none');
+                    vd.muted = true; vd.loop = true; vd.playsInline = true; vd.preload = 'metadata'; vd.setAttribute('muted', ''); vd.setAttribute('playsinline', '');
+                    vd.src = v.url + '#t=0.1';
+                    b.onmouseenter = () => vd.play().catch(() => {}); b.onmouseleave = () => vd.pause();
+                    b.append(vd);
+                    if (v.title) b.append(el('span', 'absolute inset-x-0 bottom-0 px-2 py-1 text-[11px] text-white bg-gradient-to-t from-black/70 to-transparent truncate', v.title));
+                    b.onclick = async () => {
+                        if (busy) return;
+                        busy = true; grid.querySelectorAll('button').forEach(x => x.disabled = true); backBtn.disabled = true;
+                        status.textContent = 'กำลังบันทึกลงบัญชี ...'; status.className = sub + ' text-center mb-3';
+                        try { await applyExistingVideo(v.url); busy = false; close(); }
+                        catch (e) {
+                            busy = false; grid.querySelectorAll('button').forEach(x => x.disabled = false); backBtn.disabled = false;
+                            status.textContent = e.message || 'บันทึกไม่สำเร็จ'; status.className = 'text-xs text-rose-500 text-center mb-3';
+                        }
+                    };
+                    grid.append(b);
+                }
+                panel.replaceChildren(file, header('เลือกวิดีโอเป็นปก', 'วิดีโอจากโพสต์ที่คุณเคยเผยแพร่'), status, grid, backBtn);
             }
 
             file.onchange = () => {
                 const f = file.files[0]; file.value = '';
                 if (!f) return;
-                if (/^video\//.test(f.type)) {
-                    if (isAv) return start('รูปโปรไฟล์ใช้วิดีโอไม่ได้ — ใช้ JPG / PNG / WebP');
-                    if (!/^video\/(mp4|webm|quicktime)$/.test(f.type)) return start('รองรับวิดีโอ MP4 / WebM / MOV เท่านั้น');
-                    if (f.size > MAX_VIDEO) return start(`วิดีโอใหญ่เกิน ${MAX_VIDEO / 1048576} MB`);
-                    return editVideo(f);
-                }
+                if (/^video\//.test(f.type)) return start(isAv ? 'รูปโปรไฟล์ใช้วิดีโอไม่ได้ — ใช้ JPG / PNG / WebP' : 'ไม่รองรับอัปโหลดวิดีโอโดยตรง — ใช้ปุ่ม "ใช้วิดีโอที่เคยโพสต์เป็นปก" แทน');
                 if (f.type === 'image/gif') return start('ไม่รองรับ GIF — ใช้ JPG / PNG / WebP');
                 if (!/^image\/(jpeg|png|webp)$/.test(f.type)) return start('รองรับเฉพาะรูป JPG / PNG / WebP');
                 if (f.size > MAX_RAW) return start('ไฟล์ใหญ่เกิน 15 MB');
