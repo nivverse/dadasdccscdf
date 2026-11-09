@@ -13,7 +13,10 @@
     const UPLOAD_PATH = '/api/blog/upload';
     const MAX_RAW = 15 * 1024 * 1024;   // ไฟล์ต้นฉบับใหญ่สุด (ก่อนบีบ)
     const TARGET = 480 * 1024;          // เป้าขนาดหลังบีบ
-    const HARD_MAX = 1400000;           // เซิร์ฟเวอร์รับไม่เกิน 1.5MB
+    const HARD_MAX = 1400000;           // เซิร์ฟเวอร์รับไม่เกิน 1.5MB (รูป)
+    const MAX_VIDEO = 12 * 1024 * 1024; // วิดีโอปกใหญ่สุด 12MB — ปรับให้ตรงกับที่เซิร์ฟเวอร์รับ
+    const MAX_VIDEO_SEC = 15;           // วิดีโอปกยาวสุด (วินาที)
+    const VIDEO_RE = /\.(mp4|webm|mov|m4v)(\?.*)?$/i;
 
     // คลาส Tailwind ต้องเขียนเต็มทั้งชุด (Tailwind CDN สแกนข้อความ) จึงแยกเป็นธีมสำเร็จรูป
     const THEMES = {
@@ -90,6 +93,23 @@
         } catch (e) { return false; }
     }
 
+    // ดึงเฟรมจากวิดีโอ 3 จุด ไปตรวจ NSFW ด้วยโมเดลเดียวกับรูป
+    async function sampleFrames(src, dur) {
+        const v = document.createElement('video');
+        v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = src;
+        await new Promise((ok, no) => { v.onloadeddata = ok; v.onerror = no; });
+        const out = [];
+        for (const p of [0.1, 0.5, 0.9]) {
+            v.currentTime = Math.max(0, Math.min(dur * p, dur - 0.1));
+            await new Promise(r => { v.onseeked = r; setTimeout(r, 2500); });
+            const c = document.createElement('canvas'); c.width = 320;
+            c.height = Math.round(320 * (v.videoHeight || 180) / (v.videoWidth || 320)) || 180;
+            c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+            const b = await toBlob(c, 'image/jpeg', 0.8); if (b) out.push(b);
+        }
+        return out;
+    }
+
     function init(opts) {
         const uid = opts.userId;
         if (!uid) return;
@@ -160,8 +180,8 @@
         // ---------- หน้าต่างอัปโหลด + ปรับตำแหน่ง ----------
         function openPicker(kind) {
             const isAv = kind === 'avatar';
-            const FW = isAv ? 280 : 300, FH = isAv ? 280 : 100;      // กรอบที่เห็นบนจอ
-            const OW = isAv ? 512 : 1200, OH = isAv ? 512 : 400;     // ขนาดไฟล์ที่ส่งขึ้น
+            const FW = isAv ? 280 : 300, FH = isAv ? 280 : 150;      // กรอบที่เห็นบนจอ
+            const OW = isAv ? 512 : 1200, OH = isAv ? 512 : 600;     // ขนาดไฟล์ที่ส่งขึ้น
             const prevOv = document.body.style.overflow; document.body.style.overflow = 'hidden';
             const ov = el('div', 'fixed inset-0 z-[70] flex items-end sm:items-center justify-center sm:p-4 bg-black/75 backdrop-blur-sm');
             const panel = el('div', 'w-full sm:max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-white dark:bg-[#121212] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 shadow-2xl p-5');
@@ -172,7 +192,7 @@
             ov.onclick = e => { if (e.target === ov && !busy) close(); };
             document.addEventListener('keydown', onKey);
 
-            const file = el('input'); file.type = 'file'; file.accept = 'image/jpeg,image/png,image/webp'; file.className = 'hidden';
+            const file = el('input'); file.type = 'file'; file.accept = isAv ? 'image/jpeg,image/png,image/webp' : 'image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime'; file.className = 'hidden';
 
             const header = (title, desc) => {
                 const wrap = el('div', 'flex items-start gap-3 mb-4');
@@ -190,9 +210,9 @@
                 const drop = el('button', 'w-full flex flex-col items-center justify-center gap-2 py-10 rounded-2xl border-2 border-dashed border-slate-300 dark:border-white/15 text-slate-600 dark:text-neutral-300 cursor-pointer transition-colors ' + T.hover);
                 drop.type = 'button';
                 drop.innerHTML = ic('upload', 'w-8 h-8');
-                drop.append(el('span', 'text-sm font-semibold', 'เลือกรูปจากเครื่อง'), el('span', sub, 'JPG / PNG / WebP · ระบบจะบีบรูปให้อัตโนมัติ'));
+                drop.append(el('span', 'text-sm font-semibold', isAv ? 'เลือกรูปจากเครื่อง' : 'เลือกรูปหรือวิดีโอจากเครื่อง'), el('span', sub, isAv ? 'JPG / PNG / WebP · ระบบจะบีบรูปให้อัตโนมัติ' : `JPG / PNG / WebP / MP4 / WebM · วิดีโอไม่เกิน ${MAX_VIDEO_SEC} วินาที ${MAX_VIDEO / 1048576} MB`));
                 drop.onclick = () => { nsfwModel(); file.click(); };   // เริ่มโหลดโมเดลตรวจภาพรอไว้
-                const parts = [header(isAv ? 'อัปโหลดรูปโปรไฟล์' : 'อัปโหลดภาพปก', isAv ? 'ภาพจะถูกครอปเป็นรูปสี่เหลี่ยมจัตุรัส' : 'ภาพจะถูกครอปเป็นแถบกว้าง 3:1'), drop];
+                const parts = [header(isAv ? 'อัปโหลดรูปโปรไฟล์' : 'อัปโหลดปก (รูป / วิดีโอ)', isAv ? 'ภาพจะถูกครอปเป็นรูปสี่เหลี่ยมจัตุรัส' : 'รูปจะถูกครอปเป็นแถบกว้าง 2:1 · วิดีโอเล่นวนซ้ำแบบไม่มีเสียง'), drop];
                 if (note) parts.push(el('p', 'text-xs text-rose-500 text-center mt-3', note));
                 panel.replaceChildren(file, ...parts);
                 if (isAv) addRevert();
@@ -273,9 +293,59 @@
                 panel.replaceChildren(file, header(isAv ? 'ปรับตำแหน่งรูปโปรไฟล์' : 'ปรับตำแหน่งภาพปก', f.name), frame, status, rng, row);
             }
 
+            function editVideo(f) {
+                if (objUrl) URL.revokeObjectURL(objUrl);
+                objUrl = URL.createObjectURL(f);
+                const frame = el('div', 'relative mx-auto overflow-hidden bg-black rounded-xl ring-1 ring-white/10');
+                frame.style.cssText = `width:${FW}px;height:${FH}px;max-width:100%`;
+                const v = el('video', 'absolute inset-0 w-full h-full object-cover');
+                v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
+                v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+                frame.append(v);
+                const status = el('p', sub + ' text-center mt-4 min-h-[1rem]', 'กำลังโหลดวิดีโอ ...');
+                const row = el('div', 'flex gap-2 mt-5');
+                const back = iconBtn('flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20', 'arrowLeft', 'เลือกไฟล์อื่น');
+                const ok = iconBtn('flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold ' + T.primary, 'check', 'ใช้วิดีโอนี้');
+                ok.disabled = true;
+                const setStatus = (t, bad) => { status.textContent = t; status.className = (bad ? 'text-xs text-rose-500' : sub) + ' text-center mt-4 min-h-[1rem]'; };
+                v.onloadedmetadata = () => {
+                    if (v.duration > MAX_VIDEO_SEC + 0.5) return start(`วิดีโอยาว ${Math.round(v.duration)} วินาที — ต้องไม่เกิน ${MAX_VIDEO_SEC} วินาที`);
+                    ok.disabled = false;
+                    setStatus(`ยาว ${v.duration.toFixed(1)} วินาที · ${(f.size / 1048576).toFixed(1)} MB · ภาพจะถูกจัดกึ่งกลางพอดีกรอบปก`);
+                };
+                v.onerror = () => start('เปิดวิดีโอนี้ไม่ได้ (ไฟล์อาจเสียหรือรูปแบบไม่รองรับ)');
+                v.src = objUrl;
+                back.onclick = () => { if (!busy) start(); };
+                ok.onclick = async () => {
+                    busy = true; ok.disabled = back.disabled = true;
+                    try {
+                        setStatus('กำลังตรวจสอบเนื้อหา ...');
+                        let frames = [];
+                        try { frames = await sampleFrames(objUrl, v.duration); } catch (e) {}
+                        for (const fr of frames) if (await looksNsfw(fr)) throw new Error('วิดีโอไม่ผ่านการตรวจสอบเนื้อหา (ไม่อนุญาตภาพลามก)');
+                        setStatus('กำลังอัปโหลด ' + (f.size / 1048576).toFixed(1) + ' MB ...');
+                        const url = await uploadBlob(f);
+                        setStatus('กำลังบันทึกลงบัญชี ...');
+                        await applyUploaded(kind, url);
+                        busy = false; close();
+                    } catch (e) {
+                        busy = false; ok.disabled = back.disabled = false;
+                        setStatus(e.message || 'อัปโหลดไม่สำเร็จ', true);
+                    }
+                };
+                row.append(back, ok);
+                panel.replaceChildren(file, header('ตัวอย่างวิดีโอปก', f.name), frame, status, row);
+            }
+
             file.onchange = () => {
                 const f = file.files[0]; file.value = '';
                 if (!f) return;
+                if (/^video\//.test(f.type)) {
+                    if (isAv) return start('รูปโปรไฟล์ใช้วิดีโอไม่ได้ — ใช้ JPG / PNG / WebP');
+                    if (!/^video\/(mp4|webm|quicktime)$/.test(f.type)) return start('รองรับวิดีโอ MP4 / WebM / MOV เท่านั้น');
+                    if (f.size > MAX_VIDEO) return start(`วิดีโอใหญ่เกิน ${MAX_VIDEO / 1048576} MB`);
+                    return editVideo(f);
+                }
                 if (f.type === 'image/gif') return start('ไม่รองรับ GIF — ใช้ JPG / PNG / WebP');
                 if (!/^image\/(jpeg|png|webp)$/.test(f.type)) return start('รองรับเฉพาะรูป JPG / PNG / WebP');
                 if (f.size > MAX_RAW) return start('ไฟล์ใหญ่เกิน 15 MB');
@@ -289,16 +359,23 @@
         if (slot) {
             const wrap = el('div', 'relative w-full h-full overflow-hidden bg-gradient-to-br ' + T.coverBg);
             const img = el('img', 'absolute inset-0 w-full h-full object-cover hidden'); img.alt = 'ภาพปก'; img.decoding = 'async';
+            const vid = el('video', 'absolute inset-0 w-full h-full object-cover hidden');
+            vid.muted = true; vid.loop = true; vid.autoplay = true; vid.playsInline = true; vid.setAttribute('muted', ''); vid.setAttribute('playsinline', '');
             const hint = el('div', 'absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/70 text-sm');
             hint.innerHTML = ic('image', 'w-7 h-7') + '<span>ยังไม่มีภาพปก</span>';
             const shade = el('div', 'absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/50 to-transparent pointer-events-none');
             const bar = el('div', 'absolute top-3 right-3 flex gap-2');
             const cls = 'px-3 py-1.5 rounded-lg bg-black/55 hover:bg-black/75 backdrop-blur text-white text-xs font-medium';
             const pick = iconBtn(cls, 'upload', 'เปลี่ยนภาพปก'), del = iconBtn(cls + ' hidden', 'trash', 'ลบ');
-            bar.append(pick, del); wrap.append(img, hint, shade, bar);
+            bar.append(pick, del); wrap.append(img, vid, hint, shade, bar);
             coverSet = url => {
-                if (url && /^https?:\/\//.test(url)) { img.src = url; img.classList.remove('hidden'); hint.classList.add('hidden'); del.classList.remove('hidden'); }
-                else { img.removeAttribute('src'); img.classList.add('hidden'); hint.classList.remove('hidden'); del.classList.add('hidden'); }
+                img.removeAttribute('src'); img.classList.add('hidden');
+                vid.pause(); vid.removeAttribute('src'); vid.load(); vid.classList.add('hidden');
+                if (url && /^https?:\/\//.test(url)) {
+                    if (VIDEO_RE.test(url)) { vid.src = url; vid.classList.remove('hidden'); vid.play().catch(() => {}); }
+                    else { img.src = url; img.classList.remove('hidden'); }
+                    hint.classList.add('hidden'); del.classList.remove('hidden');
+                } else { hint.classList.remove('hidden'); del.classList.add('hidden'); }
             };
             pick.onclick = () => openPicker('cover');
             del.onclick = async () => {
