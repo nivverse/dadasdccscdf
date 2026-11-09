@@ -723,7 +723,10 @@ NIV_I18N.register('en', {
   "ปิด": "Off",
   "เฉพาะที่มี": "Only with Comments",
   "ทุกย่อหน้า": "All Paragraphs",
-  "ตั้งค่าการอ่าน": "settings.",
+  "ตั้งค่าการอ่าน": "settings",
+  "มาใหม่": "News",
+  "คะเเนนสูง": "High score",
+  "ถูกใจมากสุด": "Most Liked",
 
   
 });
