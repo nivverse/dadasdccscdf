@@ -281,7 +281,7 @@
     const a2 = el('a', 'font-semibold text-sm truncate hover:text-amber-500', p.display_name || p.author_id); a2.href = userUrl(p.author_id);
     nameRow.append(a2);
     const sub = el('div', 'text-xs text-slate-500 dark:text-neutral-400', ago(p.published_at));
-    if (p.category) { const ca = el('a', 'ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors', p.category); ca.href = '/category/' + encodeURIComponent(p.category); sub.append(ca); }
+    if (p.category) { const ca = el('a', 'ml-2 text-amber-600 dark:text-amber-400 hover:text-amber-500 transition-colors', p.category); ca.href = '/category/' + encodeURIComponent(p.category); sub.append(ca); }
     meta.append(nameRow, sub);
     head.append(a1, meta);
     if (session().userId && session().userId === p.author_id) {

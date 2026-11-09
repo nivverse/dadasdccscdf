@@ -112,7 +112,7 @@ function postHead(p) {
         : `<div class="font-semibold text-sm text-slate-900 dark:text-white truncate">${who}</div>`}
       <div class="text-xs text-slate-500 dark:text-neutral-400">
         ${timeTag(p.published_at || p.updated_at)}
-        ${p.category ? `<a href="${catHref(p.category)}" class="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">${esc(p.category)}</a>` : ''}
+        ${p.category ? `<a href="${catHref(p.category)}" class="ml-2 text-amber-600 dark:text-amber-400 hover:text-amber-500 transition-colors">${esc(p.category)}</a>` : ''}
       </div>
     </div>
     ${p.author_id && p.slug ? `<a href="/write?edit=${encodeURIComponent(p.slug)}" data-edit-post data-author="${esc(p.author_id)}" class="hidden ml-auto flex-shrink-0 w-9 h-9 place-items-center rounded-full text-slate-500 dark:text-neutral-400 hover:text-amber-500 hover:bg-amber-500/10 transition-colors" aria-label="แก้ไขโพสต์" title="แก้ไขโพสต์"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></a>` : ''}
@@ -238,7 +238,7 @@ ${ld}
 <header id="main-header" class="z-20"></header>
 ${body}
 <div id="main-footer" class="z-10"></div>
-<script src="/nivread.js?v=20261108b"></script>
+<script src="/nivread.js?v=20261110a"></script>
 <script src="/posts-feed.js" defer></script>
 </body>
 </html>`;
