@@ -49,11 +49,12 @@
   const exact = new Map();   // 'ข้อความไทย' → translation
   const patterns = [];       // [{re, out}] จาก key ที่มี {0} {1} ...
   const byKey = new Map();   // key ดิบ (รวมที่มี {0}) → คำแปล ใช้กับ t('{0} วัน', 2)
+  let fallbackOn = false;     // true เมื่อไฟล์ภาษาที่เลือกโหลด/อ่านไม่ได้ → ใช้พจนานุกรมอังกฤษแทน
   const norm = (s) => s.replace(/\s+/g, ' ').trim();
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   const register = (code, dict) => {
-    if (code !== lang) return;
+    if (code !== lang && !(fallbackOn && code === FALLBACK)) return;
     for (const k of Object.keys(dict)) {
       const v = dict[k];
       byKey.set(norm(k), v);
@@ -205,7 +206,14 @@
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
     // กันกรณีสคริปต์อื่นสร้างหน้าเสร็จก่อนพจนานุกรมมา
-    window.addEventListener('load', () => translateTree(document.documentElement));
+    window.addEventListener('load', () => {
+      // ไฟล์ภาษาพัง/โหลดไม่ได้ (เช่น ไฟล์ .js มี syntax error) → ไม่มีคำแปลเลย: ถอยไปใช้อังกฤษ ดีกว่าแสดงไทยล้วน
+      if (!exact.size && !patterns.length && lang !== FALLBACK) {
+        fallbackOn = true;
+        const f = document.createElement('script'); f.src = '/locales/' + FALLBACK + '.js'; document.head.appendChild(f);
+      }
+      translateTree(document.documentElement);
+    });
   }
 
   window.NIV_I18N = {
