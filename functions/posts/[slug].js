@@ -35,8 +35,12 @@ export async function onRequestGet({ request, env, params }) {
   const title = `${p.title} | nivread`;
   const author = p.display_name || 'nivread';
 
+  // #แท็ก → ลิงก์ไปหน้าค้นหา: ทำหลัง esc() แล้ว (ตัวอักษรที่จับได้เป็นตัวอักษร/ตัวเลข/_ เท่านั้น จึงปลอดภัย) ·
+  // ต้องนำหน้าด้วยต้นข้อความหรือช่องว่าง (กันชนกับ &#39; ที่ esc สร้าง) · \p{M} จำเป็นสำหรับสระ/วรรณยุกต์ไทย · 2-40 ตัว (ตรงกับช่องค้นหา) · ไม่เอาเลขล้วน (#1, #2)
+  const linkTags = (html) => html.replace(/(^|\s)#([\p{L}\p{M}\p{N}_]{2,40})/gu, (m, pre, tag) =>
+    /^\p{N}+$/u.test(tag) ? m : `${pre}<a href="/search?q=${encodeURIComponent(tag)}" class="text-amber-600 dark:text-amber-400 hover:text-amber-500 transition-colors">#${tag}</a>`);
   const paraHtml = (chunk) => String(chunk).split(/\n{2,}/).map((t) => t.trim()).filter(Boolean)
-    .map((t) => `<p class="leading-8 text-slate-800 dark:text-neutral-200">${esc(t).replace(/\n/g, '<br>')}</p>`).join('\n');
+    .map((t) => `<p class="leading-8 text-slate-800 dark:text-neutral-200">${linkTags(esc(t)).replace(/\n/g, '<br>')}</p>`).join('\n');
   // split แบบมี capture: ตำแหน่งคู่ = ข้อความ, ตำแหน่งคี่ = key ของกล่อง (k1-k9 ผ่าน regex แล้ว ปลอดภัยใส่ใน attribute)
   const paragraphs = String(p.content).split(LOCK_MARK)
     .map((seg, i) => (i % 2 ? `<div data-lock="${seg}"></div>` : paraHtml(seg))).filter(Boolean).join('\n');
