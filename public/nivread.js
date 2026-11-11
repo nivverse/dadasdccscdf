@@ -1118,32 +1118,66 @@
   const NOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3v12.5a3.5 3.5 0 11-2-3.16V6.3L9 8.1v9.4a3.5 3.5 0 11-2-3.16V5.5z"/></svg>';
   const DISC_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="#111"/><circle cx="24" cy="24" r="19" fill="none" stroke="#2c2c2c"/><circle cx="24" cy="24" r="15" fill="none" stroke="#2c2c2c"/><circle cx="24" cy="24" r="11.5" fill="none" stroke="#2c2c2c"/><path d="M9 14A19 19 0 0 1 21 5" stroke="#fff" stroke-opacity=".28" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M39 34A19 19 0 0 1 27 43" stroke="#fff" stroke-opacity=".16" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="24" cy="24" r="8" fill="#f59e0b"/><circle cx="24" cy="24" r="2" fill="#111"/></svg>';
   let sAudio = null, sCur = null;
-  let sIO = null;
+  // ---- กติกาแบบ IG ----
+  // 1) มี <audio> ตัวเดียวทั้งหน้า → เล่นซ้อนกันไม่ได้ในเชิงโครงสร้าง (เปลี่ยนเพลง = เปลี่ยน src ของตัวเดิม)
+  // 2) แตะป้ายครั้งแรก = เปิดโหมดออโต้ → เลื่อนไปการ์ดถัดไปที่มีเสียง เพลงเปลี่ยนเองตามการ์ดที่อยู่กลางจอ · แตะป้ายที่กำลังเล่น = หยุด + ปิดโหมดออโต้
+  // 3) การ์ดที่เล่นอยู่เลื่อนพ้นจอ → หยุด
+  let sTok = 0, sndAuto = false;
   function sndStop() {
+    sTok++;
     if (sAudio) { try { sAudio.pause(); } catch {} }
     if (sCur) { sCur.classList.remove('snd-on'); sCur.setAttribute('aria-pressed', 'false'); }
-    if (sIO) sIO.disconnect();
     sCur = null;
   }
-  // เหมือน IG: เลื่อนการ์ดที่กำลังเล่นเสียงออกนอกจอ → เสียงหยุดเอง
-  function sndWatch(btn) {
-    if (!('IntersectionObserver' in window)) return;
-    const host = btn.closest('[data-view-slug]') || btn.parentElement; if (!host) return;
-    if (!sIO) sIO = new IntersectionObserver((es) => { if (sCur && es.some((e) => !e.isIntersecting)) sndStop(); }, { threshold: 0.05 });
-    sIO.disconnect(); sIO.observe(host);
-  }
-  function sndToggle(btn, url) {
-    if (sCur === btn) { sndStop(); return; }
+  function sndPlay(btn, url) {
     sndStop();
     if (!sAudio) {
       sAudio = new Audio(); sAudio.loop = true; sAudio.preload = 'none';
       sAudio.addEventListener('error', () => { if (sCur) { sndStop(); toast('เล่นเสียงไม่ได้'); } });
     }
-    sAudio.src = url; sCur = btn; btn.classList.add('snd-on'); btn.setAttribute('aria-pressed', 'true'); sndWatch(btn);
-    const pr = sAudio.play(); if (pr && pr.catch) pr.catch(() => { sndStop(); });
+    const tok = ++sTok;
+    sAudio.src = url; sCur = btn; btn.classList.add('snd-on'); btn.setAttribute('aria-pressed', 'true');
+    const pr = sAudio.play();
+    // เช็ก token: คำสั่งเล่นเก่าที่ถูกยกเลิกตอนสลับเพลงจะไม่ไปหยุดเพลงใหม่
+    if (pr && pr.catch) pr.catch(() => { if (tok === sTok && sCur === btn) sndStop(); });
   }
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') sndStop(); });
-  document.addEventListener('play', (e) => { if (e.target instanceof HTMLVideoElement) sndStop(); }, true); // เปิดวิดีโอ = หยุดเสียงพื้นหลัง
+  function sndToggle(btn, url) {
+    if (sCur === btn) { sndAuto = false; sndStop(); return; }
+    sndAuto = true; sndPlay(btn, url);
+  }
+  const sndVis = new Map();   // การ์ด -> สัดส่วนที่เห็น (เทียบกับ min(ความสูงการ์ด, ความสูงจอ))
+  let sndIO = null;
+  function sndLoudVideo() { return [...document.querySelectorAll('video')].some((v) => !v.paused && !v.ended && !v.muted); }
+  function sndPick() {
+    if (!sndAuto || document.visibilityState === 'hidden') return;
+    let best = null, bv = 0;
+    sndVis.forEach((v, h) => { if (v > bv) { bv = v; best = h; } });
+    const cur = sCur && sCur.parentElement, cv = cur ? (sndVis.get(cur) || 0) : 0;
+    if (cur && cv < 0.3) { sndStop(); }                               // การ์ดที่เล่นอยู่เกือบพ้นจอ → หยุด
+    else if (cur && bv < cv + 0.15) return;                           // ยังเป็นการ์ดหลักอยู่ → ไม่สลับไปมา
+    if (!best || bv < 0.5 || (sCur && sCur.parentElement === best)) return;
+    if (sndLoudVideo()) return;                                       // มีวิดีโอเปิดเสียงอยู่ → ไม่เล่นซ้อน
+    const b = best.querySelector(':scope > .snd-badge');
+    if (b && b.tagName === 'BUTTON' && b._sndUrl) sndPlay(b, b._sndUrl);
+  }
+  function sndObserve(badge) {
+    if (badge.tagName !== 'BUTTON' || !('IntersectionObserver' in window)) return;
+    if (!sndIO) {
+      sndIO = new IntersectionObserver((es) => {
+        es.forEach((e) => {
+          if (!e.isIntersecting) { sndVis.delete(e.target); return; }
+          const full = Math.min(e.boundingClientRect.height, innerHeight) || 1;
+          sndVis.set(e.target, Math.min(1, e.intersectionRect.height / full));
+        });
+        sndPick();
+      }, { threshold: [0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1] });
+    }
+    sndIO.observe(badge.parentElement);
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') sndStop(); else sndPick(); });
+  // วิดีโอที่เปิดเสียง = หยุดเพลงพื้นหลัง (วิดีโอ autoplay แบบปิดเสียงไม่นับ — ไม่งั้นเลื่อนผ่านแล้วเพลงดับเอง)
+  document.addEventListener('play', (e) => { if (e.target instanceof HTMLVideoElement && !e.target.muted) sndStop(); }, true);
+  document.addEventListener('volumechange', (e) => { const v = e.target; if (v instanceof HTMLVideoElement && !v.muted && !v.paused) sndStop(); }, true);
   // ป้ายเพลงมุมขวาบน (แบบ IG): กด = เล่น/หยุด · โพสต์ที่มีวิดีโออัปโหลด วิดีโอมีเสียงนี้อยู่แล้ว ป้ายจึงเป็นลิงก์ไปหน้าเสียง (ไม่เล่นซ้อน)
   // snd = { id, title, owner_id, owner_name, use_count, url }
   function soundChipEl(snd, opt = {}) {
@@ -1153,6 +1187,7 @@
     else { b = el('button', 'snd-badge'); b.type = 'button'; b.setAttribute('aria-pressed', 'false'); }
     b.dataset.sndId = snd.id; b.title = label; b.setAttribute('aria-label', (opt.noPlay ? 'หน้าเสียง ' : 'เล่นเสียง ') + label);
     b.insertAdjacentHTML('beforeend', NOTE_SVG + '<span class="snd-bars" aria-hidden="true"><i></i><i></i><i></i></span>');
+    if (!opt.noPlay) b._sndUrl = snd.url;
     if (!opt.noPlay) b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); sndToggle(b, snd.url); });
     return b;
   }
@@ -1215,6 +1250,7 @@
     badge.classList.add('snd-abs');
     card.append(badge);
     sndBadges.add(badge);
+    sndObserve(badge);
     sndApply(badge, sndMeasure(badge));
     sndRelayout();
     setTimeout(sndRelayout, 400); setTimeout(sndRelayout, 1500); // กันปุ่มที่ JS อื่นแปะทีหลัง
