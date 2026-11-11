@@ -57,8 +57,23 @@ html.dark .nv-act[aria-pressed="true"] { color: #fbbf24; }
 .nv-shelf.hidden { display: none; }
 html.dark .nv-shelf { color: #fbbf24; }
 
-/* เรื่องย่อ: มือถือย่อ 4 บรรทัด แล้วมีปุ่ม "อ่านเพิ่มเติม" (JS เปิดปุ่มเฉพาะเมื่อข้อความยาวเกินจริง) */
-@media (max-width: 639px) { .nv-clamp:not(.open) { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; } }
+/* ---------- เรื่องย่อ: การ์ดเต็มความกว้างใต้ส่วนหัว ---------- */
+.nv-syn { display: grid; gap: 1rem; }
+.nv-syn-row { min-width: 0; }
+.nv-syn p { margin: 0; font-size: .95rem; line-height: 1.95; color: #334155; text-wrap: pretty; overflow-wrap: anywhere; }
+html.dark .nv-syn p { color: #d4d4d4; }
+.nv-syn-k { display: block; margin-bottom: .1rem; font-size: .8rem; font-weight: 700; letter-spacing: .01em; color: #b45309; }
+html.dark .nv-syn-k { color: #fbbf24; }
+/* จอใหญ่: มีหัวข้อย่อย → ป้ายซ้าย เนื้อความขวา เรียงตรงกันทุกย่อหน้า */
+@media (min-width: 640px) {
+  .nv-syn-l .nv-syn-row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); column-gap: 1.25rem; padding-top: .9rem; border-top: 1px solid rgba(148, 163, 184, .22); }
+  .nv-syn-l .nv-syn-row:first-child { padding-top: 0; border-top: 0; }
+  .nv-syn-k { margin: 0; padding-top: .28rem; }
+}
+/* มือถือ: ย่อเหลือประมาณ 5 บรรทัด ขอบล่างจางหาย แล้วมีปุ่ม "อ่านเพิ่มเติม" (JS เปิดปุ่มเฉพาะเมื่อข้อความยาวเกินจริง) */
+@media (max-width: 639px) {
+  .nv-clamp:not(.open) { max-height: 10.5rem; overflow: hidden; -webkit-mask-image: linear-gradient(#000 62%, transparent); mask-image: linear-gradient(#000 62%, transparent); }
+}
 
 /* ---------- ดาวให้คะแนน (เติมสีด้วย CSS ล้วนผ่าน row-reverse + ~) ---------- */
 .nv-stars { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; margin-left: -.35rem; }

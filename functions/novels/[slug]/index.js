@@ -42,6 +42,18 @@ export async function onRequestGet({ request, env, params }) {
         ${cp < pages ? `<a rel="next" href="${cpHref(cp + 1)}" class="${pgBtn}">ถัดไป${ICON.next}</a>` : ''}
       </nav>` : '';
 
+  // เรื่องย่อ: ย่อหน้าที่ขึ้นต้นด้วย "หัวข้อสั้นๆ:" (เช่น ชาติก่อน: / คำพูดติดปาก:) แยกป้ายออกมาเป็นคอลัมน์ซ้ายบนจอใหญ่
+  const synRows = String(n.synopsis || '').split(/\n+/).map((t) => t.trim()).filter(Boolean).map((t) => {
+    const m = /^([^:：.!?"“”'\s][^:：.!?"“”']{0,22}?)\s*[:：]\s*(\S[\s\S]*)$/.exec(t);
+    return m ? { k: m[1].trim(), t: m[2].trim() } : { k: '', t };
+  });
+  const synHasLabels = synRows.some((r) => r.k);
+  const synHtml = synRows.length
+    ? `<section class="nv-reveal mt-7 ${CARD} p-4 sm:p-6" aria-labelledby="syn-h"><h2 id="syn-h" class="font-bold">เรื่องย่อ</h2>
+      <div id="syn" class="nv-syn nv-clamp mt-3${synHasLabels ? ' nv-syn-l' : ''}">${synRows.map((r) => `<div class="nv-syn-row">${synHasLabels ? `<strong class="nv-syn-k">${esc(r.k)}</strong>` : ''}<p>${esc(r.t)}</p></div>`).join('')}</div>
+      <button id="syn-more" type="button" class="hidden sm:hidden mt-2 py-1 text-sm font-semibold text-amber-600 dark:text-amber-400">อ่านเพิ่มเติม</button></section>`
+    : '';
+
   const st = (icon, label, val) => `<span class="inline-flex items-center gap-1.5" title="${esc(label)}">${icon}<span class="tabular-nums">${esc(val)}</span></span>`;
   const act = (id, icon, label, count) => `<button type="button" id="${id}" class="nv-act" aria-pressed="false">${icon}<span class="nv-tx"><span>${label}</span>${count == null ? '' : `<span class="nv-ct">${fmtNum(count)}</span>`}</span></button>`;
   const ratingTxt = n.rating_count > 0
@@ -85,11 +97,10 @@ export async function onRequestGet({ request, env, params }) {
         <a id="shelf-link" href="/novel-library" class="nv-shelf hidden">${ICON.bookmark}<span>อยู่ในชั้นหนังสือของคุณแล้ว</span><span class="ml-auto inline-flex items-center gap-0.5">ดูชั้นหนังสือ${ICON.next}</span></a>
       </div>
 
-      ${synopsis ? `<div class="nv-reveal mt-6" style="--i:4"><h2 class="font-semibold">เรื่องย่อ</h2>
-        <div id="syn" class="nv-clamp mt-1.5 space-y-2 text-sm leading-7 text-slate-700 dark:text-neutral-300">${String(n.synopsis).split(/\n+/).filter((t) => t.trim()).map((t) => `<p>${esc(t.trim())}</p>`).join('')}</div>
-        <button id="syn-more" type="button" class="hidden sm:hidden mt-1 py-1 text-sm font-semibold text-amber-600 dark:text-amber-400">อ่านเพิ่มเติม</button></div>` : ''}
     </div>
   </section>
+
+  ${synHtml}
 
   <section class="mt-9" aria-labelledby="toc">
     <div class="nv-reveal flex items-end justify-between gap-3"><h2 id="toc" class="text-lg font-bold">สารบัญ</h2>
