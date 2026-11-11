@@ -1090,14 +1090,16 @@
   // การ์ดฝั่งเซิร์ฟเวอร์ (SSR) ไม่รู้เรื่องเสียง → ตัวสแกนด้านล่างรวบ slug ของการ์ดที่เห็น ถามเซิร์ฟเวอร์ครั้งเดียว (ไม่เกิน 20 โพสต์/คำขอ) แล้วแปะ "แผ่นเสียง" ให้
   // การ์ดฝั่งเบราว์เซอร์ (postCardEl) ได้ p.sound มากับ API แล้วจึงแปะเลย · เล่นได้ทีละเสียง (ไม่เล่นเอง ต้องกด) · โพสต์ที่มีวิดีโออัปโหลดแผ่นเสียงเป็นลิงก์ไปหน้าเสียงอย่างเดียว (วิดีโอมีเสียงของมันเอง)
   const SNDCSS = `
-.snd-badge{display:inline-flex;align-items:center;gap:.4rem;flex:none;max-width:9.5rem;height:2rem;margin-left:auto;padding:0 .7rem 0 .55rem;border-radius:999px;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.1);color:#d97706;font:inherit;font-size:.75rem;font-weight:500;line-height:1;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent;transition:background .15s}
-.dark .snd-badge{color:#fbbf24}
-.snd-badge:hover{background:rgba(245,158,11,.2)}
-.snd-badge svg{flex:none;width:1.05rem;height:1.05rem}
-.snd-badge .snd-n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.snd-bars{display:none;flex:none;align-items:flex-end;gap:2px;width:.9rem;height:.9rem}
+.snd-badge{display:grid;place-items:center;width:2.25rem;height:2.25rem;padding:0;border:0;border-radius:999px;background:transparent;color:#f59e0b;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .15s}
+.snd-badge:hover{background:rgba(245,158,11,.15)}
+.snd-badge:active{transform:scale(.92)}
+.snd-badge svg{width:1.35rem;height:1.35rem}
+.snd-bars{display:none;align-items:flex-end;gap:2px;width:1rem;height:1rem}
 .snd-bars i{display:block;width:3px;border-radius:2px;background:currentColor;animation:snd-bar .8s ease-in-out infinite}
 .snd-bars i:nth-child(2){animation-delay:.2s}.snd-bars i:nth-child(3){animation-delay:.4s}
+.snd-abs{position:absolute;top:.55rem;right:.6rem;z-index:5}
+.snd-abs.snd-off{right:3.6rem}
+@keyframes snd-bar{0%,100%{height:25%}50%{height:100%}}
 .snd-badge.snd-on .snd-bars{display:flex}.snd-badge.snd-on>svg{display:none}
 .snd-disc{position:relative;flex:none;display:block;width:2.6rem;height:2.6rem;border:0;padding:0;background:none;cursor:pointer;border-radius:999px;-webkit-tap-highlight-color:transparent}
 .snd-disc svg{display:block;width:100%;height:100%;animation:snd-spin 3.2s linear infinite;animation-play-state:paused;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
@@ -1106,9 +1108,7 @@
 .snd-pp::before{content:"";border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent #fff;margin-left:2px;filter:drop-shadow(0 0 3px rgba(0,0,0,.85))}
 .snd-disc.snd-on .snd-pp::before{border:0;width:10px;height:12px;margin:0;background:linear-gradient(90deg,#fff 0 35%,transparent 35% 65%,#fff 65%)}
 @keyframes snd-spin{to{transform:rotate(360deg)}}
-.snd-float{position:fixed;top:4.5rem;right:.75rem;z-index:35;margin:0;background:rgba(255,255,255,.96);box-shadow:0 6px 18px -6px rgba(0,0,0,.35)}
-.dark .snd-float{background:rgba(24,24,24,.96)}
-.snd-abs{position:absolute;top:.6rem;right:.75rem;z-index:5;margin:0}
+.dark .snd-abs{position:absolute;top:.6rem;right:.75rem;z-index:5;margin:0}
 @keyframes snd-bar{0%,100%{height:25%}50%{height:100%}}
 @media (prefers-reduced-motion:reduce){.snd-bars i{animation:none;height:70%}.snd-disc svg{animation:none}}
 `;
@@ -1140,30 +1140,22 @@
     let b;
     if (opt.noPlay) { b = el('a', 'snd-badge'); b.href = '/sound/' + encodeURIComponent(snd.id); }
     else { b = el('button', 'snd-badge'); b.type = 'button'; b.setAttribute('aria-pressed', 'false'); }
-    if (opt.float) b.classList.add('snd-float');
-    if (opt.abs) b.classList.add('snd-abs');
     b.dataset.sndId = snd.id; b.title = label; b.setAttribute('aria-label', (opt.noPlay ? 'หน้าเสียง ' : 'เล่นเสียง ') + label);
     b.insertAdjacentHTML('beforeend', NOTE_SVG + '<span class="snd-bars" aria-hidden="true"><i></i><i></i><i></i></span>');
-    b.append(el('span', 'snd-n', snd.title || 'เสียงต้นฉบับ'));
     if (!opt.noPlay) b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); sndToggle(b, snd.url); });
-    if (!opt.noPlay && !opt.float) { // ลิงก์ไปหน้าเสียงโดยกดค้าง/คลิกขวาไม่ต้องมี — เปิดหน้าเสียงจากเมนูในการ์ดแทน
-    }
     return b;
   }
   const SNDQ = new Map();          // slug -> sound | null (จำผลไว้ในหน้า)
   const sndWait = new Map();       // slug -> [การ์ดที่รอ]
   let sndTimer = 0;
+  // ไอคอนโน้ตมุมขวาบนของการ์ด (ไม่มีกล่อง/ป๊อปอัป) — มีปุ่มแก้ไขของเจ้าของโพสต์อยู่มุมนั้นก็ขยับหลบ
   function sndPlace(card, snd) {
     if (card.querySelector('.snd-badge')) return;
     const badge = soundChipEl(snd, { noPlay: !!card.querySelector('.uv, .vg') });
-    const head = card.firstElementChild;
-    if (head && /\bflex\b/.test(String(head.className || '')) && /\bitems-center\b/.test(String(head.className || ''))) {
-      const pen = head.querySelector('a[aria-label="แก้ไขโพสต์"]');
-      pen ? head.insertBefore(badge, pen) : head.append(badge);     // แถวหัวการ์ด: มุมขวาบน ไม่ซ้อนปุ่มแก้ไข
-    } else {
-      if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
-      badge.classList.add('snd-abs'); card.append(badge);
-    }
+    if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
+    badge.classList.add('snd-abs');
+    if (card.querySelector('a[aria-label="แก้ไขโพสต์"]')) badge.classList.add('snd-off');
+    card.append(badge);
   }
   async function sndFlush() {
     sndTimer = 0;
@@ -1197,14 +1189,15 @@
   }
   onNewNodes(sndScan);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sndScan); else sndScan();
-  // หน้าโพสต์เดี่ยว: แผ่นเสียงลอยมุมขวาล่าง
+  // หน้าโพสต์เดี่ยว: ไอคอนโน้ตมุมขวาบนของการ์ดโพสต์ (ไม่ลอย)
   async function sndFloat(slug) {
-    if (!SLUG_OK.test(String(slug || '')) || document.querySelector('.snd-float')) return;
+    if (!SLUG_OK.test(String(slug || '')) || document.querySelector('.snd-badge')) return;
     try {
       const r = await fetch(API + '/api/blog/post-sounds?slugs=' + encodeURIComponent(slug));
       const d = await r.json().catch(() => ({}));
       const snd = r.ok && d.success && d.sounds && d.sounds[slug];
-      if (snd && !document.querySelector('.snd-float')) document.body.append(soundChipEl(snd, { float: true }));
+      const host = document.querySelector('[data-view-slug]') || document.querySelector('main article') || document.querySelector('article');
+      if (snd && host && !host.querySelector('.snd-badge')) { host.dataset.snd = '1'; sndPlace(host, snd); }
     } catch {}
   }
 
@@ -1517,4 +1510,4 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
   © ${new Date().getFullYear()} nivread write your story
 </div>`;
   }
-})();
+})(); 
