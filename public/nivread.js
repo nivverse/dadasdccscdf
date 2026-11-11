@@ -704,6 +704,7 @@
     const bpSetAllMuted = (m) => {
       bpMuted = m; lsSet('niv_vsound', m ? '0' : '1');
       document.querySelectorAll('.uv video').forEach((x) => { x.muted = m; });
+      sndSetAuto(!m); // สวิตช์เสียงกลาง: เปิดเสียงวิดีโอ = เปิดเสียงเพลงตอนเลื่อนด้วย · ปิดเสียงวิดีโอ = ปิดเพลงด้วย
     };
     // เปิดหน้าใหม่แล้วเบราว์เซอร์ยังไม่ให้เล่นเสียงจนกว่าผู้ใช้จะแตะ → แตะครั้งแรกแล้วค่อยเปิดเสียงให้ทุกคลิป
     if (!bpMuted && !bpActive()) {
@@ -1090,15 +1091,15 @@
   // การ์ดฝั่งเซิร์ฟเวอร์ (SSR) ไม่รู้เรื่องเสียง → ตัวสแกนด้านล่างรวบ slug ของการ์ดที่เห็น ถามเซิร์ฟเวอร์ครั้งเดียว (ไม่เกิน 20 โพสต์/คำขอ) แล้วแปะ "แผ่นเสียง" ให้
   // การ์ดฝั่งเบราว์เซอร์ (postCardEl) ได้ p.sound มากับ API แล้วจึงแปะเลย · เล่นได้ทีละเสียง (ไม่เล่นเอง ต้องกด) · โพสต์ที่มีวิดีโออัปโหลดแผ่นเสียงเป็นลิงก์ไปหน้าเสียงอย่างเดียว (วิดีโอมีเสียงของมันเอง)
   const SNDCSS = `
-.snd-badge{display:grid;place-items:center;width:2.25rem;height:2.25rem;padding:0;border:0;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .15s}
-.snd-badge:hover{background:rgba(15,23,42,.86)}
-.snd-badge:active{transform:scale(.92)}
-.snd-badge:focus-visible{outline:0;box-shadow:0 0 0 2px #f59e0b}
-.snd-badge svg{width:1.15rem;height:1.15rem}
-.snd-bars{display:none;align-items:flex-end;gap:2px;width:1rem;height:1rem}
-.snd-bars i{display:block;width:3px;border-radius:2px;background:currentColor;animation:snd-bar .8s ease-in-out infinite}
+.snd-badge,.snd-badge:hover,.snd-badge:active,.snd-badge.snd-on{display:grid;place-items:center;width:2.25rem;height:2.25rem;padding:0;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:#d97706;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent;transition:transform .15s,color .15s}
+.dark .snd-badge,.dark .snd-badge:hover,.dark .snd-badge.snd-on{color:#fbbf24}
+.snd-badge:hover{transform:scale(1.1)}
+.snd-badge:active{transform:scale(.9)}
+.snd-badge:focus-visible{outline:2px solid #f59e0b;outline-offset:2px;border-radius:8px!important}
+.snd-badge svg{width:1.5rem;height:1.5rem;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.snd-bars{display:none;align-items:flex-end;gap:2.5px;width:1.25rem;height:1.25rem}
+.snd-bars i{display:block;width:4px;border-radius:2px;background:currentColor;animation:snd-bar .8s ease-in-out infinite}
 .snd-bars i:nth-child(2){animation-delay:.2s}.snd-bars i:nth-child(3){animation-delay:.4s}
-.snd-badge.snd-on{background:#f59e0b;color:#111}
 .snd-badge.snd-on .snd-bars{display:flex}.snd-badge.snd-on>svg{display:none}
 /* ตำแหน่งมุมขวาบน: JS วัดปุ่มอื่นในหัวการ์ด (แก้ไข/ติดตาม ฯลฯ) แล้วเรียงต่อทางซ้าย ไม่ซ้อนกัน · ค่าเดียวกันทั้งโหมดสว่าง/มืด (กันปุ่มกระโดดตอนโหลดหน้า) */
 .snd-badge.snd-abs{position:absolute!important;top:var(--snd-t,1.25rem)!important;right:var(--snd-r,1rem)!important;left:auto!important;bottom:auto!important;margin:0!important;z-index:5;visibility:hidden}
@@ -1144,6 +1145,14 @@
   function sndToggle(btn, url) {
     if (sCur === btn) { sndAuto = false; sndStop(); return; }
     sndAuto = true; sndPlay(btn, url);
+  }
+  function sndSetAuto(on) { sndAuto = !!on; if (!on) sndStop(); else sndPick(); }
+  // เคยเปิดเสียงวิดีโอไว้ (จำใน localStorage) → โหมดเพลงออโต้เปิดตั้งแต่โหลดหน้า · เบราว์เซอร์ยังไม่ให้เล่นจนกว่าผู้ใช้แตะ จึงลองเล่นอีกครั้งตอนแตะแรก
+  if (ls('niv_vsound') === '1') {
+    sndAuto = true;
+    const evs = ['click', 'touchend', 'keydown'];
+    const first = () => { evs.forEach((n) => removeEventListener(n, first, true)); sndPick(); };
+    evs.forEach((n) => addEventListener(n, first, { capture: true, passive: true }));
   }
   const sndVis = new Map();   // การ์ด -> สัดส่วนที่เห็น (เทียบกับ min(ความสูงการ์ด, ความสูงจอ))
   let sndIO = null;
