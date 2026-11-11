@@ -1090,17 +1090,21 @@
   // การ์ดฝั่งเซิร์ฟเวอร์ (SSR) ไม่รู้เรื่องเสียง → ตัวสแกนด้านล่างรวบ slug ของการ์ดที่เห็น ถามเซิร์ฟเวอร์ครั้งเดียว (ไม่เกิน 20 โพสต์/คำขอ) แล้วแปะ "แผ่นเสียง" ให้
   // การ์ดฝั่งเบราว์เซอร์ (postCardEl) ได้ p.sound มากับ API แล้วจึงแปะเลย · เล่นได้ทีละเสียง (ไม่เล่นเอง ต้องกด) · โพสต์ที่มีวิดีโออัปโหลดแผ่นเสียงเป็นลิงก์ไปหน้าเสียงอย่างเดียว (วิดีโอมีเสียงของมันเอง)
   const SNDCSS = `
-.snd-badge{display:grid;place-items:center;width:2.25rem;height:2.25rem;padding:0;border:0;border-radius:999px;background:transparent;color:#f59e0b;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .15s}
-.snd-badge:hover{background:rgba(245,158,11,.15)}
+.snd-badge{display:grid;place-items:center;width:2.25rem;height:2.25rem;padding:0;border:0;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .15s}
+.snd-badge:hover{background:rgba(15,23,42,.86)}
 .snd-badge:active{transform:scale(.92)}
-.snd-badge svg{width:1.35rem;height:1.35rem}
+.snd-badge:focus-visible{outline:0;box-shadow:0 0 0 2px #f59e0b}
+.snd-badge svg{width:1.15rem;height:1.15rem}
 .snd-bars{display:none;align-items:flex-end;gap:2px;width:1rem;height:1rem}
 .snd-bars i{display:block;width:3px;border-radius:2px;background:currentColor;animation:snd-bar .8s ease-in-out infinite}
 .snd-bars i:nth-child(2){animation-delay:.2s}.snd-bars i:nth-child(3){animation-delay:.4s}
-.snd-abs{position:absolute;top:.55rem;right:.6rem;z-index:5}
-.snd-abs.snd-off{right:3.6rem}
-@keyframes snd-bar{0%,100%{height:25%}50%{height:100%}}
+.snd-badge.snd-on{background:#f59e0b;color:#111}
 .snd-badge.snd-on .snd-bars{display:flex}.snd-badge.snd-on>svg{display:none}
+/* ตำแหน่งมุมขวาบน: JS วัดปุ่มอื่นในหัวการ์ด (แก้ไข/ติดตาม ฯลฯ) แล้วเรียงต่อทางซ้าย ไม่ซ้อนกัน · ค่าเดียวกันทั้งโหมดสว่าง/มืด (กันปุ่มกระโดดตอนโหลดหน้า) */
+.snd-badge.snd-abs{position:absolute!important;top:var(--snd-t,1.25rem)!important;right:var(--snd-r,1rem)!important;left:auto!important;bottom:auto!important;margin:0!important;z-index:5;visibility:hidden}
+.snd-badge.snd-abs.snd-ready{visibility:visible}
+.snd-badge.snd-abs.snd-anim{transition:background .15s,transform .15s,right .18s ease,top .18s ease}
+@keyframes snd-bar{0%,100%{height:25%}50%{height:100%}}
 .snd-disc{position:relative;flex:none;display:block;width:2.6rem;height:2.6rem;border:0;padding:0;background:none;cursor:pointer;border-radius:999px;-webkit-tap-highlight-color:transparent}
 .snd-disc svg{display:block;width:100%;height:100%;animation:snd-spin 3.2s linear infinite;animation-play-state:paused;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
 .snd-disc.snd-on svg{animation-play-state:running}
@@ -1108,18 +1112,25 @@
 .snd-pp::before{content:"";border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent #fff;margin-left:2px;filter:drop-shadow(0 0 3px rgba(0,0,0,.85))}
 .snd-disc.snd-on .snd-pp::before{border:0;width:10px;height:12px;margin:0;background:linear-gradient(90deg,#fff 0 35%,transparent 35% 65%,#fff 65%)}
 @keyframes snd-spin{to{transform:rotate(360deg)}}
-.dark .snd-abs{position:absolute;top:.6rem;right:.75rem;z-index:5;margin:0}
-@keyframes snd-bar{0%,100%{height:25%}50%{height:100%}}
 @media (prefers-reduced-motion:reduce){.snd-bars i{animation:none;height:70%}.snd-disc svg{animation:none}}
 `;
   if (!document.getElementById('niv-snd')) { const st = document.createElement('style'); st.id = 'niv-snd'; st.textContent = SNDCSS; document.head.appendChild(st); }
   const NOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3v12.5a3.5 3.5 0 11-2-3.16V6.3L9 8.1v9.4a3.5 3.5 0 11-2-3.16V5.5z"/></svg>';
   const DISC_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="#111"/><circle cx="24" cy="24" r="19" fill="none" stroke="#2c2c2c"/><circle cx="24" cy="24" r="15" fill="none" stroke="#2c2c2c"/><circle cx="24" cy="24" r="11.5" fill="none" stroke="#2c2c2c"/><path d="M9 14A19 19 0 0 1 21 5" stroke="#fff" stroke-opacity=".28" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M39 34A19 19 0 0 1 27 43" stroke="#fff" stroke-opacity=".16" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="24" cy="24" r="8" fill="#f59e0b"/><circle cx="24" cy="24" r="2" fill="#111"/></svg>';
   let sAudio = null, sCur = null;
+  let sIO = null;
   function sndStop() {
     if (sAudio) { try { sAudio.pause(); } catch {} }
     if (sCur) { sCur.classList.remove('snd-on'); sCur.setAttribute('aria-pressed', 'false'); }
+    if (sIO) sIO.disconnect();
     sCur = null;
+  }
+  // เหมือน IG: เลื่อนการ์ดที่กำลังเล่นเสียงออกนอกจอ → เสียงหยุดเอง
+  function sndWatch(btn) {
+    if (!('IntersectionObserver' in window)) return;
+    const host = btn.closest('[data-view-slug]') || btn.parentElement; if (!host) return;
+    if (!sIO) sIO = new IntersectionObserver((es) => { if (sCur && es.some((e) => !e.isIntersecting)) sndStop(); }, { threshold: 0.05 });
+    sIO.disconnect(); sIO.observe(host);
   }
   function sndToggle(btn, url) {
     if (sCur === btn) { sndStop(); return; }
@@ -1128,7 +1139,7 @@
       sAudio = new Audio(); sAudio.loop = true; sAudio.preload = 'none';
       sAudio.addEventListener('error', () => { if (sCur) { sndStop(); toast('เล่นเสียงไม่ได้'); } });
     }
-    sAudio.src = url; sCur = btn; btn.classList.add('snd-on'); btn.setAttribute('aria-pressed', 'true');
+    sAudio.src = url; sCur = btn; btn.classList.add('snd-on'); btn.setAttribute('aria-pressed', 'true'); sndWatch(btn);
     const pr = sAudio.play(); if (pr && pr.catch) pr.catch(() => { sndStop(); });
   }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') sndStop(); });
@@ -1148,14 +1159,65 @@
   const SNDQ = new Map();          // slug -> sound | null (จำผลไว้ในหน้า)
   const sndWait = new Map();       // slug -> [การ์ดที่รอ]
   let sndTimer = 0;
-  // ไอคอนโน้ตมุมขวาบนของการ์ด (ไม่มีกล่อง/ป๊อปอัป) — มีปุ่มแก้ไขของเจ้าของโพสต์อยู่มุมนั้นก็ขยับหลบ
+  // ป้ายโน้ตมุมขวาบนของการ์ด (แบบ IG) — วัดปุ่มอื่นที่อยู่มุมขวาบน (แก้ไขโพสต์ / ติดตาม ฯลฯ) แล้วเรียงต่อทางซ้ายให้เอง
+  // อ่านค่าทั้งหมดก่อนแล้วค่อยเขียน (กัน layout thrashing) · ซ่อนไว้จนวัดเสร็จครั้งแรก = ไม่กระโดดตอนโหลดหน้า
+  const SND_SZ = 36, SND_GAP = 6, SND_BAND = 72;
+  const sndBadges = new Set();
+  function sndMeasure(badge) {
+    const card = badge.parentElement; if (!card || !card.isConnected) return null;
+    const cr = card.getBoundingClientRect(); if (!cr.width) return null;
+    const items = [];
+    card.querySelectorAll('a,button').forEach((x) => {
+      if (x === badge || x.hidden || x.closest('.uv,.vg,.gal-s,.gal-g,.snd-badge')) return;
+      const r = x.getBoundingClientRect();
+      if (!r.width || !r.height || r.width > 120 || r.height > 64) return;
+      if (r.top - cr.top > SND_BAND || r.bottom < cr.top) return;
+      items.push(r);
+    });
+    items.sort((a, b) => b.right - a.right);
+    let edge = cr.right - 16, left = null, cy = 0, n = 0;
+    for (const r of items) {
+      if (r.right < edge - 28) break;           // ปุ่มที่ไม่ได้ติดกลุ่มขวาบน (เช่น ชื่อ/อวาตาร์ฝั่งซ้าย)
+      edge = r.left; left = r.left; cy += (r.top + r.bottom) / 2 - cr.top; n++;
+    }
+    if (left === null) return { r: 16, t: 20 };
+    return { r: Math.round(cr.right - left + SND_GAP), t: Math.round(cy / n - SND_SZ / 2) };
+  }
+  function sndApply(badge, m) {
+    if (!m) return;
+    badge.style.setProperty('--snd-r', m.r + 'px'); badge.style.setProperty('--snd-t', m.t + 'px');
+    if (!badge.classList.contains('snd-ready')) {
+      badge.classList.add('snd-ready');
+      requestAnimationFrame(() => requestAnimationFrame(() => badge.classList.add('snd-anim'))); // ครั้งแรกไม่เลื่อน · ครั้งต่อไป (ปุ่มอื่นโผล่ทีหลัง) เลื่อนนุ่ม ๆ
+    }
+  }
+  let sndLayRaf = 0;
+  function sndRelayout() {
+    if (sndLayRaf) return;
+    sndLayRaf = requestAnimationFrame(() => {
+      sndLayRaf = 0;
+      const list = [...sndBadges].filter((b) => b.isConnected);
+      sndBadges.forEach((b) => { if (!b.isConnected) sndBadges.delete(b); });
+      const ms = list.map(sndMeasure);
+      list.forEach((b, i) => sndApply(b, ms[i]));
+    });
+  }
+  addEventListener('resize', sndRelayout);
+  addEventListener('load', sndRelayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(sndRelayout).catch(() => {});
+  // เปลี่ยนธีม (class บน <html>) → วัดใหม่
+  new MutationObserver(sndRelayout).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  onNewNodes(sndRelayout); // ปุ่มแก้ไข/ติดตามที่โผล่ทีหลัง → เรียงใหม่
   function sndPlace(card, snd) {
     if (card.querySelector('.snd-badge')) return;
     const badge = soundChipEl(snd, { noPlay: !!card.querySelector('.uv, .vg') });
     if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
     badge.classList.add('snd-abs');
-    if (card.querySelector('a[aria-label="แก้ไขโพสต์"]')) badge.classList.add('snd-off');
     card.append(badge);
+    sndBadges.add(badge);
+    sndApply(badge, sndMeasure(badge));
+    sndRelayout();
+    setTimeout(sndRelayout, 400); setTimeout(sndRelayout, 1500); // กันปุ่มที่ JS อื่นแปะทีหลัง
   }
   async function sndFlush() {
     sndTimer = 0;
@@ -1510,4 +1572,4 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
   © ${new Date().getFullYear()} nivread write your story
 </div>`;
   }
-})(); 
+})();
