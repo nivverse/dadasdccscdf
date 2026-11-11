@@ -330,6 +330,7 @@
     sh.insertAdjacentHTML('beforeend', cardIcon('share'));
     foot.append(left, sh);
     card.append(foot);
+    if ('sound' in p) { card.dataset.snd = '1'; if (p.sound) sndPlace(card, p.sound); } // API แนบเสียงมาแล้ว → ไม่ต้องให้ตัวสแกนไปถามซ้ำ
     return card;
   }
 
@@ -885,7 +886,7 @@
     copyright: 'ละเมิดลิขสิทธิ์',
     other: 'อื่น ๆ',
   };
-  const TYPE_TH = { post: 'โพสต์', comment: 'ความคิดเห็น', user: 'ผู้ใช้' };
+  const TYPE_TH = { post: 'โพสต์', comment: 'ความคิดเห็น', user: 'ผู้ใช้', sound: 'เสียง' };
 
   function reportDialog(type, target) {
     const s = session();
@@ -990,6 +991,7 @@
   }
   function countView(slug) { // หน้าโพสต์เดี่ยว
     if (!SLUG_OK.test(String(slug || ''))) return;
+    sndFloat(slug);
     setTimeout(() => {
       if (document.visibilityState !== 'visible') return;
       recordInterest(slug);
@@ -1083,7 +1085,119 @@
     return wrap;
   }
 
-  window.NIV = { skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam, repostWrap };
+
+  // ---------- เสียง: แผ่นเสียงบนการ์ดโพสต์ / หน้าโพสต์ ----------
+  // การ์ดฝั่งเซิร์ฟเวอร์ (SSR) ไม่รู้เรื่องเสียง → ตัวสแกนด้านล่างรวบ slug ของการ์ดที่เห็น ถามเซิร์ฟเวอร์ครั้งเดียว (ไม่เกิน 20 โพสต์/คำขอ) แล้วแปะ "แผ่นเสียง" ให้
+  // การ์ดฝั่งเบราว์เซอร์ (postCardEl) ได้ p.sound มากับ API แล้วจึงแปะเลย · เล่นได้ทีละเสียง (ไม่เล่นเอง ต้องกด) · โพสต์ที่มีวิดีโออัปโหลดแผ่นเสียงเป็นลิงก์ไปหน้าเสียงอย่างเดียว (วิดีโอมีเสียงของมันเอง)
+  const SNDCSS = `
+.snd-chip{display:flex;align-items:center;gap:.6rem;margin:.25rem 1rem .75rem;padding:.35rem .95rem .35rem .4rem;border-radius:999px;border:1px solid rgba(245,158,11,.38);background:rgba(245,158,11,.09);max-width:calc(100% - 2rem);width:fit-content}
+.snd-disc{position:relative;flex:none;display:block;width:2.6rem;height:2.6rem;border:0;padding:0;background:none;cursor:pointer;border-radius:999px;-webkit-tap-highlight-color:transparent}
+.snd-disc svg{display:block;width:100%;height:100%;animation:snd-spin 3.2s linear infinite;animation-play-state:paused;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+.snd-on svg{animation-play-state:running}
+.snd-pp{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.snd-pp::before{content:"";border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent #fff;margin-left:2px;filter:drop-shadow(0 0 3px rgba(0,0,0,.85))}
+.snd-on .snd-pp::before{border:0;width:10px;height:12px;margin:0;background:linear-gradient(90deg,#fff 0 35%,transparent 35% 65%,#fff 65%)}
+.snd-t{min-width:0;display:block;text-decoration:none;color:inherit}
+.snd-t b{display:block;font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.snd-t small{display:block;font-size:.7rem;opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.snd-t:hover b{color:#f59e0b}
+.snd-float{position:fixed;right:.75rem;bottom:4.5rem;z-index:35;margin:0;max-width:min(18rem,calc(100vw - 1.5rem));background:rgba(255,255,255,.96);box-shadow:0 8px 24px -8px rgba(0,0,0,.35)}
+.dark .snd-float{background:rgba(24,24,24,.96)}
+@media (min-width:640px){.snd-float{bottom:1.5rem}}
+@keyframes snd-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.snd-disc svg{animation:none}}
+`;
+  if (!document.getElementById('niv-snd')) { const st = document.createElement('style'); st.id = 'niv-snd'; st.textContent = SNDCSS; document.head.appendChild(st); }
+  const DISC_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="#111"/><circle cx="24" cy="24" r="19" fill="none" stroke="#2c2c2c"/><circle cx="24" cy="24" r="15" fill="none" stroke="#2c2c2c"/><circle cx="24" cy="24" r="11.5" fill="none" stroke="#2c2c2c"/><path d="M9 14A19 19 0 0 1 21 5" stroke="#fff" stroke-opacity=".28" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M39 34A19 19 0 0 1 27 43" stroke="#fff" stroke-opacity=".16" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="24" cy="24" r="8" fill="#f59e0b"/><circle cx="24" cy="24" r="2" fill="#111"/></svg>';
+  let sAudio = null, sCur = null;
+  function sndStop() {
+    if (sAudio) { try { sAudio.pause(); } catch {} }
+    if (sCur) { sCur.classList.remove('snd-on'); sCur.setAttribute('aria-pressed', 'false'); }
+    sCur = null;
+  }
+  function sndToggle(btn, url) {
+    if (sCur === btn) { sndStop(); return; }
+    sndStop();
+    if (!sAudio) {
+      sAudio = new Audio(); sAudio.loop = true; sAudio.preload = 'none';
+      sAudio.addEventListener('error', () => { if (sCur) { sndStop(); toast('เล่นเสียงไม่ได้'); } });
+    }
+    sAudio.src = url; sCur = btn; btn.classList.add('snd-on'); btn.setAttribute('aria-pressed', 'true');
+    const pr = sAudio.play(); if (pr && pr.catch) pr.catch(() => { sndStop(); });
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') sndStop(); });
+  document.addEventListener('play', (e) => { if (e.target instanceof HTMLVideoElement) sndStop(); }, true); // เปิดวิดีโอ = หยุดเสียงพื้นหลัง
+  // snd = { id, title, owner_id, owner_name, duration, use_count, url }
+  function soundChipEl(snd, opt = {}) {
+    const wrap = el('div', 'snd-chip' + (opt.float ? ' snd-float' : ''));
+    wrap.dataset.sndId = snd.id;
+    let disc;
+    if (opt.noPlay) {
+      disc = el('a', 'snd-disc'); disc.href = '/sound/' + encodeURIComponent(snd.id); disc.setAttribute('aria-label', 'ดูหน้าเสียง ' + (snd.title || ''));
+      disc.innerHTML = DISC_SVG;
+    } else {
+      disc = el('button', 'snd-disc'); disc.type = 'button'; disc.setAttribute('aria-pressed', 'false'); disc.setAttribute('aria-label', 'เล่นเสียง ' + (snd.title || ''));
+      disc.innerHTML = DISC_SVG + '<span class="snd-pp" aria-hidden="true"></span>';
+      disc.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); sndToggle(disc, snd.url); });
+    }
+    const t = el('a', 'snd-t'); t.href = '/sound/' + encodeURIComponent(snd.id);
+    t.append(el('b', '', '♪ ' + (snd.title || 'เสียงต้นฉบับ')), el('small', '', '@' + (snd.owner_name || snd.owner_id) + (snd.use_count ? ' · ' + Number(snd.use_count).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH') + ' โพสต์' : '')));
+    wrap.append(disc, t);
+    return wrap;
+  }
+  const SNDQ = new Map();          // slug -> sound | null (จำผลไว้ในหน้า)
+  const sndWait = new Map();       // slug -> [การ์ดที่รอ]
+  let sndTimer = 0;
+  function sndPlace(card, snd) {
+    if (card.querySelector('.snd-chip')) return;
+    const chip = soundChipEl(snd, { noPlay: !!card.querySelector('.uv, .vg') });
+    const last = card.lastElementChild;
+    if (last && /\bborder-t\b/.test(String(last.className || ''))) card.insertBefore(chip, last); else card.append(chip);
+  }
+  async function sndFlush() {
+    sndTimer = 0;
+    const slugs = [...sndWait.keys()];
+    for (let i = 0; i < slugs.length; i += 20) {
+      const part = slugs.slice(i, i + 20);
+      let map = {};
+      try {
+        const r = await fetch(API + '/api/blog/post-sounds?slugs=' + encodeURIComponent(part.join(',')));
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.success) map = d.sounds || {}; else { part.forEach((x) => sndWait.delete(x)); continue; }
+      } catch { part.forEach((x) => sndWait.delete(x)); continue; }
+      for (const slug of part) {
+        const snd = map[slug] || null;
+        SNDQ.set(slug, snd);
+        const cards = sndWait.get(slug) || []; sndWait.delete(slug);
+        if (snd) cards.forEach((c) => { if (c.isConnected) sndPlace(c, snd); });
+      }
+    }
+  }
+  function sndScan() {
+    document.querySelectorAll('[data-view-slug]:not([data-snd])').forEach((c) => {
+      const slug = c.dataset.viewSlug || '';
+      if (!SLUG_OK.test(slug)) return;
+      c.dataset.snd = '1';
+      if (SNDQ.has(slug)) { const v = SNDQ.get(slug); if (v) sndPlace(c, v); return; }
+      if (!sndWait.has(slug)) sndWait.set(slug, []);
+      sndWait.get(slug).push(c);
+      clearTimeout(sndTimer); sndTimer = setTimeout(sndFlush, 150);
+    });
+  }
+  onNewNodes(sndScan);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sndScan); else sndScan();
+  // หน้าโพสต์เดี่ยว: แผ่นเสียงลอยมุมขวาล่าง
+  async function sndFloat(slug) {
+    if (!SLUG_OK.test(String(slug || '')) || document.querySelector('.snd-float')) return;
+    try {
+      const r = await fetch(API + '/api/blog/post-sounds?slugs=' + encodeURIComponent(slug));
+      const d = await r.json().catch(() => ({}));
+      const snd = r.ok && d.success && d.sounds && d.sounds[slug];
+      if (snd && !document.querySelector('.snd-float')) document.body.append(soundChipEl(snd, { float: true }));
+    } catch {}
+  }
+
+  window.NIV = { soundChipEl, sndStop, discSvg: DISC_SVG, skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam, repostWrap };
 
   // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
   if (!document.getElementById('niv-nozoom')) {

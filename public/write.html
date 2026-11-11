@@ -75,6 +75,8 @@
         <input id="vid-file" type="file" accept="video/*" class="hidden">
         <button id="tg-lock" type="button" aria-pressed="false" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="กล่องล็อก (ซ่อนข้อความจนกว่าจะปลดล็อก)" aria-label="กล่องล็อก">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><span id="lock-count" class="text-[11px] leading-none text-slate-400">0 / 5</span></button>
+        <button id="tg-snd" type="button" aria-pressed="false" class="inline-flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-2xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-slate-600 dark:text-neutral-300 hover:text-amber-500 hover:border-amber-500/60 transition cursor-pointer disabled:opacity-40 aria-pressed:text-amber-500 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10" title="เลือกเสียง (แผ่นเสียง)" aria-label="เลือกเสียง">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3a9 9 0 019 9"/></svg><span id="snd-count" class="text-[11px] leading-none text-slate-400">0 / 1</span></button>
       </div>
 
       <div id="pn-img" class="hidden mt-3">
@@ -109,6 +111,20 @@
         </div>
         <p id="lk-msg" class="text-xs empty:hidden" role="status"></p>
       </div>
+      <div id="pn-snd" class="hidden mt-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+        <p class="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">เลือกเสียงให้โพสต์ ทุกคนเลือกได้ — โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง และแสดงชื่อเจ้าของเสียงต้นฉบับ ถ้าจะอัปโหลดวิดีโอแล้วให้ใช้เสียงนี้แทนเสียงเดิมของวิดีโอ ให้เลือกเสียงก่อนอัปโหลดวิดีโอ</p>
+        <div id="snd-tabs" role="group" aria-label="หมวดเสียง" class="grid grid-cols-3 gap-2">
+          <button type="button" data-mode="hot" aria-pressed="true" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ยอดนิยม</button>
+          <button type="button" data-mode="new" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ใหม่ล่าสุด</button>
+          <button type="button" data-mode="mine" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ของฉัน</button>
+        </div>
+        <input id="snd-q" type="search" maxlength="40" autocomplete="off" placeholder="ค้นหาชื่อเสียงหรือไอดีเจ้าของ" aria-label="ค้นหาเสียง" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+        <ul id="snd-list" class="space-y-2 max-h-72 overflow-y-auto"></ul>
+        <button id="snd-more" type="button" class="hidden w-full py-2 rounded-xl text-sm text-amber-600 dark:text-amber-400 border border-amber-500/40 hover:bg-amber-500/10 cursor-pointer">โหลดเพิ่ม</button>
+        <p id="snd-msg" class="text-xs text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
+        <p class="text-[11px] text-slate-400 dark:text-neutral-500">เสียงที่เจ้าของไม่ได้เปิดให้ใช้จะไม่แสดงในรายการ · พบเสียงละเมิดกดรายงานได้ที่หน้าเสียง</p>
+      </div>
+      <div id="snd-sel" class="mt-3 empty:hidden"></div>
       <ul id="lock-list" class="mt-3 space-y-2"></ul>
 
       <p id="img-msg" class="text-xs mt-2 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
@@ -116,6 +132,10 @@
       <p id="yt-msg" class="text-xs mt-1 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
       <ul id="img-list" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2"></ul>
       <ul id="yt-list" class="mt-3 space-y-2"></ul>
+      <label id="snd-opt" class="hidden mt-3 flex items-start gap-2 text-xs text-slate-600 dark:text-neutral-400 cursor-pointer">
+        <input id="snd-reuse" type="checkbox" class="mt-0.5 accent-amber-500">
+        <span>อนุญาตให้ผู้อื่นใช้เสียงจากวิดีโอนี้ (ยืนยันว่าเป็นเสียงของคุณเอง หรือคุณมีสิทธิ์ใช้เสียงนั้น — ไม่ติ๊ก = เก็บเสียงไว้ ไม่ให้ผู้อื่นนำไปใช้)</span>
+      </label>
     </div>
 
     <div id="message" class="text-sm font-medium min-h-[1.25rem]" role="status"></div>
@@ -344,7 +364,7 @@
       li.append(img, info,
         mk('เลื่อนขึ้น', '↑', () => swap(i, i - 1), i === 0),
         mk('เลื่อนลง', '↓', () => swap(i, i + 1), i === videos.length - 1),
-        mk('ลบ', '✕', () => { const gone = videos[i]; videos.splice(i, 1); renderVideos(); ytMsg(''); if (isVidUp(gone) && !savedVideos.has(gone)) discardVideo(gone); }));
+        mk('ลบ', '✕', () => { const gone = videos[i]; videos.splice(i, 1); renderVideos(); ytMsg(''); if (isVidUp(gone) && !savedVideos.has(gone)) discardVideo(gone); if (sound && sound.fromVideo === gone) { sound = null; renderSound(); } }));
       ul.append(li);
     });
     $('yt-count').textContent = videos.length + ' / ' + YT_MAX;
@@ -380,7 +400,7 @@
 
   // ---------- อัปโหลดวิดีโอ 1 คลิป/โพสต์ + ปุ่มลิงก์รูป/GIF (เฉพาะบัญชีที่แอดมินอนุญาต · วิดีโอไม่เกิน 30 วินาที · บีบในเบราว์เซอร์ก่อนส่ง) ----------
   api('/api/blog/me?userId=' + encodeURIComponent(s.userId)).then((r) => {
-    if (r.ok && r.data.canVideo) { $('vid-up').classList.remove('hidden'); renderVideos(); }
+    if (r.ok && r.data.canVideo) { $('vid-up').classList.remove('hidden'); $('snd-opt').classList.remove('hidden'); renderVideos(); }
     // ลิงก์รูป/GIF: เฉพาะบัญชีที่แอดมินอนุญาต (สิทธิ์เดียวกับอัปโหลดวิดีโอ) — คนอื่นไม่เห็นปุ่มนี้ แต่ยังอัปโหลดรูปจากเครื่องได้ · ปุ่ม/ช่องลิงก์ YouTube แสดงให้ทุกคน
     if (r.ok && (r.data.canLinks !== undefined ? r.data.canLinks : r.data.canVideo)) $('tg-img').classList.remove('hidden');
   }).catch(() => {});
@@ -397,7 +417,8 @@
     const objUrl = URL.createObjectURL(file);
     const v = document.createElement('video');
     v.playsInline = true; v.preload = 'auto'; v.src = objUrl;
-    let ac = null, rec = null;
+    let ac = null, rec = null, arec = null, mix = null;
+    const aChunks = []; let aStopped = Promise.resolve(); let aMime = '';
     try {
       await waitEv(v, 'loadedmetadata');
       if (!isFinite(v.duration)) { v.currentTime = 1e7; await waitEv(v, 'timeupdate'); v.currentTime = 0; } // ไฟล์ที่ไม่มีข้อมูลความยาว (เช่น WebM จากตัวอัด) ให้เบราว์เซอร์คำนวณเอง
@@ -409,11 +430,34 @@
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const ctx = cv.getContext('2d');
       const stream = cv.captureStream(30);
-      if (opts.audio !== false) try {
+      if (opts.soundUrl) {
+        // ผสมเสียงที่เลือกแทนเสียงเดิมของวิดีโอ: ไม่ต่อเสียงของวิดีโอเข้ากราฟ (ปิดเสียงตัววิดีโอเอง) และไม่แยกเสียงใหม่เก็บ (กันเอาเสียงคนอื่นมาลงเป็นเสียงของตัวเอง)
+        v.muted = true;
+        ac = new (window.AudioContext || window.webkitAudioContext)(); await ac.resume();
+        let buf;
+        try { buf = await ac.decodeAudioData(await (await fetch(opts.soundUrl)).arrayBuffer()); } catch { throw new Error('sound'); }
+        const dest = ac.createMediaStreamDestination();
+        dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+        mix = {
+          src: null,
+          start() { const n = ac.createBufferSource(); n.buffer = buf; n.loop = true; n.connect(dest); n.start(); this.src = n; },
+          stop() { try { if (this.src) this.src.stop(); } catch {} },
+        };
+      } else if (opts.audio !== false) try {
         ac = new (window.AudioContext || window.webkitAudioContext)(); await ac.resume();
         const dest = ac.createMediaStreamDestination();
         ac.createMediaElementSource(v).connect(dest); // ไม่ต่อลำโพง = ไม่มีเสียงดังขณะบีบ
         dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+        // แยกเสียงเก็บเป็นไฟล์ของตัวเอง (ให้เป็น "เสียง" ที่เก็บแยกใน R2) — ถ้าเบราว์เซอร์อัดไม่ได้จะข้ามไป วิดีโอยังอัปโหลดตามปกติ
+        try {
+          aMime = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find((m) => MediaRecorder.isTypeSupported(m)) || '';
+          const at = dest.stream.getAudioTracks();
+          if (aMime && at.length) {
+            arec = new MediaRecorder(new MediaStream(at.map((t) => t.clone())), { mimeType: aMime, audioBitsPerSecond: 96000 });
+            arec.ondataavailable = (e) => { if (e.data && e.data.size) aChunks.push(e.data); };
+            aStopped = new Promise((res) => { arec.onstop = res; });
+          }
+        } catch { arec = null; }
       } catch {}
       const mime = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
         .find((m) => MediaRecorder.isTypeSupported(m));
@@ -436,7 +480,9 @@
       };
       const loop = () => { if (v.ended || v.paused && v.currentTime >= dur) return; draw(); (v.requestVideoFrameCallback ? v.requestVideoFrameCallback.bind(v) : requestAnimationFrame)(loop); };
       rec.start(1000);
+      if (arec) try { arec.start(1000); } catch { arec = null; }
       await v.play();
+      if (mix) mix.start();
       loop();
       await Promise.race([
         waitEv(v, 'ended'),
@@ -444,14 +490,20 @@
       ]);
       await draw();
       if (!frames.length) { const f = await jpegOf(cv, W, H, 960); if (f) frames.push(f); }
+      if (mix) mix.stop();
       if (rec.state !== 'inactive') rec.stop();
+      if (arec && arec.state !== 'inactive') arec.stop();
       await stopped;
+      if (arec) await Promise.race([aStopped, new Promise((r) => setTimeout(r, 3000))]);
+      const audio = arec && aChunks.length ? new Blob(aChunks, { type: aMime.split(';')[0] }) : null;
       const blob = new Blob(chunks, { type: mime.split(';')[0] });
       console.info('[compressVideo]', { mime, size: W + 'x' + H, dur: +dur.toFixed(1), srcMB: +(file.size / 1048576).toFixed(2), outMB: +(blob.size / 1048576).toFixed(2),
         srcMbps: +(file.size * 8 / dur / 1e6).toFixed(2), targetMbps: +(vbps / 1e6).toFixed(2), outMbps: +(blob.size * 8 / dur / 1e6).toFixed(2) });
-      return { blob, frames, duration: dur };
+      return { blob, frames, duration: dur, audio };
     } finally {
       try { if (rec && rec.state !== 'inactive') rec.stop(); } catch {}
+      try { if (arec && arec.state !== 'inactive') arec.stop(); } catch {}
+      try { if (mix) mix.stop(); } catch {}
       try { v.pause(); } catch {}
       if (ac) ac.close().catch(() => {});
       URL.revokeObjectURL(objUrl);
@@ -464,7 +516,7 @@
     if (!/^video\//.test(f.type)) return ytMsg('เลือกไฟล์วิดีโอเท่านั้น', true);
     vidBusy = true; renderVideos();
     try {
-      const { blob: recBlob, frames, duration } = await compressVideo(f, (p) => ytMsg('กำลังบีบวิดีโอ ' + Math.round(p * 100) + '% (ห้ามปิดหน้านี้)'));
+      const { blob: recBlob, frames, duration, audio } = await compressVideo(f, (p) => ytMsg('กำลังบีบวิดีโอ ' + Math.round(p * 100) + '% (ห้ามปิดหน้านี้)'), { soundUrl: sound && sound.url ? sound.url : '' });
       // ผลบีบอัดไม่เล็กกว่าต้นฉบับ (และต้นฉบับเป็น mp4/webm อยู่แล้ว) → ใช้ต้นฉบับ ไม่ให้ไฟล์ใหญ่ขึ้น
       const blob = (/^video\/(mp4|webm)$/.test(f.type) && f.size < recBlob.size) ? f : recBlob;
       if (blob.size > 12e6) throw new Error('big');
@@ -473,13 +525,23 @@
       fd.append('video', blob, 'v.' + (blob.type.includes('mp4') ? 'mp4' : 'webm'));
       fd.append('duration', String(Math.min(duration, 30.9).toFixed(2)));
       frames.slice(0, 3).forEach((fr, i) => fd.append('frame', fr, 'f' + i + '.jpg'));
+      // เสียงที่แยกมา (ถ้ามี): เก็บเป็นเรกคอร์ด "เสียง" ของผู้อัปโหลด · allowReuse=1 เมื่อติ๊กอนุญาตให้ผู้อื่นนำไปใช้ (ค่าเริ่มต้นไม่อนุญาต)
+      if (audio && audio.size > 2000 && audio.size <= 1000000) {
+        fd.append('audio', audio, 'a.' + (audio.type.includes('mp4') ? 'mp4' : 'webm'));
+        fd.append('soundTitle', 'เสียงต้นฉบับ – ' + (s.name || s.userId));
+        fd.append('allowReuse', $('snd-reuse').checked ? '1' : '0');
+      }
       const r = await fetch(NIV.API + '/api/blog/video-upload?userId=' + encodeURIComponent(s.userId), { method: 'POST', headers: { Authorization: 'Bearer ' + s.token }, body: fd });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.success) { ytMsg(d.error || 'อัปโหลดวิดีโอไม่สำเร็จ', true); if (r.status === 401) needLogin(); }
-      else { videos.push(d.url); ytMsg('อัปโหลดวิดีโอแล้ว'); }
+      else {
+        videos.push(d.url); ytMsg('อัปโหลดวิดีโอแล้ว');
+        // ไม่ได้เลือกเสียงอื่นไว้ → ผูกโพสต์กับเสียงที่เพิ่งแยกจากวิดีโอนี้ (ให้ผู้อื่นตามมาถึงเจ้าของต้นฉบับได้)
+        if (!sound && d.soundId) { sound = { id: d.soundId, title: 'เสียงต้นฉบับ – ' + (s.name || s.userId), owner_id: s.userId, owner_name: s.name || s.userId, url: '', own: true, fromVideo: d.url }; renderSound(); }
+      }
     } catch (err) {
       const m = String(err && err.message);
-      ytMsg(m === 'long' ? 'วิดีโอยาวเกิน 30 วินาที' : m === 'big' ? 'บีบแล้วไฟล์ยังใหญ่เกินไป ลองคลิปที่สั้นลง' : m === 'unsupported' ? 'เบราว์เซอร์นี้ยังบีบวิดีโอไม่ได้ (ลองใช้ Chrome หรือ Safari รุ่นใหม่)' : 'ประมวลผลวิดีโอไม่ได้ (ไฟล์อาจเสียหรือรูปแบบไม่รองรับ)', true);
+      ytMsg(m === 'sound' ? 'โหลด/ถอดรหัสไฟล์เสียงที่เลือกไม่ได้ ลองเลือกเสียงอื่น หรือยกเลิกเสียงก่อนอัปโหลดวิดีโอ' : m === 'long' ? 'วิดีโอยาวเกิน 30 วินาที' : m === 'big' ? 'บีบแล้วไฟล์ยังใหญ่เกินไป ลองคลิปที่สั้นลง' : m === 'unsupported' ? 'เบราว์เซอร์นี้ยังบีบวิดีโอไม่ได้ (ลองใช้ Chrome หรือ Safari รุ่นใหม่)' : 'ประมวลผลวิดีโอไม่ได้ (ไฟล์อาจเสียหรือรูปแบบไม่รองรับ)', true);
     } finally { vidBusy = false; renderVideos(); }
   });
 
@@ -616,6 +678,7 @@
             content: $('content').value,
           videos,
           locks: locksPayload(),
+          soundId: sound ? sound.id : '',
         },
       });
       if (r.status === 401) return needLogin();
@@ -634,6 +697,7 @@
       $('post-form').reset();
       images = []; renderImages(); imgMsg('');
       videos = []; renderVideos(); ytMsg('');
+      sound = null; renderSound();
       locks = []; resetLkForm(); renderLocks(); lkMsg('');
       $('count').textContent = '0 / 20000';
       if (r.data.status === 'published') { location.href = '/posts?r=' + Date.now(); return; } // ไปหน้าโพสต์ (?r= กันแคชเก่า ให้เห็นโพสต์ใหม่ทันที)
@@ -670,6 +734,7 @@
     images = Array.isArray(p.images) ? p.images.slice(0, IMG_MAX) : []; renderImages();
     $('content').value = p.content || '';
     videos = Array.isArray(p.videos) ? p.videos.slice(0, YT_MAX) : []; savedVideos = new Set(videos); renderVideos();
+    sound = p.sound ? { id: p.sound.id, title: p.sound.title, owner_id: p.sound.owner_id, owner_name: p.sound.owner_name, url: p.sound.url, own: p.sound.owner_id === s.userId } : null; renderSound();
     $('count').textContent = $('content').value.length + ' / 20000';
     locks = (r.data.locks || []).map((x) => ({ key: x.key, label: x.label, secret: x.secret, mode: x.mode, pin: '', hasPin: !!x.has_pin, unlockAt: x.unlock_at || null })); renderLocks();
     const left = r.data.edits_left;
@@ -739,9 +804,105 @@
     } catch {}
   })();
 
+
+  // ---------- เสียง (แผ่นเสียง): เลือกเสียงให้โพสต์ — ทุกคนเลือกได้ / เสียงที่เจ้าของเปิดให้ใช้ซ้ำ + เสียงของตัวเอง ----------
+  // โพสต์เก็บแค่ sound_id (ชี้ที่เสียงต้นทางเสมอ) · ถ้าเลือกเสียงก่อนอัปโหลดวิดีโอ เบราว์เซอร์จะผสมเสียงนั้นแทนเสียงเดิมของวิดีโอ
+  let sound = null;               // { id, title, owner_id, owner_name, url, own, fromVideo }
+  let sndMode = 'hot', sndPage = 1, sndBusy = false, sndLoaded = false, sndQT = 0;
+  const sndMsg = (t, bad) => { const m = $('snd-msg'); m.textContent = t || ''; m.className = 'text-xs empty:hidden ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
+  const fmtDur = (n) => { n = Math.max(0, Math.round(Number(n) || 0)); return Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0'); };
+  let pv = null, pvBtn = null;
+  const pvStop = () => { if (pv) { try { pv.pause(); } catch {} } if (pvBtn) pvBtn.classList.remove('snd-on'); pvBtn = null; };
+  const pvToggle = (btn, url) => {
+    if (!url) return;
+    if (pvBtn === btn) return pvStop();
+    pvStop();
+    if (!pv) { pv = new Audio(); pv.loop = true; pv.addEventListener('error', () => { pvStop(); sndMsg('เล่นเสียงตัวอย่างไม่ได้', true); }); }
+    pv.src = url; pvBtn = btn; btn.classList.add('snd-on');
+    const pr = pv.play(); if (pr && pr.catch) pr.catch(() => pvStop());
+  };
+  const discBtn = (url) => {
+    const b = el('button', 'snd-disc'); b.type = 'button'; b.setAttribute('aria-label', 'ฟังตัวอย่างเสียง');
+    b.innerHTML = NIV.discSvg + '<span class="snd-pp" aria-hidden="true"></span>';
+    b.addEventListener('click', () => pvToggle(b, url));
+    return b;
+  };
+  function renderSound() {
+    const box = $('snd-sel'); box.replaceChildren();
+    $('snd-count').textContent = (sound ? 1 : 0) + ' / 1';
+    if (!sound) return;
+    const row = el('div', 'flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10');
+    const info = el('div', 'min-w-0 flex-1');
+    info.append(el('div', 'text-sm font-semibold truncate', '♪ ' + (sound.title || 'เสียงต้นฉบับ')),
+      el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (sound.owner_name || sound.owner_id) + (sound.own ? ' (ของคุณ)' : '') + (videos.some(isVidUp) && sound.url ? ' · ผสมเข้าวิดีโอตอนอัปโหลด' : '')));
+    const x = el('button', 'w-8 h-8 rounded-lg text-sm text-slate-500 dark:text-neutral-300 hover:bg-amber-500/15 hover:text-amber-500 cursor-pointer', '✕');
+    x.type = 'button'; x.title = 'เอาเสียงออก'; x.setAttribute('aria-label', 'เอาเสียงออก');
+    x.addEventListener('click', () => { pvStop(); const gone = sound; sound = null; renderSound(); if (gone && gone.fromVideo) { /* เสียงของวิดีโอนี้ไม่ได้ผูกกับโพสต์แล้ว แต่ไฟล์ยังอยู่จนกว่าจะลบวิดีโอ/กวาด */ } });
+    row.append(sound.url ? discBtn(sound.url) : el('div', 'snd-disc'), info, x);
+    if (!sound.url) row.firstChild.innerHTML = NIV.discSvg;
+    box.append(row);
+  }
+  function pickSound(x) {
+    pvStop();
+    sound = { id: x.id, title: x.title, owner_id: x.owner_id, owner_name: x.owner_name, url: x.url, own: x.owner_id === s.userId };
+    renderSound(); sndMsg('เลือกเสียงแล้ว');
+  }
+  function soundRow(x) {
+    const li = el('li', 'flex items-center gap-3 p-2 rounded-xl bg-white/70 dark:bg-black/30 border border-slate-200 dark:border-white/10');
+    const info = el('div', 'min-w-0 flex-1');
+    info.append(el('div', 'text-sm font-semibold truncate', '♪ ' + (x.title || 'เสียงต้นฉบับ')),
+      el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (x.owner_name || x.owner_id) + ' · ' + fmtDur(x.duration) + (x.use_count ? ' · ' + x.use_count + ' โพสต์' : '') + (x.allow_reuse === false ? ' · ไม่เปิดให้ผู้อื่นใช้' : '')));
+    const ok = el('button', 'shrink-0 px-3 h-8 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-xs font-semibold hover:bg-amber-500/25 cursor-pointer', 'เลือก');
+    ok.type = 'button'; ok.addEventListener('click', () => pickSound(x));
+    li.append(discBtn(x.url), info, ok);
+    return li;
+  }
+  async function loadSounds(reset) {
+    if (sndBusy) return;
+    sndBusy = true;
+    if (reset) { sndPage = 1; $('snd-list').replaceChildren(); $('snd-more').classList.add('hidden'); }
+    sndMsg('กำลังโหลด...');
+    const q = $('snd-q').value.trim();
+    let r;
+    try { r = await api('/api/blog/sounds?mode=' + sndMode + '&page=' + sndPage + (q ? '&q=' + encodeURIComponent(q) : '') + '&userId=' + encodeURIComponent(s.userId)); }
+    catch { sndBusy = false; return sndMsg('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง', true); }
+    sndBusy = false;
+    if (r.status === 401) return needLogin();
+    if (!r.ok) return sndMsg(r.data.error || 'โหลดเสียงไม่สำเร็จ', true);
+    const arr = r.data.sounds || [];
+    arr.forEach((x) => $('snd-list').append(soundRow(x)));
+    $('snd-more').classList.toggle('hidden', !r.data.hasMore);
+    sndMsg(arr.length || sndPage > 1 ? '' : (sndMode === 'mine' ? 'ยังไม่มีเสียงของคุณ — เสียงเกิดขึ้นเมื่ออัปโหลดวิดีโอ' : q ? 'ไม่พบเสียงที่ค้นหา' : 'ยังไม่มีเสียงที่เปิดให้ใช้'));
+  }
+  $('tg-snd').addEventListener('click', () => {
+    toggle('tg-snd', 'pn-snd', 'snd-q');
+    if ($('pn-snd').classList.contains('hidden')) pvStop();
+    else if (!sndLoaded) { sndLoaded = true; loadSounds(true); }
+  });
+  document.querySelectorAll('#snd-tabs button').forEach((b) => b.addEventListener('click', () => {
+    sndMode = b.dataset.mode;
+    document.querySelectorAll('#snd-tabs button').forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+    pvStop(); loadSounds(true);
+  }));
+  $('snd-q').addEventListener('input', () => { clearTimeout(sndQT); sndQT = setTimeout(() => { pvStop(); loadSounds(true); }, 350); });
+  $('snd-more').addEventListener('click', () => { sndPage++; loadSounds(false); });
+  // /write?sound=<id> (ปุ่ม "ใช้เสียงนี้" จากหน้าเสียง)
+  (async () => {
+    const id = new URLSearchParams(location.search).get('sound');
+    if (!id || editSlug) return;
+    try {
+      const r = await api('/api/blog/sound?id=' + encodeURIComponent(id));
+      if (!r.ok) return;
+      const x = r.data.sound;
+      if (!x.allow_reuse && x.owner_id !== s.userId) { toggle('tg-snd', 'pn-snd', 'snd-q'); sndLoaded = true; loadSounds(true); return sndMsg('เจ้าของเสียงนี้ไม่ได้เปิดให้ผู้อื่นใช้', true); }
+      pickSound(x);
+    } catch {}
+  })();
+
   renderImages();
   renderVideos();
   renderLocks();
+  renderSound();
   loadEdit();
 </script>
 </body>

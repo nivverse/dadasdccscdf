@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<script src="/i18n.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>เสียง | nivread</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/img/icon-48.png" type="image/png" sizes="48x48">
+<link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d0d0d">
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Kanit',sans-serif}
+  .sd-big{width:9rem;height:9rem}
+  .sd-big svg{filter:drop-shadow(0 10px 24px rgba(0,0,0,.45))}
+</style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+
+<header id="main-header" class="z-20"></header>
+
+<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
+  <div id="state" class="text-sm text-slate-500 dark:text-neutral-400" role="status">กำลังโหลดเสียง...</div>
+
+  <section id="card" class="hidden rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-5 sm:p-6">
+    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+      <div id="disc-slot" class="shrink-0"></div>
+      <div class="min-w-0 flex-1 text-center sm:text-left">
+        <h1 id="s-title" class="text-2xl font-extrabold tracking-tight break-words"></h1>
+        <a id="s-owner" class="mt-2 inline-flex items-center gap-2 text-sm text-slate-600 dark:text-neutral-300 hover:text-amber-500"></a>
+        <p id="s-meta" class="mt-1 text-xs text-slate-500 dark:text-neutral-400"></p>
+        <div class="mt-4 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+          <button id="s-play" type="button" class="px-4 py-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer">▶ ฟังเสียง</button>
+          <a id="s-use" href="#" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110">ใช้เสียงนี้ในโพสต์</a>
+          <button id="s-report" type="button" class="px-3 py-2 text-sm text-slate-500 dark:text-neutral-400 hover:text-rose-500 cursor-pointer">รายงานเสียง</button>
+        </div>
+        <p id="s-note" class="mt-2 text-xs text-slate-500 dark:text-neutral-400 empty:hidden"></p>
+      </div>
+    </div>
+
+    <div id="owner-box" class="hidden mt-5 pt-5 border-t border-slate-200 dark:border-white/10 space-y-3">
+      <h2 class="text-sm font-semibold">จัดการเสียงของคุณ</h2>
+      <label class="flex items-start gap-2 text-sm cursor-pointer">
+        <input id="o-allow" type="checkbox" class="mt-1 accent-amber-500">
+        <span>อนุญาตให้ผู้อื่นใช้เสียงนี้<span class="block text-xs text-slate-500 dark:text-neutral-400">ยืนยันว่าเป็นเสียงของคุณเอง หรือคุณมีสิทธิ์ให้ผู้อื่นนำไปใช้ · ปิดแล้ว โพสต์ที่ใช้ไปแล้วยังคงอยู่ แต่ผู้อื่นเลือกใช้เพิ่มไม่ได้</span></span>
+      </label>
+      <div class="flex gap-2">
+        <input id="o-title" maxlength="80" autocomplete="off" aria-label="ชื่อเสียง" class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+        <button id="o-save" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">บันทึกชื่อ</button>
+      </div>
+      <p id="o-msg" class="text-xs empty:hidden" role="status"></p>
+    </div>
+  </section>
+
+  <h2 id="posts-h" class="hidden mt-8 mb-3 text-lg font-bold">โพสต์ที่ใช้เสียงนี้</h2>
+  <div id="posts" class="space-y-4"></div>
+</main>
+
+<div id="main-footer" class="z-10"></div>
+<script src="/nivread.js"></script>
+<script>
+  const { session, api, el } = NIV;
+  const s = session();
+  const $ = (id) => document.getElementById(id);
+  const fmtDur = (n) => { n = Math.max(0, Math.round(Number(n) || 0)); return Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0'); };
+  // /sound/<id> (ผ่าน _redirects → sound.html) หรือ /sound.html?id=<id>
+  const id = (() => {
+    const m = location.pathname.match(/\/sound\/([^/?#]+)/);
+    try { return decodeURIComponent(m ? m[1] : (new URLSearchParams(location.search).get('id') || '')); } catch { return ''; }
+  })();
+  const state = (t, bad) => { const st = $('state'); st.textContent = t; st.className = 'text-sm ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); st.classList.toggle('hidden', !t); };
+
+  let snd = null, audio = null;
+  const setPlaying = (on) => {
+    $('disc').classList.toggle('snd-on', on);
+    $('s-play').textContent = on ? '⏸ หยุด' : '▶ ฟังเสียง';
+  };
+  function togglePlay() {
+    if (!audio) {
+      audio = new Audio(); audio.loop = true; audio.src = snd.url;
+      audio.addEventListener('error', () => { setPlaying(false); NIV.toast('เล่นเสียงไม่ได้'); });
+    }
+    if (audio.paused) { NIV.sndStop(); const pr = audio.play(); if (pr && pr.catch) pr.catch(() => setPlaying(false)); setPlaying(true); }
+    else { audio.pause(); setPlaying(false); }
+  }
+
+  function render(d) {
+    snd = d.sound;
+    document.title = (snd.title || 'เสียง') + ' | nivread';
+    const disc = el('button', 'snd-disc sd-big'); disc.id = 'disc'; disc.type = 'button'; disc.setAttribute('aria-label', 'เล่น/หยุดเสียง');
+    disc.innerHTML = NIV.discSvg + '<span class="snd-pp" aria-hidden="true"></span>';
+    disc.addEventListener('click', togglePlay);
+    $('disc-slot').replaceChildren(disc);
+    $('s-title').textContent = '♪ ' + (snd.title || 'เสียงต้นฉบับ');
+    const o = $('s-owner'); o.href = NIV.userUrl(snd.owner_id); o.replaceChildren(NIV.avatarEl({ id: snd.owner_id, display_name: snd.owner_name, avatar_url: snd.owner_avatar }, 'w-7 h-7'), document.createTextNode('ต้นฉบับโดย ' + (snd.owner_name || snd.owner_id)));
+    $('s-meta').textContent = fmtDur(snd.duration) + ' · ' + Number(snd.use_count || 0).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH') + ' โพสต์';
+    $('s-play').addEventListener('click', togglePlay);
+    const mine = !!s.userId && s.userId === snd.owner_id;
+    const use = $('s-use');
+    if (snd.allow_reuse || mine) { use.href = '/write?sound=' + encodeURIComponent(snd.id); }
+    else { use.classList.add('hidden'); $('s-note').textContent = 'เจ้าของเสียงไม่ได้เปิดให้ผู้อื่นนำเสียงนี้ไปใช้'; }
+    const rep = $('s-report');
+    if (mine) rep.classList.add('hidden'); else rep.addEventListener('click', () => NIV.reportDialog('sound', snd.id));
+    if (mine) {
+      $('owner-box').classList.remove('hidden');
+      $('o-allow').checked = !!snd.allow_reuse; $('o-title').value = snd.title || '';
+      const om = (t, bad) => { const m = $('o-msg'); m.textContent = t || ''; m.className = 'text-xs empty:hidden ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'); };
+      const save = async (body, okText) => {
+        const r = await api('/api/blog/sound-update', { method: 'POST', body: { userId: s.userId, id: snd.id, ...body } });
+        if (r.status === 401) return location.replace('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+        if (!r.ok) { om(r.data.error || 'บันทึกไม่สำเร็จ', true); return false; }
+        om(okText); return true;
+      };
+      $('o-allow').addEventListener('change', async () => {
+        const on = $('o-allow').checked;
+        if (!(await save({ allowReuse: on }, on ? 'เปิดให้ผู้อื่นใช้เสียงนี้แล้ว' : 'ปิดการใช้เสียงนี้ของผู้อื่นแล้ว'))) $('o-allow').checked = !on;
+      });
+      $('o-save').addEventListener('click', async () => {
+        const t = $('o-title').value.trim();
+        if (!t) return om('ใส่ชื่อเสียง', true);
+        if (await save({ title: t }, 'บันทึกชื่อแล้ว')) { snd.title = t; $('s-title').textContent = '♪ ' + t; document.title = t + ' | nivread'; }
+      });
+    }
+    $('card').classList.remove('hidden');
+    state('');
+    const list = $('posts');
+    (d.posts || []).forEach((p) => list.append(NIV.postCardEl(p)));
+    $('posts-h').classList.toggle('hidden', !(d.posts || []).length);
+  }
+
+  (async () => {
+    if (!/^[a-z0-9]{6,40}$/.test(id)) return state('ไม่พบเสียงนี้', true);
+    try {
+      const r = await api('/api/blog/sound?id=' + encodeURIComponent(id));
+      if (!r.ok) return state(r.data.error || 'ไม่พบเสียงนี้', true);
+      render(r.data);
+    } catch { state('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่', true); }
+  })();
+</script>
+</body>
+</html>
