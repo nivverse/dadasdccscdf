@@ -112,7 +112,7 @@
         <p id="lk-msg" class="text-xs empty:hidden" role="status"></p>
       </div>
       <div id="pn-snd" class="hidden mt-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
-        <p class="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">เลือกเสียงให้โพสต์ ทุกคนเลือกได้ — โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง และแสดงชื่อเจ้าของเสียงต้นฉบับ ถ้าจะอัปโหลดวิดีโอแล้วให้ใช้เสียงนี้แทนเสียงเดิมของวิดีโอ ให้เลือกเสียงก่อนอัปโหลดวิดีโอ</p>
+        <p class="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">เลือกเสียงให้โพสต์ ทุกคนเลือกได้ — โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง และแสดงชื่อเจ้าของเสียงต้นฉบับ ถ้าเลือกเสียงไว้ก่อนอัปโหลดวิดีโอ วิดีโอจะถูกปิดเสียง และใช้เสียงที่เลือกผ่านแผ่นเสียงของโพสต์แทน</p>
         <div id="snd-tabs" role="group" aria-label="หมวดเสียง" class="grid grid-cols-3 gap-2">
           <button type="button" data-mode="hot" aria-pressed="true" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ยอดนิยม</button>
           <button type="button" data-mode="new" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ใหม่ล่าสุด</button>
@@ -134,7 +134,7 @@
       <ul id="yt-list" class="mt-3 space-y-2"></ul>
       <label id="snd-opt" class="hidden mt-3 flex items-start gap-2 text-xs text-slate-600 dark:text-neutral-400 cursor-pointer">
         <input id="snd-reuse" type="checkbox" class="mt-0.5 accent-amber-500">
-        <span>อนุญาตให้ผู้อื่นใช้เสียงจากวิดีโอนี้ (ยืนยันว่าเป็นเสียงของคุณเอง หรือคุณมีสิทธิ์ใช้เสียงนั้น — ไม่ติ๊ก = เก็บเสียงไว้ ไม่ให้ผู้อื่นนำไปใช้)</span>
+        <span>อนุญาตให้ผู้อื่นใช้เสียงจากวิดีโอนี้ (ยืนยันว่าเป็นเสียงของคุณเอง หรือคุณมีสิทธิ์ใช้เสียงนั้น — ไม่ติ๊ก = เก็บเสียงไว้ ไม่ให้ผู้อื่นนำไปใช้ · เปลี่ยนภายหลังได้ที่หน้าเสียง)</span>
       </label>
     </div>
 
@@ -400,7 +400,7 @@
 
   // ---------- อัปโหลดวิดีโอ 1 คลิป/โพสต์ + ปุ่มลิงก์รูป/GIF (เฉพาะบัญชีที่แอดมินอนุญาต · วิดีโอไม่เกิน 30 วินาที · บีบในเบราว์เซอร์ก่อนส่ง) ----------
   api('/api/blog/me?userId=' + encodeURIComponent(s.userId)).then((r) => {
-    if (r.ok && r.data.canVideo) { $('vid-up').classList.remove('hidden'); $('snd-opt').classList.remove('hidden'); renderVideos(); }
+    if (r.ok && r.data.canVideo) { $('vid-up').classList.remove('hidden'); renderVideos(); }
     // ลิงก์รูป/GIF: เฉพาะบัญชีที่แอดมินอนุญาต (สิทธิ์เดียวกับอัปโหลดวิดีโอ) — คนอื่นไม่เห็นปุ่มนี้ แต่ยังอัปโหลดรูปจากเครื่องได้ · ปุ่ม/ช่องลิงก์ YouTube แสดงให้ทุกคน
     if (r.ok && (r.data.canLinks !== undefined ? r.data.canLinks : r.data.canVideo)) $('tg-img').classList.remove('hidden');
   }).catch(() => {});
@@ -417,7 +417,7 @@
     const objUrl = URL.createObjectURL(file);
     const v = document.createElement('video');
     v.playsInline = true; v.preload = 'auto'; v.src = objUrl;
-    let ac = null, rec = null, arec = null, mix = null;
+    let ac = null, rec = null, arec = null;
     const aChunks = []; let aStopped = Promise.resolve(); let aMime = '';
     try {
       await waitEv(v, 'loadedmetadata');
@@ -430,20 +430,9 @@
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const ctx = cv.getContext('2d');
       const stream = cv.captureStream(30);
-      if (opts.soundUrl) {
-        // ผสมเสียงที่เลือกแทนเสียงเดิมของวิดีโอ: ไม่ต่อเสียงของวิดีโอเข้ากราฟ (ปิดเสียงตัววิดีโอเอง) และไม่แยกเสียงใหม่เก็บ (กันเอาเสียงคนอื่นมาลงเป็นเสียงของตัวเอง)
-        v.muted = true;
-        ac = new (window.AudioContext || window.webkitAudioContext)(); await ac.resume();
-        let buf;
-        try { buf = await ac.decodeAudioData(await (await fetch(opts.soundUrl)).arrayBuffer()); } catch { throw new Error('sound'); }
-        const dest = ac.createMediaStreamDestination();
-        dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
-        mix = {
-          src: null,
-          start() { const n = ac.createBufferSource(); n.buffer = buf; n.loop = true; n.connect(dest); n.start(); this.src = n; },
-          stop() { try { if (this.src) this.src.stop(); } catch {} },
-        };
-      } else if (opts.audio !== false) try {
+      if (opts.audio === false) {
+        v.muted = true; // เลือกเสียงไว้ → วิดีโอไม่มีแทร็กเสียง (ไม่ผสม ไม่ถอดรหัสไฟล์เสียงในเบราว์เซอร์) เสียงที่เลือกเล่นผ่านแผ่นเสียงของโพสต์แทน
+      } else try {
         ac = new (window.AudioContext || window.webkitAudioContext)(); await ac.resume();
         const dest = ac.createMediaStreamDestination();
         ac.createMediaElementSource(v).connect(dest); // ไม่ต่อลำโพง = ไม่มีเสียงดังขณะบีบ
@@ -482,7 +471,6 @@
       rec.start(1000);
       if (arec) try { arec.start(1000); } catch { arec = null; }
       await v.play();
-      if (mix) mix.start();
       loop();
       await Promise.race([
         waitEv(v, 'ended'),
@@ -490,7 +478,6 @@
       ]);
       await draw();
       if (!frames.length) { const f = await jpegOf(cv, W, H, 960); if (f) frames.push(f); }
-      if (mix) mix.stop();
       if (rec.state !== 'inactive') rec.stop();
       if (arec && arec.state !== 'inactive') arec.stop();
       await stopped;
@@ -503,7 +490,6 @@
     } finally {
       try { if (rec && rec.state !== 'inactive') rec.stop(); } catch {}
       try { if (arec && arec.state !== 'inactive') arec.stop(); } catch {}
-      try { if (mix) mix.stop(); } catch {}
       try { v.pause(); } catch {}
       if (ac) ac.close().catch(() => {});
       URL.revokeObjectURL(objUrl);
@@ -515,10 +501,11 @@
     if (!f || vidBusy) return;
     if (!/^video\//.test(f.type)) return ytMsg('เลือกไฟล์วิดีโอเท่านั้น', true);
     vidBusy = true; renderVideos();
+    if (!sound) $('snd-opt').classList.remove('hidden'); // ตัวเลือกนี้ขึ้นเฉพาะตอนกำลังจะอัปโหลดวิดีโอ (ติ๊กได้ระหว่างบีบ) และไม่ขึ้นถ้าเลือกเสียงอื่นไว้แล้ว
     try {
-      const { blob: recBlob, frames, duration, audio } = await compressVideo(f, (p) => ytMsg('กำลังบีบวิดีโอ ' + Math.round(p * 100) + '% (ห้ามปิดหน้านี้)'), { soundUrl: sound && sound.url ? sound.url : '' });
+      const { blob: recBlob, frames, duration, audio } = await compressVideo(f, (p) => ytMsg('กำลังบีบวิดีโอ ' + Math.round(p * 100) + '% (ห้ามปิดหน้านี้)'), { audio: !sound });
       // ผลบีบอัดไม่เล็กกว่าต้นฉบับ (และต้นฉบับเป็น mp4/webm อยู่แล้ว) → ใช้ต้นฉบับ ไม่ให้ไฟล์ใหญ่ขึ้น
-      const blob = (/^video\/(mp4|webm)$/.test(f.type) && f.size < recBlob.size) ? f : recBlob;
+      const blob = (!sound && /^video\/(mp4|webm)$/.test(f.type) && f.size < recBlob.size) ? f : recBlob; // เลือกเสียงไว้ = ต้องใช้ฉบับที่ตัดเสียงแล้วเสมอ
       if (blob.size > 12e6) throw new Error('big');
       ytMsg('กำลังอัปโหลด ' + (blob.size / 1048576).toFixed(1) + ' MB ...');
       const fd = new FormData();
@@ -542,7 +529,7 @@
     } catch (err) {
       const m = String(err && err.message);
       ytMsg(m === 'sound' ? 'โหลด/ถอดรหัสไฟล์เสียงที่เลือกไม่ได้ ลองเลือกเสียงอื่น หรือยกเลิกเสียงก่อนอัปโหลดวิดีโอ' : m === 'long' ? 'วิดีโอยาวเกิน 30 วินาที' : m === 'big' ? 'บีบแล้วไฟล์ยังใหญ่เกินไป ลองคลิปที่สั้นลง' : m === 'unsupported' ? 'เบราว์เซอร์นี้ยังบีบวิดีโอไม่ได้ (ลองใช้ Chrome หรือ Safari รุ่นใหม่)' : 'ประมวลผลวิดีโอไม่ได้ (ไฟล์อาจเสียหรือรูปแบบไม่รองรับ)', true);
-    } finally { vidBusy = false; renderVideos(); }
+    } finally { vidBusy = false; renderVideos(); $('snd-opt').classList.add('hidden'); $('snd-reuse').checked = false; }
   });
 
   // ---------- กล่องล็อก: ซ่อนข้อความจนกว่าผู้อ่านจะปลดล็อก (ติดตาม / รหัส 4 หลัก / ตั้งเวลา) ----------
@@ -835,7 +822,7 @@
     const info = el('div', 'min-w-0 flex-1');
     const t1 = el('div', 'text-sm font-semibold truncate'); t1.innerHTML = '<svg class="inline-block w-4 h-4 -mt-0.5 mr-1 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3v12.5a3.5 3.5 0 11-2-3.16V6.3L9 8.1v9.4a3.5 3.5 0 11-2-3.16V5.5z"/></svg>'; t1.append(document.createTextNode(sound.title || 'เสียงต้นฉบับ'));
     info.append(t1,
-      el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (sound.owner_name || sound.owner_id) + (sound.own ? ' (ของคุณ)' : '') + (videos.some(isVidUp) && sound.url ? ' · ผสมเข้าวิดีโอตอนอัปโหลด' : '')));
+      el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (sound.owner_name || sound.owner_id) + (sound.own ? ' (ของคุณ)' : '') + (videos.some(isVidUp) && !sound.fromVideo ? ' · วิดีโอที่อัปโหลดไปแล้วยังมีเสียงเดิม' : '')));
     const x = el('button', 'w-8 h-8 rounded-lg text-slate-500 dark:text-neutral-300 hover:bg-amber-500/15 hover:text-amber-500 cursor-pointer'); x.innerHTML = '<svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
     x.type = 'button'; x.title = 'เอาเสียงออก'; x.setAttribute('aria-label', 'เอาเสียงออก');
     x.addEventListener('click', () => { pvStop(); const gone = sound; sound = null; renderSound(); if (gone && gone.fromVideo) { /* เสียงของวิดีโอนี้ไม่ได้ผูกกับโพสต์แล้ว แต่ไฟล์ยังอยู่จนกว่าจะลบวิดีโอ/กวาด */ } });

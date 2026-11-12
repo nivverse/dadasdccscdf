@@ -1280,7 +1280,9 @@
   onNewNodes(sndRelayout); // ปุ่มแก้ไข/ติดตามที่โผล่ทีหลัง → เรียงใหม่
   function sndPlace(card, snd) {
     if (card.querySelector('.snd-badge')) return;
-    const badge = soundChipEl(snd, { noPlay: !!card.querySelector('.uv, .vg') });
+    // วิดีโอที่ "เสียงต้นฉบับ" มาจากตัวมันเอง (id เสียง = id วิดีโอ) มีเสียงอยู่แล้ว → ป้ายเป็นลิงก์ไปหน้าเสียงอย่างเดียว · วิดีโอที่ปิดเสียงแล้วใช้เสียงอื่น → ป้ายกดเล่นเสียงได้ตามปกติ
+    const selfVid = !!card.querySelector('.uv, .vg') && card.innerHTML.includes('/' + snd.id + '.');
+    const badge = soundChipEl(snd, { noPlay: selfVid });
     if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
     badge.classList.add('snd-abs');
     card.append(badge);
