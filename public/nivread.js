@@ -1136,13 +1136,21 @@
     sndStop();
     if (!sAudio) {
       sAudio = new Audio(); sAudio.loop = true; sAudio.preload = 'none';
-      sAudio.addEventListener('error', () => { if (sCur) { sndStop(); toast('เล่นเสียงไม่ได้'); } });
+      sAudio.addEventListener('error', () => { if (sCur && !sndAlt(sCur)) { sndStop(); toast('เล่นเสียงไม่ได้'); } });
     }
     const tok = ++sTok;
+    btn._sndTried = false;
     sAudio.src = url; sCur = btn; btn.classList.add('snd-on'); btn.setAttribute('aria-pressed', 'true');
     const pr = sAudio.play();
     // เช็ก token: คำสั่งเล่นเก่าที่ถูกยกเลิกตอนสลับเพลงจะไม่ไปหยุดเพลงใหม่
-    if (pr && pr.catch) pr.catch(() => { if (tok === sTok && sCur === btn) sndStop(); });
+    if (pr && pr.catch) pr.catch(() => { if (tok === sTok && sCur === btn && !sndAlt(btn)) sndStop(); });
+  }
+  // ลิงก์หลัก (โดเมน CDN) เล่นไม่ได้ → ลองอีกทางผ่าน Worker หนึ่งครั้งก่อนยอมแพ้
+  function sndAlt(btn) {
+    if (!btn._sndAlt || btn._sndTried) return false;
+    btn._sndTried = true; sAudio.src = btn._sndAlt;
+    const pr = sAudio.play(); if (pr && pr.catch) pr.catch(() => { if (sCur === btn) sndStop(); });
+    return true;
   }
   function sndToggle(btn, url) {
     if (sCur === btn) { sndAuto = false; sndStop(); return; }
@@ -1198,7 +1206,7 @@
     else { b = el('button', 'snd-badge'); b.type = 'button'; b.setAttribute('aria-pressed', 'false'); }
     b.dataset.sndId = snd.id; b.title = label; b.setAttribute('aria-label', (opt.noPlay ? 'หน้าเสียง ' : 'เล่นเสียง ') + label);
     b.insertAdjacentHTML('beforeend', NOTE_SVG + '<span class="snd-bars" aria-hidden="true"><i></i><i></i><i></i></span>');
-    if (!opt.noPlay) b._sndUrl = snd.url;
+    if (!opt.noPlay) { b._sndUrl = snd.url; b._sndAlt = snd.src && snd.src !== snd.url ? snd.src : ''; }
     // แตะตอนยังไม่เล่น = เล่นเสียง · แตะตอนกำลังเล่นอยู่ (รวมที่เล่นเองจากโหมดออโต้ตอนเลื่อน) = ไปหน้าเสียง (ผู้อัปโหลดต้นฉบับ + ทุกโพสต์ที่ใช้เสียงนี้)
     if (!opt.noPlay) {
       b.title = label + ' · แตะตอนเล่นอยู่เพื่อไปหน้าเสียง';
@@ -1280,9 +1288,7 @@
   onNewNodes(sndRelayout); // ปุ่มแก้ไข/ติดตามที่โผล่ทีหลัง → เรียงใหม่
   function sndPlace(card, snd) {
     if (card.querySelector('.snd-badge')) return;
-    // วิดีโอที่ "เสียงต้นฉบับ" มาจากตัวมันเอง (id เสียง = id วิดีโอ) มีเสียงอยู่แล้ว → ป้ายเป็นลิงก์ไปหน้าเสียงอย่างเดียว · วิดีโอที่ปิดเสียงแล้วใช้เสียงอื่น → ป้ายกดเล่นเสียงได้ตามปกติ
-    const selfVid = !!card.querySelector('.uv, .vg') && card.innerHTML.includes('/' + snd.id + '.');
-    const badge = soundChipEl(snd, { noPlay: selfVid });
+    const badge = soundChipEl(snd);
     if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
     badge.classList.add('snd-abs');
     card.append(badge);

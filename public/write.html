@@ -112,7 +112,7 @@
         <p id="lk-msg" class="text-xs empty:hidden" role="status"></p>
       </div>
       <div id="pn-snd" class="hidden mt-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
-        <p class="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">เลือกเสียงให้โพสต์ ทุกคนเลือกได้ — โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง และแสดงชื่อเจ้าของเสียงต้นฉบับ ถ้าเลือกเสียงไว้ก่อนอัปโหลดวิดีโอ วิดีโอจะถูกปิดเสียง และใช้เสียงที่เลือกผ่านแผ่นเสียงของโพสต์แทน</p>
+        <p class="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">เลือกเสียงให้โพสต์ ทุกคนเลือกได้ — โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง และแสดงชื่อเจ้าของเสียงต้นฉบับ ถ้าเลือกเสียงไว้ก่อนอัปโหลดวิดีโอ ระบบจะรวมเสียงที่เลือกเข้ากับวิดีโอให้ (แทนเสียงเดิมของวิดีโอ) และโพสต์ยังมีแผ่นเสียงให้กดฟังแยกได้</p>
         <div id="snd-tabs" role="group" aria-label="หมวดเสียง" class="grid grid-cols-3 gap-2">
           <button type="button" data-mode="hot" aria-pressed="true" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ยอดนิยม</button>
           <button type="button" data-mode="new" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ใหม่ล่าสุด</button>
@@ -417,7 +417,7 @@
     const objUrl = URL.createObjectURL(file);
     const v = document.createElement('video');
     v.playsInline = true; v.preload = 'auto'; v.src = objUrl;
-    let ac = null, rec = null, arec = null;
+    let ac = null, rec = null, arec = null, mix = null;
     const aChunks = []; let aStopped = Promise.resolve(); let aMime = '';
     try {
       await waitEv(v, 'loadedmetadata');
@@ -430,8 +430,33 @@
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const ctx = cv.getContext('2d');
       const stream = cv.captureStream(30);
-      if (opts.audio === false) {
-        v.muted = true; // เลือกเสียงไว้ → วิดีโอไม่มีแทร็กเสียง (ไม่ผสม ไม่ถอดรหัสไฟล์เสียงในเบราว์เซอร์) เสียงที่เลือกเล่นผ่านแผ่นเสียงของโพสต์แทน
+      if (opts.soundUrl) {
+        // TikTok: เสียงที่เลือกถูกรวมเข้าเป็นแทร็กเสียงของวิดีโอตอนบีบ — วนเสียงถ้าสั้นกว่าวิดีโอ ตัดถ้ายาวกว่า · เสียงเดิมของวิดีโอไม่ถูกใช้
+        // ลองถอดรหัสเป็น buffer ก่อน (ผ่านทาง Worker ที่เปิด CORS) ไม่ได้ก็ลองแบบ <audio> · ถ้าทั้งสองทางล้มเหลว = บีบเป็นวิดีโอไม่มีเสียง (ไม่ให้การอัปโหลดล้ม)
+        v.muted = true;
+        try {
+          ac = new (window.AudioContext || window.webkitAudioContext)(); await ac.resume();
+          const dest = ac.createMediaStreamDestination();
+          const urls = [opts.soundSrc, opts.soundUrl].filter(Boolean);
+          for (const u of urls) {
+            try {
+              const buf = await ac.decodeAudioData(await (await fetch(u)).arrayBuffer());
+              let src = null;
+              mix = { start() { src = ac.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(dest); src.start(); }, stop() { try { src && src.stop(); } catch {} } };
+              break;
+            } catch {}
+          }
+          if (!mix) for (const u of urls) {
+            try {
+              const au = new Audio(); au.crossOrigin = 'anonymous'; au.loop = true; au.src = u;
+              await new Promise((res, rej) => { au.oncanplay = res; au.onerror = () => rej(new Error('audio')); setTimeout(() => rej(new Error('timeout')), 6000); });
+              ac.createMediaElementSource(au).connect(dest);
+              mix = { start() { au.currentTime = 0; au.play().catch(() => {}); }, stop() { try { au.pause(); } catch {} } };
+              break;
+            } catch {}
+          }
+          if (mix) dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+        } catch { mix = null; }
       } else try {
         ac = new (window.AudioContext || window.webkitAudioContext)(); await ac.resume();
         const dest = ac.createMediaStreamDestination();
@@ -471,6 +496,7 @@
       rec.start(1000);
       if (arec) try { arec.start(1000); } catch { arec = null; }
       await v.play();
+      if (mix) mix.start();
       loop();
       await Promise.race([
         waitEv(v, 'ended'),
@@ -478,6 +504,7 @@
       ]);
       await draw();
       if (!frames.length) { const f = await jpegOf(cv, W, H, 960); if (f) frames.push(f); }
+      if (mix) mix.stop();
       if (rec.state !== 'inactive') rec.stop();
       if (arec && arec.state !== 'inactive') arec.stop();
       await stopped;
@@ -486,10 +513,11 @@
       const blob = new Blob(chunks, { type: mime.split(';')[0] });
       console.info('[compressVideo]', { mime, size: W + 'x' + H, dur: +dur.toFixed(1), srcMB: +(file.size / 1048576).toFixed(2), outMB: +(blob.size / 1048576).toFixed(2),
         srcMbps: +(file.size * 8 / dur / 1e6).toFixed(2), targetMbps: +(vbps / 1e6).toFixed(2), outMbps: +(blob.size * 8 / dur / 1e6).toFixed(2) });
-      return { blob, frames, duration: dur, audio };
+      return { blob, frames, duration: dur, audio, mixed: !!mix };
     } finally {
       try { if (rec && rec.state !== 'inactive') rec.stop(); } catch {}
       try { if (arec && arec.state !== 'inactive') arec.stop(); } catch {}
+      try { if (mix) mix.stop(); } catch {}
       try { v.pause(); } catch {}
       if (ac) ac.close().catch(() => {});
       URL.revokeObjectURL(objUrl);
@@ -503,7 +531,7 @@
     vidBusy = true; renderVideos();
     if (!sound) $('snd-opt').classList.remove('hidden'); // ตัวเลือกนี้ขึ้นเฉพาะตอนกำลังจะอัปโหลดวิดีโอ (ติ๊กได้ระหว่างบีบ) และไม่ขึ้นถ้าเลือกเสียงอื่นไว้แล้ว
     try {
-      const { blob: recBlob, frames, duration, audio } = await compressVideo(f, (p) => ytMsg('กำลังบีบวิดีโอ ' + Math.round(p * 100) + '% (ห้ามปิดหน้านี้)'), { audio: !sound });
+      const { blob: recBlob, frames, duration, audio, mixed } = await compressVideo(f, (p) => ytMsg('กำลังบีบวิดีโอ ' + Math.round(p * 100) + '% (ห้ามปิดหน้านี้)'), { soundUrl: sound ? sound.url : '', soundSrc: sound ? sound.src : '' });
       // ผลบีบอัดไม่เล็กกว่าต้นฉบับ (และต้นฉบับเป็น mp4/webm อยู่แล้ว) → ใช้ต้นฉบับ ไม่ให้ไฟล์ใหญ่ขึ้น
       const blob = (!sound && /^video\/(mp4|webm)$/.test(f.type) && f.size < recBlob.size) ? f : recBlob; // เลือกเสียงไว้ = ต้องใช้ฉบับที่ตัดเสียงแล้วเสมอ
       if (blob.size > 12e6) throw new Error('big');
@@ -522,7 +550,8 @@
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.success) { ytMsg(d.error || 'อัปโหลดวิดีโอไม่สำเร็จ', true); if (r.status === 401) needLogin(); }
       else {
-        videos.push(d.url); ytMsg('อัปโหลดวิดีโอแล้ว');
+        videos.push(d.url);
+        if (sound && sound.url && !mixed) ytMsg('อัปโหลดวิดีโอแล้ว แต่รวมเสียงเข้าวิดีโอไม่ได้ วิดีโอจึงไม่มีเสียง — เสียงที่เลือกยังเล่นได้ที่แผ่นเสียงของโพสต์'); else ytMsg('อัปโหลดวิดีโอแล้ว');
         // ไม่ได้เลือกเสียงอื่นไว้ → ผูกโพสต์กับเสียงที่เพิ่งแยกจากวิดีโอนี้ (ให้ผู้อื่นตามมาถึงเจ้าของต้นฉบับได้)
         if (!sound && d.soundId) { sound = { id: d.soundId, title: 'เสียงต้นฉบับ – ' + (s.name || s.userId), owner_id: s.userId, owner_name: s.name || s.userId, url: '', own: true, fromVideo: d.url }; renderSound(); }
       }
@@ -721,7 +750,7 @@
     images = Array.isArray(p.images) ? p.images.slice(0, IMG_MAX) : []; renderImages();
     $('content').value = p.content || '';
     videos = Array.isArray(p.videos) ? p.videos.slice(0, YT_MAX) : []; savedVideos = new Set(videos); renderVideos();
-    sound = p.sound ? { id: p.sound.id, title: p.sound.title, owner_id: p.sound.owner_id, owner_name: p.sound.owner_name, url: p.sound.url, own: p.sound.owner_id === s.userId } : null; renderSound();
+    sound = p.sound ? { id: p.sound.id, title: p.sound.title, owner_id: p.sound.owner_id, owner_name: p.sound.owner_name, url: p.sound.url, src: p.sound.src, own: p.sound.owner_id === s.userId } : null; renderSound();
     $('count').textContent = $('content').value.length + ' / 20000';
     locks = (r.data.locks || []).map((x) => ({ key: x.key, label: x.label, secret: x.secret, mode: x.mode, pin: '', hasPin: !!x.has_pin, unlockAt: x.unlock_at || null })); renderLocks();
     const left = r.data.edits_left;
@@ -822,7 +851,7 @@
     const info = el('div', 'min-w-0 flex-1');
     const t1 = el('div', 'text-sm font-semibold truncate'); t1.innerHTML = '<svg class="inline-block w-4 h-4 -mt-0.5 mr-1 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3v12.5a3.5 3.5 0 11-2-3.16V6.3L9 8.1v9.4a3.5 3.5 0 11-2-3.16V5.5z"/></svg>'; t1.append(document.createTextNode(sound.title || 'เสียงต้นฉบับ'));
     info.append(t1,
-      el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (sound.owner_name || sound.owner_id) + (sound.own ? ' (ของคุณ)' : '') + (videos.some(isVidUp) && !sound.fromVideo ? ' · วิดีโอที่อัปโหลดไปแล้วยังมีเสียงเดิม' : '')));
+      el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (sound.owner_name || sound.owner_id) + (sound.own ? ' (ของคุณ)' : '') + (videos.some(isVidUp) && !sound.fromVideo ? ' · วิดีโอที่อัปโหลดไปแล้วยังมีเสียงเดิม ส่วนวิดีโอที่อัปโหลดต่อจากนี้จะรวมเสียงนี้เข้าไป' : '')));
     const x = el('button', 'w-8 h-8 rounded-lg text-slate-500 dark:text-neutral-300 hover:bg-amber-500/15 hover:text-amber-500 cursor-pointer'); x.innerHTML = '<svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
     x.type = 'button'; x.title = 'เอาเสียงออก'; x.setAttribute('aria-label', 'เอาเสียงออก');
     x.addEventListener('click', () => { pvStop(); const gone = sound; sound = null; renderSound(); if (gone && gone.fromVideo) { /* เสียงของวิดีโอนี้ไม่ได้ผูกกับโพสต์แล้ว แต่ไฟล์ยังอยู่จนกว่าจะลบวิดีโอ/กวาด */ } });
@@ -832,7 +861,7 @@
   }
   function pickSound(x) {
     pvStop();
-    sound = { id: x.id, title: x.title, owner_id: x.owner_id, owner_name: x.owner_name, url: x.url, own: x.owner_id === s.userId };
+    sound = { id: x.id, title: x.title, owner_id: x.owner_id, owner_name: x.owner_name, url: x.url, src: x.src, own: x.owner_id === s.userId };
     renderSound(); sndMsg('เลือกเสียงแล้ว');
   }
   function soundRow(x) {
