@@ -1095,6 +1095,7 @@
 .dark .snd-badge,.dark .snd-badge:hover,.dark .snd-badge.snd-on{color:#fbbf24}
 .snd-badge:hover{transform:scale(1.1)}
 .snd-badge:active{transform:scale(.9)}
+.snd-badge{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .snd-badge:focus-visible{outline:2px solid #f59e0b;outline-offset:2px;border-radius:8px!important}
 .snd-badge svg{width:1.5rem;height:1.5rem;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
 .snd-bars{display:none;align-items:flex-end;gap:2.5px;width:1.25rem;height:1.25rem}
@@ -1201,8 +1202,24 @@
     // แตะตอนยังไม่เล่น = เล่นเสียง · แตะตอนกำลังเล่นอยู่ (รวมที่เล่นเองจากโหมดออโต้ตอนเลื่อน) = ไปหน้าเสียง (ผู้อัปโหลดต้นฉบับ + ทุกโพสต์ที่ใช้เสียงนี้)
     if (!opt.noPlay) {
       b.title = label + ' · แตะตอนเล่นอยู่เพื่อไปหน้าเสียง';
+      // กดค้าง ~0.5 วิ ตอนกำลังเล่น = หยุดเพลง (และปิดโหมดออโต้ตอนเลื่อน) · กดสั้น = เล่น / ไปหน้าเสียงตามด้านล่าง
+      let lpT = 0, lpDone = false;
+      const lpClear = () => { clearTimeout(lpT); lpT = 0; };
+      b.addEventListener('pointerdown', (e) => {
+        if (e.button) return;
+        lpDone = false; lpClear();
+        lpT = setTimeout(() => {
+          lpT = 0;
+          if (sCur !== b) return;
+          lpDone = true; sndAuto = false; sndStop();
+          try { navigator.vibrate && navigator.vibrate(15); } catch {}
+        }, 500);
+      });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => b.addEventListener(t, lpClear));
+      b.addEventListener('contextmenu', (e) => e.preventDefault()); // กันเมนูกดค้างของเบราว์เซอร์
       b.addEventListener('click', (e) => {
         e.preventDefault(); e.stopPropagation();
+        if (lpDone) { lpDone = false; return; } // คลิกที่ตามหลังการกดค้าง = ไม่ทำอะไร
         if (sCur === b) { location.assign(SND_PAGE + encodeURIComponent(snd.id)); return; }
         sndToggle(b, snd.url);
       });
