@@ -39,33 +39,47 @@
 <main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
   <div id="state" class="text-sm text-slate-500 dark:text-neutral-400" role="status">กำลังโหลดเสียง...</div>
 
-  <section id="card" class="hidden rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-5 sm:p-6">
-    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-      <div id="disc-slot" class="shrink-0"></div>
-      <div class="min-w-0 flex-1 text-center sm:text-left">
-        <h1 id="s-title" class="text-2xl font-extrabold tracking-tight break-words"></h1>
-        <a id="s-owner" class="mt-2 inline-flex items-center gap-2 text-sm text-slate-600 dark:text-neutral-300 hover:text-amber-500"></a>
-        <p id="s-meta" class="mt-1 text-xs text-slate-500 dark:text-neutral-400"></p>
-        <div class="mt-4 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-          <button id="s-play" type="button" class="px-4 py-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer">▶ ฟังเสียง</button>
-          <a id="s-use" href="#" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110">ใช้เสียงนี้ในโพสต์</a>
-          <button id="s-report" type="button" class="px-3 py-2 text-sm text-slate-500 dark:text-neutral-400 hover:text-rose-500 cursor-pointer">รายงานเสียง</button>
+  <section id="card" class="hidden">
+    <!-- ผู้อัปโหลดเสียงต้นฉบับอยู่บนสุด (แบบ TikTok) เพื่อให้หาตัวเจ้าของเจอและรายงานได้ -->
+    <div class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4 sm:p-5">
+      <p class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-2">ผู้อัปโหลดเสียงต้นฉบับ</p>
+      <div class="flex items-center gap-3">
+        <a id="s-ava" class="shrink-0"></a>
+        <div class="min-w-0 flex-1">
+          <a id="s-owner" class="block text-base font-bold truncate hover:text-amber-500"></a>
+          <a id="s-owner-id" class="block text-xs text-slate-500 dark:text-neutral-400 truncate hover:text-amber-500"></a>
         </div>
-        <p id="s-note" class="mt-2 text-xs text-slate-500 dark:text-neutral-400 empty:hidden"></p>
+        <button id="s-report" type="button" class="shrink-0 inline-flex items-center gap-1.5 px-3 h-9 rounded-xl border border-rose-500/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-500/10 transition cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 22V4m0 0h13l-2 4 2 4H4"/></svg>รายงานเสียงนี้</button>
       </div>
     </div>
 
-    <div id="owner-box" class="hidden mt-5 pt-5 border-t border-slate-200 dark:border-white/10 space-y-3">
-      <h2 class="text-sm font-semibold">จัดการเสียงของคุณ</h2>
-      <label class="flex items-start gap-2 text-sm cursor-pointer">
-        <input id="o-allow" type="checkbox" class="mt-1 accent-amber-500">
-        <span>อนุญาตให้ผู้อื่นใช้เสียงนี้<span class="block text-xs text-slate-500 dark:text-neutral-400">ยืนยันว่าเป็นเสียงของคุณเอง หรือคุณมีสิทธิ์ให้ผู้อื่นนำไปใช้ · ปิดแล้ว โพสต์ที่ใช้ไปแล้วยังคงอยู่ แต่ผู้อื่นเลือกใช้เพิ่มไม่ได้</span></span>
-      </label>
-      <div class="flex gap-2">
-        <input id="o-title" maxlength="80" autocomplete="off" aria-label="ชื่อเสียง" class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-        <button id="o-save" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">บันทึกชื่อ</button>
+    <div class="mt-4 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-5">
+      <div class="flex items-center gap-4">
+        <div id="disc-slot" class="shrink-0"></div>
+        <div class="min-w-0 flex-1">
+          <h1 id="s-title" class="text-xl sm:text-2xl font-extrabold tracking-tight break-words"></h1>
+          <p id="s-meta" class="mt-1 text-xs text-slate-500 dark:text-neutral-400"></p>
+        </div>
       </div>
-      <p id="o-msg" class="text-xs empty:hidden" role="status"></p>
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <button id="s-play" type="button" class="px-4 py-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer">▶ ฟังเสียง</button>
+        <a id="s-use" href="#" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110">ใช้เสียงนี้ในโพสต์</a>
+      </div>
+      <p id="s-note" class="mt-2 text-xs text-slate-500 dark:text-neutral-400 empty:hidden"></p>
+
+      <div id="owner-box" class="hidden mt-5 pt-5 border-t border-slate-200 dark:border-white/10 space-y-3">
+        <h2 class="text-sm font-semibold">จัดการเสียงของคุณ</h2>
+        <label class="flex items-start gap-2 text-sm cursor-pointer">
+          <input id="o-allow" type="checkbox" class="mt-1 accent-amber-500">
+          <span>อนุญาตให้ผู้อื่นใช้เสียงนี้<span class="block text-xs text-slate-500 dark:text-neutral-400">ยืนยันว่าเป็นเสียงของคุณเอง หรือคุณมีสิทธิ์ให้ผู้อื่นนำไปใช้ · ปิดแล้ว โพสต์ที่ใช้ไปแล้วยังคงอยู่ แต่ผู้อื่นเลือกใช้เพิ่มไม่ได้</span></span>
+        </label>
+        <div class="flex gap-2">
+          <input id="o-title" maxlength="80" autocomplete="off" aria-label="ชื่อเสียง" class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+          <button id="o-save" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">บันทึกชื่อ</button>
+        </div>
+        <p id="o-msg" class="text-xs empty:hidden" role="status"></p>
+      </div>
     </div>
   </section>
 
@@ -80,7 +94,7 @@
   const s = session();
   const $ = (id) => document.getElementById(id);
   const fmtDur = (n) => { n = Math.max(0, Math.round(Number(n) || 0)); return Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0'); };
-  // /sound/<id> (ผ่าน _redirects → sound.html) หรือ /sound.html?id=<id>
+  // /sound?id=<id> (Cloudflare Pages เสิร์ฟ sound.html ให้เองโดยไม่ต้องตั้ง _redirects) · รองรับ /sound/<id> ด้วยถ้าเพิ่ม route เอง
   const id = (() => {
     const m = location.pathname.match(/\/sound\/([^/?#]+)/);
     try { return decodeURIComponent(m ? m[1] : (new URLSearchParams(location.search).get('id') || '')); } catch { return ''; }
@@ -109,8 +123,12 @@
     disc.addEventListener('click', togglePlay);
     $('disc-slot').replaceChildren(disc);
     $('s-title').textContent = '♪ ' + (snd.title || 'เสียงต้นฉบับ');
-    const o = $('s-owner'); o.href = NIV.userUrl(snd.owner_id); o.replaceChildren(NIV.avatarEl({ id: snd.owner_id, display_name: snd.owner_name, avatar_url: snd.owner_avatar }, 'w-7 h-7'), document.createTextNode('ต้นฉบับโดย ' + (snd.owner_name || snd.owner_id)));
-    $('s-meta').textContent = fmtDur(snd.duration) + ' · ' + Number(snd.use_count || 0).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH') + ' โพสต์';
+    document.title = (snd.title || 'เสียง') + ' | nivread';
+    const ou = NIV.userUrl(snd.owner_id);
+    $('s-ava').href = ou; $('s-ava').replaceChildren(NIV.avatarEl({ id: snd.owner_id, display_name: snd.owner_name, avatar_url: snd.owner_avatar }, 'w-14 h-14'));
+    $('s-owner').href = ou; $('s-owner').textContent = snd.owner_name || snd.owner_id;
+    $('s-owner-id').href = ou; $('s-owner-id').textContent = '@' + snd.owner_id;
+    $('s-meta').textContent = fmtDur(snd.duration) + ' · ' + Number(snd.use_count || 0).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH') + ' โพสต์ที่ใช้เสียงนี้';
     $('s-play').addEventListener('click', togglePlay);
     const mine = !!s.userId && s.userId === snd.owner_id;
     const use = $('s-use');
@@ -151,7 +169,7 @@
       const r = await api('/api/blog/sound?id=' + encodeURIComponent(id));
       if (!r.ok) return state(r.data.error || 'ไม่พบเสียงนี้', true);
       render(r.data);
-    } catch { state('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่', true); }
+    } catch (e) { console.error('sound page:', e && e.stack); state('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่', true); }
   })();
 </script>
 </body>
