@@ -833,9 +833,10 @@
     if (!sound) return;
     const row = el('div', 'flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10');
     const info = el('div', 'min-w-0 flex-1');
-    info.append(el('div', 'text-sm font-semibold truncate', '♪ ' + (sound.title || 'เสียงต้นฉบับ')),
+    const t1 = el('div', 'text-sm font-semibold truncate'); t1.innerHTML = '<svg class="inline-block w-4 h-4 -mt-0.5 mr-1 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3v12.5a3.5 3.5 0 11-2-3.16V6.3L9 8.1v9.4a3.5 3.5 0 11-2-3.16V5.5z"/></svg>'; t1.append(document.createTextNode(sound.title || 'เสียงต้นฉบับ'));
+    info.append(t1,
       el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (sound.owner_name || sound.owner_id) + (sound.own ? ' (ของคุณ)' : '') + (videos.some(isVidUp) && sound.url ? ' · ผสมเข้าวิดีโอตอนอัปโหลด' : '')));
-    const x = el('button', 'w-8 h-8 rounded-lg text-sm text-slate-500 dark:text-neutral-300 hover:bg-amber-500/15 hover:text-amber-500 cursor-pointer', '✕');
+    const x = el('button', 'w-8 h-8 rounded-lg text-slate-500 dark:text-neutral-300 hover:bg-amber-500/15 hover:text-amber-500 cursor-pointer'); x.innerHTML = '<svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
     x.type = 'button'; x.title = 'เอาเสียงออก'; x.setAttribute('aria-label', 'เอาเสียงออก');
     x.addEventListener('click', () => { pvStop(); const gone = sound; sound = null; renderSound(); if (gone && gone.fromVideo) { /* เสียงของวิดีโอนี้ไม่ได้ผูกกับโพสต์แล้ว แต่ไฟล์ยังอยู่จนกว่าจะลบวิดีโอ/กวาด */ } });
     row.append(sound.url ? discBtn(sound.url) : el('div', 'snd-disc'), info, x);
@@ -850,7 +851,8 @@
   function soundRow(x) {
     const li = el('li', 'flex items-center gap-3 p-2 rounded-xl bg-white/70 dark:bg-black/30 border border-slate-200 dark:border-white/10');
     const info = el('div', 'min-w-0 flex-1');
-    info.append(el('div', 'text-sm font-semibold truncate', '♪ ' + (x.title || 'เสียงต้นฉบับ')),
+    const t2 = el('div', 'text-sm font-semibold truncate'); t2.innerHTML = '<svg class="inline-block w-4 h-4 -mt-0.5 mr-1 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3v12.5a3.5 3.5 0 11-2-3.16V6.3L9 8.1v9.4a3.5 3.5 0 11-2-3.16V5.5z"/></svg>'; t2.append(document.createTextNode(x.title || 'เสียงต้นฉบับ'));
+    info.append(t2,
       el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (x.owner_name || x.owner_id) + ' · ' + fmtDur(x.duration) + (x.use_count ? ' · ' + x.use_count + ' โพสต์' : '') + (x.allow_reuse === false ? ' · ไม่เปิดให้ผู้อื่นใช้' : '')));
     const ok = el('button', 'shrink-0 px-3 h-8 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-xs font-semibold hover:bg-amber-500/25 cursor-pointer', 'เลือก');
     ok.type = 'button'; ok.addEventListener('click', () => pickSound(x));

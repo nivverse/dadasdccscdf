@@ -63,7 +63,7 @@
         </div>
       </div>
       <div class="mt-4 flex flex-wrap items-center gap-2">
-        <button id="s-play" type="button" class="px-4 py-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer">▶ ฟังเสียง</button>
+        <button id="s-play" type="button" class="px-4 py-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer"><svg class="inline-block w-4 h-4 -mt-0.5 mr-1.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 001.5.86l11-6.5a1 1 0 000-1.72l-11-6.5A1 1 0 008 5.5z"/></svg>ฟังเสียง</button>
         <a id="s-use" href="#" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110">ใช้เสียงนี้ในโพสต์</a>
       </div>
       <p id="s-note" class="mt-2 text-xs text-slate-500 dark:text-neutral-400 empty:hidden"></p>
@@ -104,7 +104,7 @@
   let snd = null, audio = null;
   const setPlaying = (on) => {
     $('disc').classList.toggle('snd-on', on);
-    $('s-play').textContent = on ? '⏸ หยุด' : '▶ ฟังเสียง';
+    $('s-play').innerHTML = (on ? '<svg class="inline-block w-4 h-4 -mt-0.5 mr-1.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4.5" height="14" rx="1.2"/><rect x="13.5" y="5" width="4.5" height="14" rx="1.2"/></svg>' + 'หยุด' : '<svg class="inline-block w-4 h-4 -mt-0.5 mr-1.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 001.5.86l11-6.5a1 1 0 000-1.72l-11-6.5A1 1 0 008 5.5z"/></svg>' + 'ฟังเสียง');
   };
   function togglePlay() {
     if (!audio) {
@@ -115,6 +115,8 @@
     else { audio.pause(); setPlaying(false); }
   }
 
+  const NOTE = '<svg class="inline-block w-4 h-4 -mt-0.5 mr-1 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3v12.5a3.5 3.5 0 11-2-3.16V6.3L9 8.1v9.4a3.5 3.5 0 11-2-3.16V5.5z"/></svg>';
+  function setTitle(t) { const h = $('s-title'); h.innerHTML = NOTE; h.append(document.createTextNode(t || 'เสียงต้นฉบับ')); } // ข้อความชื่อใส่ผ่าน text node (กัน HTML แทรก)
   function render(d) {
     snd = d.sound;
     document.title = (snd.title || 'เสียง') + ' | nivread';
@@ -122,7 +124,7 @@
     disc.innerHTML = NIV.discSvg + '<span class="snd-pp" aria-hidden="true"></span>';
     disc.addEventListener('click', togglePlay);
     $('disc-slot').replaceChildren(disc);
-    $('s-title').textContent = '♪ ' + (snd.title || 'เสียงต้นฉบับ');
+    setTitle(snd.title);
     document.title = (snd.title || 'เสียง') + ' | nivread';
     const ou = NIV.userUrl(snd.owner_id);
     $('s-ava').href = ou; $('s-ava').replaceChildren(NIV.avatarEl({ id: snd.owner_id, display_name: snd.owner_name, avatar_url: snd.owner_avatar }, 'w-14 h-14'));
@@ -153,7 +155,7 @@
       $('o-save').addEventListener('click', async () => {
         const t = $('o-title').value.trim();
         if (!t) return om('ใส่ชื่อเสียง', true);
-        if (await save({ title: t }, 'บันทึกชื่อแล้ว')) { snd.title = t; $('s-title').textContent = '♪ ' + t; document.title = t + ' | nivread'; }
+        if (await save({ title: t }, 'บันทึกชื่อแล้ว')) { snd.title = t; setTitle(t); document.title = t + ' | nivread'; }
       });
     }
     $('card').classList.remove('hidden');
