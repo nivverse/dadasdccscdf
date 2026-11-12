@@ -34,7 +34,7 @@
 
 <main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
   <h1 class="text-3xl font-extrabold tracking-tight">รายงาน</h1>
-  <p class="text-sm text-slate-600 dark:text-neutral-400 mt-1">เรื่องที่สมาชิกรายงานเข้ามา — โพสต์ ความคิดเห็น และผู้ใช้</p>
+  <p class="text-sm text-slate-600 dark:text-neutral-400 mt-1">เรื่องที่สมาชิกรายงานเข้ามา — โพสต์ ความคิดเห็น ผู้ใช้ และเสียง</p>
 
   <nav class="mt-5 flex border-b border-slate-200 dark:border-white/10" aria-label="สถานะรายงาน">
     <button type="button" data-tab="open" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">รอตรวจสอบ <span id="open-n" class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs hidden"></span></button>
@@ -57,7 +57,8 @@
   const $ = (id) => document.getElementById(id);
   const TYPE = { post: ['โพสต์', 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30'],
                  comment: ['ความคิดเห็น', 'bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30'],
-                 user: ['ผู้ใช้', 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'] };
+                 user: ['ผู้ใช้', 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'],
+                 sound: ['เสียง', 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'] };
   let tab = location.hash === '#done' ? 'done' : location.hash === '#video' ? 'video' : location.hash === '#chat' ? 'chat' : 'open';
 
   const say = (t, kind) => {
@@ -83,12 +84,12 @@
 
   function card(g) {
     const c = el('article', 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4');
-    const [tl, tc] = TYPE[g.type];
+    const [tl, tc] = TYPE[g.type] || [g.type, 'bg-slate-500/15 text-slate-600 dark:text-slate-300 border-slate-500/30']; // type ที่ไม่รู้จักต้องไม่ทำให้ทั้งรายการพัง
     const top = el('div', 'flex items-center gap-2 flex-wrap');
     top.append(el('span', 'px-2 py-0.5 rounded-full border text-xs ' + tc, tl));
     top.append(el('span', 'text-xs font-semibold text-amber-600 dark:text-amber-400', g.count + ' รายงาน'));
     top.append(el('span', 'text-xs text-slate-500 dark:text-neutral-400', ago(g.last_at)));
-    if (g.preview && g.preview.hidden) top.append(el('span', 'px-2 py-0.5 rounded-full text-xs bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400', 'ซ่อนอยู่'));
+    if (g.preview && g.preview.hidden) top.append(el('span', 'px-2 py-0.5 rounded-full text-xs bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400', 'ซ่อนอยู่ (รอตรวจ)'));
     c.append(top);
 
     // เนื้อหาที่ถูกรายงาน (ใช้ textContent เสมอ กัน XSS)
@@ -103,6 +104,23 @@
       box.append(el('p', 'whitespace-pre-wrap leading-6', pv.content));
       const a = el('a', 'mt-2 inline-block text-xs text-amber-600 dark:text-amber-400 hover:opacity-70', 'ในโพสต์: ' + pv.title); a.href = '/posts/' + pv.slug + '#comments'; a.target = '_blank'; a.rel = 'noopener';
       box.append(a);
+    } else if (g.type === 'sound') {
+      const row = el('div', 'flex items-center gap-3');
+      const pb = el('button', 'shrink-0 w-10 h-10 grid place-items-center rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 hover:bg-amber-500/25 cursor-pointer');
+      pb.type = 'button'; pb.setAttribute('aria-label', 'ฟังเสียงที่ถูกรายงาน');
+      const ICON_PLAY = '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 001.5.86l11-6.5a1 1 0 000-1.72l-11-6.5A1 1 0 008 5.5z"/></svg>';
+      const ICON_PAUSE = '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4.5" height="14" rx="1.2"/><rect x="13.5" y="5" width="4.5" height="14" rx="1.2"/></svg>';
+      pb.innerHTML = ICON_PLAY;
+      if (pv.url) {
+        let au = null;
+        pb.addEventListener('click', () => {
+          if (!au) { au = new Audio(pv.url); au.addEventListener('ended', () => { pb.innerHTML = ICON_PLAY; }); au.addEventListener('error', () => { pb.innerHTML = ICON_PLAY; say('เล่นเสียงไม่ได้ (ไฟล์อาจถูกลบแล้ว)', 'err'); }); }
+          if (au.paused) { au.play().then(() => { pb.innerHTML = ICON_PAUSE; }).catch(() => {}); } else { au.pause(); pb.innerHTML = ICON_PLAY; }
+        });
+      } else pb.disabled = true;
+      const a = el('a', 'min-w-0 flex-1 font-semibold truncate hover:text-amber-500', pv.title || 'เสียงต้นฉบับ'); a.href = '/sound?id=' + encodeURIComponent(pv.sound_id); a.target = '_blank'; a.rel = 'noopener';
+      row.append(pb, a);
+      box.append(row);
     } else {
       const a = el('a', 'font-semibold hover:text-amber-500', '@' + g.target); a.href = userUrl(g.target); a.target = '_blank'; a.rel = 'noopener';
       box.append(a);
@@ -127,7 +145,7 @@
       if (g.type !== 'user' && pv) {
         const del = el('button', 'px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold disabled:opacity-60 cursor-pointer', 'ลบเนื้อหา');
         del.type = 'button';
-        del.addEventListener('click', () => { if (confirm('ลบ' + tl + 'นี้ถาวรใช่ไหม?')) resolve(g, 'delete', c); });
+        del.addEventListener('click', () => { if (confirm('ลบ' + tl + 'นี้ถาวรใช่ไหม?' + (g.type === 'sound' ? ' (โพสต์ที่ใช้เสียงนี้จะกลายเป็นโพสต์ไม่มีเสียง)' : ''))) resolve(g, 'delete', c); });
         act.append(del);
       }
       const ownerId = g.type === 'user' ? g.target : (pv && pv.owner_id);
