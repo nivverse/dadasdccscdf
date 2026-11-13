@@ -102,6 +102,8 @@ textarea.wr-f{resize:none;line-height:1.6}
 .wr-opt{display:none;gap:10px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:16px;background:var(--fill);font-size:12px;line-height:1.55;color:var(--mute);cursor:pointer}
 .wr-opt:not(.hidden){display:flex}
 .wr-opt input{margin-top:3px;accent-color:var(--amber)}
+/* ซ่อนเส้นคั่นบนของฟุตเตอร์ของเว็บ */
+#main-footer,#main-footer>*{border-top:0!important;box-shadow:none!important}
 </style>
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
@@ -171,22 +173,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   <p id="lk-msg" class="text-xs empty:hidden" role="status"></p>
 </div>
 
-<div id="pn-snd" class="hidden wr-sheet" role="dialog" aria-label="เลือกเสียง">
-  <div class="wr-grab"></div>
-  <div class="wr-head"><div class="wr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3a9 9 0 019 9"/></svg></div><div class="min-w-0"><h2>เลือกเสียง</h2><p>โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง</p></div><button type="button" class="wr-x" data-close="tg-snd" aria-label="ปิด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <p class="wr-hint">ถ้าเลือกเสียงก่อนอัปโหลดวิดีโอ ระบบจะใส่เสียงที่เลือกแทนเสียงเดิมของวิดีโอ และโพสต์ยังมีแผ่นเสียงให้กดฟังแยกได้</p>
-  <div id="snd-tabs" class="wr-seg" role="group" aria-label="หมวดเสียง">
-    <button type="button" data-mode="hot" aria-pressed="true">ยอดนิยม</button>
-    <button type="button" data-mode="fav" aria-pressed="false">เพลงโปรด</button>
-    <button type="button" data-mode="mine" aria-pressed="false">ของฉัน</button>
-  </div>
-  <label class="wr-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="snd-q" type="search" maxlength="40" autocomplete="off" placeholder="ค้นหาชื่อเสียงหรือไอดีเจ้าของ" aria-label="ค้นหาเสียง"></label>
-  <ul id="snd-list" class="wr-list"></ul>
-  <button id="snd-more" type="button" class="hidden">โหลดเพิ่ม</button>
-  <p id="snd-msg" class="text-xs empty:hidden" role="status"></p>
-  <p class="wr-hint" style="font-size:11px">เสียงที่เจ้าของไม่ได้เปิดให้ใช้จะไม่แสดงในรายการ · พบเสียงละเมิดกดรายงานได้ที่หน้าเสียง</p>
-</div>
-<div id="wr-bd" class="wr-bd"></div>
+
 
 <div id="snd-sel" class="empty:hidden"></div>
 <ul id="lock-list"></ul>
@@ -216,6 +203,22 @@ textarea.wr-f{resize:none;line-height:1.6}
 </main>
 
 <div id="main-footer" class="z-10"></div>
+<div id="pn-snd" class="hidden wr-sheet" role="dialog" aria-label="เลือกเสียง">
+  <div class="wr-grab"></div>
+  <div class="wr-head"><div class="wr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3a9 9 0 019 9"/></svg></div><div class="min-w-0"><h2>เลือกเสียง</h2><p>โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง</p></div><button type="button" class="wr-x" data-close="tg-snd" aria-label="ปิด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <p class="wr-hint">ถ้าเลือกเสียงก่อนอัปโหลดวิดีโอ ระบบจะใส่เสียงที่เลือกแทนเสียงเดิมของวิดีโอ และโพสต์ยังมีแผ่นเสียงให้กดฟังแยกได้</p>
+  <div id="snd-tabs" class="wr-seg" role="group" aria-label="หมวดเสียง">
+    <button type="button" data-mode="hot" aria-pressed="true">ยอดนิยม</button>
+    <button type="button" data-mode="fav" aria-pressed="false">เพลงโปรด</button>
+    <button type="button" data-mode="mine" aria-pressed="false">ของฉัน</button>
+  </div>
+  <label class="wr-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="snd-q" type="search" maxlength="40" autocomplete="off" placeholder="ค้นหาชื่อเสียงหรือไอดีเจ้าของ" aria-label="ค้นหาเสียง"></label>
+  <ul id="snd-list" class="wr-list"></ul>
+  <button id="snd-more" type="button" class="hidden">โหลดเพิ่ม</button>
+  <p id="snd-msg" class="text-xs empty:hidden" role="status"></p>
+  <p class="wr-hint" style="font-size:11px">เสียงที่เจ้าของไม่ได้เปิดให้ใช้จะไม่แสดงในรายการ · พบเสียงละเมิดกดรายงานได้ที่หน้าเสียง</p>
+</div>
+<div id="wr-bd" class="wr-bd"></div>
 <script src="/nivread.js"></script>
 <script>
   const { session, api, el } = NIV;
