@@ -115,7 +115,7 @@
         <p class="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">เลือกเสียงให้โพสต์ ทุกคนเลือกได้ — โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง และแสดงชื่อเจ้าของเสียงต้นฉบับ ถ้าเลือกเสียงไว้ก่อนอัปโหลดวิดีโอ ระบบจะรวมเสียงที่เลือกเข้ากับวิดีโอให้ (แทนเสียงเดิมของวิดีโอ) และโพสต์ยังมีแผ่นเสียงให้กดฟังแยกได้</p>
         <div id="snd-tabs" role="group" aria-label="หมวดเสียง" class="grid grid-cols-3 gap-2">
           <button type="button" data-mode="hot" aria-pressed="true" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ยอดนิยม</button>
-          <button type="button" data-mode="new" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ใหม่ล่าสุด</button>
+          <button type="button" data-mode="fav" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">เสียงโปรด</button>
           <button type="button" data-mode="mine" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ของฉัน</button>
         </div>
         <input id="snd-q" type="search" maxlength="40" autocomplete="off" placeholder="ค้นหาชื่อเสียงหรือไอดีเจ้าของ" aria-label="ค้นหาเสียง" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
@@ -871,8 +871,25 @@
     info.append(t2,
       el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (x.owner_name || x.owner_id) + ' · ' + fmtDur(x.duration) + (x.use_count ? ' · ' + x.use_count + ' โพสต์' : '') + (x.allow_reuse === false ? ' · ไม่เปิดให้ผู้อื่นใช้' : '')));
     const ok = el('button', 'shrink-0 px-3 h-8 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-xs font-semibold hover:bg-amber-500/25 cursor-pointer', 'เลือก');
-    ok.type = 'button'; ok.addEventListener('click', () => pickSound(x));
-    li.append(discBtn(x.url), info, ok);
+    ok.type = 'button'; ok.addEventListener('click', () => {
+      if (x.allow_reuse === false && x.owner_id !== s.userId) return sndMsg('เจ้าของเสียงนี้ปิดไม่ให้ผู้อื่นใช้แล้ว', true); // เสียงโปรดที่เจ้าของเพิ่งปิดการใช้ซ้ำ
+      pickSound(x);
+    });
+    const HO = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8.1 3.3 5 6.5 5c2 0 3.6 1.1 4.5 2.7h2C13.900 6.100 15.500 5 17.500 5c3.200 0 5 3.100 3.800 6.300-1.800 4.600-9.300 9.200-9.300 9.200z"/></svg>', HF = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8.1 3.3 5 6.5 5c2 0 3.6 1.1 4.5 2.7h2C13.900 6.100 15.500 5 17.500 5c3.200 0 5 3.100 3.800 6.300-1.800 4.600-9.300 9.200-9.300 9.200z"/></svg>';
+    let fv = !!x.fav || sndMode === 'fav';
+    const hb = el('button', 'shrink-0 w-8 h-8 grid place-items-center rounded-lg cursor-pointer hover:bg-rose-500/10'); hb.type = 'button';
+    const paintH = () => { hb.innerHTML = fv ? HF : HO; hb.className = 'shrink-0 w-8 h-8 grid place-items-center rounded-lg cursor-pointer hover:bg-rose-500/10 ' + (fv ? 'text-rose-500' : 'text-slate-400 dark:text-neutral-500'); hb.setAttribute('aria-label', fv ? 'เอาออกจากเสียงโปรด' : 'เก็บเป็นเสียงโปรด'); hb.title = hb.getAttribute('aria-label'); };
+    paintH();
+    hb.addEventListener('click', async () => {
+      hb.disabled = true;
+      const r = await api('/api/blog/sound-fav', { method: 'POST', body: { userId: s.userId, id: x.id, on: !fv } });
+      hb.disabled = false;
+      if (r.status === 401) return needLogin();
+      if (!r.ok) return sndMsg(r.data.error || 'ทำรายการไม่สำเร็จ', true);
+      fv = !!r.data.fav; paintH();
+      if (sndMode === 'fav' && !fv) { li.remove(); if (!$('snd-list').children.length) sndMsg('ยังไม่มีเสียงโปรด — เปิดหน้าเสียงแล้วกดเก็บเป็นเสียงโปรด'); }
+    });
+    li.append(discBtn(x.url), info, hb, ok);
     return li;
   }
   async function loadSounds(reset) {
@@ -890,7 +907,7 @@
     const arr = r.data.sounds || [];
     arr.forEach((x) => $('snd-list').append(soundRow(x)));
     $('snd-more').classList.toggle('hidden', !r.data.hasMore);
-    sndMsg(arr.length || sndPage > 1 ? '' : (sndMode === 'mine' ? 'ยังไม่มีเสียงของคุณ — เสียงเกิดขึ้นเมื่ออัปโหลดวิดีโอ' : q ? 'ไม่พบเสียงที่ค้นหา' : 'ยังไม่มีเสียงที่เปิดให้ใช้'));
+    sndMsg(arr.length || sndPage > 1 ? '' : (sndMode === 'mine' ? 'ยังไม่มีเสียงของคุณ — เสียงเกิดขึ้นเมื่ออัปโหลดวิดีโอ' : sndMode === 'fav' ? 'ยังไม่มีเสียงโปรด — เปิดหน้าเสียงแล้วกดเก็บเป็นเสียงโปรด' : q ? 'ไม่พบเสียงที่ค้นหา' : 'ยังไม่มีเสียงที่เปิดให้ใช้'));
   }
   $('tg-snd').addEventListener('click', () => {
     toggle('tg-snd', 'pn-snd', 'snd-q');
