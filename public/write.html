@@ -111,16 +111,17 @@ textarea.wr-f{resize:none;line-height:1.6}
 .wr-load{display:flex;align-items:center;gap:16px;margin-top:12px;padding:16px 18px;border-radius:18px;background:var(--card);box-shadow:var(--shadow);position:relative;overflow:hidden}
 .wr-load[hidden]{display:none}
 .wr-load::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(245,158,11,.10) 50%,transparent 70%);transform:translateX(-100%);animation:wr-sheen 1.8s ease-in-out infinite;pointer-events:none}
-.wr-eq{display:flex;align-items:center;gap:4px;height:26px;flex:0 0 auto}
-.wr-eq i{display:block;width:4px;height:100%;border-radius:3px;background:linear-gradient(180deg,#fbbf24,#f97316);transform-origin:center;animation:wr-eq 1s ease-in-out infinite}
-.wr-eq i:nth-child(2){animation-delay:-.8s}.wr-eq i:nth-child(3){animation-delay:-.6s}.wr-eq i:nth-child(4){animation-delay:-.4s}.wr-eq i:nth-child(5){animation-delay:-.2s}
+.wr-ring{position:relative;flex:0 0 auto;width:30px;height:30px}
+.wr-ring::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(245,158,11,0) 0deg,#f59e0b 200deg,#f97316 340deg,rgba(249,115,22,0) 360deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3.5px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 3.5px),#000 calc(100% - 3px));animation:wr-spin .95s linear infinite}
+.wr-ring::after{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f97316);animation:wr-pulse 1.4s ease-in-out infinite}
 .wr-track{flex:1;height:6px;border-radius:6px;background:var(--fill);overflow:hidden;position:relative}
 .wr-bar{position:absolute;left:0;top:0;bottom:0;width:38%;border-radius:6px;background:linear-gradient(90deg,#f59e0b,#f97316);animation:wr-sweep 1.3s cubic-bezier(.5,0,.3,1) infinite}
 .wr-load.det .wr-bar{animation:none;transition:width .35s ease;box-shadow:0 0 12px rgba(249,115,22,.55)}
-@keyframes wr-eq{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+@keyframes wr-spin{to{transform:rotate(360deg)}}
+@keyframes wr-pulse{0%,100%{transform:scale(.6);opacity:.7}50%{transform:scale(1);opacity:1}}
 @keyframes wr-sweep{0%{transform:translateX(-100%)}100%{transform:translateX(265%)}}
 @keyframes wr-sheen{to{transform:translateX(100%)}}
-@media (prefers-reduced-motion:reduce){.wr-eq i,.wr-bar,.wr-load::after{animation:none!important}.wr-eq i{transform:scaleY(.6)}}
+@media (prefers-reduced-motion:reduce){.wr-ring::before,.wr-ring::after,.wr-bar,.wr-load::after{animation:none!important}}
 </style>
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
@@ -1076,7 +1077,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   const mk = () => {
     const d = document.createElement('div');
     d.className = 'wr-load'; d.hidden = true; d.setAttribute('role', 'progressbar'); d.setAttribute('aria-busy', 'true'); d.setAttribute('aria-label', 'กำลังประมวลผล');
-    d.innerHTML = '<div class="wr-eq"><i></i><i></i><i></i><i></i><i></i></div><div class="wr-track"><div class="wr-bar"></div></div>';
+    d.innerHTML = '<div class="wr-ring"></div><div class="wr-track"><div class="wr-bar"></div></div>';
     return d;
   };
   const watch = (id) => {
