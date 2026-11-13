@@ -245,7 +245,7 @@
                         if (u) { post = p; url = u; break; }
                     }
                 } catch (e) {}
-                if (!post) return start('ไม่พบรีโพสต์ที่มีวิดีโอ (ใช้ได้เฉพาะวิดีโอที่อัปโหลดในโพสต์ ไม่ใช่ลิงก์ YouTube)');
+                if (!post) return start('ไม่พบรีโพสต์ที่มีวิดีโอ');
                 const frame = el('div', 'relative mx-auto overflow-hidden bg-black rounded-xl ring-1 ring-white/10');
                 frame.style.cssText = `width:${FW}px;height:${FH}px;max-width:100%`;
                 const v = el('video', 'absolute inset-0 w-full h-full object-cover');
