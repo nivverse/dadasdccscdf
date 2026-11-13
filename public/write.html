@@ -115,7 +115,7 @@
         <p class="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">เลือกเสียงให้โพสต์ ทุกคนเลือกได้ — โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง และแสดงชื่อเจ้าของเสียงต้นฉบับ ถ้าเลือกเสียงไว้ก่อนอัปโหลดวิดีโอ ระบบจะรวมเสียงที่เลือกเข้ากับวิดีโอให้ (แทนเสียงเดิมของวิดีโอ) และโพสต์ยังมีแผ่นเสียงให้กดฟังแยกได้</p>
         <div id="snd-tabs" role="group" aria-label="หมวดเสียง" class="grid grid-cols-3 gap-2">
           <button type="button" data-mode="hot" aria-pressed="true" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ยอดนิยม</button>
-          <button type="button" data-mode="fav" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">เสียงโปรด</button>
+          <button type="button" data-mode="fav" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">เพลงโปรด</button>
           <button type="button" data-mode="mine" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ของฉัน</button>
         </div>
         <input id="snd-q" type="search" maxlength="40" autocomplete="off" placeholder="ค้นหาชื่อเสียงหรือไอดีเจ้าของ" aria-label="ค้นหาเสียง" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
@@ -351,6 +351,7 @@
   const ytMsg = (t, bad) => { const m = $('yt-msg'); m.textContent = t; m.className = 'text-xs mt-1 ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
   const isVidUp = (u) => /\/v\/[A-Za-z0-9._~%-]+\/[a-z0-9]{6,40}\.(?:mp4|webm)$/.test(String(u));
   // วิดีโอที่เพิ่งอัปโหลดแล้วกด ✕ ก่อนบันทึกโพสต์ → สั่งลบจาก R2 ทันที (เดิมแค่ตัดออกจากรายการ ไฟล์จึงค้างใน R2 ตลอด)
+  const vidSrc = new Map(); // url วิดีโอที่อัปโหลด -> { file: ไฟล์ต้นฉบับ, sid: id เสียงที่รวมอยู่ในไฟล์ (null = เสียงเดิมของวิดีโอ) }
   const discardVideo = (u) => { api('/api/blog/video-discard', { method: 'POST', body: { userId: s.userId, url: u } }).catch(() => {}); };
   function renderVideos() {
     const ul = $('yt-list'); ul.replaceChildren();
@@ -551,7 +552,8 @@
       if (!r.ok || !d.success) { ytMsg(d.error || 'อัปโหลดวิดีโอไม่สำเร็จ', true); if (r.status === 401) needLogin(); }
       else {
         videos.push(d.url);
-        if (sound && sound.url && !mixed) ytMsg('อัปโหลดวิดีโอแล้ว แต่รวมเสียงเข้าวิดีโอไม่ได้ วิดีโอจึงไม่มีเสียง — เสียงที่เลือกยังเล่นได้ที่แผ่นเสียงของโพสต์'); else ytMsg('อัปโหลดวิดีโอแล้ว');
+        vidSrc.set(d.url, { file: f, sid: sound && sound.url ? (mixed ? sound.id : 'silent:' + sound.id) : null }); // เก็บไฟล์ต้นฉบับไว้ในหน่วยความจำ เผื่อต้องรวมเสียงใหม่ตอนโพสต์
+        if (sound && sound.url && !mixed) ytMsg('อัปโหลดวิดีโอแล้ว แต่รวมเสียงเข้าวิดีโอไม่ได้ วิดีโอจึงไม่มีเสียง — เสียงที่เลือกยังเล่นได้ที่แผ่นเสียงของโพสต์'); else ytMsg(sound && sound.url ? 'อัปโหลดวิดีโอแล้ว — รวมเสียง "' + (sound.title || 'เสียงที่เลือก') + '" เข้ากับวิดีโอแล้ว' : 'อัปโหลดวิดีโอแล้ว (ใช้เสียงเดิมของวิดีโอ)');
         // ไม่ได้เลือกเสียงอื่นไว้ → ผูกโพสต์กับเสียงที่เพิ่งแยกจากวิดีโอนี้ (ให้ผู้อื่นตามมาถึงเจ้าของต้นฉบับได้)
         if (!sound && d.soundId) { sound = { id: d.soundId, title: 'เสียงต้นฉบับ – ' + (s.name || s.userId), owner_id: s.userId, owner_name: s.name || s.userId, url: '', own: true, fromVideo: d.url }; renderSound(); }
       }
@@ -683,6 +685,39 @@
     $('submit-btn').disabled = true;
     msg(editSlug ? 'กำลังบันทึก...' : 'กำลังส่งโพสต์...');
     try {
+      // เลือกเสียงในแผ่นเสียงไว้ → วิดีโอที่อัปโหลดมาแล้วแต่ยังมีเสียงเดิม (หรือรวมเสียงอื่นอยู่) จะถูกบีบใหม่ด้วยเสียงที่เลือก (ปิดเสียงเดิมของวิดีโอ) ก่อนส่งโพสต์
+      if (sound && sound.url) {
+        const need = videos.filter((u) => isVidUp(u) && vidSrc.has(u) && vidSrc.get(u).sid !== sound.id && vidSrc.get(u).sid !== 'silent:' + sound.id);
+        if (need.length) {
+          vidBusy = true; renderVideos();
+          try {
+            for (const old of need) {
+              const { file } = vidSrc.get(old);
+              msg('กำลังรวมเสียงที่เลือกเข้ากับวิดีโอ...');
+              const { blob, frames, duration, mixed } = await compressVideo(file, (pr) => msg('กำลังรวมเสียงเข้ากับวิดีโอ ' + Math.round(pr * 100) + '% (ห้ามปิดหน้านี้)'), { soundUrl: sound.url, soundSrc: sound.src });
+              if (!mixed) return msg('รวมเสียงที่เลือกเข้ากับวิดีโอไม่ได้ ลองเลือกเสียงอื่น หรือเอาเสียงออกก่อนโพสต์', 'err');
+              if (blob.size > 12e6) return msg('วิดีโอหลังรวมเสียงใหญ่เกินไป', 'err');
+              msg('กำลังอัปโหลดวิดีโอที่รวมเสียงแล้ว...');
+              const fd = new FormData();
+              fd.append('video', blob, 'v.' + (blob.type.includes('mp4') ? 'mp4' : 'webm'));
+              fd.append('duration', String(Math.min(duration, 30.9).toFixed(2)));
+              frames.slice(0, 3).forEach((fr, i) => fd.append('frame', fr, 'f' + i + '.jpg'));
+              const ur = await fetch(NIV.API + '/api/blog/video-upload?userId=' + encodeURIComponent(s.userId), { method: 'POST', headers: { Authorization: 'Bearer ' + s.token }, body: fd });
+              const ud = await ur.json().catch(() => ({}));
+              if (ur.status === 401) return needLogin();
+              if (!ur.ok || !ud.success) return msg(ud.error || 'อัปโหลดวิดีโอที่รวมเสียงไม่สำเร็จ', 'err');
+              const i = videos.indexOf(old);
+              if (i >= 0) videos[i] = ud.url;
+              vidSrc.set(ud.url, { file, sid: sound.id }); vidSrc.delete(old);
+              if (!savedVideos.has(old)) discardVideo(old);
+              renderVideos();
+            }
+          } catch (err) {
+            return msg(String(err && err.message) === 'long' ? 'วิดีโอยาวเกิน 30 วินาที' : 'รวมเสียงเข้ากับวิดีโอไม่สำเร็จ ลองใหม่อีกครั้ง', 'err');
+          } finally { vidBusy = false; renderVideos(); }
+          msg(editSlug ? 'กำลังบันทึก...' : 'กำลังส่งโพสต์...');
+        }
+      }
       const r = await api(editSlug ? '/api/blog/update' : '/api/blog/create', {
         method: 'POST',
         body: {
@@ -851,7 +886,7 @@
     const info = el('div', 'min-w-0 flex-1');
     const t1 = el('div', 'text-sm font-semibold truncate'); t1.innerHTML = '<svg class="inline-block w-4 h-4 -mt-0.5 mr-1 text-amber-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3v12.5a3.5 3.5 0 11-2-3.16V6.3L9 8.1v9.4a3.5 3.5 0 11-2-3.16V5.5z"/></svg>'; t1.append(document.createTextNode(sound.title || 'เสียงต้นฉบับ'));
     info.append(t1,
-      el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (sound.owner_name || sound.owner_id) + (sound.own ? ' (ของคุณ)' : '') + (videos.some(isVidUp) && !sound.fromVideo ? ' · วิดีโอที่อัปโหลดไปแล้วยังมีเสียงเดิม ส่วนวิดีโอที่อัปโหลดต่อจากนี้จะรวมเสียงนี้เข้าไป' : '')));
+      el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (sound.owner_name || sound.owner_id) + (sound.own ? ' (ของคุณ)' : '') + (videos.some(isVidUp) && sound.url ? ' · ตอนโพสต์จะปิดเสียงเดิมของวิดีโอและรวมเสียงนี้เข้าไปให้' : '')));
     const x = el('button', 'w-8 h-8 rounded-lg text-slate-500 dark:text-neutral-300 hover:bg-amber-500/15 hover:text-amber-500 cursor-pointer'); x.innerHTML = '<svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
     x.type = 'button'; x.title = 'เอาเสียงออก'; x.setAttribute('aria-label', 'เอาเสียงออก');
     x.addEventListener('click', () => { pvStop(); const gone = sound; sound = null; renderSound(); if (gone && gone.fromVideo) { /* เสียงของวิดีโอนี้ไม่ได้ผูกกับโพสต์แล้ว แต่ไฟล์ยังอยู่จนกว่าจะลบวิดีโอ/กวาด */ } });
@@ -872,13 +907,13 @@
       el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + (x.owner_name || x.owner_id) + ' · ' + fmtDur(x.duration) + (x.use_count ? ' · ' + x.use_count + ' โพสต์' : '') + (x.allow_reuse === false ? ' · ไม่เปิดให้ผู้อื่นใช้' : '')));
     const ok = el('button', 'shrink-0 px-3 h-8 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-xs font-semibold hover:bg-amber-500/25 cursor-pointer', 'เลือก');
     ok.type = 'button'; ok.addEventListener('click', () => {
-      if (x.allow_reuse === false && x.owner_id !== s.userId) return sndMsg('เจ้าของเสียงนี้ปิดไม่ให้ผู้อื่นใช้แล้ว', true); // เสียงโปรดที่เจ้าของเพิ่งปิดการใช้ซ้ำ
+      if (x.allow_reuse === false && x.owner_id !== s.userId) return sndMsg('เจ้าของเสียงนี้ปิดไม่ให้ผู้อื่นใช้แล้ว', true); // เพลงโปรดที่เจ้าของเพิ่งปิดการใช้ซ้ำ
       pickSound(x);
     });
     const HO = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8.1 3.3 5 6.5 5c2 0 3.6 1.1 4.5 2.7h2C13.900 6.100 15.500 5 17.500 5c3.200 0 5 3.100 3.800 6.300-1.800 4.600-9.300 9.200-9.300 9.200z"/></svg>', HF = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8.1 3.3 5 6.5 5c2 0 3.6 1.1 4.5 2.7h2C13.900 6.100 15.500 5 17.500 5c3.200 0 5 3.100 3.800 6.300-1.800 4.600-9.300 9.200-9.300 9.200z"/></svg>';
     let fv = !!x.fav || sndMode === 'fav';
     const hb = el('button', 'shrink-0 w-8 h-8 grid place-items-center rounded-lg cursor-pointer hover:bg-rose-500/10'); hb.type = 'button';
-    const paintH = () => { hb.innerHTML = fv ? HF : HO; hb.className = 'shrink-0 w-8 h-8 grid place-items-center rounded-lg cursor-pointer hover:bg-rose-500/10 ' + (fv ? 'text-rose-500' : 'text-slate-400 dark:text-neutral-500'); hb.setAttribute('aria-label', fv ? 'เอาออกจากเสียงโปรด' : 'เก็บเป็นเสียงโปรด'); hb.title = hb.getAttribute('aria-label'); };
+    const paintH = () => { hb.innerHTML = fv ? HF : HO; hb.className = 'shrink-0 w-8 h-8 grid place-items-center rounded-lg cursor-pointer hover:bg-rose-500/10 ' + (fv ? 'text-rose-500' : 'text-slate-400 dark:text-neutral-500'); hb.setAttribute('aria-label', fv ? 'เอาออกจากเพลงโปรด' : 'เก็บเป็นเพลงโปรด'); hb.title = hb.getAttribute('aria-label'); };
     paintH();
     hb.addEventListener('click', async () => {
       hb.disabled = true;
@@ -887,7 +922,7 @@
       if (r.status === 401) return needLogin();
       if (!r.ok) return sndMsg(r.data.error || 'ทำรายการไม่สำเร็จ', true);
       fv = !!r.data.fav; paintH();
-      if (sndMode === 'fav' && !fv) { li.remove(); if (!$('snd-list').children.length) sndMsg('ยังไม่มีเสียงโปรด — เปิดหน้าเสียงแล้วกดเก็บเป็นเสียงโปรด'); }
+      if (sndMode === 'fav' && !fv) { li.remove(); if (!$('snd-list').children.length) sndMsg('ยังไม่มีเพลงโปรด — เปิดหน้าเสียงแล้วกดเก็บเป็นเพลงโปรด'); }
     });
     li.append(discBtn(x.url), info, hb, ok);
     return li;
@@ -907,7 +942,7 @@
     const arr = r.data.sounds || [];
     arr.forEach((x) => $('snd-list').append(soundRow(x)));
     $('snd-more').classList.toggle('hidden', !r.data.hasMore);
-    sndMsg(arr.length || sndPage > 1 ? '' : (sndMode === 'mine' ? 'ยังไม่มีเสียงของคุณ — เสียงเกิดขึ้นเมื่ออัปโหลดวิดีโอ' : sndMode === 'fav' ? 'ยังไม่มีเสียงโปรด — เปิดหน้าเสียงแล้วกดเก็บเป็นเสียงโปรด' : q ? 'ไม่พบเสียงที่ค้นหา' : 'ยังไม่มีเสียงที่เปิดให้ใช้'));
+    sndMsg(arr.length || sndPage > 1 ? '' : (sndMode === 'mine' ? 'ยังไม่มีเสียงของคุณ — เสียงเกิดขึ้นเมื่ออัปโหลดวิดีโอ' : sndMode === 'fav' ? 'ยังไม่มีเพลงโปรด — เปิดหน้าเสียงแล้วกดเก็บเป็นเพลงโปรด' : q ? 'ไม่พบเสียงที่ค้นหา' : 'ยังไม่มีเสียงที่เปิดให้ใช้'));
   }
   $('tg-snd').addEventListener('click', () => {
     toggle('tg-snd', 'pn-snd', 'snd-q');
