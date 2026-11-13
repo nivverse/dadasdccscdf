@@ -703,7 +703,7 @@
     const bpActive = () => !!(navigator.userActivation && navigator.userActivation.hasBeenActive);
     const bpSetAllMuted = (m) => {
       bpMuted = m; lsSet('niv_vsound', m ? '0' : '1');
-      document.querySelectorAll('.uv video').forEach((x) => { x.muted = m || vidOwnedBySound(x); });
+      document.querySelectorAll('.uv video').forEach((x) => { x.muted = m; });
       sndSetAuto(!m); // สวิตช์เสียงกลาง: เปิดเสียงวิดีโอ = เปิดเสียงเพลงตอนเลื่อนด้วย · ปิดเสียงวิดีโอ = ปิดเพลงด้วย
     };
     // เปิดหน้าใหม่แล้วเบราว์เซอร์ยังไม่ให้เล่นเสียงจนกว่าผู้ใช้จะแตะ → แตะครั้งแรกแล้วค่อยเปิดเสียงให้ทุกคลิป
@@ -711,7 +711,7 @@
       const evs = ['pointerdown', 'keydown', 'touchstart'];
       const onFirst = () => {
         evs.forEach((n) => removeEventListener(n, onFirst, true));
-        if (!bpMuted) document.querySelectorAll('.uv video').forEach((x) => { x.muted = vidOwnedBySound(x); });
+        if (!bpMuted) document.querySelectorAll('.uv video').forEach((x) => { x.muted = false; });
       };
       evs.forEach((n) => addEventListener(n, onFirst, { capture: true, passive: true }));
     }
@@ -746,7 +746,7 @@
       if (!v || box.dataset.bp) return;
       box.dataset.bp = '1';
       v.removeAttribute('controls');
-      if (!bpMuted && bpActive()) v.muted = vidOwnedBySound(v);
+      if (!bpMuted && bpActive()) v.muted = false;
       box.classList.add('bp');
       // บังคับ inline !important: กันสไตล์เก่า/แคช/CSS อื่นในหน้าที่ทำให้มีกรอบดำรอบวิดีโอ
       ['padding:0','background:transparent','border:0','box-shadow:none','outline:0'].forEach((d) => { const [k, val] = d.split(':'); box.style.setProperty(k, val, 'important'); });
@@ -845,12 +845,11 @@
         if (!e.target.closest('.bp-bar,.bp-hit')) toggle();
       });
       // โพสต์ที่มีแผ่นเสียง: เสียงของโพสต์ = เสียงจากแผ่นเสียงเท่านั้น (วิดีโอถูกปิดเสียงตลอด) ปุ่มนี้จึงสลับตามสถานะการเล่นของแผ่นเสียงในโพสต์นี้
-      mute.addEventListener('click', (e) => { e.stopPropagation(); bpSetAllMuted(!effMuted()); });
-      const effMuted = () => (vidOwnedBySound(v) ? !sndOnFor(v) : v.muted);
+      mute.addEventListener('click', (e) => { e.stopPropagation(); bpSetAllMuted(!v.muted); });
       const syncUi = () => {
         box.classList.toggle('bp-paused', v.paused);
         if (v.paused) { v.playbackRate = 1; box.classList.remove('bp-fast'); }
-        const em = effMuted();
+        const em = v.muted;
         if (lastM !== em) { // เขียน DOM เฉพาะตอนสถานะเสียงเปลี่ยนจริง
           lastM = em;
           mute.innerHTML = em ? IC_OFF : IC_ON;
@@ -861,8 +860,6 @@
       const tick = () => { draw(); raf = v.paused ? 0 : requestAnimationFrame(tick); };
       v.addEventListener('play', () => { syncUi(); if (!raf) raf = requestAnimationFrame(tick); });
       ['pause', 'volumechange', 'loadedmetadata'].forEach((n) => v.addEventListener(n, syncUi));
-      const onSnd = () => { if (!box.isConnected) { document.removeEventListener('niv-snd', onSnd); return; } syncUi(); };
-      document.addEventListener('niv-snd', onSnd);
       ['timeupdate', 'seeked', 'loadedmetadata', 'durationchange'].forEach((n) => v.addEventListener(n, draw));
       box.addEventListener('keydown', (e) => {
         if (e.target !== box) return;
@@ -1131,10 +1128,14 @@
   // 3) การ์ดที่เล่นอยู่เลื่อนพ้นจอ → หยุด
   let sTok = 0, sndAuto = false;
   const SND_PAGE = '/sound?id='; // หน้าเสียง (ไม่ต้องตั้ง route เพิ่ม · sound.html รับ ?id=)
-  // โพสต์ที่มีป้ายเสียง = แผ่นเสียงคุมเสียงทั้งโพสต์ · วิดีโอในโพสต์นั้นต้องไม่ส่งเสียงเองเด็ดขาด (กันเสียงซ้อน)
-  function vidOwnedBySound(v) { const c = v.closest && v.closest('[data-view-slug]'); return !!(c && c.querySelector(':scope > .snd-badge')); }
-  function sndOnFor(v) { const c = v.closest('[data-view-slug]'); return !!(sCur && c && sCur.parentElement === c); }
-  const sndEmit = () => document.dispatchEvent(new Event('niv-snd'));
+  // ป้ายเสียงของโพสต์วิดีโอขยับ (snd-on) เมื่อวิดีโอในโพสต์กำลังเล่นแบบมีเสียง · หยุด/ปิดเสียง = หยุดขยับ
+  function sndSyncVid(card) {
+    const b = card && card.querySelector(':scope > .snd-badge[data-vid-snd]'); if (!b) return;
+    const on = [...card.querySelectorAll('video')].some((v) => !v.paused && !v.ended && !v.muted);
+    b.classList.toggle('snd-on', on);
+  }
+  ['play', 'playing', 'pause', 'ended', 'volumechange', 'emptied'].forEach((n) => document.addEventListener(n, (e) => { const v = e.target; if (v instanceof HTMLVideoElement) sndSyncVid(v.closest('[data-view-slug]')); }, true));
+  const sndEmit = () => {};
   function sndStop() {
     sTok++;
     if (sAudio) { try { sAudio.pause(); } catch {} }
@@ -1188,6 +1189,7 @@
     if (sndLoudVideo()) return;                                       // มีวิดีโอเปิดเสียงอยู่ → ไม่เล่นซ้อน
     const b = best.querySelector(':scope > .snd-badge');
     if (b && b.tagName === 'BUTTON' && b._sndUrl) sndPlay(b, b._sndUrl);
+    else if (b && sCur) sndStop(); // โพสต์หลักเป็นวิดีโอ (เสียงมาจากวิดีโอ) → ไม่ให้เพลงของโพสต์ก่อนหน้าค้างซ้อน
   }
   function sndObserve(badge) {
     if (badge.tagName !== 'BUTTON' || !('IntersectionObserver' in window)) return;
@@ -1205,8 +1207,8 @@
   }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') sndStop(); else sndPick(); });
   // วิดีโอที่เปิดเสียง = หยุดเพลงพื้นหลัง (วิดีโอ autoplay แบบปิดเสียงไม่นับ — ไม่งั้นเลื่อนผ่านแล้วเพลงดับเอง)
-  document.addEventListener('play', (e) => { const v = e.target; if (v instanceof HTMLVideoElement && !v.muted) { if (vidOwnedBySound(v)) v.muted = true; else sndStop(); } }, true);
-  document.addEventListener('volumechange', (e) => { const v = e.target; if (!(v instanceof HTMLVideoElement) || v.muted) return; if (vidOwnedBySound(v)) { v.muted = true; return; } if (!v.paused) sndStop(); }, true);
+  document.addEventListener('play', (e) => { if (e.target instanceof HTMLVideoElement && !e.target.muted) sndStop(); }, true);
+  document.addEventListener('volumechange', (e) => { const v = e.target; if (v instanceof HTMLVideoElement && !v.muted && !v.paused) sndStop(); }, true);
   // ป้ายเพลงมุมขวาบน (แบบ IG): กด = เล่น/หยุด · โพสต์ที่มีวิดีโออัปโหลด วิดีโอมีเสียงนี้อยู่แล้ว ป้ายจึงเป็นลิงก์ไปหน้าเสียง (ไม่เล่นซ้อน)
   // snd = { id, title, owner_id, owner_name, use_count, url }
   function soundChipEl(snd, opt = {}) {
@@ -1298,10 +1300,12 @@
   onNewNodes(sndRelayout); // ปุ่มแก้ไข/ติดตามที่โผล่ทีหลัง → เรียงใหม่
   function sndPlace(card, snd) {
     if (card.querySelector('.snd-badge')) return;
-    const badge = soundChipEl(snd);
+    // โพสต์วิดีโอ: เสียงถูกรวมอยู่ในวิดีโอแล้ว → เล่นเสียงจากวิดีโอเท่านั้น แผ่นเสียงไม่ส่งเสียง (กดแล้วไปหน้าเสียง) แต่ขยับตามวิดีโอที่กำลังเล่นเสียง · โพสต์รูป/ข้อความ แผ่นเสียงเล่นเสียงเอง
+    const hasVid = !!card.querySelector('.uv, .vg');
+    const badge = soundChipEl(snd, { noPlay: hasVid });
+    if (hasVid) { badge.dataset.vidSnd = '1'; sndSyncVid(card); }
     if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
     badge.classList.add('snd-abs');
-    card.querySelectorAll('video').forEach((v) => { v.muted = true; }); // แผ่นเสียงคุมเสียงทั้งโพสต์ → วิดีโอในโพสต์เงียบเสมอ
     card.append(badge);
     sndBadges.add(badge);
     sndObserve(badge);
