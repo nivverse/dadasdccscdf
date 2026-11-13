@@ -23,8 +23,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{font-family:'Kanit',sans-serif}</style>
 <style>
-:root{--fg:#111;--mute:#8a8d93;--line:#e3e4e8;--card:#fff;--shadow:0 6px 14px rgba(0,0,0,.08);--amber:#f59e0b;--amber-bg:rgba(245,158,11,.12);--tray:#f3f4f6}
-.dark{--fg:#f5f5f5;--mute:#8d9096;--line:#2c2c2c;--card:#1c1c1c;--shadow:none;--tray:transparent}
+:root{--fg:#111;--mute:#8a8d93;--line:#e3e4e8;--card:#fff;--fill:#f1f2f4;--shadow:0 2px 10px rgba(0,0,0,.07);--amber:#f59e0b;--amber-bg:rgba(245,158,11,.12)}
+.dark{color-scheme:dark;--fg:#f5f5f5;--mute:#8d9096;--line:#2c2c2c;--card:#1c1c1c;--fill:#282828;--shadow:none}
 .wr-title,.wr-desc{width:100%;border:0;outline:0;background:none;color:var(--fg);font-family:'Kanit',sans-serif}
 .wr-title{font-size:26px;font-weight:500;line-height:1.35;padding:0 0 12px;border-bottom:1px solid var(--line)}
 .wr-desc{font-size:19px;font-weight:300;line-height:1.8;padding:14px 0;resize:none;min-height:240px;flex:1}
@@ -35,7 +35,7 @@
 .wr-chip:focus-within{border-color:var(--amber)}
 .wr-go{border:0;border-radius:999px;padding:8px 20px;font:500 15px 'Kanit',sans-serif;color:#fff;background:linear-gradient(90deg,#f59e0b,#f97316);cursor:pointer}
 .wr-go:disabled{opacity:.6}
-.wr-tray{display:flex;gap:12px;overflow-x:auto;padding:10px 16px calc(14px + env(safe-area-inset-bottom));background:var(--tray);scrollbar-width:none}
+.wr-tray{display:flex;gap:12px;overflow-x:auto;padding:10px 16px calc(14px + env(safe-area-inset-bottom));scrollbar-width:none}
 .wr-tool{flex:0 0 auto;width:92px;height:84px;border-radius:18px;background:var(--card);color:var(--fg);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:400 14px 'Kanit',sans-serif;cursor:pointer;border:1.5px solid transparent;outline:0;transition:.15s}
 .wr-tool.hidden{display:none}
 .wr-tool svg{width:26px;height:26px}
@@ -44,6 +44,64 @@
 .wr-tool[aria-pressed=true]{border-color:var(--amber);background:var(--amber-bg);color:var(--amber)}
 .wr-tool:disabled{opacity:.4}
 .wr-tool:focus-visible,.wr-go:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+/* ---- แผง ---- */
+.wr-card{background:var(--card);border-radius:22px;padding:16px;box-shadow:var(--shadow);margin-top:12px;flex-direction:column;gap:12px}
+.wr-card:not(.hidden){display:flex;animation:wr-in .18s ease-out}
+.wr-head{display:flex;align-items:center;gap:10px}
+.wr-ic{width:36px;height:36px;border-radius:12px;background:var(--amber-bg);color:var(--amber);display:grid;place-items:center;flex:0 0 auto}
+.wr-ic svg{width:19px;height:19px}
+.wr-head h2{font-size:16px;font-weight:600;line-height:1.2}
+.wr-head p{font-size:12px;color:var(--mute);line-height:1.3;margin-top:2px}
+.wr-x{margin-left:auto;flex:0 0 auto;width:34px;height:34px;border:0;border-radius:50%;background:var(--fill);color:var(--mute);display:grid;place-items:center;cursor:pointer}
+.wr-x svg{width:16px;height:16px}
+.wr-x:hover{color:var(--fg)}
+.wr-f{width:100%;border:0;outline:0;background:var(--fill);color:var(--fg);border-radius:14px;padding:13px 16px;font:400 15px 'Kanit',sans-serif}
+textarea.wr-f{resize:none;line-height:1.6}
+.wr-f::placeholder{color:var(--mute)}
+.wr-f:focus,.wr-pill:focus-within,.wr-search:focus-within{box-shadow:0 0 0 2px rgba(245,158,11,.55)}
+.wr-pill,.wr-search{display:flex;align-items:center;gap:8px;background:var(--fill);border-radius:999px}
+.wr-pill{padding:5px 5px 5px 16px}
+.wr-pill input,.wr-search input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--fg);font:400 15px 'Kanit',sans-serif;padding:8px 0}
+.wr-pill input::placeholder,.wr-search input::placeholder{color:var(--mute)}
+.wr-search{padding:0 16px}
+.wr-search svg{width:18px;height:18px;color:var(--mute);flex:0 0 auto}
+.wr-add{flex:0 0 auto;border:0;border-radius:999px;padding:9px 20px;font:500 14px 'Kanit',sans-serif;color:#fff;background:var(--amber);cursor:pointer}
+.wr-add:disabled{opacity:.4}
+.wr-pri{width:100%;border:0;border-radius:14px;padding:13px;font:500 15px 'Kanit',sans-serif;color:#fff;background:linear-gradient(90deg,#f59e0b,#f97316);cursor:pointer}
+.wr-pri:disabled{opacity:.45}
+.wr-ghost{border:0;background:none;color:var(--mute);font:400 14px 'Kanit',sans-serif;cursor:pointer;padding:6px}
+.wr-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;background:var(--fill);border-radius:14px}
+.wr-seg button{border:0;background:none;border-radius:10px;padding:9px 6px;font:500 13px 'Kanit',sans-serif;color:var(--mute);cursor:pointer;transition:.15s}
+.wr-seg button[aria-pressed=true]{background:var(--card);color:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.14)}
+.wr-hint{font-size:12px;line-height:1.55;color:var(--mute)}
+.wr-note{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.5;color:var(--mute)}
+.wr-note svg{width:15px;height:15px;flex:0 0 auto;margin-top:2px;color:var(--amber)}
+
+/* ---- เลือกเสียง: bottom sheet ---- */
+.wr-bd{display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.5)}
+.wr-bd.on{display:block}
+.wr-sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;margin:0 auto;max-width:640px;max-height:84vh;max-height:84dvh;background:var(--card);border-radius:26px 26px 0 0;padding:10px 16px calc(16px + env(safe-area-inset-bottom));flex-direction:column;gap:12px;box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+.wr-sheet:not(.hidden){display:flex;animation:wr-up .24s cubic-bezier(.2,.8,.2,1)}
+.wr-grab{width:40px;height:4px;border-radius:4px;background:var(--line);margin:0 auto 2px;flex:0 0 auto}
+.wr-sheet>*{flex:0 0 auto}
+.wr-sheet .wr-list{flex:1 1 auto;min-height:120px;overflow-y:auto;margin:0 -8px;padding:0 8px;list-style:none}
+@keyframes wr-up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes wr-in{from{transform:translateY(6px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.wr-card,.wr-sheet{animation:none!important}}
+#snd-list>li{background:none;border:0;border-radius:16px;padding:8px;margin-bottom:2px}
+#snd-list>li:hover{background:var(--fill)}
+#snd-list>li>button:last-child{background:var(--amber);color:#fff;border:0;border-radius:999px;padding:0 18px;height:34px;font-weight:500}
+#snd-more{width:100%;border:0;border-radius:14px;padding:11px;background:var(--fill);color:var(--fg);font:500 14px 'Kanit',sans-serif;cursor:pointer}
+
+/* ---- รายการที่สคริปต์สร้าง ---- */
+#snd-sel>div,#lock-list>li,#yt-list>li{background:var(--card);border:0;border-radius:18px;padding:10px 12px;box-shadow:var(--shadow)}
+#img-list>li{border:0;border-radius:18px;box-shadow:var(--shadow)}
+#snd-sel,#lock-list,#yt-list,#img-list{margin-top:12px}
+#snd-sel:empty,#lock-list:empty,#yt-list:empty,#img-list:empty{margin-top:0}
+.wr-opt{display:none;gap:10px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:16px;background:var(--fill);font-size:12px;line-height:1.55;color:var(--mute);cursor:pointer}
+.wr-opt:not(.hidden){display:flex}
+.wr-opt input{margin-top:3px;accent-color:var(--amber)}
 </style>
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
@@ -82,71 +140,66 @@
       <input id="title" class="wr-title" required minlength="5" maxlength="120" placeholder="หัวข้อโพสต์..." aria-label="หัวข้อ">
       <textarea id="content" class="wr-desc" required minlength="50" maxlength="20000" placeholder="เขียนคำอธิบายหรือเนื้อหาโพสต์... เว้นบรรทัดว่างหนึ่งบรรทัดเพื่อขึ้นย่อหน้าใหม่" aria-label="คำอธิบาย"></textarea>
       <div class="flex justify-between text-xs text-slate-400 pb-2"><span>เนื้อหาเป็นข้อความล้วน ยาวอย่างน้อย 50 ตัวอักษร</span><span id="count">0 / 20000</span></div>
-
       <div id="message" class="text-sm font-medium min-h-[1.25rem]" role="status"></div>
-
       <div class="pb-4">
-        <div id="pn-img" class="hidden mt-3">
-        <div class="flex gap-2">
-          <input id="img-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์รูปหรือ GIF (GIF จาก GIPHY / Tenor) ได้ครั้งละหลายลิงก์" aria-label="ลิงก์รูปหรือ GIF" class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-          <button id="img-add" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">เพิ่ม</button>
-        </div>
-      </div>
-      <div id="pn-yt" class="hidden mt-3">
-        <div class="flex gap-2">
-          <input id="yt-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์ YouTube ได้ครั้งละหลายลิงก์" aria-label="ลิงก์ YouTube" class="min-w-0 flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-          <button id="yt-add" type="button" class="shrink-0 px-4 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">เพิ่ม</button>
-        </div>
-      </div>
+<div id="pn-img" class="hidden wr-card">
+  <div class="wr-head"><div class="wr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.5-1.5"/></svg></div><div class="min-w-0"><h2>ลิงก์รูปหรือ GIF</h2><p>GIF จาก GIPHY / Tenor วางได้หลายลิงก์</p></div><button type="button" class="wr-x" data-close="tg-img" aria-label="ปิด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="wr-pill"><input id="img-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์รูปหรือ GIF" aria-label="ลิงก์รูปหรือ GIF"><button id="img-add" type="button" class="wr-add">เพิ่ม</button></div>
+</div>
 
-      <div id="pn-lock" class="hidden mt-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
-        <p class="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">กล่องจะถูกวางตรงตำแหน่งเคอร์เซอร์ในเนื้อหา ผู้อ่านเห็นแค่ป้ายบนกล่อง ข้อความข้างในซ่อนอยู่จนกว่าจะปลดล็อก เช่น เขียนว่า “แจกโค้ดส่วนลด กดรับง่ายๆ แค่ติดตามเรา” แล้ววางกล่องต่อท้าย</p>
-        <input id="lk-label" maxlength="80" autocomplete="off" placeholder="ป้ายบนกล่อง เช่น 🎁 โค้ดส่วนลด" aria-label="ป้ายบนกล่อง" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-        <textarea id="lk-secret" rows="3" maxlength="500" placeholder="ข้อความที่ซ่อน เช่น โค้ดส่วนลด FNNZ20 หรือลิงก์ที่จะแจก" aria-label="ข้อความที่ซ่อน" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"></textarea>
-        <div id="lk-modes" role="group" aria-label="วิธีปลดล็อก" class="grid grid-cols-3 gap-2">
-          <button type="button" data-mode="follow" aria-pressed="true" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ติดตามเรา</button>
-          <button type="button" data-mode="pin" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">รหัส 4 หลัก</button>
-          <button type="button" data-mode="time" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ตั้งเวลา</button>
-        </div>
-        <div id="lk-pin-w" class="hidden"><input id="lk-pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="รหัสตัวเลข 4 หลัก" aria-label="รหัสปลดล็อก 4 หลัก" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 tracking-[0.4em]"></div>
-        <div id="lk-time-w" class="hidden"><input id="lk-time" type="datetime-local" aria-label="วันและเวลาที่จะปลดล็อก" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"></div>
-        <p id="lk-hint" class="text-xs text-slate-500 dark:text-neutral-400"></p>
-        <p class="text-xs text-slate-500 dark:text-neutral-400">อย่าใส่รหัสผ่านหรือข้อมูลส่วนตัวในกล่อง — ใครผ่านเงื่อนไขก็เห็นข้อความได้</p>
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="lk-add" type="button" class="px-4 py-2.5 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/40 text-sm font-semibold hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40">เพิ่มกล่องในเนื้อหา</button>
-          <button id="lk-cancel" type="button" class="hidden px-3 py-2.5 text-sm text-slate-500 dark:text-neutral-400 hover:opacity-70 cursor-pointer">ยกเลิกการแก้ไขกล่อง</button>
-        </div>
-        <p id="lk-msg" class="text-xs empty:hidden" role="status"></p>
-      </div>
-      <div id="pn-snd" class="hidden mt-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
-        <p class="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">เลือกเสียงให้โพสต์ ทุกคนเลือกได้ — โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง และแสดงชื่อเจ้าของเสียงต้นฉบับ ถ้าเลือกเสียงไว้ก่อนอัปโหลดวิดีโอ ระบบจะรวมเสียงที่เลือกเข้ากับวิดีโอให้ (แทนเสียงเดิมของวิดีโอ) และโพสต์ยังมีแผ่นเสียงให้กดฟังแยกได้</p>
-        <div id="snd-tabs" role="group" aria-label="หมวดเสียง" class="grid grid-cols-3 gap-2">
-          <button type="button" data-mode="hot" aria-pressed="true" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ยอดนิยม</button>
-          <button type="button" data-mode="fav" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">เพลงโปรด</button>
-          <button type="button" data-mode="mine" aria-pressed="false" class="px-2 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-black/30 text-xs font-medium text-slate-600 dark:text-neutral-300 hover:border-amber-500/60 transition cursor-pointer aria-pressed:text-amber-600 dark:aria-pressed:text-amber-400 aria-pressed:border-amber-500 aria-pressed:bg-amber-500/10">ของฉัน</button>
-        </div>
-        <input id="snd-q" type="search" maxlength="40" autocomplete="off" placeholder="ค้นหาชื่อเสียงหรือไอดีเจ้าของ" aria-label="ค้นหาเสียง" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-        <ul id="snd-list" class="space-y-2 max-h-72 overflow-y-auto"></ul>
-        <button id="snd-more" type="button" class="hidden w-full py-2 rounded-xl text-sm text-amber-600 dark:text-amber-400 border border-amber-500/40 hover:bg-amber-500/10 cursor-pointer">โหลดเพิ่ม</button>
-        <p id="snd-msg" class="text-xs text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
-        <p class="text-[11px] text-slate-400 dark:text-neutral-500">เสียงที่เจ้าของไม่ได้เปิดให้ใช้จะไม่แสดงในรายการ · พบเสียงละเมิดกดรายงานได้ที่หน้าเสียง</p>
-      </div>
-      
-        <div id="snd-sel" class="mt-3 empty:hidden"></div>
-      <ul id="lock-list" class="mt-3 space-y-2"></ul>
+<div id="pn-yt" class="hidden wr-card">
+  <div class="wr-head"><div class="wr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.5v5l4.5-2.5z"/></svg></div><div class="min-w-0"><h2>วิดีโอ YouTube</h2><p>วางลิงก์ได้ครั้งละหลายลิงก์ สูงสุด 15 คลิป</p></div><button type="button" class="wr-x" data-close="tg-yt" aria-label="ปิด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="wr-pill"><input id="yt-input" type="text" inputmode="url" autocomplete="off" placeholder="วางลิงก์ YouTube" aria-label="ลิงก์ YouTube"><button id="yt-add" type="button" class="wr-add">เพิ่ม</button></div>
+</div>
 
-      
-        <p id="img-msg" class="text-xs mt-2 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
-      <p class="text-[11px] mt-1 text-slate-400 dark:text-neutral-500">รองรับ JPG / PNG / WebP / HEIC</p>
-      <p id="yt-msg" class="text-xs mt-1 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
-      <ul id="img-list" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2"></ul>
-      <ul id="yt-list" class="mt-3 space-y-2"></ul>
-      
-        <label id="snd-opt" class="hidden mt-3 flex items-start gap-2 text-xs text-slate-600 dark:text-neutral-400 cursor-pointer">
-        <input id="snd-reuse" type="checkbox" class="mt-0.5 accent-amber-500">
-        <span>อนุญาตให้ผู้อื่นใช้เสียงจากวิดีโอนี้ (ยืนยันว่าเป็นเสียงของคุณเอง หรือคุณมีสิทธิ์ใช้เสียงนั้น — ไม่ติ๊ก = เก็บเสียงไว้ ไม่ให้ผู้อื่นนำไปใช้ · เปลี่ยนภายหลังได้ที่หน้าเสียง)</span>
-      </label>
-      </div>
+<div id="pn-lock" class="hidden wr-card">
+  <div class="wr-head"><div class="wr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div><div class="min-w-0"><h2>กล่องล็อก</h2><p>ซ่อนข้อความจนกว่าผู้อ่านจะปลดล็อก</p></div><button type="button" class="wr-x" data-close="tg-lock" aria-label="ปิด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <p class="wr-hint">กล่องจะถูกวางตรงตำแหน่งเคอร์เซอร์ในเนื้อหา ผู้อ่านเห็นแค่ป้ายบนกล่อง เช่น เขียนว่า “แจกโค้ดส่วนลด กดรับง่ายๆ แค่ติดตามเรา” แล้ววางกล่องต่อท้าย</p>
+  <input id="lk-label" class="wr-f" maxlength="80" autocomplete="off" placeholder="ป้ายบนกล่อง เช่น 🎁 โค้ดส่วนลด" aria-label="ป้ายบนกล่อง">
+  <textarea id="lk-secret" class="wr-f" rows="3" maxlength="500" placeholder="ข้อความที่ซ่อน เช่น โค้ดส่วนลด FNNZ20 หรือลิงก์ที่จะแจก" aria-label="ข้อความที่ซ่อน"></textarea>
+  <div id="lk-modes" class="wr-seg" role="group" aria-label="วิธีปลดล็อก">
+    <button type="button" data-mode="follow" aria-pressed="true">ติดตามเรา</button>
+    <button type="button" data-mode="pin" aria-pressed="false">รหัส 4 หลัก</button>
+    <button type="button" data-mode="time" aria-pressed="false">ตั้งเวลา</button>
+  </div>
+  <div id="lk-pin-w" class="hidden"><input id="lk-pin" class="wr-f" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="รหัสตัวเลข 4 หลัก" aria-label="รหัสปลดล็อก 4 หลัก" style="letter-spacing:.4em"></div>
+  <div id="lk-time-w" class="hidden"><input id="lk-time" class="wr-f" type="datetime-local" aria-label="วันและเวลาที่จะปลดล็อก"></div>
+  <p id="lk-hint" class="wr-hint"></p>
+  <div class="wr-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg><span>อย่าใส่รหัสผ่านหรือข้อมูลส่วนตัวในกล่อง ใครผ่านเงื่อนไขก็เห็นข้อความได้</span></div>
+  <button id="lk-add" type="button" class="wr-pri">เพิ่มกล่องในเนื้อหา</button>
+  <button id="lk-cancel" type="button" class="hidden wr-ghost">ยกเลิกการแก้ไขกล่อง</button>
+  <p id="lk-msg" class="text-xs empty:hidden" role="status"></p>
+</div>
+
+<div id="pn-snd" class="hidden wr-sheet" role="dialog" aria-label="เลือกเสียง">
+  <div class="wr-grab"></div>
+  <div class="wr-head"><div class="wr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3a9 9 0 019 9"/></svg></div><div class="min-w-0"><h2>เลือกเสียง</h2><p>โพสต์จะมีแผ่นเสียงให้ผู้อ่านกดฟัง</p></div><button type="button" class="wr-x" data-close="tg-snd" aria-label="ปิด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <p class="wr-hint">ถ้าเลือกเสียงก่อนอัปโหลดวิดีโอ ระบบจะใส่เสียงที่เลือกแทนเสียงเดิมของวิดีโอ และโพสต์ยังมีแผ่นเสียงให้กดฟังแยกได้</p>
+  <div id="snd-tabs" class="wr-seg" role="group" aria-label="หมวดเสียง">
+    <button type="button" data-mode="hot" aria-pressed="true">ยอดนิยม</button>
+    <button type="button" data-mode="fav" aria-pressed="false">เพลงโปรด</button>
+    <button type="button" data-mode="mine" aria-pressed="false">ของฉัน</button>
+  </div>
+  <label class="wr-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="snd-q" type="search" maxlength="40" autocomplete="off" placeholder="ค้นหาชื่อเสียงหรือไอดีเจ้าของ" aria-label="ค้นหาเสียง"></label>
+  <ul id="snd-list" class="wr-list"></ul>
+  <button id="snd-more" type="button" class="hidden">โหลดเพิ่ม</button>
+  <p id="snd-msg" class="text-xs empty:hidden" role="status"></p>
+  <p class="wr-hint" style="font-size:11px">เสียงที่เจ้าของไม่ได้เปิดให้ใช้จะไม่แสดงในรายการ · พบเสียงละเมิดกดรายงานได้ที่หน้าเสียง</p>
+</div>
+<div id="wr-bd" class="wr-bd"></div>
+
+<div id="snd-sel" class="empty:hidden"></div>
+<ul id="lock-list"></ul>
+<p id="img-msg" class="text-xs mt-2 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
+<p class="wr-hint" style="margin-top:10px;font-size:11px">รองรับรูป JPG / PNG / WebP / HEIC</p>
+<p id="yt-msg" class="text-xs mt-1 text-slate-500 dark:text-neutral-400 empty:hidden" role="status"></p>
+<ul id="img-list" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></ul>
+<ul id="yt-list" class="space-y-2"></ul>
+<label id="snd-opt" class="hidden wr-opt">
+  <input id="snd-reuse" type="checkbox">
+  <span>อนุญาตให้ผู้อื่นใช้เสียงจากวิดีโอนี้ (ยืนยันว่าเป็นเสียงของคุณเอง หรือคุณมีสิทธิ์ใช้เสียงนั้น — ไม่ติ๊ก = เก็บเสียงไว้ ไม่ให้ผู้อื่นนำไปใช้ · เปลี่ยนภายหลังได้ที่หน้าเสียง)</span>
+</label>
+</div>
     </div>
 
     <div class="wr-tray" role="group" aria-label="เพิ่มในโพสต์">
@@ -987,6 +1040,16 @@
   renderLocks();
   renderSound();
   loadEdit();
+</script>
+<script>
+(() => {
+  const bd = document.getElementById('wr-bd'), sh = document.getElementById('pn-snd'), tg = document.getElementById('tg-snd');
+  const sync = () => { const open = !sh.classList.contains('hidden'); bd.classList.toggle('on', open); document.body.style.overflow = open ? 'hidden' : ''; };
+  new MutationObserver(sync).observe(sh, { attributes: true, attributeFilter: ['class'] });
+  bd.addEventListener('click', () => tg.click());
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !sh.classList.contains('hidden')) tg.click(); });
+  document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => document.getElementById(b.dataset.close).click()));
+})();
 </script>
 </body>
 </html>
