@@ -95,6 +95,7 @@
       m = el('video', 'absolute inset-0 w-full h-full object-cover');
       m.muted = true; m.loop = true; m.autoplay = true; m.playsInline = true;
       m.setAttribute('muted', ''); m.setAttribute('playsinline', '');
+      m.addEventListener('error', () => m.remove());   // ไฟล์หาย = เหมือนไม่มีปก (เหลือพื้นไล่สี)
       m.src = user.cover_url; m.play && m.play().catch(() => {});
     } else { m = el('img', 'absolute inset-0 w-full h-full object-cover'); m.alt = 'ภาพปก'; m.src = user.cover_url; }
     $('cover-box').append(m);
