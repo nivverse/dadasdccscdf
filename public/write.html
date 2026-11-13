@@ -439,6 +439,17 @@ textarea.wr-f{resize:none;line-height:1.6}
   // วิดีโอที่เพิ่งอัปโหลดแล้วกด ✕ ก่อนบันทึกโพสต์ → สั่งลบจาก R2 ทันที (เดิมแค่ตัดออกจากรายการ ไฟล์จึงค้างใน R2 ตลอด)
   const vidSrc = new Map(); // url วิดีโอที่อัปโหลด -> { file: ไฟล์ต้นฉบับ, sid: id เสียงที่รวมอยู่ในไฟล์ (null = เสียงเดิมของวิดีโอ) }
   const discardVideo = (u) => { api('/api/blog/video-discard', { method: 'POST', body: { userId: s.userId, url: u } }).catch(() => {}); };
+  // ออกจากหน้า/ปิดแท็บโดยไม่ได้โพสต์: วิดีโอที่อัปโหลดไว้แล้ว (และเสียงที่แยกไว้ใน R2 ของวิดีโอนั้น) ต้องถูกลบตาม ไม่ปล่อยเป็นไฟล์ขยะ
+  // ฝั่งเซิร์ฟเวอร์ตรวจเองว่ามีโพสต์อ้างถึงอยู่ไหม (มี = ไม่ลบ) จึงปลอดภัยแม้ผู้ใช้เพิ่งบันทึกโพสต์
+  let leftAlready = false;
+  addEventListener('pagehide', () => {
+    if (leftAlready || !s.token || !s.userId) return;
+    const junk = videos.filter((u) => isVidUp(u) && !savedVideos.has(u));
+    if (!junk.length) return;
+    leftAlready = true;
+    junk.forEach((u) => { try { fetch(NIV.API + '/api/blog/video-discard', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.token }, body: JSON.stringify({ userId: s.userId, url: u }) }).catch(() => {}); } catch {} });
+  });
+  addEventListener('pageshow', (e) => { if (e.persisted) leftAlready = false; }); // กลับมาจาก bfcache = ยังอยู่ในหน้านี้
   function renderVideos() {
     const ul = $('yt-list'); ul.replaceChildren();
     videos.forEach((id, i) => {
@@ -826,6 +837,7 @@ textarea.wr-f{resize:none;line-height:1.6}
         const a = el('a', 'font-semibold', 'เปิดดูโพสต์');
         a.href = '/posts/' + editSlug;
         const back = el('a', 'font-semibold ml-3', 'โพสต์ของฉัน'); back.href = NIV.userUrl(s.userId);
+        savedVideos = new Set(videos); // วิดีโอตอนนี้ผูกกับโพสต์แล้ว
         m.append('บันทึกการแก้ไขแล้ว' + (r.data.edits_left == null ? ' ' : ` (เหลือแก้ไขได้อีก ${r.data.edits_left} ครั้ง) `), a, back);
         locks.forEach((l) => { if (l.mode === 'pin') { l.hasPin = true; l.pin = ''; } }); renderLocks();
         if (r.data.edits_left === 0) { $('submit-btn').classList.add('hidden'); [...$('post-form').elements].forEach((x) => { if (x.id !== 'submit-btn') x.disabled = true; }); }
