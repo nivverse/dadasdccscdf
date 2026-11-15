@@ -43,6 +43,15 @@
   // ลิงก์ "ดูในชั้นหนังสือของฉัน" ค้างอยู่ใต้ปุ่มตลอดเมื่อเรื่องนี้อยู่ในชั้น (ไม่หายไปเหมือนทอสต์)
   const showShelfLink = (on) => $('shelf-link')?.classList.toggle('hidden', !on);
 
+  // ธง "เรื่องนี้เก็บเข้าชั้นแล้ว" ให้หน้าอ่านรู้ว่าต้องซิงก์ความคืบหน้าเข้าบัญชี (เรื่องที่ไม่ได้เก็บจำในเครื่องอย่างเดียว)
+  const setBmFlag = (on) => { try { localStorage.setItem('nv:bm:' + slug, JSON.stringify({ v: on ? 1 : 0, t: Date.now() })); } catch {} };
+  // เพิ่งกดเก็บ: ส่งตำแหน่งที่เคยอ่านค้างในเครื่องขึ้นบัญชีครั้งเดียว ชั้นหนังสือจะได้ขึ้น "อ่านถึงตอนที่ N" ทันที
+  const pushLocalProgress = () => {
+    let l = null; try { l = JSON.parse(localStorage.getItem('nv:last:' + slug) || 'null'); } catch {}
+    const s = NIV.session(); if (!l || !l.no || !s.userId) return;
+    NIV.api('/api/novel/progress', { method: 'POST', body: { userId: s.userId, slug, no: l.no, pct: Math.round(l.pct || 0) } });
+  };
+
   // ---------- ถูกใจ / เก็บเข้าชั้น ----------
   function wire(id, kind, key) {
     const btn = $(id); if (!btn) return;
@@ -59,6 +68,8 @@
       btn.setAttribute('aria-pressed', String(!!d[key])); if (ct) ct.textContent = NS.num(d.count);
       if (kind === 'bookmark') {
         showShelfLink(d.bookmarked);
+        setBmFlag(d.bookmarked);
+        if (d.bookmarked) pushLocalProgress();
         NS.toast(d.bookmarked ? 'เพิ่มเข้าชั้นหนังสือแล้ว' : 'เอาออกจากชั้นหนังสือแล้ว',
           d.bookmarked ? { label: 'ไปที่ชั้นหนังสือ', fn: () => { location.href = '/novel-library'; } } : undefined);
       }
@@ -115,7 +126,7 @@
     NS.me(slug).then((d) => {
       if (!d) return;
       const set = (id, on) => $(id)?.setAttribute('aria-pressed', String(!!on));
-      set('act-like', d.liked); set('act-bm', d.bookmarked); showShelfLink(d.bookmarked);
+      set('act-like', d.liked); set('act-bm', d.bookmarked); showShelfLink(d.bookmarked); setBmFlag(d.bookmarked);
       mine = d.rating || 0; paintStars();
       if (d.progress && (!local || d.progress.updated_at >= (local.t || 0))) setResume(d.progress.chapter_no, d.progress.pct);
     });

@@ -150,7 +150,7 @@
     else box.textContent = novel ? 'ยังไม่มีปก' : 'บันทึกนิยายก่อนจึงจะอัปโหลดปกได้';
     $('cover-del').classList.toggle('hidden', !(novel && novel.cover_url));
   }
-  function openNovel(n) { fillNovel(n); view('edit'); if (n) loadChapters(); }
+  function openNovel(n) { fillNovel(n); view('edit'); if (n) loadChapters(0); }
 
   $('new-novel').onclick = () => { fillNovel(null); view('edit'); };
   $('back').onclick = () => { view('list'); loadList(); };
@@ -202,19 +202,29 @@
   };
 
   // ---------- ตอน ----------
-  async function loadChapters() {
-    const r = await api('/api/novel/get?slug=' + enc(novel.slug) + '&userId=' + enc(uid));
-    if (!r.ok) return fail(r, 'โหลดสารบัญไม่สำเร็จ');
-    const ul = $('ch-list'); ul.replaceChildren();
-    if (!r.data.chapters.length) ul.append(el('li', 'px-4 py-3 text-sm text-slate-500', 'ยังไม่มีตอน'));
+  // รายการตอนโหลดทีละ 100 (ตามเลขตอน) มีปุ่ม "โหลดตอนถัดไป" — ไม่ดึงทั้งสารบัญทุกครั้ง
+  async function loadChapters(from) {
+    const ul = $('ch-list'); let more = $('ch-more');
+    const r = await api('/api/novel/get?slug=' + enc(novel.slug) + '&userId=' + enc(uid) + '&limit=100' + (from ? '&from=' + from : ''));
+    if (!r.ok) return fail(r, 'โหลดรายการตอนไม่สำเร็จ');
+    if (!from) ul.replaceChildren();
+    if (!r.data.chapters.length && !from) ul.append(el('li', 'px-4 py-3 text-sm text-slate-500', 'ยังไม่มีตอน'));
     r.data.chapters.forEach((c) => {
-      const li = el('li', 'px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-amber-500/10 text-sm');
+      const li = el('li', 'px-4 py-3 min-h-[3rem] flex items-center gap-3 cursor-pointer hover:bg-amber-500/10 text-sm');
       li.append(el('span', 'text-slate-400 w-16 shrink-0', 'ตอน ' + c.no), el('span', 'flex-1 truncate', c.title),
         el('span', 'text-xs ' + (c.visibility === 'public' ? 'text-emerald-500' : 'text-slate-400'), c.visibility === 'public' ? 'เผยแพร่' : 'ร่าง'),
         el('span', 'text-xs text-amber-500 w-16 text-right', c.price > 0 ? c.price + ' coin' : 'ฟรี'));
       li.addEventListener('click', () => editChapter(c.no)); ul.append(li);
     });
+    if (more) more.remove();
+    const lastNo = r.data.chapters.length ? r.data.chapters[r.data.chapters.length - 1].no : 0;
+    if (r.data.meta && r.data.meta.more && lastNo) {
+      more = el('button', 'mt-2 w-full py-3 rounded-xl border border-slate-300 dark:border-white/15 text-sm hover:border-amber-500', 'โหลดตอนถัดไป'); more.type = 'button'; more.id = 'ch-more';
+      more.addEventListener('click', () => { more.disabled = true; loadChapters(lastNo + 1); });
+      ul.after(more);
+    }
   }
+
   function fillChapter(c) {
     chapter = c;
     $('ch-h').textContent = c ? 'แก้ไขตอนที่ ' + c.no : 'ตอนใหม่';
@@ -237,13 +247,13 @@
       userId: uid, novelId: novel.id, chapterId: chapter ? chapter.id : undefined, chapterNo: $('c-no').value ? Number($('c-no').value) : undefined,
       title: $('c-title').value, content: $('c-body').value, price: Number($('c-price').value) || 0, visibility: $('c-vis').value } });
     if (!r.ok) return fail(r, 'บันทึกตอนไม่สำเร็จ');
-    toast('บันทึกตอนที่ ' + r.data.no + ' แล้ว', 'ok'); fillChapter(null); loadChapters();
+    toast('บันทึกตอนที่ ' + r.data.no + ' แล้ว', 'ok'); fillChapter(null); loadChapters(0);
   });
   $('c-del').onclick = async () => {
     if (!chapter || !confirm('ลบตอนที่ ' + chapter.no + ' ถาวร?')) return;
     const r = await api('/api/novel/chapter-delete', { method: 'POST', body: { userId: uid, novelId: novel.id, chapterId: chapter.id } });
     if (!r.ok) return fail(r, 'ลบตอนไม่สำเร็จ');
-    toast('ลบตอนแล้ว', 'ok'); fillChapter(null); loadChapters();
+    toast('ลบตอนแล้ว', 'ok'); fillChapter(null); loadChapters(0);
   };
 
   fillChapter(null); loadList();

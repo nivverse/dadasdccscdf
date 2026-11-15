@@ -63,7 +63,7 @@
     if (!contentReady) return;
     const now = Date.now();
     if (now - lastSave > 1000) { lastSave = now; savePos(); }
-    if (!prefetched && curP > 0.6) {
+    if (!prefetched && curP > 0.9) {
       prefetched = true;
       const nx = document.querySelector('a[rel="next"]');
       if (nx) { const l = document.createElement('link'); l.rel = 'prefetch'; l.href = nx.href; document.head.append(l); }
@@ -84,11 +84,19 @@
       localStorage.setItem('nv:last:' + slug, JSON.stringify({ no, pct, t: Date.now() }));
     } catch {}
   }
+  // ซิงก์ความคืบหน้าเข้าบัญชีเฉพาะนิยายที่ "เก็บเข้าชั้น" (ชั้นหนังสือ/อ่านต่อข้ามเครื่องใช้เฉพาะเรื่องที่เก็บ)
+  // เรื่องอื่นจำในเครื่องอย่างเดียว → ลดการเขียน D1 ลงมาก · ธงเก็บในเครื่อง 24 ชม. ถ้าไม่มีถามเซิร์ฟเวอร์ครั้งเดียว
+  let bm = false;
+  if (authed) {
+    let c = null; try { c = JSON.parse(localStorage.getItem('nv:bm:' + slug) || 'null'); } catch {}
+    if (c && Date.now() - c.t < 86400000) bm = c.v === 1;
+    else NS.me(slug).then((d) => { bm = !!(d && d.bookmarked); try { localStorage.setItem('nv:bm:' + slug, JSON.stringify({ v: bm ? 1 : 0, t: Date.now() })); } catch {} });
+  }
   function syncProgress(force) {
-    if (!authed || !contentReady) return;
+    if (!authed || !contentReady || !bm) return;
     const now = Date.now(), pct = Math.round(curP * 100);
-    if (!force && (now - lastSent.t < 20000 || Math.abs(pct - lastSent.pct) < 3)) return;
-    if (force && pct === lastSent.pct && now - lastSent.t < 3000) return;
+    if (!force && (now - lastSent.t < 90000 || Math.abs(pct - lastSent.pct) < 5)) return;
+    if (force && Math.abs(pct - lastSent.pct) < 2) return;
     lastSent = { pct, t: now };
     try {
       fetch(NIV.API + '/api/novel/progress', { method: 'POST', keepalive: true,
@@ -109,7 +117,9 @@
       p.append(b);
     });
   }
+  let countsLoaded = false;
   async function loadCounts() {
+    if (countsLoaded) return; countsLoaded = true;
     try {
       const r = await fetch(NIV.API + '/api/novel/para-counts?slug=' + enc(slug) + '&no=' + no);
       const d = await r.json(); if (!d.counts) return;
@@ -138,7 +148,7 @@
   function onContentReady() {
     if (contentReady) return;
     contentReady = true;
-    injectBubbles(); loadCounts();
+    injectBubbles(); if (prefs.par !== 'off') loadCounts();
     curP = readP(); if (progI) progI.style.transform = `scaleX(${curP.toFixed(4)})`;
     // นับวิว: อ่านจริงอย่างน้อย 4 วินาทีและแท็บยังเปิดอยู่
     setTimeout(() => { if (document.visibilityState === 'visible') NS.view(slug, no); }, 4000);
@@ -193,25 +203,39 @@
     load();
   }
 
-  // ================= สารบัญตอน =================
+  // ================= สารบัญตอน (โหลดเป็นช่วงรอบตอนที่อ่านอยู่ ไม่ดึงทั้งเรื่อง) =================
   document.getElementById('rd-toc')?.addEventListener('click', () => {
     NS.openSheet({ title: 'สารบัญ', render: async (body) => {
       const wait = el('p', 'nv-pulse text-sm text-slate-500', 'กำลังโหลดสารบัญ…'); body.append(wait);
-      let d; try { d = await (await fetch(NIV.API + '/api/novel/get?slug=' + enc(slug))).json(); } catch {}
-      if (!d || !d.chapters) { wait.textContent = 'โหลดสารบัญไม่สำเร็จ'; wait.classList.remove('nv-pulse'); return; }
+      const get = async (qs) => { try { const d = await (await fetch(NIV.API + '/api/novel/get?slug=' + enc(slug) + '&' + qs)).json(); return d && d.chapters ? d : null; } catch { return null; } };
+      const d = await get(`from=${Math.max(1, no - 40)}&limit=100`);
+      if (!d) { wait.textContent = 'โหลดสารบัญไม่สำเร็จ'; wait.classList.remove('nv-pulse'); return; }
+      const meta = d.meta || {};
       const ul = el('ul', 'nv-toc divide-y divide-slate-200 dark:divide-white/10 -mx-2');
-      let cur = null;
-      d.chapters.forEach((c) => {
-        const li = el('li'); const a = el('a', 'flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm');
+      const btn = (label) => { const b = el('button', 'w-full mt-2 mb-2 py-3 rounded-xl border border-slate-300 dark:border-white/15 text-sm hover:border-amber-500 transition-colors', label); b.type = 'button'; return b; };
+      const prevBtn = btn('โหลดตอนก่อนหน้า'), nextBtn = btn('โหลดตอนถัดไป');
+      let firstShown = 0, lastShown = 0, cur = null;
+      const row = (c) => {
+        const li = el('li'); const a = el('a', 'flex items-center justify-between gap-3 px-3 min-h-[3rem] py-2 rounded-lg text-sm');
         a.href = `/novels/${enc(slug)}/${c.no}`;
         const l = el('span', 'min-w-0 truncate'); l.append(el('span', 'text-slate-400 mr-2', String(c.no)), document.createTextNode(c.title));
         const pr = el('span', 'shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400');
         if (c.price > 0) pr.append(NS.ico('lock'), document.createTextNode(String(c.price)));
         a.append(l, pr);
         if (c.no === no) { a.setAttribute('aria-current', 'true'); cur = a; }
-        li.append(a); ul.append(li);
-      });
-      wait.replaceWith(ul);
+        li.append(a); return li;
+      };
+      const sync = () => { prevBtn.classList.toggle('hidden', !(firstShown > (meta.first_no || 1))); nextBtn.classList.toggle('hidden', !(lastShown < (meta.last_no || 0))); };
+      const add = (chs, atTop) => {
+        if (!chs.length) return;
+        const frag = document.createDocumentFragment(); chs.forEach((c) => frag.append(row(c)));
+        if (atTop) ul.prepend(frag); else ul.append(frag);
+        firstShown = firstShown ? Math.min(firstShown, chs[0].no) : chs[0].no; lastShown = Math.max(lastShown, chs[chs.length - 1].no); sync();
+      };
+      add(d.chapters, false);
+      wait.replaceWith(prevBtn); prevBtn.after(ul); ul.after(nextBtn); sync();
+      prevBtn.addEventListener('click', async () => { prevBtn.disabled = true; const r = await get(`to=${firstShown - 1}&limit=100`); prevBtn.disabled = false; if (r) add(r.chapters, true); });
+      nextBtn.addEventListener('click', async () => { nextBtn.disabled = true; const r = await get(`from=${lastShown + 1}&limit=100`); nextBtn.disabled = false; if (r) add(r.chapters, false); });
       if (cur) cur.scrollIntoView({ block: 'center' });
     } });
   });
@@ -225,6 +249,7 @@
       const change = (key, v) => {
         const p0 = contentReady ? readP() : 0;
         prefs[key] = v; applyPrefs(); savePrefs(); groups.forEach((g) => g());
+        if (key === 'par' && v !== 'off' && contentReady) loadCounts();
         if (contentReady && key !== 'par' && key !== 't') requestAnimationFrame(() => scrollToP(p0));   // รักษาตำแหน่งที่อ่านอยู่เมื่อข้อความไหลใหม่
         schedule();
       };

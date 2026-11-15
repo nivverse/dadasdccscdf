@@ -12,17 +12,19 @@ export async function onRequestGet({ request, env, params }) {
   const slug = String(params.slug || '');
   const path = novelHref(slug);
 
-  const data = await api(env, `/api/novel/get?slug=${encodeURIComponent(slug)}`);
+  // อ่านเฉพาะช่วงตอนของหน้านี้ (ตอนที่ 1-100, 101-200, ...) ด้วย index ไม่ต้องดึงทั้งสารบัญทุกครั้งที่เปิดหน้า
+  const cp = Math.max(1, posInt(url.searchParams.get('cp')) || 1);
+  const data = await api(env, `/api/novel/get?slug=${encodeURIComponent(slug)}&from=${(cp - 1) * PER_PAGE + 1}&to=${cp * PER_PAGE}&limit=${PER_PAGE}`);
   if (isMissing(data)) return notFoundPage({ origin, env, path });
   if (isBroken(data) || !data.novel) return unavailable();
 
   const n = data.novel;
-  const chapters = Array.isArray(data.chapters) ? data.chapters : [];
-  const pages = Math.max(1, Math.ceil(chapters.length / PER_PAGE));
-  const cp = Math.min(pages, posInt(url.searchParams.get('cp')) || 1);
-  const slice = chapters.slice((cp - 1) * PER_PAGE, cp * PER_PAGE);
-  const first = chapters[0];
-  const last = chapters[chapters.length - 1];
+  const slice = Array.isArray(data.chapters) ? data.chapters : [];
+  const meta = data.meta || {};
+  const pages = Math.max(1, Math.ceil((meta.last_no || 0) / PER_PAGE));
+  if (cp > pages) return Response.redirect(origin + path + (pages > 1 ? '?cp=' + pages : ''), 302);
+  const first = meta.first_no ? { no: meta.first_no } : null;
+  const last = meta.last_no ? { no: meta.last_no } : null;
   const synopsis = flat(n.synopsis);
   const desc = synopsis.slice(0, 155) || `อ่านนิยาย ${n.title} ออนไลน์ที่ nivread`;
   const pageUrl = origin + path;
@@ -104,8 +106,8 @@ export async function onRequestGet({ request, env, params }) {
 
   <section class="mt-9" aria-labelledby="toc">
     <div class="nv-reveal flex items-end justify-between gap-3"><h2 id="toc" class="text-lg font-bold">สารบัญ</h2>
-      ${last && last !== first ? `<a href="${novelHref(n.slug, last.no)}" class="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-neutral-400 hover:text-amber-500 py-1">ตอนล่าสุด ${fmtNum(last.no)}${ICON.arrowRight}</a>` : ''}</div>
-    ${slice.length ? `<ul class="nv-toc mt-3 ${CARD} divide-y divide-slate-200 dark:divide-white/10 overflow-hidden">${rows}</ul>${pager}` : `<p class="mt-3 text-slate-500 dark:text-neutral-400">ยังไม่มีตอนที่เผยแพร่</p>`}
+      ${last && first && last.no !== first.no ? `<a href="${novelHref(n.slug, last.no)}" class="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-neutral-400 hover:text-amber-500 py-1">ตอนล่าสุด ${fmtNum(last.no)}${ICON.arrowRight}</a>` : ''}</div>
+    ${slice.length ? `<ul class="nv-toc mt-3 ${CARD} divide-y divide-slate-200 dark:divide-white/10 overflow-hidden">${rows}</ul>${pager}` : (pages > 1 ? `<p class="mt-3 text-slate-500 dark:text-neutral-400">ไม่มีตอนในช่วงนี้</p>${pager}` : `<p class="mt-3 text-slate-500 dark:text-neutral-400">ยังไม่มีตอนที่เผยแพร่</p>`)}
   </section>
 
   <section id="novel-comments" class="mt-10" aria-labelledby="cm-h"><h2 id="cm-h" class="nv-reveal text-lg font-bold">ความคิดเห็น <span id="cm-total" class="text-slate-400 font-normal"></span></h2><div id="cm-root" class="mt-3 min-h-[6rem]"></div></section>
