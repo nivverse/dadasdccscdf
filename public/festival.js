@@ -4,8 +4,8 @@
 //
 // วิธีเพิ่มเทศกาลใหม่ (แก้แค่ 2 ไฟล์นี้ ไม่ต้องแตะ nivread.js):
 //   1) เพิ่มรายการใน FESTIVALS ด้านล่าง: id / name / from / to (เดือน-วัน เวลาไทย รวมวันแรกและวันสุดท้าย ใช้ซ้ำทุกปี)
-//      + tc (สี theme-color ของแถบมือถือ) + icon (path ของ svg 24x24) + top (ของตกแต่งบนสุดของหน้า) + foot (ของตกแต่งท้ายหน้า)
-//      + layer (ไม่บังคับ: layer แบบ fixed เช่น หิมะ)
+//      + tc (สี theme-color ของแถบมือถือ) + icon (path ของ svg 24x24) + top (ไม่บังคับ: ของตกแต่งบนสุดของหน้า) + foot (ของตกแต่งท้ายหน้า)
+//      + layer (ไม่บังคับ: layer แบบ fixed เช่น หิมะ/ซานต้า)
 //   2) เพิ่มบล็อกสีและสไตล์ใน /festival.css โดยขึ้นต้นด้วย html[data-festival="<id>"]
 //      (ตั้งตัวแปร --fx-bg, --fx-glow, --fx-glow-a, --fx-rgb, --fx-accent, --fx-scroll, --fx-pill, --fx-pill-bd ให้ครบ)
 (() => {
@@ -26,29 +26,23 @@
   // ผีตัวเล็ก (โครงจาก "Little Halloween" ของ khadkamhn) — รูปร่าง/สีอยู่ใน festival.css
   const GHOST = `<div class="hw-gm"><div class="hw-g-head"><div class="hw-g-skull"><div class="hw-g-eyes"><div class="hw-g-eye l"></div><div class="hw-g-eye r"></div></div></div></div><div class="hw-g-body"></div><div class="hw-g-legs"></div></div>`;
 
-  // คริสต์มาส (แดง-ทอง): กิ่งไม้ประดับทองมีผลเบอร์รี่ที่มุมบน + ลูกบอลแขวนแกว่งเบา ๆ + หิมะจางหลังเนื้อหา + ต้นไม้เล็กท้ายหน้า
-  // กิ่งไม้สร้างด้วยการคำนวณ (ก้านตรงเฉียง + ใบเข็มเป็นคู่ ยาวลดลงทางปลาย) จะได้ไม่ต้องเขียน path ยาว ๆ มือ
-  const XM_SPRIG = (side) => {
-    const x0 = -4, y0 = 6, x1 = 152, y1 = 52, th = Math.atan2(y1 - y0, x1 - x0), f = (n) => n.toFixed(1);
-    let n = '', bs = '';
-    for (let i = 1; i <= 9; i++) {
-      const t = i / 10, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t, L = 26 * (1 - 0.62 * t);
-      for (const s of [-1, 1]) {
-        const a = th + s * 0.87;
-        n += `M${f(x)} ${f(y)}L${f(x + Math.cos(a) * L)} ${f(y + Math.sin(a) * L)}`;
-      }
-    }
-    for (const [t, o] of [[0.2, 6], [0.26, 11], [0.3, 4], [0.52, -7], [0.57, -11]]) {
-      const x = x0 + (x1 - x0) * t - Math.sin(th) * o, y = y0 + (y1 - y0) * t + Math.cos(th) * o;
-      bs += `<circle class="xm-b" cx="${f(x)}" cy="${f(y)}" r="3.4"/><circle class="xm-bh" cx="${f(x - 1)}" cy="${f(y - 1.1)}" r="1"/>`;
-    }
-    return `<svg class="xm-sprig xm-sprig-${side}" viewBox="0 0 160 100" aria-hidden="true"><path class="xm-stem" d="M${x0} ${y0}L${x1} ${y1}"/><path class="xm-n" d="${n}"/>${bs}</svg>`;
-  };
-  const XM_BAUBLE = (side, len, delay) => {
-    const cy = len + 13;
-    return `<svg class="xm-bauble xm-bauble-${side}" style="--d:${delay}s" viewBox="0 0 20 ${len + 25}" aria-hidden="true"><line class="xm-bl" x1="10" y1="0" x2="10" y2="${len}"/><rect class="xm-bc" x="7.5" y="${len}" width="5" height="3" rx="1"/><circle class="xm-bb" cx="10" cy="${cy}" r="9.5"/><path class="xm-bg" d="M1 ${cy + 1}Q10 ${cy + 5} 19 ${cy + 1}"/><path class="xm-bs" d="M4.6 ${cy - 2}A6 6 0 0 1 9 ${cy - 7}"/></svg>`;
-  };
-  const XM_TOP = () => XM_SPRIG('l') + XM_SPRIG('r') + XM_BAUBLE('l', 34, 0) + XM_BAUBLE('r', 52, 1.3);
+  // คริสต์มาส (แดง-ทอง): หิมะจางหลังเนื้อหา + ซานต้ากับกวางเรนเดียร์บินผ่านเป็นครั้งคราว + ต้นไม้เล็กท้ายหน้า
+  // กวางเรนเดียร์ 1 ตัว (หันขวา) วาดเป็นฟังก์ชัน เรียกซ้ำเพื่อทำเป็นขบวน — lead=true จมูกแดง
+  const XM_DEER = (tx, ty, lead) => `<g transform="translate(${tx} ${ty})"><ellipse class="xm-d" cx="16" cy="30" rx="12" ry="6"/><path class="xm-d" d="M24 27L32 16L36 19L28 34z"/><circle class="xm-d" cx="36" cy="16" r="3.6"/><ellipse class="xm-d" cx="40" cy="17.5" rx="3.2" ry="2"/>${lead ? '<circle class="xm-nose" cx="43" cy="17.5" r="1.7"/>' : ''}<path class="xm-ant" d="M34 12.5L32 3M32.3 6L28 4M33.3 8.5L36.5 3"/><path class="xm-leg" d="M26 34L32 43M23 35L19 41M8 35L2 41M11 35L14 43"/></g>`;
+  const XM_FLY = () => `<div class="xm-flywrap"><div class="xm-fly"><svg viewBox="0 0 170 56" aria-hidden="true">
+<path class="xm-rein" d="M70 24Q92 17 112 26"/>
+${XM_DEER(70, 14, false)}${XM_DEER(114, 8, true)}
+<path class="xm-run" d="M6 44Q6 49 12 49H58Q66 49 66 41M20 41V49M46 41V49"/>
+<path class="xm-sack" d="M13 29Q9 15 20 14Q31 15 27 29z"/>
+<path class="xm-sled" d="M10 29H62Q62 41 52 41H20Q10 41 10 29z"/>
+<path class="xm-curl" d="M62 29Q70 27 70 20"/>
+<path class="xm-coat" d="M28 29V21Q34 17 40 21V29z"/>
+<circle class="xm-face" cx="34" cy="17" r="4.6"/>
+<path class="xm-beard" d="M29.6 18Q34 28 38.4 18z"/>
+<path class="xm-hat" d="M29 15.5Q33 3 41 12L40 15.5z"/>
+<rect class="xm-brim" x="28.6" y="14.4" width="11.6" height="2.4" rx="1.2"/>
+<circle class="xm-brim" cx="41.5" cy="10.8" r="2.1"/>
+</svg></div></div>`;
   // หิมะ 3 ชั้น (ไกล/กลาง/ใกล้) เป็น layer fixed วางหลังเนื้อหา — วาดด้วย gradient ใน CSS ล้วน
   const XM_SNOW = () => '<div class="xm-snowwrap"><div class="xm-snow xm-s1"></div><div class="xm-snow xm-s2"></div><div class="xm-snow xm-s3"></div></div>';
   const XM_TREE = `<svg class="xm-tree" viewBox="0 0 30 44" aria-hidden="true"><path class="xm-tt" d="M15 8L22 19H8zM15 14L24 28H6zM15 23L27 38H3z"/><rect class="xm-trunk" x="13" y="38" width="4" height="6" rx="1"/><path class="xm-gar" d="M10.5 17Q15 20 19.5 17M8 26Q15 30 22 26M5.5 35Q15 40 24.5 35"/><circle class="xm-ob" cx="12" cy="23" r="1.3"/><circle class="xm-og" cx="19" cy="31" r="1.3"/><circle class="xm-ob" cx="10" cy="33" r="1.2"/><path class="xm-star" d="M15 .5l1.5 3.2 3.5.4-2.6 2.4.7 3.5L15 8.2l-3.1 1.8.7-3.5L10 4.1l3.5-.4z"/></svg>`;
@@ -66,8 +60,7 @@
       id: 'christmas', name: 'คริสต์มาส', from: '12-01', to: '12-31',
       tc: { dark: '#130909', light: '#fff6f4' },
       icon: '<path d="M12 2v20M4.9 7l14.2 10M19.1 7L4.9 17M9 3.5l3 2 3-2M9 20.5l3-2 3 2"/>',
-      top: XM_TOP,
-      layer: XM_SNOW,
+      layer: () => XM_SNOW() + XM_FLY(),
       foot: XM_TREE,
     },
   ];
@@ -124,11 +117,13 @@
     wrap.className = 'fx-deco';
     wrap.setAttribute('aria-hidden', 'true');
 
-    // ของตกแต่งบนสุด: absolute ที่ต้นเอกสาร (height:0 ไม่ดันเนื้อหา)
-    const top = document.createElement('div');
-    top.style.cssText = 'position:absolute;top:0;left:0;right:0;height:0;pointer-events:none';
-    top.innerHTML = fest.top();
-    wrap.appendChild(top);
+    // ของตกแต่งบนสุด (ไม่บังคับ): absolute ที่ต้นเอกสาร (height:0 ไม่ดันเนื้อหา)
+    if (fest.top) {
+      const top = document.createElement('div');
+      top.style.cssText = 'position:absolute;top:0;left:0;right:0;height:0;pointer-events:none';
+      top.innerHTML = fest.top();
+      wrap.appendChild(top);
+    }
 
     // แสงอุ่นจาง ๆ พื้นหลัง (layer fixed เดียว)
     const glow = document.createElement('div');
