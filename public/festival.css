@@ -96,55 +96,96 @@ html[data-festival="halloween"] .fx-ft{--gf:#fff7ed;--ge:#fbbf24}
 @keyframes hw-hand-r{0%,100%{transform:rotate(-10deg) translateX(0)}50%{transform:rotate(-10deg) translateX(3px)}}
 @keyframes hw-legs{0%,100%{transform:translateX(0)}50%{transform:translateX(-18px)}}
 
-/* ===================== 2) คริสต์มาส ===================== */
+/* ===================== 2) คริสต์มาส (ดำอมแดง + ทอง นุ่ม ๆ พรีเมียม) ===================== */
 html[data-festival="christmas"]{
-  --fx-bg:#f7fbf8;
-  --fx-glow:34 197 94; --fx-glow-a:.12;
+  --fx-bg:#fff6f4;
+  --fx-glow:244 63 94; --fx-glow-a:.10;
   --fx-rgb:220 38 38;
   --fx-accent:#dc2626;
   --fx-scroll:#b91c1c;
   --fx-pill:#b91c1c; --fx-pill-bd:239 68 68;
-  --xm-wire:#475569;
-  --xm-tree:#15803d;
+  --xm-gold:#b8862b;
+  --xm-red:#dc2626;
+  --xm-tree:#be123c;
+  --xm-orn:#fff7ed;
+  --xm-snow:rgb(190 110 120 / .5);
 }
 html[data-festival="christmas"].dark{
-  --fx-bg:#08130e;
-  --fx-glow:22 163 74; --fx-glow-a:.16;
+  --fx-bg:#130909;
+  --fx-glow:220 38 38; --fx-glow-a:.17;
   --fx-pill:#fecaca;
-  --xm-wire:#94a3b8;
-  --xm-tree:#22c55e;
+  --xm-gold:#e8c27a;
+  --xm-red:#e11d48;
+  --xm-tree:#fecdd3;
+  --xm-orn:#e11d48;
+  --xm-snow:rgb(255 255 255 / .6);
 }
 
-/* สายไฟกระพริบบนสุดของหน้า: absolute ที่ต้นหน้า เลื่อนแล้วหายไปเอง (กระพริบด้วย opacity อย่างเดียว) */
-.xm-lights{position:absolute;top:0;left:0;right:0;height:30px;display:flex;justify-content:space-around;align-items:flex-start;
-  padding:0 .5rem;pointer-events:none;z-index:31}
-.xm-lights:before{content:'';position:absolute;top:1px;left:0;right:0;height:1px;background:var(--xm-wire);opacity:.5}
-.xm-lights i{position:relative;display:block;width:7px;height:11px;margin-top:2px;color:#ef4444;background:currentColor;
-  border-radius:50% 50% 50% 50%/60% 60% 40% 40%;box-shadow:0 0 6px 1px currentColor;opacity:.85;
-  animation:xm-twinkle 2.4s ease-in-out infinite;animation-delay:var(--d,0s)}
-.xm-lights i:before{content:'';position:absolute;top:-3px;left:2px;width:3px;height:3px;background:var(--xm-wire);opacity:.7}
-.xm-lights i:nth-child(odd){margin-top:8px}
-.xm-lights i:nth-child(4n+2){color:#22c55e}
-.xm-lights i:nth-child(4n+3){color:#fbbf24}
-.xm-lights i:nth-child(4n+4){color:#3b82f6}
-@keyframes xm-twinkle{0%,100%{opacity:.9}50%{opacity:.35}}
-@media (max-width:600px){.xm-lights i:nth-child(even){display:none}}
+/* กิ่งไม้ประดับทอง + ผลเบอร์รี่แดงที่มุมบน: absolute ที่ต้นหน้า เลื่อนแล้วหายไปเอง */
+.xm-sprig{position:absolute;top:0;z-index:31;width:clamp(120px,24vw,210px);height:auto;pointer-events:none;opacity:.9}
+.xm-sprig-l{left:0}
+.xm-sprig-r{right:0;transform:scaleX(-1)}
+.xm-stem,.xm-n{fill:none;stroke:var(--xm-gold);stroke-linecap:round}
+.xm-stem{stroke-width:2.4;opacity:.9}
+.xm-n{stroke-width:1.8;opacity:.7}
+.xm-b{fill:var(--xm-red)}
+.xm-bh{fill:#fff;opacity:.55}
 
-/* ต้นคริสต์มาสเล็กท้ายหน้า: ลอยขึ้นลงเบา ๆ ไม่บังเนื้อหา */
-.xm-tree{position:relative;width:30px;height:44px;opacity:.9;animation:fx-bob 4s ease-in-out infinite}
-.xm-t{position:absolute;left:50%;transform:translateX(-50%);background:var(--xm-tree);clip-path:polygon(50% 0,100% 100%,0 100%)}
-.xm-t1{top:7px;width:14px;height:12px}
-.xm-t2{top:14px;width:20px;height:14px}
-.xm-t3{top:22px;width:26px;height:16px}
-.xm-trunk{position:absolute;left:50%;top:38px;width:4px;height:6px;margin-left:-2px;background:#92400e}
-.xm-star{position:absolute;left:50%;top:0;width:8px;height:8px;transform:translateX(-50%);background:#fbbf24;
-  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);animation:xm-twinkle 2s ease-in-out infinite}
-.xm-o{position:absolute;width:3px;height:3px;border-radius:50%}
-.xm-o1{left:9px;top:32px;background:#ef4444}
-.xm-o2{left:19px;top:26px;background:#fbbf24}
-.xm-o3{left:13px;top:17px;background:#ef4444}
+/* ลูกบอลแขวน: แกว่งเบา ๆ (transform อย่างเดียว) */
+.xm-bauble{position:absolute;top:0;z-index:31;width:18px;height:auto;pointer-events:none;
+  transform-origin:50% 0;animation:xm-swing 5s ease-in-out infinite alternate;animation-delay:var(--d,0s)}
+.xm-bauble-l{left:clamp(124px,25vw,225px)}
+.xm-bauble-r{right:clamp(124px,25vw,225px)}
+.xm-bl{stroke:var(--xm-gold);stroke-width:.8;opacity:.8}
+.xm-bc{fill:var(--xm-gold)}
+.xm-bb{fill:var(--xm-red)}
+.xm-bg{fill:none;stroke:var(--xm-gold);stroke-width:1.2}
+.xm-bs{fill:none;stroke:#fff;stroke-opacity:.55;stroke-width:1.4;stroke-linecap:round}
+@keyframes xm-swing{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+
+/* หิมะจาง ๆ 3 ชั้น: layer fixed อยู่หลังเนื้อหา (z-index:0 ต่ำกว่า main/header) กดทะลุได้
+   เลื่อนทีละ "1 กระเบื้อง" เต็ม ๆ จึงวนต่อเนื่องไม่กระตุก ใช้ transform อย่างเดียว
+   อยากให้หิมะลอยทับเนื้อหาด้วย → เปลี่ยน z-index ของ .xm-snowwrap เป็น 30 */
+.xm-snowwrap{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.xm-snow{position:absolute;left:0;right:0;height:calc(100% + var(--t));will-change:transform;animation:xm-fall linear infinite}
+@keyframes xm-fall{to{transform:translateY(var(--t))}}
+.xm-s1{--t:280px;top:-280px;background-size:280px 280px;opacity:.55;animation-duration:42s}
+.xm-s1{background-image:
+    radial-gradient(circle 1.6px at 20px 40px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 90px 170px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 150px 60px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 210px 230px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 250px 110px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 60px 250px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 180px 140px,var(--xm-snow),transparent)}
+.xm-s2{--t:340px;top:-340px;background-size:340px 340px;opacity:.7;animation-duration:28s}
+.xm-s2{background-image:
+    radial-gradient(circle 2.4px at 40px 80px,var(--xm-snow),transparent),
+    radial-gradient(circle 2.4px at 130px 250px,var(--xm-snow),transparent),
+    radial-gradient(circle 2.4px at 220px 30px,var(--xm-snow),transparent),
+    radial-gradient(circle 2.4px at 300px 160px,var(--xm-snow),transparent),
+    radial-gradient(circle 2.4px at 90px 320px,var(--xm-snow),transparent),
+    radial-gradient(circle 2.4px at 260px 290px,var(--xm-snow),transparent)}
+.xm-s3{--t:420px;top:-420px;background-size:420px 420px;opacity:.6;animation-duration:19s}
+.xm-s3{background-image:
+    radial-gradient(circle 3.4px at 70px 120px,var(--xm-snow),transparent),
+    radial-gradient(circle 3.4px at 240px 340px,var(--xm-snow),transparent),
+    radial-gradient(circle 3.4px at 360px 60px,var(--xm-snow),transparent),
+    radial-gradient(circle 3.4px at 150px 400px,var(--xm-snow),transparent),
+    radial-gradient(circle 3.4px at 330px 230px,var(--xm-snow),transparent)}
+
+/* ต้นไม้เล็กท้ายหน้า (SVG): ลอยขึ้นลงเบา ๆ ไม่บังเนื้อหา */
+.xm-tree{width:30px;height:44px;opacity:.92;animation:fx-bob 4s ease-in-out infinite}
+.xm-tt{fill:var(--xm-tree)}
+.xm-trunk{fill:var(--xm-gold);opacity:.75}
+.xm-gar{fill:none;stroke:var(--xm-gold);stroke-width:1;stroke-linecap:round}
+.xm-ob{fill:var(--xm-orn)}
+.xm-og{fill:var(--xm-gold)}
+.xm-star{fill:var(--xm-gold);animation:xm-twinkle 2.4s ease-in-out infinite}
+@keyframes xm-twinkle{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* เคารพผู้ที่ลดการเคลื่อนไหว: ทุกอย่างนิ่ง */
 @media (prefers-reduced-motion:reduce){
-  .hw-spider,.xm-lights i,.xm-star,.fx-ft *,.fx-ft :before,.fx-ft :after{animation:none!important}
+  .hw-spider,.xm-bauble,.xm-tree,.xm-star,.fx-ft *,.fx-ft :before,.fx-ft :after{animation:none!important}
+  .xm-snowwrap{display:none}
 }

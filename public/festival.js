@@ -5,6 +5,7 @@
 // วิธีเพิ่มเทศกาลใหม่ (แก้แค่ 2 ไฟล์นี้ ไม่ต้องแตะ nivread.js):
 //   1) เพิ่มรายการใน FESTIVALS ด้านล่าง: id / name / from / to (เดือน-วัน เวลาไทย รวมวันแรกและวันสุดท้าย ใช้ซ้ำทุกปี)
 //      + tc (สี theme-color ของแถบมือถือ) + icon (path ของ svg 24x24) + top (ของตกแต่งบนสุดของหน้า) + foot (ของตกแต่งท้ายหน้า)
+//      + layer (ไม่บังคับ: layer แบบ fixed เช่น หิมะ)
 //   2) เพิ่มบล็อกสีและสไตล์ใน /festival.css โดยขึ้นต้นด้วย html[data-festival="<id>"]
 //      (ตั้งตัวแปร --fx-bg, --fx-glow, --fx-glow-a, --fx-rgb, --fx-accent, --fx-scroll, --fx-pill, --fx-pill-bd ให้ครบ)
 (() => {
@@ -25,9 +26,32 @@
   // ผีตัวเล็ก (โครงจาก "Little Halloween" ของ khadkamhn) — รูปร่าง/สีอยู่ใน festival.css
   const GHOST = `<div class="hw-gm"><div class="hw-g-head"><div class="hw-g-skull"><div class="hw-g-eyes"><div class="hw-g-eye l"></div><div class="hw-g-eye r"></div></div></div></div><div class="hw-g-body"></div><div class="hw-g-legs"></div></div>`;
 
-  // คริสต์มาส: สายไฟกระพริบบนสุดของหน้า + ต้นคริสต์มาสเล็กท้ายหน้า
-  const XM_LIGHTS = () => `<div class="xm-lights">${Array.from({ length: 22 }, (_, i) => `<i style="--d:${((i * 0.37) % 2).toFixed(2)}s"></i>`).join('')}</div>`;
-  const XM_TREE = `<div class="xm-tree"><span class="xm-star"></span><span class="xm-t xm-t1"></span><span class="xm-t xm-t2"></span><span class="xm-t xm-t3"></span><span class="xm-trunk"></span><span class="xm-o xm-o1"></span><span class="xm-o xm-o2"></span><span class="xm-o xm-o3"></span></div>`;
+  // คริสต์มาส (แดง-ทอง): กิ่งไม้ประดับทองมีผลเบอร์รี่ที่มุมบน + ลูกบอลแขวนแกว่งเบา ๆ + หิมะจางหลังเนื้อหา + ต้นไม้เล็กท้ายหน้า
+  // กิ่งไม้สร้างด้วยการคำนวณ (ก้านตรงเฉียง + ใบเข็มเป็นคู่ ยาวลดลงทางปลาย) จะได้ไม่ต้องเขียน path ยาว ๆ มือ
+  const XM_SPRIG = (side) => {
+    const x0 = -4, y0 = 6, x1 = 152, y1 = 52, th = Math.atan2(y1 - y0, x1 - x0), f = (n) => n.toFixed(1);
+    let n = '', bs = '';
+    for (let i = 1; i <= 9; i++) {
+      const t = i / 10, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t, L = 26 * (1 - 0.62 * t);
+      for (const s of [-1, 1]) {
+        const a = th + s * 0.87;
+        n += `M${f(x)} ${f(y)}L${f(x + Math.cos(a) * L)} ${f(y + Math.sin(a) * L)}`;
+      }
+    }
+    for (const [t, o] of [[0.2, 6], [0.26, 11], [0.3, 4], [0.52, -7], [0.57, -11]]) {
+      const x = x0 + (x1 - x0) * t - Math.sin(th) * o, y = y0 + (y1 - y0) * t + Math.cos(th) * o;
+      bs += `<circle class="xm-b" cx="${f(x)}" cy="${f(y)}" r="3.4"/><circle class="xm-bh" cx="${f(x - 1)}" cy="${f(y - 1.1)}" r="1"/>`;
+    }
+    return `<svg class="xm-sprig xm-sprig-${side}" viewBox="0 0 160 100" aria-hidden="true"><path class="xm-stem" d="M${x0} ${y0}L${x1} ${y1}"/><path class="xm-n" d="${n}"/>${bs}</svg>`;
+  };
+  const XM_BAUBLE = (side, len, delay) => {
+    const cy = len + 13;
+    return `<svg class="xm-bauble xm-bauble-${side}" style="--d:${delay}s" viewBox="0 0 20 ${len + 25}" aria-hidden="true"><line class="xm-bl" x1="10" y1="0" x2="10" y2="${len}"/><rect class="xm-bc" x="7.5" y="${len}" width="5" height="3" rx="1"/><circle class="xm-bb" cx="10" cy="${cy}" r="9.5"/><path class="xm-bg" d="M1 ${cy + 1}Q10 ${cy + 5} 19 ${cy + 1}"/><path class="xm-bs" d="M4.6 ${cy - 2}A6 6 0 0 1 9 ${cy - 7}"/></svg>`;
+  };
+  const XM_TOP = () => XM_SPRIG('l') + XM_SPRIG('r') + XM_BAUBLE('l', 34, 0) + XM_BAUBLE('r', 52, 1.3);
+  // หิมะ 3 ชั้น (ไกล/กลาง/ใกล้) เป็น layer fixed วางหลังเนื้อหา — วาดด้วย gradient ใน CSS ล้วน
+  const XM_SNOW = () => '<div class="xm-snowwrap"><div class="xm-snow xm-s1"></div><div class="xm-snow xm-s2"></div><div class="xm-snow xm-s3"></div></div>';
+  const XM_TREE = `<svg class="xm-tree" viewBox="0 0 30 44" aria-hidden="true"><path class="xm-tt" d="M15 8L22 19H8zM15 14L24 28H6zM15 23L27 38H3z"/><rect class="xm-trunk" x="13" y="38" width="4" height="6" rx="1"/><path class="xm-gar" d="M10.5 17Q15 20 19.5 17M8 26Q15 30 22 26M5.5 35Q15 40 24.5 35"/><circle class="xm-ob" cx="12" cy="23" r="1.3"/><circle class="xm-og" cx="19" cy="31" r="1.3"/><circle class="xm-ob" cx="10" cy="33" r="1.2"/><path class="xm-star" d="M15 .5l1.5 3.2 3.5.4-2.6 2.4.7 3.5L15 8.2l-3.1 1.8.7-3.5L10 4.1l3.5-.4z"/></svg>`;
 
   // ---------- รายการเทศกาล (ตัวแรกที่วันนี้อยู่ในช่วงจะถูกใช้) ----------
   const FESTIVALS = [
@@ -40,9 +64,10 @@
     },
     {
       id: 'christmas', name: 'คริสต์มาส', from: '12-01', to: '12-31',
-      tc: { dark: '#08130e', light: '#f7fbf8' },
-      icon: '<path d="M12 3L7 10h3l-4 6h12l-4-6h3z"/><path d="M12 16v5"/>',
-      top: XM_LIGHTS,
+      tc: { dark: '#130909', light: '#fff6f4' },
+      icon: '<path d="M12 2v20M4.9 7l14.2 10M19.1 7L4.9 17M9 3.5l3 2 3-2M9 20.5l3-2 3 2"/>',
+      top: XM_TOP,
+      layer: XM_SNOW,
       foot: XM_TREE,
     },
   ];
@@ -109,6 +134,7 @@
     const glow = document.createElement('div');
     glow.className = 'fx-glow';
     wrap.appendChild(glow);
+    if (fest.layer) wrap.insertAdjacentHTML('beforeend', fest.layer()); // layer เสริมแบบ fixed (เช่น หิมะ)
     document.body.appendChild(wrap);
 
     mountFooter();
