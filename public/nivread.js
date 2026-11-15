@@ -135,7 +135,7 @@
     : `<div class="sk-card"><div class="flex items-center gap-3">${skB('w-11 h-11 !rounded-full flex-shrink-0')}<div class="flex-1 space-y-2">${skB('h-3 w-1/3')}${skB('h-3 w-1/5')}</div></div>
 <div class="mt-4 space-y-2">${skB('h-4 w-4/5')}${skB('h-3 w-full')}${skB('h-3 w-3/5')}</div>${i % 2 === 0 ? skB('mt-4 w-full aspect-[4/3]') : ''}</div>`).join('');
   const skel = (n = 3, kind = 'card') => {
-    const d = el('div', kind === 'comment' ? 'space-y-5' : 'space-y-6');
+    const d = el('div', kind === 'comment' ? 'space-y-5' : 'space-y-6 mt-6'); // mt-6 = เว้นช่องไฟจากการ์ดก่อนหน้า (skeleton ถูกแทรกนอกกลุ่ม space-y-6 ขอบเลยชนกัน)
     d.setAttribute('aria-hidden', 'true'); d.dataset.skel = '1'; d.innerHTML = skelHtml(n, kind);
     return d;
   };
@@ -576,7 +576,13 @@
     observerStyle.id = 'niv-video-observer';
     // กล่องวิดีโอต้องมีความสูงตั้งแต่ก่อนโปสเตอร์/เมทาดาทาโหลด (preload=none → ไม่รู้ขนาด) ไม่งั้นเลื่อนเร็วแล้วกล่องแบนแล้วดีดตัว
     // ค่าตั้งต้น 16/9 → เปลี่ยนเป็นสัดส่วนจริงของโปสเตอร์/คลิปทันทีที่รู้ (inline style ชนะ CSS นี้)
-    observerStyle.textContent = '.uv video{aspect-ratio:16/9;min-height:8rem}';
+    observerStyle.textContent = '.uv video{aspect-ratio:16/9;min-height:8rem}'
+      // พื้นหลังโหลด (เหมือนรูปภาพ .gal-s): shimmer ใต้วิดีโอจนกว่าโปสเตอร์จะโหลด (.ok) — isolation ทำให้ ::before z-index:-1 อยู่หลังวิดีโอแต่ไม่ทับปุ่มควบคุม
+      + '.uv{position:relative;isolation:isolate}'
+      + '.uv:not(.ok)::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:18px;background:linear-gradient(90deg,#e4e4de 25%,#f2f2ed 50%,#e4e4de 75%) 0 0/200% 100%;animation:uv-sh 1.3s linear infinite}'
+      + '.dark .uv:not(.ok)::before{background:linear-gradient(90deg,#1a1a1a 25%,#262626 50%,#1a1a1a 75%) 0 0/200% 100%}'
+      + '@keyframes uv-sh{to{background-position:-200% 0}}'
+      + '@media (prefers-reduced-motion:reduce){.uv:not(.ok)::before{animation:none}}';
     document.head.appendChild(observerStyle);
 
     const PICK_DELAY = 300, FAR_MARGIN = '150% 0px';
@@ -631,10 +637,13 @@
     }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
 
     const lockRatioFromPoster = (v) => {            // รู้สัดส่วนจากโปสเตอร์ (โหลดเบา ๆ) ไม่ต้องรอไฟล์วิดีโอ
-      if (v.style.aspectRatio || !v.poster) return;
+      const box = v.closest('.uv'), ok = () => box && box.classList.add('ok');
+      if (!v.poster || v.readyState > 0) return ok();
       const im = new Image();
-      im.onload = () => { if (!v.style.aspectRatio && im.naturalWidth && im.naturalHeight) v.style.aspectRatio = im.naturalWidth + ' / ' + im.naturalHeight; };
+      im.onload = () => { if (!v.style.aspectRatio && im.naturalWidth && im.naturalHeight) v.style.aspectRatio = im.naturalWidth + ' / ' + im.naturalHeight; ok(); };
+      im.onerror = ok;
       im.src = v.poster;
+      if (v.style.aspectRatio) return;
     };
     const relT = new WeakMap();                      // หน่วงการปล่อยคลิป: เลื่อนเร็วผ่านไปมาไม่ต้อง load() รัว (ต้นเหตุกระตุก)
     function release(v) {
