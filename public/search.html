@@ -61,9 +61,12 @@
   const { api, el, userUrl, avatarEl, postCardEl } = NIV;
   const $ = (id) => document.getElementById(id);
   const input = $('sq'), view = $('view'), tabsEl = $('tabs'), clearBtn = $('sx');
+  const S = NIV.session();
+  const loggedIn = !!(S.token && S.userId);
 
   // ---------- เก็บข้อมูลในเครื่อง (ไม่เรียกเซิร์ฟเวอร์) ----------
-  const H_KEY = 'niv_sh', C_KEY = 'niv_cats', H_MAX = 10;
+  // ประวัติค้นหาแยกตามบัญชี (เครื่องที่ใช้ร่วมกันจะไม่เห็นประวัติของคนอื่น)
+  const H_KEY = 'niv_sh_' + (S.userId || ''), C_KEY = 'niv_cats', H_MAX = 10;
   const CAT_TTL = 10 * 60e3, RES_TTL = 2 * 60e3;
   const lsGet = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
   const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
@@ -201,11 +204,32 @@
   let data = null, curTab = 'all', curQ = '';
   const skeleton = () => { view.textContent = ''; view.append(NIV.skel(3)); };
 
+  // ต้องเข้าสู่ระบบก่อนค้นหา: แสดงการ์ดชวนล็อกอินแทนผลลัพธ์ (ไม่ยิง API เลย)
+  function gate(expired) {
+    token++;
+    setTabs(null);
+    view.textContent = '';
+    const box = el('div', 'mt-10 mx-auto max-w-sm text-center rounded-3xl p-8 bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10');
+    const ic = el('div', 'mx-auto w-14 h-14 rounded-full grid place-items-center bg-amber-500/15 text-amber-500');
+    ic.append(svg('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>', 'w-7 h-7'));
+    const go = el('a', 'mt-5 inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110', 'เข้าสู่ระบบ');
+    go.href = '/login?redirect=' + encodeURIComponent(location.pathname + location.search);
+    const cat = el('a', 'mt-3 inline-block text-sm font-medium text-amber-500 hover:underline', 'หรือดูหมวดหมู่ทั้งหมด');
+    cat.href = '/categories';
+    box.append(ic,
+      el('h2', 'mt-4 text-lg font-extrabold', expired ? 'เซสชันหมดอายุ' : 'เข้าสู่ระบบเพื่อค้นหา'),
+      el('p', 'mt-1 text-sm text-slate-500 dark:text-neutral-400', expired ? 'กรุณาเข้าสู่ระบบอีกครั้งเพื่อใช้งานการค้นหา' : 'สมาชิกเท่านั้นที่ค้นหาโพสต์ หมวดหมู่ และผู้ใช้ได้'),
+      go, cat);
+    view.append(box);
+  }
+
+  class NeedLogin extends Error {}
   async function fetchResults(q) {
-    const key = 'niv_sr:' + q.toLowerCase();
+    const key = 'niv_sr:' + S.userId + ':' + q.toLowerCase();
     const c = ssGet(key);
     if (c && Date.now() - c.t < RES_TTL) return c.d;            // แคช 2 นาทีในแท็บนี้ → กลับมาดูซ้ำไม่เสียคำขอ
-    const r = await api('/api/blog/search?q=' + encodeURIComponent(q));
+    const r = await api('/api/blog/search?q=' + encodeURIComponent(q) + '&userId=' + encodeURIComponent(S.userId));
+    if (r.status === 401) throw new NeedLogin();
     if (!r.ok) throw new Error(r.data && r.data.error || 'ค้นหาไม่สำเร็จ กรุณาลองใหม่');
     const d = { users: r.data.users || [], posts: r.data.posts || [] };
     ssSet(key, { t: Date.now(), d });
@@ -214,6 +238,7 @@
 
   async function run(q, opt = {}) {
     q = String(q || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+    if (!loggedIn) { gate(); return; }
     if (q.length < 2) { input.focus(); return; }
     input.value = q; toggleClear();
     input.blur();
@@ -226,7 +251,11 @@
     if (!cats.length) await loadCats();
     let d;
     try { d = await fetchResults(q); }
-    catch (e) { if (my === token) { view.textContent = ''; view.append(el('p', 'pt-6 text-sm text-slate-500 dark:text-neutral-400', e.message)); } return; }
+    catch (e) {
+      if (my !== token) return;
+      if (e instanceof NeedLogin) { gate(true); return; }
+      view.textContent = ''; view.append(el('p', 'pt-6 text-sm text-slate-500 dark:text-neutral-400', e.message)); return;
+    }
     if (my !== token) return;                                    // มีการค้นหาใหม่แทรกแล้ว
     const ql = q.toLowerCase().replace(/\s+/g, ' ');
     data = { users: d.users, posts: d.posts, cats: cats.filter((c) => String(c.name).toLowerCase().includes(ql)).slice(0, 12) };
@@ -297,9 +326,16 @@
 
   // ---------- เริ่มต้น ----------
   const q0 = (new URLSearchParams(location.search).get('q') || '').trim().slice(0, 40);
-  loadCats();
-  if (q0.length >= 2) { history.replaceState({ q: q0 }, '', location.href); run(q0, { pop: true }); }
-  else home();
+  if (!loggedIn) {
+    // ยังไม่ล็อกอิน: ปิดช่องค้นหา แสดงการ์ดชวนเข้าสู่ระบบ ไม่โหลดอะไรจากเซิร์ฟเวอร์
+    input.disabled = true; input.placeholder = 'เข้าสู่ระบบเพื่อค้นหา';
+    input.value = q0;
+    gate();
+  } else {
+    loadCats();
+    if (q0.length >= 2) { history.replaceState({ q: q0 }, '', location.href); run(q0, { pop: true }); }
+    else home();
+  }
 })();
 </script>
 </body>
