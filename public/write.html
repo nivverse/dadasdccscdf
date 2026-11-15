@@ -265,6 +265,32 @@ textarea.wr-f{resize:none;line-height:1.6}
   const isUp = (u) => u.includes('/api/blog/img/u/') || /^https:\/\/[^/\s]+\/u\/[A-Za-z0-9._~%-]+\/[a-z0-9]{6,40}\.(?:webp|jpg|png)$/.test(u);
   const upCount = () => images.filter(isUp).length;
   const imgMsg = (t, bad) => { const m = $('img-msg'); m.textContent = t; m.className = 'text-xs mt-1 ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
+  // ---------- กติกาการเลือกสื่อ (เสียงกับกล่องล็อกใช้ร่วมกับทุกแบบได้เสมอ) ----------
+  //   รูปที่อัปโหลด: ใช้ร่วมกับ YouTube ได้ แต่ห้ามวิดีโออัปโหลด/ลิงก์รูป
+  //   วิดีโอที่อัปโหลด: ห้ามเพิ่มสื่ออื่นทั้งหมด · YouTube: เพิ่มได้เฉพาะรูปที่อัปโหลด · ลิงก์รูป/GIF: ห้ามเพิ่มสื่ออื่น
+  function mediaCan() {
+    const A = uploading || upCount() > 0;                 // รูปที่อัปโหลด
+    const D = images.some((u) => !isUp(u));                // ลิงก์รูป/GIF
+    const B = vidBusy || videos.some(isVidUp);             // วิดีโอที่อัปโหลด
+    const C = videos.some((u) => !isVidUp(u));             // YouTube
+    return { link: !A && !B && !C, upImg: !B && !D, yt: !B && !D, upVid: !A && !C && !D };
+  }
+  const MEDIA_WHY = 'เลือกร่วมกับสื่อที่เพิ่มไว้แล้วไม่ได้ (ลบสื่อเดิมก่อน)';
+  function lockMedia() {
+    const c = mediaCan();
+    const set = (id, dis, blocked) => {
+      const b = $(id); if (!b) return;
+      b.disabled = !!dis;
+      if (b.classList.contains('wr-tool')) { if (!b.dataset.t) b.dataset.t = b.title; b.title = blocked ? b.dataset.t + ' — ' + MEDIA_WHY : b.dataset.t; }
+    };
+    const imgFull = images.length >= IMG_MAX, ytFull = videos.length >= YT_MAX;
+    set('img-input', imgFull || !c.link); set('img-add', imgFull || !c.link);
+    set('img-up', uploading || upCount() >= UP_MAX || imgFull || !c.upImg, !c.upImg);
+    set('tg-img', !c.link, !c.link);
+    set('yt-input', ytFull || !c.yt); set('yt-add', ytFull || !c.yt);
+    set('tg-yt', !c.yt, !c.yt);
+    set('vid-up', vidBusy || videos.filter(isVidUp).length >= VID_UP_MAX || ytFull || !c.upVid, !c.upVid);
+  }
   function renderImages() {
     const ul = $('img-list'); ul.replaceChildren();
     images.forEach((u, i) => {
@@ -280,14 +306,14 @@ textarea.wr-f{resize:none;line-height:1.6}
       li.append(bar); ul.append(li);
     });
     $('img-count').textContent = images.length + ' / ' + IMG_MAX;
-    $('img-input').disabled = $('img-add').disabled = images.length >= IMG_MAX;
     $('up-count').textContent = upCount() + ' / ' + UP_MAX;
-    $('img-up').disabled = uploading || upCount() >= UP_MAX || images.length >= IMG_MAX;
+    lockMedia();
     if (images.length >= IMG_MAX) imgMsg('ครบ 10 รูปแล้ว');
   }
   function addImages() {
     const parts = $('img-input').value.split(/[\s,]+/).filter(Boolean);
     if (!parts.length) return;
+    if (!mediaCan().link) { $('img-input').value = ''; return imgMsg(MEDIA_WHY, true); }
     let added = 0, bad = 0, dup = 0, over = 0, gifBad = 0;
     for (const p of parts) {
       if (!/^https:\/\/[^\s"'<>]{4,500}$/.test(p)) { bad++; continue; }
@@ -377,6 +403,7 @@ textarea.wr-f{resize:none;line-height:1.6}
     if (uploading) return;
     const list = [...files];
     if (!list.length) return;
+    if (!mediaCan().upImg) return imgMsg(MEDIA_WHY, true);
     uploading = true; renderImages();
     let done = 0; const notes = []; let bad = false;
     for (const f of list) {
@@ -471,13 +498,13 @@ textarea.wr-f{resize:none;line-height:1.6}
     });
     $('yt-count').textContent = videos.length + ' / ' + YT_MAX;
     $('vid-count').textContent = videos.filter(isVidUp).length + ' / ' + VID_UP_MAX;
-    $('vid-up').disabled = vidBusy || videos.filter(isVidUp).length >= VID_UP_MAX || videos.length >= YT_MAX;
-    $('yt-input').disabled = $('yt-add').disabled = videos.length >= YT_MAX;
+    lockMedia();
     if (videos.length >= YT_MAX) ytMsg('ครบ 15 คลิปแล้ว');
   }
   function addVideos() {
     const parts = $('yt-input').value.split(/[\s,]+/).filter(Boolean);
     if (!parts.length) return;
+    if (!mediaCan().yt) { $('yt-input').value = ''; return ytMsg(MEDIA_WHY, true); }
     let added = 0, bad = 0, dup = 0, over = 0;
     for (const p of parts) {
       const id = ytId(p);
@@ -629,6 +656,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   $('vid-file').addEventListener('change', async (e) => {
     const f = e.target.files[0]; e.target.value = '';
     if (!f || vidBusy) return;
+    if (!mediaCan().upVid) return ytMsg(MEDIA_WHY, true);
     if (!/^video\//.test(f.type)) return ytMsg('เลือกไฟล์วิดีโอเท่านั้น', true);
     vidBusy = true; renderVideos();
     if (!sound) $('snd-opt').classList.remove('hidden'); // ตัวเลือกนี้ขึ้นเฉพาะตอนกำลังจะอัปโหลดวิดีโอ (ติ๊กได้ระหว่างบีบ) และไม่ขึ้นถ้าเลือกเสียงอื่นไว้แล้ว
