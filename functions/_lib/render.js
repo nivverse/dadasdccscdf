@@ -237,7 +237,6 @@ ${ld}
 </div>
 <header id="main-header" class="z-20"></header>
 ${body}
-<div id="main-footer" class="z-10"></div>
 <script src="/nivread.js?v=20261110a"></script>
 <script src="/posts-feed.js" defer></script>
 </body>

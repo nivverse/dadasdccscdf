@@ -341,11 +341,19 @@
     let loading = false;
     const end = () => { document.getElementById('feed-end')?.classList.remove('hidden'); io.disconnect(); };
 
+    // IntersectionObserver ยิงเฉพาะตอน "สถานะเปลี่ยน" — ถ้าเลื่อนลงสุดเร็วจนเหตุการณ์มาตอนกำลังโหลดอยู่ (loading=true) มันจะถูกทิ้ง
+    // และพอโหลดเสร็จ sentinel ยังอยู่ในระยะเดิม = ไม่มีเหตุการณ์ใหม่ → ค้าง จนกว่าจะเลื่อนขึ้นแล้วลง
+    // แก้: โหลดเสร็จแล้ว unobserve/observe ใหม่ เพื่อบังคับให้ตรวจตำแหน่งปัจจุบันอีกครั้ง
+    const recheck = (delay) => setTimeout(() => {
+      if (!feed.dataset.nextPage) return;
+      io.unobserve(sentinel); io.observe(sentinel);
+    }, delay);
     const io = new IntersectionObserver(async (entries) => {
-      if (!entries[0].isIntersecting || loading) return;
+      if (!entries.some((e) => e.isIntersecting) || loading) return;
       const next = feed.dataset.nextPage;
       if (!next) return end();
       loading = true;
+      let failed = false;
       const sk = window.NIV && NIV.skel ? NIV.skel(2) : null; if (sk) feed.after(sk);
       try {
         const r = await fetch(`${feed.dataset.base || '/posts'}?page=${next}&partial=1`);
@@ -354,9 +362,9 @@
         feed.dataset.nextPage = r.headers.get('X-Has-More') === '1' ? String(+next + 1) : '';
         loadLiked();
         if (!feed.dataset.nextPage) end();
-      } catch { toast('โหลดโพสต์เพิ่มไม่สำเร็จ'); }
-      finally { loading = false; sk && sk.remove(); }
-    }, { rootMargin: '600px' });
+      } catch { failed = true; toast('โหลดโพสต์เพิ่มไม่สำเร็จ'); }
+      finally { loading = false; sk && sk.remove(); recheck(failed ? 2500 : 80); }
+    }, { rootMargin: '1200px' });
 
     if (!feed.dataset.nextPage) end(); else io.observe(sentinel);
   }

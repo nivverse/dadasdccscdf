@@ -78,6 +78,7 @@
   async function more() {
     if (loading || !next) return;
     loading = true;
+    let failed = false;
     const sk = window.NIV && NIV.skel ? NIV.skel(2) : null; if (sk) list.after(sk);
     try {
       const r = await get(next);
@@ -86,7 +87,11 @@
       next = r.headers.get('X-Has-More') === '1' ? String(+next + 1) : '';
       refresh();
       if (!next) end();
-    } catch {} finally { loading = false; sk && sk.remove(); }
+    } catch { failed = true; } finally {
+      loading = false; sk && sk.remove();
+      // บังคับให้ observer ตรวจตำแหน่งใหม่ (กันค้างเมื่อเลื่อนลงสุดเร็วระหว่างกำลังโหลด)
+      if (next && io) setTimeout(() => { const s = $('my-feed-sentinel'); if (next && io && s) { io.unobserve(s); io.observe(s); } }, failed ? 2500 : 80);
+    }
   }
 
   (async () => {
@@ -104,7 +109,7 @@
       refresh();
       if (!next) return end();
       if ('IntersectionObserver' in window) {
-        io = new IntersectionObserver((en) => { if (en[0].isIntersecting) more(); }, { rootMargin: '600px' });
+        io = new IntersectionObserver((en) => { if (en.some((x) => x.isIntersecting)) more(); }, { rootMargin: '1200px' });
         io.observe($('my-feed-sentinel'));
       }
     } catch { restore(); }

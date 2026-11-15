@@ -574,6 +574,9 @@
   if (!document.getElementById('niv-video-observer')) {
     const observerStyle = document.createElement('style');
     observerStyle.id = 'niv-video-observer';
+    // กล่องวิดีโอต้องมีความสูงตั้งแต่ก่อนโปสเตอร์/เมทาดาทาโหลด (preload=none → ไม่รู้ขนาด) ไม่งั้นเลื่อนเร็วแล้วกล่องแบนแล้วดีดตัว
+    // ค่าตั้งต้น 16/9 → เปลี่ยนเป็นสัดส่วนจริงของโปสเตอร์/คลิปทันทีที่รู้ (inline style ชนะ CSS นี้)
+    observerStyle.textContent = '.uv video{aspect-ratio:16/9;min-height:8rem}';
     document.head.appendChild(observerStyle);
 
     const PICK_DELAY = 300, FAR_MARGIN = '150% 0px';
@@ -627,6 +630,13 @@
       if (changed) schedulePick(); // รีเซ็ตทุกครั้งที่กลุ่มที่เห็นเปลี่ยน = ต้องนิ่งครบ 300ms ถึงเริ่มเล่น
     }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
 
+    const lockRatioFromPoster = (v) => {            // รู้สัดส่วนจากโปสเตอร์ (โหลดเบา ๆ) ไม่ต้องรอไฟล์วิดีโอ
+      if (v.style.aspectRatio || !v.poster) return;
+      const im = new Image();
+      im.onload = () => { if (!v.style.aspectRatio && im.naturalWidth && im.naturalHeight) v.style.aspectRatio = im.naturalWidth + ' / ' + im.naturalHeight; };
+      im.src = v.poster;
+    };
+    const relT = new WeakMap();                      // หน่วงการปล่อยคลิป: เลื่อนเร็วผ่านไปมาไม่ต้อง load() รัว (ต้นเหตุกระตุก)
     function release(v) {
       if (!v.paused) v.pause();
       if (v === current) current = null;
@@ -637,8 +647,10 @@
     const far = new IntersectionObserver((entries) => {
       for (const e of entries) {
         const v = e.target;
-        if (e.isIntersecting) setSrc(v); // กลับมาใกล้จอ (preload=none จึงยังไม่โหลดจนกว่าจะสั่งเล่น)
-        else if (v.dataset.src && (v.readyState > 0 || v.networkState === 2)) release(v); // ไกลจอและเคยโหลด/กำลังโหลด → ปล่อย
+        if (e.isIntersecting) { clearTimeout(relT.get(v)); relT.delete(v); setSrc(v); } // กลับมาใกล้จอ (preload=none จึงยังไม่โหลดจนกว่าจะสั่งเล่น)
+        else if (v.dataset.src && (v.readyState > 0 || v.networkState === 2) && !relT.has(v)) { // ไกลจอและเคยโหลด/กำลังโหลด → ปล่อย (หลังนิ่ง 1.2 วิ)
+          relT.set(v, setTimeout(() => { relT.delete(v); if (v.isConnected) release(v); }, 1200));
+        }
       }
     }, { rootMargin: FAR_MARGIN, threshold: 0 });
 
@@ -646,6 +658,7 @@
       document.querySelectorAll('.uv video:not([data-observed])').forEach((v) => {
         v.dataset.observed = 'true';
         if (v.getAttribute('src')) v.dataset.src = v.getAttribute('src'); // จำ src ไว้คืนหลังถูกปล่อย
+        lockRatioFromPoster(v);
         near.observe(v);
         far.observe(v);
       });
@@ -1659,11 +1672,5 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
   }
 
   // ---------- footer ----------
-  const footer = document.getElementById('main-footer');
-  if (footer) {
-    footer.innerHTML = `
-<div class="mt-12 border-t border-slate-200 dark:border-white/10 py-6 text-center text-xs text-slate-500 dark:text-neutral-400">
-  © ${new Date().getFullYear()} nivread write your story
-</div>`;
-  }
+  // (ถอด footer ล่างสุดของหน้าออกแล้ว — เมนูแฮมเบอร์เกอร์ไม่เปลี่ยน)
 })();
