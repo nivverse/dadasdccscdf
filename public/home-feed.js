@@ -16,15 +16,36 @@
   const readSeen = () => { try { const a = JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); return Array.isArray(a) ? a.filter((s) => typeof s === 'string').slice(0, 150) : []; } catch { return []; } };
   const seenOld = readSeen();
   const shown = [];
-  const remember = (slugs) => {
-    slugs.forEach((s) => { if (s && !shown.includes(s)) shown.push(s); });
-    try { localStorage.setItem(SEEN_KEY, JSON.stringify([...new Set([...slugs, ...readSeen()])].slice(0, 150))); } catch {}
+  // shown = การ์ดที่ถูกใส่ลงหน้าแล้ว (ใช้กันซ้ำตอนเลื่อนหน้าถัดไป)
+  const remember = (slugs) => { slugs.forEach((s) => { if (s && !shown.includes(s)) shown.push(s); }); };
+
+  // seen (บันทึกถาวร) = เฉพาะการ์ดที่ "เลื่อนผ่านตาจริง" (เห็น ≥ 50% ค้าง ≥ 0.8 วิ) — ไม่นับการ์ดที่แค่โหลดล่วงหน้าแต่ยังไม่ถึง
+  // ครั้งหน้าที่เปิดหน้าแรก เซิร์ฟเวอร์จะซ่อนโพสต์เหล่านี้ (ถ้ายังมีโพสต์ใหม่พอ) · เขียน localStorage แบบรวมชุด ไม่เขียนทุกการ์ด
+  let pend = [], flushT = 0;
+  const flushSeen = () => {
+    clearTimeout(flushT); flushT = 0;
+    if (!pend.length) return;
+    const add = pend; pend = [];
+    try { localStorage.setItem(SEEN_KEY, JSON.stringify([...new Set([...add, ...readSeen()])].slice(0, 150))); } catch {}
   };
+  const markSeen = (slug) => { pend.unshift(slug); if (!flushT) flushT = setTimeout(flushSeen, 1500); };
+  addEventListener('pagehide', flushSeen);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSeen(); });
+  const dwellT = new Map();
+  const seenIO = 'IntersectionObserver' in window ? new IntersectionObserver((en) => {
+    for (const e of en) {
+      const c = e.target;
+      const ok = e.isIntersecting && (e.intersectionRatio >= 0.5 || e.intersectionRect.height >= innerHeight * 0.5); // การ์ดสูงกว่าจอ: กินจอเกินครึ่งก็นับ
+      if (ok && !dwellT.has(c)) dwellT.set(c, setTimeout(() => { dwellT.delete(c); seenIO.unobserve(c); if (document.visibilityState === 'visible') markSeen(c.dataset.viewSlug); }, 800));
+      else if (!ok && dwellT.has(c)) { clearTimeout(dwellT.get(c)); dwellT.delete(c); }
+    }
+  }, { threshold: [0, 0.25, 0.5, 0.75, 1] }) : null;
+
   const url = (page) => {
     let u = `/?feed=1&page=${page}&userId=${encodeURIComponent(uid)}`;
     if (interest) u += '&i=' + encodeURIComponent(interest);
     if (shown.length) u += '&x=' + encodeURIComponent(shown.slice(-100).join(','));
-    if (seenOld.length) u += '&s=' + encodeURIComponent(seenOld.slice(0, 100).join(','));
+    if (seenOld.length) u += '&s=' + encodeURIComponent(seenOld.slice(0, 150).join(','));
     return u;
   };
   const get = (page) => fetch(url(page), { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
@@ -47,9 +68,11 @@
     t.content.querySelectorAll('[data-view-slug]').forEach((c) => {
       if (list.querySelector(`[data-view-slug="${CSS.escape(c.dataset.viewSlug)}"]`)) c.remove();
     });
-    const fresh = [...t.content.querySelectorAll('[data-view-slug]')].map((c) => c.dataset.viewSlug);
+    const cards = [...t.content.querySelectorAll('[data-view-slug]')];
+    const fresh = cards.map((c) => c.dataset.viewSlug);
     list.append(t.content);
     remember(fresh);
+    if (seenIO) cards.forEach((c) => seenIO.observe(c));
   };
 
   async function more() {
