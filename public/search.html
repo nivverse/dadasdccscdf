@@ -259,7 +259,21 @@
     if (my !== token) return;                                    // มีการค้นหาใหม่แทรกแล้ว
     const ql = q.toLowerCase().replace(/\s+/g, ' ');
     data = { users: d.users, posts: d.posts, cats: cats.filter((c) => String(c.name).toLowerCase().includes(ql)).slice(0, 12) };
+    feedSignal(q, d.posts);
     paint();
+  }
+
+  // ส่งสัญญาณ "สิ่งที่ค้นหา" ให้ฟีดหน้าแรก โดยไม่เรียกเซิร์ฟเวอร์เพิ่ม:
+  // เก็บ slug ของผลค้นหาที่ตรงที่สุด 2 โพสต์ลงรายการความสนใจในเครื่อง (ที่เดียวกับโพสต์ที่ผู้ใช้ค้างอ่าน)
+  // ฟีด "รู้ใจ" ส่งรายการนี้ไปกับคำขอ ?i= อยู่แล้ว → เซิร์ฟเวอร์เอาเวกเตอร์ที่ฝังไว้แล้วของโพสต์เหล่านี้มาหาโพสต์ที่คล้ายกัน (ไม่เรียก AI)
+  function feedSignal(q, posts) {
+    try {
+      if (!NIV.recordInterest) return;
+      const ql = q.toLowerCase(), list = (posts || []).filter((p) => p && p.slug);
+      const hit = (p) => String(p.title || '').toLowerCase().includes(ql) || String(p.category || '').toLowerCase().includes(ql);
+      const pick = [...list.filter(hit), ...list].filter((p, i, a) => a.findIndex((x) => x.slug === p.slug) === i).slice(0, 2);
+      pick.reverse().forEach((p) => NIV.recordInterest(p.slug)); // ตัวที่ตรงที่สุดบันทึกท้ายสุด = ใหม่สุด = น้ำหนักสูงสุด
+    } catch {}
   }
 
   function paint() {
