@@ -41,6 +41,7 @@
     <button type="button" data-tab="done" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">ตรวจแล้ว</button>
     <button type="button" data-tab="video" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">สิทธิ์วิดีโอ</button>
     <button type="button" data-tab="chat" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">สิทธิ์แชท</button>
+    <button type="button" data-tab="junk" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">ไฟล์ขยะ</button>
   </nav>
 
   <div id="message" class="mt-4 text-sm font-medium min-h-[1.25rem]" role="status"></div>
@@ -59,7 +60,7 @@
                  comment: ['ความคิดเห็น', 'bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30'],
                  user: ['ผู้ใช้', 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'],
                  sound: ['เสียง', 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'] };
-  let tab = location.hash === '#done' ? 'done' : location.hash === '#video' ? 'video' : location.hash === '#chat' ? 'chat' : 'open';
+  let tab = location.hash === '#done' ? 'done' : location.hash === '#video' ? 'video' : location.hash === '#chat' ? 'chat' : location.hash === '#junk' ? 'junk' : 'open';
 
   const say = (t, kind) => {
     const m = $('message');
@@ -240,9 +241,51 @@
     $('list').append(box);
   }
 
+  // ---------- ไฟล์ขยะใน R2 (วิดีโอ/เสียงที่ไม่มีโพสต์ใดอ้างถึง และอัปโหลดมาเกิน 24 ชม.) ----------
+  const fmtBytes = (n) => n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : n >= 1024 ? (n / 1024).toFixed(1) + ' KB' : n + ' B';
+  function loadJunk() {
+    const box = el('div', 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4 sm:p-5');
+    box.append(el('h2', 'font-bold', 'ล้างไฟล์ขยะใน R2'), el('p', 'text-xs text-slate-500 dark:text-neutral-400 mt-1', 'ตรวจหาวิดีโอและไฟล์เสียงที่ไม่มีโพสต์ใดใช้ และอัปโหลดมาเกิน 24 ชั่วโมง (กดตรวจก่อน ยังไม่ลบ แล้วค่อยยืนยันลบ) ไม่แตะไฟล์ที่เป็นภาพปกหรือยังมีโพสต์/ไลฟ์อ้างถึง'));
+    const out = el('div', 'mt-3 text-sm');
+    const imgLbl = el('label', 'mt-3 flex items-start gap-2 text-xs text-slate-600 dark:text-neutral-300 cursor-pointer');
+    const imgChk = document.createElement('input'); imgChk.type = 'checkbox'; imgChk.className = 'mt-0.5';
+    imgLbl.append(imgChk, el('span', '', 'รวมรูปภาพด้วย (ตรวจจากโพสต์ คอมเมนต์ และโปรไฟล์ — ถ้าระบบอื่นเช่นแชตเก็บรูปในที่เดียวกัน อาจถูกนับเป็นขยะ ดูรายการตัวอย่างก่อนลบ)'));
+    box.append(imgLbl);
+    const bar = el('div', 'mt-3 flex gap-2');
+    const chk = el('button', 'px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold cursor-pointer', 'ตรวจหาไฟล์ขยะ'); chk.type = 'button';
+    const del = el('button', 'hidden px-4 py-2 rounded-xl border border-rose-500/60 text-rose-600 dark:text-rose-400 text-sm font-semibold hover:bg-rose-500/10 cursor-pointer', 'ลบไฟล์ขยะทั้งหมด'); del.type = 'button';
+    bar.append(chk, del);
+    const run = async (confirm) => {
+      chk.disabled = del.disabled = true; say(confirm ? 'กำลังลบ...' : 'กำลังตรวจ...');
+      const r = await api('/api/blog/video-sweep', { method: 'POST', body: { userId: s.userId, confirm, images: imgChk.checked } });
+      chk.disabled = del.disabled = false; say('');
+      if (r.status === 404) return say('Worker ยังไม่ได้อัปเดต กรุณา deploy blog-api.js ใหม่', 'err');
+      if (r.status === 403) return say('เฉพาะแอดมินเท่านั้น', 'err');
+      if (!r.ok) return say(r.data.error || 'ทำรายการไม่สำเร็จ', 'err');
+      const d = r.data;
+      out.replaceChildren();
+      if (confirm) {
+        del.classList.add('hidden');
+        out.append(el('p', 'text-emerald-600 dark:text-emerald-400', 'ลบแล้ว ' + d.orphans + ' ไฟล์ (' + fmtBytes(d.bytes) + ') จากที่สแกน ' + d.scanned + ' ไฟล์'));
+        return;
+      }
+      if (!d.orphans) { del.classList.add('hidden'); out.append(el('p', 'text-slate-600 dark:text-neutral-300', 'ไม่พบไฟล์ขยะ (สแกน ' + d.scanned + ' ไฟล์)')); return; }
+      out.append(el('p', '', 'พบไฟล์ขยะ ' + d.orphans + ' ไฟล์' + (d.images ? ' (เป็นรูป ' + d.images + ')' : '') + ' ขนาดรวมประมาณ ' + fmtBytes(d.bytes) + ' (สแกน ' + d.scanned + ' ไฟล์)'));
+      const ul = el('ul', 'mt-2 text-xs text-slate-500 dark:text-neutral-400 break-all space-y-1');
+      d.sample.forEach((k) => ul.append(el('li', '', k)));
+      out.append(ul);
+      del.classList.remove('hidden');
+    };
+    chk.addEventListener('click', () => run(false));
+    del.addEventListener('click', () => { if (confirm('ลบไฟล์ขยะเหล่านี้ถาวร?')) run(true); });
+    box.append(bar, out);
+    $('list').append(box);
+  }
+
   async function load() {
     document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('tab-on', t.dataset.tab === tab));
     $('list').replaceChildren();
+    if (tab === 'junk') { say(''); return loadJunk(); }
     if (PERMS[tab]) return loadPerms(PERMS[tab]);
     say('กำลังโหลด...');
     const r = await api('/api/blog/reports?userId=' + encodeURIComponent(s.userId) + '&status=' + tab);
