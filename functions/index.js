@@ -20,6 +20,10 @@ export async function onRequestGet({ request, env }) {
     const base = String(env.API_BASE || '').replace(/\/+$/, '');
     // i = slug ของโพสต์ที่ผู้ใช้ค้างอ่านล่าสุด (เบราว์เซอร์ส่งมาจาก NIV.interestParam()) ใช้สร้างฟีด "รู้ใจ"
     const interest = String(url.searchParams.get('i') || '').replace(/[^a-z0-9,-]/g, '').slice(0, 1000);
+    // x = โพสต์ที่โหลดไปแล้วในรอบนี้ (ตัดออก) · s = โพสต์ที่เคยเห็นแล้ว (ซ่อน/ลดอันดับ) — ต้องส่งต่อให้ Worker ไม่งั้นรีเฟรชแล้วฟีดเรียงเหมือนเดิม
+    const slugList = (k, max) => String(url.searchParams.get(k) || '').split(',')
+      .filter((v) => v && v.length <= 80 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v)).slice(0, max).join(',');
+    const exclude = slugList('x', 150), seen = slugList('s', 150);
     const ask = async (path) => {
       try {
         const r = await fetch(`${base}${path}`, { headers: { Authorization: auth } });
@@ -27,7 +31,7 @@ export async function onRequestGet({ request, env }) {
         return { status: r.status, d: j };
       } catch { return { status: 0, d: null }; }
     };
-    let { status, d } = await ask(`/api/blog/for-you?userId=${encodeURIComponent(userId)}&page=${page}&limit=${PER_PAGE}${interest ? '&i=' + encodeURIComponent(interest) : ''}`);
+    let { status, d } = await ask(`/api/blog/for-you?userId=${encodeURIComponent(userId)}&page=${page}&limit=${PER_PAGE}${interest ? '&i=' + encodeURIComponent(interest) : ''}${exclude ? '&x=' + encodeURIComponent(exclude) : ''}${seen ? '&s=' + encodeURIComponent(seen) : ''}`);
     if ((!d || !d.success) && status !== 401) { // for-you ยังไม่พร้อม/ล้มเหลว → ใช้ฟีดตามผู้ติดตามแบบเดิม
       ({ status, d } = await ask(`/api/blog/feed?userId=${encodeURIComponent(userId)}&page=${page}&limit=${PER_PAGE}`));
     }
