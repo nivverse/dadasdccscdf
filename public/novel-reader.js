@@ -155,12 +155,7 @@
   function audioCss() {
     if (document.getElementById('nv-aud-css')) return;
     const st = document.createElement('style'); st.id = 'nv-aud-css';
-    st.textContent = `
-.nv-ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);pointer-events:none;opacity:0}
-.nv-fab-on .nv-ring{opacity:1}
-.nv-ring circle{fill:none;stroke-width:5}
-.nv-ring .bg{stroke:rgba(245,158,11,.25)}
-.nv-ring .fg{stroke:#f59e0b;stroke-linecap:round;stroke-dasharray:295.3;stroke-dashoffset:295.3}`;
+    st.textContent = '.nv-rg{width:1.75rem;height:1.75rem}.nv-rg .bg{fill:none;stroke:rgba(245,158,11,.3);stroke-width:2}.nv-rg .fg{fill:none;stroke:#f59e0b;stroke-width:2;stroke-linecap:round;stroke-dasharray:65.97;stroke-dashoffset:65.97;transform:rotate(-90deg);transform-origin:12px 12px}';
     document.head.append(st);
   }
   async function mountAudio() {
@@ -182,18 +177,15 @@
 
     // ปุ่มลอยเดิม = ไปคอมเมนต์ → ตอนที่มีเสียง: หยุดอยู่ = หูฟังเฉยๆ · กำลังเล่น = วงกลมเดียว (วงแหวนความคืบหน้า + จุดเต้น) · แตะเพื่อสลับเล่น/หยุด
     const old = fab.querySelector('svg'), cls = old ? old.getAttribute('class') : '';
-    if (getComputedStyle(fab).position === 'static') fab.style.position = 'relative';
-    const dot = () => { const t = document.createElement('span'); t.innerHTML = `<svg class="${cls || ''}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" fill="currentColor"/></svg>`; return t.firstChild; };
+    const dot = () => { const t = document.createElement('span'); t.innerHTML = '<svg class="nv-rg" viewBox="0 0 24 24" aria-hidden="true"><circle class="bg" cx="12" cy="12" r="10.5"/><circle class="fg" cx="12" cy="12" r="10.5"/><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>'; return t.firstChild; };
     const setFab = (on) => {
-      const ic = on ? dot() : NS.ico('headphones', cls), cur = fab.querySelector('svg:not(.nv-ring)');
+      const ic = on ? dot() : NS.ico('headphones', cls), cur = fab.querySelector('svg');
       if (cur) cur.replaceWith(ic); else fab.prepend(ic);
       const t = on ? 'หยุดเสียงชั่วคราว' : 'ฟังเสียงตอนนี้'; fab.setAttribute('aria-label', t); fab.title = t;
-      fab.classList.toggle('nv-fab-on', on);
+      fab.classList.toggle('nv-fab-on', on); if (on) paint();
     };
     fabAudio = true; setFab(false);
-    fab.insertAdjacentHTML('beforeend', '<svg class="nv-ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="47"/><circle class="fg" cx="50" cy="50" r="47"/></svg>');
-    const ringFg = fab.querySelector('.nv-ring .fg');
-    const paint = () => { const d = dur(), r = d ? Math.min(1, Math.max(0, au.currentTime / d)) : 0; ringFg.style.strokeDashoffset = String((295.3 * (1 - r)).toFixed(1)); };
+    const paint = () => { const f = fab.querySelector('.nv-rg .fg'); if (!f) return; const d = dur(), r = d ? Math.min(1, Math.max(0, au.currentTime / d)) : 0; f.style.strokeDashoffset = String((65.97 * (1 - r)).toFixed(2)); };
 
     const toggle = () => { if (au.paused) au.play().catch(() => NS.toast('เล่นเสียงไม่สำเร็จ ลองอีกครั้ง')); else au.pause(); };
     fab.addEventListener('click', (e) => { e.preventDefault(); toggle(); });
