@@ -112,6 +112,13 @@ export async function onRequestGet({ request, env, params }) {
 
   <section id="novel-comments" class="mt-10" aria-labelledby="cm-h"><h2 id="cm-h" class="nv-reveal text-lg font-bold">ความคิดเห็น <span id="cm-total" class="text-slate-400 font-normal"></span></h2><div id="cm-root" class="mt-3 min-h-[6rem]"></div></section>
 </main>
+<style>
+/* ปุ่มถูกใจ/เก็บเข้าชั้น/แชร์: ไม่มีพื้น/กรอบ · ตอนกดไม่เปลี่ยนสีตัวอักษร เปลี่ยนเฉพาะไอคอน */
+#novel-page .nv-actions .nv-act,#novel-page .nv-actions .nv-act:hover,#novel-page .nv-actions .nv-act:active,#novel-page .nv-actions .nv-act[aria-pressed="true"]{background:transparent!important;border-color:transparent!important;box-shadow:none!important;color:inherit!important}
+#novel-page .nv-actions .nv-act svg{fill:none;transition:color .15s,transform .15s}
+#novel-page .nv-actions .nv-act[aria-pressed="true"] svg{color:#f59e0b;fill:currentColor}
+#novel-page .nv-actions .nv-act:active svg{transform:scale(.85)}
+</style>
 <script src="/novel-fx.js" defer></script><script src="/novel-social.js" defer></script><script src="/novel-page.js" defer></script>`;
 
   const ld = {
