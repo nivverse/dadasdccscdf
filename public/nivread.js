@@ -534,7 +534,7 @@
 .gal-5{grid-template-columns:repeat(6,1fr);grid-template-rows:3fr 2fr;aspect-ratio:1/1}
 .gal-5 .gal-t:nth-child(-n+2){grid-column:span 3}.gal-5 .gal-t:nth-child(n+3){grid-column:span 2}
 .gal-s:not(.ok){min-height:11rem}
-@media (min-width:768px){.gal-s.ok .fg{width:100%!important;height:auto!important;max-height:36rem!important;object-fit:cover!important}.gal-s.ok .bg{display:none!important}}
+@media (min-width:500px){.gal-s.ok .fg{width:100%!important;height:auto!important;max-height:36rem!important;object-fit:cover!important}.gal-s.ok .bg{display:none!important}}
 .gal-s:not(.ok)::before,.gal-t:not(.ok)::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#e4e4de 25%,#f2f2ed 50%,#e4e4de 75%) 0 0/200% 100%;animation:gal-sh 1.3s linear infinite}
 .dark .gal-s:not(.ok)::before,.dark .gal-t:not(.ok)::before{background:linear-gradient(90deg,#1a1a1a 25%,#262626 50%,#1a1a1a 75%) 0 0/200% 100%}
 @keyframes gal-sh{to{background-position:-200% 0}}
@@ -558,7 +558,7 @@
     // PC: รูปเดี่ยวซูมเต็มกรอบ (ครอปส่วนเกิน) — ฉีดเสมอ เพราะหน้า SSR ใช้ /niv.css (ข้อความข้างบนข้าม GALCSS) จึงไม่ได้รับ CSS ชุดนี้
     if (!document.getElementById('niv-fit')) {
       const fit = document.createElement('style'); fit.id = 'niv-fit';
-      fit.textContent = '@media (min-width:768px){.gal-s .bg{display:none!important}.gal-s{background:transparent!important}.gal-s img.fg{width:100%!important;height:auto!important;max-width:100%!important;max-height:36rem!important;object-fit:cover!important}}';
+      fit.textContent = '@media (min-width:500px){.gal-s .bg{display:none!important}.gal-s{background:transparent!important}.gal-s img.fg{width:100%!important;height:auto!important;max-width:100%!important;max-height:36rem!important;object-fit:cover!important}}';
       document.head.appendChild(fit);
     }
 
@@ -797,7 +797,7 @@
 .uv.bp{position:relative;padding:0!important;border-radius:${BP_R}px;background:transparent!important;border:0!important;box-shadow:none;cursor:pointer;touch-action:manipulation;outline:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .uv.bp video{-webkit-touch-callout:none}
 .uv.bp video{display:block;width:100%;max-height:36rem;object-fit:contain;border-radius:${BP_R}px;background:transparent!important;border:0}
-@media (min-width:768px){.uv.bp video{object-fit:cover!important}}
+@media (min-width:500px){.uv.bp video{object-fit:cover!important}}
 .uv.bp:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .bp-svg rect,.bp-svg path{fill:none}
@@ -883,7 +883,7 @@
       // บังคับ inline !important: กันสไตล์เก่า/แคช/CSS อื่นในหน้าที่ทำให้มีกรอบดำรอบวิดีโอ
       ['padding:0','background:transparent','border:0','box-shadow:none','outline:0'].forEach((d) => { const [k, val] = d.split(':'); box.style.setProperty(k, val, 'important'); });
       // PC: ซูมวิดีโอเต็มกรอบ (ครอปส่วนเกิน) · มือถือ: แสดงเต็มภาพ — ตั้ง inline !important กันสไตล์เก่า/แคชทับ
-      const mqPc = window.matchMedia('(min-width:768px)');
+      const mqPc = window.matchMedia('(min-width:500px)');
       const applyFit = () => { v.style.setProperty('width', '100%', 'important'); v.style.setProperty('max-height', '36rem', 'important'); v.style.setProperty('object-fit', mqPc.matches ? 'cover' : 'contain', 'important'); };
       applyFit();
       if (mqPc.addEventListener) mqPc.addEventListener('change', applyFit);
