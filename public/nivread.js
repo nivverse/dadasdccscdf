@@ -220,8 +220,8 @@
     const host = toastHost();
     // มือถือมีแถบเมนูล่าง (#niv-tabbar) → ยกแถบแจ้งเตือนให้พ้น (ความสูงแถบรวม safe-area แล้ว)
     const tb = document.getElementById('niv-tabbar');
-    const tbH = tb && getComputedStyle(tb).display !== 'none' ? tb.offsetHeight : 0;
-    host.style.paddingBottom = tbH ? (tbH + 12) + 'px' : '';
+    const tbOff = tb && getComputedStyle(tb).display !== 'none' ? Math.max(0, innerHeight - tb.getBoundingClientRect().top) : 0; // ระยะจากขอบล่างจอถึงบนสุดของแถบเมนู (ทั้งแถบเต็มบนมือถือ และปุ่มลอยบนแท็บเล็ต)
+    host.style.paddingBottom = tbOff ? (tbOff + 12) + 'px' : '';
     while (host.children.length >= TOAST_MAX) host.firstElementChild.dispatchEvent(new CustomEvent('niv-toast-close'));
 
     const duration = opts.duration == null ? (opts.action ? 6000 : 3000) : opts.duration;
@@ -1514,7 +1514,17 @@
 #niv-tabbar .tb{flex:1;height:3.5rem;display:grid;place-items:center;color:#64748b;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .dark #niv-tabbar .tb{color:#a3a3a3}
 #niv-tabbar .tb.on{color:#f59e0b}
-@media (min-width:640px){#niv-tabbar{display:none}}
+@media (min-width:1024px){#niv-tabbar{display:none}}
+@media (min-width:640px) and (max-width:1023px){
+  #niv-tabbar{left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100vw - 24px);bottom:calc(16px + env(safe-area-inset-bottom));padding:0 12px;gap:4px;border:0;border-radius:999px;
+    background:rgba(255,255,255,.96);box-shadow:0 10px 30px rgba(15,23,42,.16),0 0 0 1px rgba(15,23,42,.05)}
+  .dark #niv-tabbar{background:rgba(30,30,30,.94);box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08)}
+  #niv-tabbar .tb{flex:none;width:58px;height:56px;transition:transform .15s,color .15s}
+  #niv-tabbar .tb:active{transform:scale(.88)}
+  #niv-tabbar .tb.on{color:#0f172a}
+  .dark #niv-tabbar .tb.on{color:#fff}
+  body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+}
 @media (max-width:639px){body{padding-bottom:calc(3.5rem + env(safe-area-inset-bottom))}}
 #niv-drawer{position:fixed;inset:0;z-index:50;visibility:hidden;pointer-events:none;transition:visibility 0s linear .3s}
 #niv-drawer.is-open{visibility:visible;pointer-events:auto;transition:visibility 0s}
@@ -1619,7 +1629,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
   </div>
 </div>
 
-<nav id="niv-tabbar" class="sm:hidden" aria-label="เมนูหลัก">
+<nav id="niv-tabbar" aria-label="เมนูหลัก">
   ${[
     { href: '/', label: 'หน้าแรก', ic: 'home', on: path === '/' },
     { href: '/posts', label: 'โพสต์ทั้งหมด', ic: 'posts', on: path === '/posts' || path.startsWith('/posts/') },
