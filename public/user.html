@@ -156,8 +156,9 @@
     b.addEventListener('click', async () => {
       if (!confirm('ลบโพสต์นี้ถาวรใช่ไหม?')) return;
       const d = await api('/api/blog/delete', { method: 'POST', body: { userId: me.userId, slug } });
-      if (!d.ok) return alert(d.data.error || 'ลบไม่สำเร็จ');
+      if (!d.ok) return NIV.toast(d.data.error || 'ลบไม่สำเร็จ', { type: 'error' });
       card.remove();
+      NIV.toast('ลบโพสต์แล้ว', { icon: 'check' });
       if (!$('posts').children.length) $('status').textContent = 'ยังไม่มีโพสต์';
     });
     card.firstElementChild.append(b);
