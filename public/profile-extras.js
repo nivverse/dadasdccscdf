@@ -148,10 +148,10 @@
             if (opts.onAvatarChange) opts.onAvatarChange(url || '');
         };
 
-        async function applyUploaded(kind, url) {
+        async function applyUploaded(kind, url, borrowed) {   // borrowed = วิดีโอที่มีอยู่ในโพสต์/รีโพสต์ (ไม่ใช่ไฟล์ที่เพิ่งอัปโหลด → ห้ามสั่งลบ)
             const isAv = kind === 'avatar';
             const d = await saveRemote(isAv ? { avatarUrl: url } : { coverUrl: url });
-            if (!d.success) { discard(url); throw new Error(d.error || 'เซิร์ฟเวอร์ไม่ได้บันทึกค่านี้'); }
+            if (!d.success) { if (!borrowed) discard(url); throw new Error(d.error || 'เซิร์ฟเวอร์ไม่ได้บันทึกค่านี้'); }
             const finalUrl = (isAv ? d.avatarUrl : d.coverUrl) || url;
             isAv ? avatarSet(finalUrl) : coverSet(finalUrl);
             if (profile) { profile[isAv ? 'avatar_url' : 'cover_url'] = finalUrl; if (isAv) profile.avatar_custom = 1; }
@@ -194,9 +194,66 @@
                 drop.append(el('span', 'text-sm font-semibold', 'เลือกรูปจากเครื่อง'), el('span', sub, 'JPG / PNG / WebP · ระบบจะบีบรูปให้อัตโนมัติ'));
                 drop.onclick = () => { nsfwModel(); file.click(); };   // เริ่มโหลดโมเดลตรวจภาพรอไว้
                 const parts = [header(isAv ? 'อัปโหลดรูปโปรไฟล์' : 'อัปโหลดภาพปก', isAv ? 'ภาพจะถูกครอปเป็นรูปสี่เหลี่ยมจัตุรัส' : 'ภาพจะถูกครอปเป็นแถบกว้าง 2:1'), drop];
+                if (!isAv) {
+                    const vb = iconBtn('mt-4 w-full px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-300 dark:border-white/15 text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10', 'upload', 'เลือกวิดีโอจากโพสต์ / รีโพสต์ของฉัน');
+                    vb.onclick = pickFromPosts;
+                    parts.push(vb);
+                }
                 if (note) parts.push(el('p', 'text-xs text-rose-500 text-center mt-3', note));
                 panel.replaceChildren(file, ...parts);
                 if (isAv) addRevert();
+            }
+
+            // เลือกวิดีโอที่เคยอัปโหลดไว้ในโพสต์ของตัวเอง หรือในโพสต์ที่รีโพสต์ มาเป็นปก (ไม่มีการอัปโหลดวิดีโอตรงๆ)
+            async function pickFromPosts() {
+                panel.replaceChildren(file, header('เลือกวิดีโอเป็นปก', 'กำลังโหลดวิดีโอของคุณ ...'));
+                const enc = encodeURIComponent(uid);
+                const get = async path => { try { const r = await fetch(`${API}${path}&_=${Date.now()}`); const d = await r.json(); return d.posts || []; } catch (e) { return []; } };
+                const [mine, reps] = await Promise.all([get(`/api/blog/user?id=${enc}`), get(`/api/blog/reposts?id=${enc}&limit=30`)]);
+                const vids = ps => { const out = [], seen = new Set(); for (const p of ps) for (const u of (p.videos || [])) if (/^https:\/\//.test(u) && VIDEO_RE.test(u) && !seen.has(u)) { seen.add(u); out.push({ url: u, title: p.title || '' }); } return out.slice(0, 16); };
+                const lists = { mine: vids(mine), rep: vids(reps) };
+                let tab = lists.mine.length || !lists.rep.length ? 'mine' : 'rep', sel = '';
+                const tabs = el('div', 'flex gap-2 mb-3');
+                const tMine = el('button', '', 'โพสต์ของฉัน'), tRep = el('button', '', 'รีโพสต์');
+                tMine.type = tRep.type = 'button';
+                const grid = el('div', 'grid grid-cols-2 gap-2 max-h-[46vh] overflow-y-auto');
+                const row = el('div', 'flex gap-2 mt-4');
+                const back = iconBtn('flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20', 'arrowLeft', 'กลับ');
+                const ok = iconBtn('flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold ' + T.primary, 'check', 'ใช้เป็นปก');
+                const status = el('p', 'text-xs text-rose-500 text-center mt-3 min-h-[1rem]');
+                ok.disabled = true;
+                const draw = () => {
+                    tMine.className = 'flex-1 px-3 py-2 rounded-lg text-sm font-semibold ' + (tab === 'mine' ? T.primary : 'bg-slate-200 dark:bg-white/10');
+                    tRep.className = 'flex-1 px-3 py-2 rounded-lg text-sm font-semibold ' + (tab === 'rep' ? T.primary : 'bg-slate-200 dark:bg-white/10');
+                    grid.replaceChildren();
+                    const list = lists[tab];
+                    if (!list.length) { grid.append(el('p', 'col-span-2 text-sm text-slate-500 dark:text-neutral-400 text-center py-8', tab === 'mine' ? 'ยังไม่มีวิดีโอในโพสต์ของคุณ' : 'ไม่มีรีโพสต์ที่มีวิดีโออัปโหลด (ลิงก์ YouTube ใช้เป็นปกไม่ได้)')); return; }
+                    for (const it of list) {
+                        const card = el('button', 'relative block w-full aspect-[2/1] overflow-hidden rounded-lg bg-black ' + (sel === it.url ? 'ring-2 ring-offset-2 ring-sky-500 dark:ring-offset-neutral-900' : 'ring-1 ring-white/10'));
+                        card.type = 'button'; card.title = it.title;
+                        const v = el('video', 'absolute inset-0 w-full h-full object-cover pointer-events-none');
+                        v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'metadata'; v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+                        v.src = it.url + '#t=0.1';
+                        v.onerror = () => { card.disabled = true; card.classList.add('opacity-40'); };
+                        card.onpointerenter = () => v.play().catch(() => {});
+                        card.onpointerleave = () => { if (sel !== it.url) v.pause(); };
+                        card.onclick = () => { sel = it.url; ok.disabled = false; draw(); const nv = grid.querySelector('[data-sel] video'); nv && nv.play().catch(() => {}); };
+                        if (sel === it.url) { card.dataset.sel = '1'; }
+                        card.append(v); grid.append(card);
+                    }
+                };
+                tMine.onclick = () => { tab = 'mine'; draw(); }; tRep.onclick = () => { tab = 'rep'; draw(); };
+                tabs.append(tMine, tRep);
+                back.onclick = () => { if (!busy) start(); };
+                ok.onclick = async () => {
+                    if (!sel) return;
+                    busy = true; ok.disabled = back.disabled = true; status.textContent = '';
+                    try { await applyUploaded('cover', sel, true); busy = false; close(); }
+                    catch (e) { busy = false; ok.disabled = back.disabled = false; status.textContent = e.message || 'บันทึกไม่สำเร็จ'; }
+                };
+                row.append(back, ok);
+                panel.replaceChildren(file, header('เลือกวิดีโอเป็นปก', 'เลือกจากวิดีโอที่เคยโพสต์ไว้ หรือจากโพสต์ที่รีโพสต์'), tabs, grid, status, row);
+                draw();
             }
 
             // ปุ่มกลับไปใช้รูปเดิมของบัญชี (เช่นรูป Google) — เฉพาะรูปโปรไฟล์ที่เคยเปลี่ยนแล้ว
