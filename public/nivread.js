@@ -166,10 +166,119 @@
   const setCount = (type, key, v) => countEls(type, key).forEach((n) => { n.textContent = Math.max(0, v).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH'); });
   const bumpCount = (type, key, d) => countEls(type, key).forEach((n) => { n.textContent = Math.max(0, (parseInt(String(n.textContent).replace(/[^\d]/g, ''), 10) || 0) + d).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH'); });
 
-  function toast(msg) {
-    const t = el('div', 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg', msg);
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 2200);
+  // ---------- toast: แจ้งเตือนขอบล่าง (ปัดทิ้งได้ / มีปุ่มเลิกทำ / ใช้ได้ทุกอุปกรณ์) ----------
+  // ใช้: toast('ข้อความ')  หรือ  toast('รีโพสต์แล้ว — ผู้ติดตามของคุณจะเห็น', { action: { label: 'เลิกทำ', onClick: () => undo() }, duration: 6000 })
+  // opts: { action:{label,onClick}, duration(ms, 0 = ไม่หายเอง), type:'default'|'error'|'success', onClose(reason) }  คืนค่า { dismiss() }
+  if (!document.getElementById('niv-toast-css')) {
+    const tc = document.createElement('style'); tc.id = 'niv-toast-css';
+    tc.textContent = `
+#niv-toasts{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:0 12px calc(16px + env(safe-area-inset-bottom,0px));margin-bottom:var(--niv-toast-bottom,0px);pointer-events:none}
+.niv-toast{pointer-events:auto;display:flex;align-items:center;gap:12px;max-width:min(94vw,30rem);box-sizing:border-box;padding:10px 12px 10px 16px;border-radius:14px;
+  background:#0f172a;color:#fff;font:500 14px/1.35 inherit;font-family:inherit;box-shadow:0 8px 28px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.08);
+  touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;cursor:grab;will-change:transform,opacity;
+  animation:niv-toast-in .28s cubic-bezier(.2,1,.3,1) both}
+.niv-toast.dragging{cursor:grabbing;transition:none}
+.niv-toast.settle{transition:transform .22s cubic-bezier(.2,1,.3,1),opacity .22s}
+.niv-toast.out{transition:transform .2s ease-in,opacity .2s ease-in;pointer-events:none}
+.niv-toast.error{background:#7f1d1d}
+.niv-toast.success{background:#14532d}
+.niv-toast-msg{flex:1;min-width:0;overflow-wrap:anywhere}
+.niv-toast-act{flex:none;border:0;border-radius:999px;padding:6px 14px;background:#f97316;color:#fff;font:700 13px/1 inherit;font-family:inherit;cursor:pointer;min-height:32px}
+.niv-toast-act:hover{background:#fb923c}.niv-toast-act:active{transform:scale(.95)}
+.niv-toast-act:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@keyframes niv-toast-in{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+@media (prefers-color-scheme:dark){.niv-toast{box-shadow:0 8px 28px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.14)}}
+@media (prefers-reduced-motion:reduce){.niv-toast{animation:none}.niv-toast.settle,.niv-toast.out{transition:opacity .15s}}
+`;
+    document.head.appendChild(tc);
+  }
+  const TOAST_MAX = 3;
+  function toastHost() {
+    let h = document.getElementById('niv-toasts');
+    if (!h) {
+      h = document.createElement('div'); h.id = 'niv-toasts';
+      h.setAttribute('role', 'region'); h.setAttribute('aria-label', 'การแจ้งเตือน');
+      document.body.appendChild(h);
+    }
+    return h;
+  }
+  function toast(msg, opts) {
+    if (typeof opts === 'number') opts = { duration: opts };
+    opts = opts || {};
+    const host = toastHost();
+    // มือถือมีแถบเมนูล่าง (#niv-tabbar) → ยกแถบแจ้งเตือนให้พ้นแถบนั้น (ความสูงแถบรวม safe-area แล้ว จึงแทนที่ safe-area เดิม)
+    const tb = document.getElementById('niv-tabbar');
+    const tbH = tb && getComputedStyle(tb).display !== 'none' ? tb.offsetHeight : 0;
+    host.style.paddingBottom = tbH ? (tbH + 12) + 'px' : '';
+    while (host.children.length >= TOAST_MAX) host.firstElementChild.dispatchEvent(new CustomEvent('niv-toast-close'));
+    const t = document.createElement('div');
+    t.className = 'niv-toast' + (opts.type === 'error' || opts.type === 'success' ? ' ' + opts.type : '');
+    t.setAttribute('role', opts.type === 'error' ? 'alert' : 'status');
+    t.setAttribute('aria-live', opts.type === 'error' ? 'assertive' : 'polite');
+    const m = document.createElement('span'); m.className = 'niv-toast-msg'; m.textContent = msg; t.appendChild(m);
+
+    let closed = false, timer = 0, left = 0, startedAt = 0;
+    const duration = opts.duration == null ? (opts.action ? 6000 : 3000) : opts.duration;
+    const close = (reason, dx, dy) => {
+      if (closed) return; closed = true; clearTimeout(timer);
+      t.classList.remove('dragging', 'settle'); t.classList.add('out');
+      t.style.transform = 'translate(' + (dx || 0) + 'px,' + (dy == null ? 14 : dy) + 'px)'; t.style.opacity = '0';
+      let done = false;
+      const fin = () => { if (done) return; done = true; t.remove(); try { opts.onClose && opts.onClose(reason); } catch {} };
+      t.addEventListener('transitionend', fin, { once: true }); setTimeout(fin, 320);
+    };
+    t.addEventListener('niv-toast-close', () => close('replaced'));
+    const arm = () => { if (duration > 0 && !closed) { startedAt = Date.now(); timer = setTimeout(() => close('timeout'), left); } };
+    const pause = () => { if (timer) { clearTimeout(timer); timer = 0; left -= Date.now() - startedAt; if (left < 800) left = 800; } };
+    left = duration;
+
+    if (opts.action && opts.action.label) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'niv-toast-act'; b.textContent = opts.action.label;
+      b.addEventListener('pointerdown', (e) => e.stopPropagation()); // กดปุ่มต้องไม่ถูกนับเป็นการลาก
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        close('action', 0, 0);
+        try { opts.action.onClick && opts.action.onClick(); } catch {}
+      });
+      t.appendChild(b);
+    }
+
+    // ปัดทิ้ง: ซ้าย/ขวา/ลง (ทัช เมาส์ ปากกา) — เลยระยะ 35% ของความกว้าง หรือปัดเร็ว ก็หายไป ไม่งั้นเด้งกลับ
+    let sx = 0, sy = 0, st = 0, dx = 0, dy = 0, drag = false, pid = null;
+    t.addEventListener('pointerdown', (e) => {
+      if (closed || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      drag = true; pid = e.pointerId; sx = e.clientX; sy = e.clientY; st = e.timeStamp; dx = dy = 0;
+      t.classList.remove('settle'); t.classList.add('dragging'); pause();
+      try { t.setPointerCapture(pid); } catch {}
+    });
+    t.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== pid) return;
+      dx = e.clientX - sx; dy = Math.max(0, e.clientY - sy); // ขึ้นไม่ได้ ลงได้
+      const far = Math.max(Math.abs(dx), dy);
+      t.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      t.style.opacity = String(Math.max(.25, 1 - far / (t.offsetWidth * 1.1)));
+    });
+    const end = (e) => {
+      if (!drag || (e && e.pointerId !== pid)) return;
+      drag = false; try { t.releasePointerCapture(pid); } catch {}
+      const dt = Math.max(1, (e ? e.timeStamp : st + 1) - st), vx = Math.abs(dx) / dt, vy = dy / dt;
+      const w = t.offsetWidth || 300;
+      if (e && e.type !== 'pointercancel' && (Math.abs(dx) > w * .35 || dy > 50 || vx > .6 || vy > .6)) {
+        close('swipe', dx ? Math.sign(dx) * (w + 40) : 0, dx && Math.abs(dx) >= dy ? 0 : 90);
+      } else {
+        t.classList.remove('dragging'); t.classList.add('settle'); t.style.transform = ''; t.style.opacity = '';
+        if (!t.matches(':hover')) arm();
+      }
+    };
+    t.addEventListener('pointerup', end); t.addEventListener('pointercancel', end);
+    t.addEventListener('mouseenter', pause); t.addEventListener('mouseleave', () => { if (!drag && !closed && !timer) arm(); });
+    t.addEventListener('focusin', pause); t.addEventListener('focusout', () => { if (!closed && !timer) arm(); });
+    t.addEventListener('keydown', (e) => { if (e.key === 'Escape') close('escape'); });
+
+    host.appendChild(t);
+    arm();
+    return { dismiss: () => close('api') };
   }
 
   document.addEventListener('click', async (e) => {

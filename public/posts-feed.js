@@ -18,12 +18,19 @@
     document.head.appendChild(st);
   }
 
-  const toast = (msg) => {
+  // แจ้งเตือนขอบล่าง: ใช้ระบบกลางของ nivread.js (ปัดทิ้งได้ / มีปุ่มเลิกทำ / รองรับ safe-area) · ถ้าไม่มี NIV ใช้แบบเรียบ ๆ แทน
+  // เรียกตอนผู้ใช้กดเท่านั้น จึงไม่ขึ้นกับลำดับโหลดสคริปต์
+  const toast = (msg, opts) => {
+    if (window.NIV && typeof NIV.toast === 'function') return NIV.toast(msg, opts);
     const t = document.createElement('div');
     t.textContent = msg;
-    t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg';
+    t.setAttribute('role', 'status');
+    t.className = 'fixed left-1/2 -translate-x-1/2 z-[90] px-4 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg';
+    t.style.bottom = 'calc(1.5rem + env(safe-area-inset-bottom, 0px))';
     document.body.appendChild(t);
-    setTimeout(() => t.remove(), 2200);
+    const h = { dismiss: () => t.remove() };
+    setTimeout(h.dismiss, 2200);
+    return h;
   };
 
   // ---------- สถานะไลก์ ----------
@@ -128,12 +135,15 @@
   const PEN_ICON = '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
   const UNDO_ICON = '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-15-6.7L3 13"/></svg>';
 
-  const toastAction = (msg, label, fn) => {                 // ข้อความแจ้งพร้อมปุ่ม "เลิกทำ" 5 วินาที
-    const t = mk('div', 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 pl-4 pr-2 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg');
+  // ข้อความแจ้งพร้อมปุ่ม "เลิกทำ" (6 วินาที · ปัดทิ้งได้ · หยุดนับเวลาตอนแตะ/ชี้)
+  const toastAction = (msg, label, fn) => {
+    if (window.NIV && typeof NIV.toast === 'function') return NIV.toast(msg, { action: { label, onClick: fn }, duration: 6000 });
+    const t = mk('div', 'fixed left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 pl-4 pr-2 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg');
+    t.style.bottom = 'calc(1.5rem + env(safe-area-inset-bottom, 0px))';
     t.append(mk('span', '', msg));
     const b = mk('button', 'px-3 py-1 rounded-lg bg-orange-500 hover:bg-orange-400 text-white font-semibold cursor-pointer', label); b.type = 'button';
     b.addEventListener('click', () => { t.remove(); fn(); });
-    t.append(b); document.body.appendChild(t); setTimeout(() => t.remove(), 5000);
+    t.append(b); document.body.appendChild(t); setTimeout(() => t.remove(), 6000);
   };
 
   const rpAll = (slug) => [...document.querySelectorAll(`[data-repost="${CSS.escape(slug)}"]`)];
