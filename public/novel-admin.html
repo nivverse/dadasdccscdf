@@ -87,8 +87,28 @@
         <label class="block"><span class="block text-xs text-slate-500 dark:text-neutral-400 mb-1">ชื่อตอน</span><input id="c-title" maxlength="150" required placeholder="ชื่อตอน" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm focus:outline-none focus:border-amber-500"></label>
         <div class="flex justify-end text-xs text-slate-400"><span id="c-count">0 / 150000</span></div>
         <textarea id="c-body" rows="16" maxlength="150000" required placeholder="เนื้อหาตอน — ขึ้นบรรทัดใหม่ = ขึ้นย่อหน้าใหม่" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm leading-7 focus:outline-none focus:border-amber-500"></textarea>
+        <!-- เสียงประกอบตอน: บีบเป็น MP3 โมโนในเบราว์เซอร์ก่อน แล้วอัปโหลดตอนกด "บันทึกตอน" -->
+        <div id="au-box" class="rounded-xl border border-slate-300 dark:border-white/10 p-3 space-y-2">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <span class="text-sm font-semibold">เสียงประกอบตอน <span class="text-xs font-normal text-slate-400">(ไม่บังคับ)</span></span>
+            <select id="au-q" aria-label="คุณภาพเสียง" class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500">
+              <option value="24">ประหยัดพื้นที่สุด · 24 kbps</option>
+              <option value="32" selected>มาตรฐาน · 32 kbps</option>
+              <option value="48">คมชัด · 48 kbps</option>
+            </select>
+          </div>
+          <input id="au-file" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.opus,.flac,.webm" class="hidden">
+          <div class="flex flex-wrap gap-2 items-center">
+            <button id="au-pick" type="button" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-white/15 text-sm hover:border-amber-500">เลือกไฟล์เสียง</button>
+            <button id="au-del" type="button" class="px-4 py-2 rounded-xl border border-rose-400/60 text-rose-500 text-sm hidden">ลบเสียง</button>
+          </div>
+          <p id="au-info" class="text-xs text-slate-500 dark:text-neutral-400 min-h-[1rem]" role="status"></p>
+          <div id="au-bar" class="hidden h-1.5 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden"><i id="au-bar-i" class="block h-full w-0 bg-amber-500"></i></div>
+          <audio id="au-prev" controls preload="none" class="w-full hidden"></audio>
+          <p class="text-[11px] text-slate-400">ระบบแปลงเป็น MP3 โมโนก่อนอัปโหลดให้อัตโนมัติ (เสียงเล่าเรื่อง ~11–22 MB ต่อชั่วโมง) · ยาวได้ไม่เกิน 90 นาทีต่อตอน · เลือกไฟล์ใหม่ = แทนที่เสียงเดิม · ไฟล์จะอัปโหลดตอนกด “บันทึกตอน”</p>
+        </div>
         <div class="flex gap-2 items-center">
-          <button type="submit" class="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold">บันทึกตอน</button>
+          <button id="c-save" type="submit" class="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold disabled:opacity-60">บันทึกตอน</button>
           <button id="c-del" type="button" class="px-4 py-3 rounded-xl border border-rose-400/60 text-rose-500 text-sm hidden">ลบตอนนี้</button>
         </div>
       </form>
@@ -160,6 +180,7 @@
     const body = { userId: uid, title: $('n-title').value, category: $('n-cat').value, status: $('n-status').value, visibility: $('n-vis').value, synopsis: $('n-syn').value, slug: $('n-slug').value.trim() || undefined };
     const r = novel ? await api('/api/novel/update', { method: 'POST', body: { ...body, id: novel.id } }) : await api('/api/novel/create', { method: 'POST', body });
     if (!r.ok) return fail(r, 'บันทึกไม่สำเร็จ');
+    if (novel && r.data.slug && r.data.slug !== novel.slug) await api('/api/blog/novel-audio-rename', { method: 'POST', body: { userId: uid, novelId: novel.id, slug: r.data.slug } });   // เสียงผูกกับ slug ที่หน้าอ่านใช้ค้น
     toast('บันทึกแล้ว', 'ok');
     const mine = await api('/api/novel/mine?userId=' + enc(uid));
     const fresh = mine.ok && mine.data.novels.find((n) => n.slug === r.data.slug);
@@ -170,6 +191,7 @@
     if (!novel || !confirm('ลบนิยาย "' + novel.title + '" และทุกตอนถาวร?')) return;
     const r = await api('/api/novel/delete', { method: 'POST', body: { userId: uid, id: novel.id } });
     if (!r.ok) return fail(r, 'ลบไม่สำเร็จ');
+    await api('/api/blog/novel-audio-delete', { method: 'POST', body: { userId: uid, novelId: novel.id } });   // เสียงทุกตอนของเรื่องนี้
     view('list'); loadList(); toast('ลบนิยายแล้ว', 'ok');
   };
 
@@ -205,13 +227,15 @@
   // รายการตอนโหลดทีละ 100 (ตามเลขตอน) มีปุ่ม "โหลดตอนถัดไป" — ไม่ดึงทั้งสารบัญทุกครั้ง
   async function loadChapters(from) {
     const ul = $('ch-list'); let more = $('ch-more');
-    const r = await api('/api/novel/get?slug=' + enc(novel.slug) + '&userId=' + enc(uid) + '&limit=100' + (from ? '&from=' + from : ''));
+    const [r] = await Promise.all([api('/api/novel/get?slug=' + enc(novel.slug) + '&userId=' + enc(uid) + '&limit=100' + (from ? '&from=' + from : '')), from ? null : loadAudioNos()]);
     if (!r.ok) return fail(r, 'โหลดรายการตอนไม่สำเร็จ');
     if (!from) ul.replaceChildren();
     if (!r.data.chapters.length && !from) ul.append(el('li', 'px-4 py-3 text-sm text-slate-500', 'ยังไม่มีตอน'));
     r.data.chapters.forEach((c) => {
       const li = el('li', 'px-4 py-3 min-h-[3rem] flex items-center gap-3 cursor-pointer hover:bg-amber-500/10 text-sm');
-      li.append(el('span', 'text-slate-400 w-16 shrink-0', 'ตอน ' + c.no), el('span', 'flex-1 truncate', c.title),
+      const hp = el('span', 'shrink-0 text-amber-500' + (audioNos.has(c.no) ? '' : ' hidden'));
+      hp.title = 'มีเสียงประกอบ'; hp.innerHTML = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="มีเสียงประกอบ"><path d="M4 14v-2a8 8 0 0116 0v2M4 14h3v5H5a1 1 0 01-1-1v-4zM20 14h-3v5h2a1 1 0 001-1v-4z"/></svg>';
+      li.append(el('span', 'text-slate-400 w-16 shrink-0', 'ตอน ' + c.no), el('span', 'flex-1 truncate', c.title), hp,
         el('span', 'text-xs ' + (c.visibility === 'public' ? 'text-emerald-500' : 'text-slate-400'), c.visibility === 'public' ? 'เผยแพร่' : 'ร่าง'),
         el('span', 'text-xs text-amber-500 w-16 text-right', c.price > 0 ? c.price + ' coin' : 'ฟรี'));
       li.addEventListener('click', () => editChapter(c.no)); ul.append(li);
@@ -225,6 +249,111 @@
     }
   }
 
+
+  // ---------- เสียงประกอบตอน ----------
+  // เก็บใน R2 โฟลเดอร์ nv/ (เสิร์ฟจาก CDN ตรง ๆ) · ที่นี่บีบเป็น MP3 โมโนก่อนส่ง เพื่อลดพื้นที่ R2 และแบนด์วิดท์ผู้ฟัง
+  const AQ = { 24: 22050, 32: 24000, 48: 32000 };            // kbps → sample rate (เสียงพูดไม่ต้องการ 44.1kHz)
+  const A_SRC_MAX = 200 * 1024 * 1024, A_MAX_SEC = 5400, A_OUT_MAX = 40e6;
+  const LAME_SRC = ['https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js'];
+  let lameP = null, audioNos = new Set(), aPending = null, aCurrent = null, aBusy = false;
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+  const fmtSize = (b) => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+  const fmtDur = (t) => { t = Math.round(t); const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), x = t % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0'); };
+  const loadScript = (src) => new Promise((ok, no) => { const e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = () => { e.remove(); no(new Error('load')); }; document.head.append(e); });
+  const loadLame = () => lameP || (lameP = (async () => {
+    if (window.lamejs) return;
+    for (const u of LAME_SRC) { try { await loadScript(u); if (window.lamejs) return; } catch {} }
+    lameP = null; throw new Error('ไม่สามารถโหลดตัวบีบเสียงได้ (ตรวจอินเทอร์เน็ตแล้วลองใหม่)');
+  })());
+  const setBar = (p) => { const b = $('au-bar'); b.classList.toggle('hidden', p == null); if (p != null) $('au-bar-i').style.width = Math.round(p * 100) + '%'; };
+  const info = (t, kind) => { const i = $('au-info'); i.textContent = t || ''; i.className = 'text-xs min-h-[1rem] ' + (kind === 'err' ? 'text-rose-500' : kind === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-neutral-400'); };
+
+  // ถอดรหัสไฟล์ → โมโนที่ sample rate ปลายทาง (ให้เบราว์เซอร์รีแซมเปิลเอง) → Int16
+  async function decodeMono(file, rate) {
+    const Ctx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!Ctx) throw new Error('เบราว์เซอร์นี้ไม่รองรับการแปลงเสียง ลองใช้ Chrome / Edge / Safari รุ่นใหม่');
+    let buf;
+    try { buf = await new Ctx(1, 1, rate).decodeAudioData(await file.arrayBuffer()); }
+    catch { throw new Error('อ่านไฟล์เสียงนี้ไม่ได้ ลองไฟล์ MP3 / M4A / WAV / OGG'); }
+    const n = buf.length, ch = buf.numberOfChannels, pcm = new Int16Array(n), data = [];
+    for (let c = 0; c < ch; c++) data.push(buf.getChannelData(c));
+    for (let i = 0; i < n; i++) {
+      let v = 0; for (let c = 0; c < ch; c++) v += data[c][i];
+      v /= ch; pcm[i] = v <= -1 ? -32768 : v >= 1 ? 32767 : Math.round(v * 32767);
+      if ((i & 0x1fffff) === 0x1fffff) await tick();
+    }
+    return { pcm, dur: n / rate };
+  }
+  async function encodeMp3(pcm, rate, kbps, onP) {
+    await loadLame();
+    const enc = new window.lamejs.Mp3Encoder(1, rate, kbps), parts = [], BLK = 1152 * 20;
+    for (let i = 0, k = 0; i < pcm.length; i += BLK, k++) {
+      const o = enc.encodeBuffer(pcm.subarray(i, i + BLK)); if (o.length) parts.push(o.slice());
+      if ((k & 31) === 0) { onP(i / pcm.length); await tick(); }
+    }
+    const f = enc.flush(); if (f.length) parts.push(f.slice());
+    return new Blob(parts, { type: 'audio/mpeg' });
+  }
+
+  function paintAudio() {
+    const prev = $('au-prev'), del = $('au-del');
+    if (prev.dataset.blob) { URL.revokeObjectURL(prev.dataset.blob); delete prev.dataset.blob; }
+    prev.pause(); prev.removeAttribute('src');
+    if (aPending) {
+      const u = URL.createObjectURL(aPending.blob); prev.dataset.blob = u; prev.src = u; prev.classList.remove('hidden');
+      del.textContent = 'ยกเลิกไฟล์ที่เลือก'; del.classList.remove('hidden');
+      info(aPending.name + ' → MP3 ' + fmtSize(aPending.blob.size) + ' · ' + fmtDur(aPending.dur) + ' (จากเดิม ' + fmtSize(aPending.orig) + ') — จะอัปโหลดเมื่อกด “บันทึกตอน”' + (aCurrent ? ' และแทนที่เสียงเดิม' : ''), 'ok');
+    } else if (aCurrent) {
+      prev.src = aCurrent.url; prev.classList.remove('hidden');
+      del.textContent = 'ลบเสียง'; del.classList.remove('hidden');
+      info('ตอนนี้มีเสียงแล้ว · ' + fmtDur(aCurrent.duration) + ' · ' + fmtSize(aCurrent.bytes));
+    } else { prev.classList.add('hidden'); del.classList.add('hidden'); info(''); }
+    $('au-pick').textContent = aPending || aCurrent ? 'เปลี่ยนไฟล์เสียง' : 'เลือกไฟล์เสียง';
+  }
+  async function loadChapterAudio(no) {
+    const r = await api('/api/blog/novel-audio?slug=' + enc(novel.slug) + '&no=' + no);
+    if (!chapter || chapter.no !== no) return;               // ผู้ใช้สลับไปตอนอื่นแล้ว
+    aCurrent = r.ok && r.data.audio ? r.data.audio : null; paintAudio();
+  }
+  async function loadAudioNos() {
+    const r = await api('/api/blog/novel-audio-list?novelId=' + enc(novel.id));
+    audioNos = new Set(r.ok ? r.data.audio.map((x) => x.no) : []);
+  }
+  $('au-pick').onclick = () => { if (!aBusy) $('au-file').click(); };
+  $('au-file').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f || aBusy) return;
+    if (f.size > A_SRC_MAX) return info('ไฟล์ต้นฉบับใหญ่เกิน 200 MB', 'err');
+    const kbps = Number($('au-q').value) || 32, rate = AQ[kbps] || 24000;
+    aBusy = true; $('c-save').disabled = true; $('au-pick').disabled = true; setBar(0);
+    try {
+      info('กำลังถอดรหัสไฟล์เสียง…');
+      const { pcm, dur } = await decodeMono(f, rate);
+      if (dur > A_MAX_SEC) throw new Error('เสียงยาวเกิน 90 นาที (ไฟล์นี้ ' + fmtDur(dur) + ') — แบ่งเป็นหลายตอนก่อน');
+      const blob = await encodeMp3(pcm, rate, kbps, (p) => { setBar(p); info('กำลังบีบเป็น MP3 ' + Math.round(p * 100) + '%'); });
+      if (blob.size > A_OUT_MAX) throw new Error('หลังบีบยังใหญ่เกิน 40 MB — ลองเลือก “ประหยัดพื้นที่สุด”');
+      aPending = { blob, dur, orig: f.size, name: f.name.length > 40 ? f.name.slice(0, 37) + '…' : f.name };
+    } catch (err) { aPending = null; paintAudio(); info(err.message || 'แปลงเสียงไม่สำเร็จ', 'err'); setBar(null); aBusy = false; $('c-save').disabled = false; $('au-pick').disabled = false; return; }
+    setBar(null); aBusy = false; $('c-save').disabled = false; $('au-pick').disabled = false; paintAudio();
+  });
+  $('au-del').onclick = async () => {
+    if (aBusy) return;
+    if (aPending) { aPending = null; paintAudio(); return; }
+    if (!aCurrent || !chapter || !confirm('ลบเสียงของตอนที่ ' + chapter.no + ' ?')) return;
+    const r = await api('/api/blog/novel-audio-delete', { method: 'POST', body: { userId: uid, novelId: novel.id, no: chapter.no } });
+    if (!r.ok) return fail(r, 'ลบเสียงไม่สำเร็จ');
+    aCurrent = null; paintAudio(); toast('ลบเสียงแล้ว', 'ok'); loadChapters(0);
+  };
+  // อัปโหลดแบบ XHR เพื่อให้มีแถบความคืบหน้า (fetch ยังไม่มี upload progress)
+  const uploadAudio = (a, no) => new Promise((res) => {
+    const q = 'userId=' + enc(uid) + '&novelId=' + enc(novel.id) + '&no=' + no + '&slug=' + enc(novel.slug) + '&duration=' + a.dur.toFixed(1);
+    const x = new XMLHttpRequest(); x.open('POST', NIV.API + '/api/blog/novel-audio-upload?' + q);
+    x.setRequestHeader('Authorization', 'Bearer ' + s.token);
+    x.upload.onprogress = (e) => { if (e.lengthComputable) { setBar(e.loaded / e.total); info('กำลังอัปโหลดเสียง ' + Math.round(e.loaded / e.total * 100) + '%'); } };
+    x.onload = () => { let d = {}; try { d = JSON.parse(x.responseText); } catch {} res(x.status >= 200 && x.status < 300 && d.success !== false ? { ok: true, status: x.status, data: d } : { ok: false, status: x.status, data: d }); };
+    x.onerror = () => res({ ok: false, status: 0, data: { error: 'เครือข่ายขัดข้อง' } });
+    setBar(0); x.send(a.blob);
+  });
+
   function fillChapter(c) {
     chapter = c;
     $('ch-h').textContent = c ? 'แก้ไขตอนที่ ' + c.no : 'ตอนใหม่';
@@ -232,6 +361,7 @@
     $('c-price').value = c ? c.price : 0; $('c-vis').value = c ? c.visibility : 'draft';
     $('c-title').value = c ? c.title : ''; $('c-body').value = c ? c.content : '';
     $('c-del').classList.toggle('hidden', !c); count();
+    aPending = null; aCurrent = null; paintAudio(); if (c) loadChapterAudio(c.no);
   }
   const count = () => { $('c-count').textContent = $('c-body').value.length.toLocaleString('th-TH') + ' / 150,000'; };
   $('c-body').addEventListener('input', count);
@@ -242,17 +372,28 @@
     fillChapter(r.data.chapter); $('ch-form').scrollIntoView({ behavior: 'smooth' });
   }
   $('ch-form').addEventListener('submit', async (e) => {
-    e.preventDefault(); if (!novel) return;
+    e.preventDefault(); if (!novel || aBusy) return;
     const r = await api('/api/novel/chapter-save', { method: 'POST', body: {
       userId: uid, novelId: novel.id, chapterId: chapter ? chapter.id : undefined, chapterNo: $('c-no').value ? Number($('c-no').value) : undefined,
       title: $('c-title').value, content: $('c-body').value, price: Number($('c-price').value) || 0, visibility: $('c-vis').value } });
     if (!r.ok) return fail(r, 'บันทึกตอนไม่สำเร็จ');
-    toast('บันทึกตอนที่ ' + r.data.no + ' แล้ว', 'ok'); fillChapter(null); loadChapters(0);
+    const no = r.data.no, keep = aPending;
+    if (keep) {
+      $('c-save').disabled = true; aBusy = true; toast('บันทึกตอนที่ ' + no + ' แล้ว กำลังอัปโหลดเสียง…');
+      const u = await uploadAudio(keep, no);
+      aBusy = false; $('c-save').disabled = false; setBar(null);
+      if (!u.ok) {                                   // ตอนบันทึกแล้ว แต่เสียงไม่ขึ้น → เปิดตอนเดิมค้างไว้พร้อมไฟล์ที่บีบแล้ว ให้กดบันทึกซ้ำได้ ไม่ต้องบีบใหม่
+        await editChapter(no); aPending = keep; paintAudio(); loadChapters(0);
+        return toast('บันทึกตอนที่ ' + no + ' แล้ว แต่อัปโหลดเสียงไม่สำเร็จ: ' + (u.data.error || 'ลองกดบันทึกอีกครั้ง'), 'err');
+      }
+    }
+    toast('บันทึกตอนที่ ' + no + ' แล้ว' + (keep ? ' · อัปโหลดเสียงแล้ว' : ''), 'ok'); fillChapter(null); loadChapters(0);
   });
   $('c-del').onclick = async () => {
     if (!chapter || !confirm('ลบตอนที่ ' + chapter.no + ' ถาวร?')) return;
     const r = await api('/api/novel/chapter-delete', { method: 'POST', body: { userId: uid, novelId: novel.id, chapterId: chapter.id } });
     if (!r.ok) return fail(r, 'ลบตอนไม่สำเร็จ');
+    await api('/api/blog/novel-audio-delete', { method: 'POST', body: { userId: uid, novelId: novel.id, no: chapter.no } });   // เสียงของตอนที่ลบ (ล้มเหลว = ไม่กระทบการลบตอน)
     toast('ลบตอนแล้ว', 'ok'); fillChapter(null); loadChapters(0);
   };
 

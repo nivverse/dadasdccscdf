@@ -3,6 +3,7 @@
 //  · แถบความคืบหน้า + แถบเครื่องมือที่ซ่อนเมื่อเลื่อนลง (เขียนแค่ transform, scroll แบบ passive + rAF)
 //  · จำตำแหน่งที่อ่านค้าง (ในเครื่อง + ซิงก์ไปบัญชีถ้าล็อกอิน) · นับวิวครั้งเดียวหลังอ่านจริง
 //  · คอมเมนต์รายย่อหน้า · สารบัญตอน · ลูกศรซ้าย/ขวาเปลี่ยนตอน
+//  · เสียงประกอบตอน (ถ้าแอดมินอัปโหลดไว้): ตัวเล่นเหนือเนื้อหา · จำตำแหน่ง/ความเร็ว · ฟังจบแล้วมีปุ่มไปตอนถัดไป
 //  · ตอนที่มีราคา: ตรวจสิทธิ์หลังล็อกอิน ปลดล็อกด้วย coin แล้วค่อยแสดงเนื้อหา (ข้อความใส่ด้วย textContent)
 (() => {
   const art = document.getElementById('reader');
@@ -144,11 +145,98 @@
   }
   art.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.rd-pb'); if (b) { e.preventDefault(); openPara(Number(b.dataset.p)); } });
 
+
+  // ================= เสียงประกอบตอน (แสดงเฉพาะตอนที่แอดมินอัปโหลดไว้ · ไฟล์เสิร์ฟจากโดเมน R2/CDN ตรง ๆ ไม่ผ่าน Worker) =================
+  //  · ตอนที่มีราคา: เรียกหลังเนื้อหาแสดงแล้วเท่านั้น (onContentReady) จึงไม่โผล่ตัวเล่นให้คนที่ยังไม่ปลดล็อก
+  //  · preload="none" ไม่โหลดไฟล์จนกว่าจะกดเล่น · จำตำแหน่งที่ฟังค้าง + ความเร็ว · ปุ่มบนหน้าจอล็อก (Media Session)
+  let audioMounted = false;
+  const AUD_RATES = [1, 1.25, 1.5, 1.75, 2, 0.75];
+  const fmtT = (t) => { t = Math.max(0, Math.floor(t || 0)); const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), x = t % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0'); };
+  function audioCss() {
+    if (document.getElementById('nv-aud-css')) return;
+    const st = document.createElement('style'); st.id = 'nv-aud-css';
+    st.textContent = '.nv-aud{margin:0 0 1.25rem;padding:.75rem .875rem;border-radius:1rem;display:grid;gap:.5rem;color:inherit;font-family:var(--rd-font,inherit);'
+      + 'border:1px solid color-mix(in srgb,currentColor 16%,transparent);background:color-mix(in srgb,currentColor 5%,transparent);overflow-anchor:none}'
+      + '.nv-aud .r{display:flex;align-items:center;gap:.5rem}.nv-aud .t{flex:1;min-width:0;font-size:.8125rem;line-height:1.2}.nv-aud .t b{display:block;font-weight:600}'
+      + '.nv-aud .t span{opacity:.65;font-variant-numeric:tabular-nums}'
+      + '.nv-aud button{display:inline-flex;align-items:center;justify-content:center;min-width:2.5rem;height:2.5rem;padding:0 .5rem;border-radius:999px;font-size:.75rem;font-weight:600;color:inherit;'
+      + 'background:color-mix(in srgb,currentColor 8%,transparent);cursor:pointer;-webkit-tap-highlight-color:transparent}'
+      + '.nv-aud button:hover{background:color-mix(in srgb,currentColor 14%,transparent)}'
+      + '.nv-aud button.play{width:3rem;height:3rem;background:#f59e0b;color:#fff}.nv-aud button.play:hover{background:#d97706}'
+      + '.nv-aud svg{width:1.25rem;height:1.25rem}.nv-aud input[type=range]{width:100%;accent-color:#f59e0b;height:1.5rem;margin:0}'
+      + '.nv-aud button:focus-visible,.nv-aud input:focus-visible{outline:2px solid #f59e0b;outline-offset:2px}';
+    document.head.append(st);
+  }
+  async function mountAudio() {
+    if (audioMounted) return; audioMounted = true;
+    let a = null;
+    try { const d = await (await fetch(NIV.API + '/api/blog/novel-audio?slug=' + enc(slug) + '&no=' + no)).json(); a = d && d.success && d.audio; } catch { return; }
+    if (!a || !a.url) return;
+    audioCss();
+    const ICON = {
+      play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 001.5.86l11-6.86a1 1 0 000-1.72l-11-6.86A1 1 0 008 5.14z"/></svg>',
+      pause: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+      back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>',
+      fwd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 11-9-9 9 9 0 016.4 2.6L21 8"/><path d="M21 3v5h-5"/></svg>',
+    };
+    const box = el('section', 'nv-aud'); box.setAttribute('aria-label', 'เสียงประกอบตอนนี้');
+    const au = el('audio'); au.preload = 'none'; au.src = a.url;
+    const mk = (cls, icon, label) => { const b = el('button', cls); b.type = 'button'; b.setAttribute('aria-label', label); b.innerHTML = icon; return b; };
+    const play = mk('play', ICON.play, 'เล่นเสียง'), back = mk('', ICON.back, 'ย้อนกลับ 15 วินาที'), fwd = mk('', ICON.fwd, 'ข้ามไปข้างหน้า 15 วินาที');
+    const rate = el('button', '', '1×'); rate.type = 'button'; rate.setAttribute('aria-label', 'ความเร็วในการเล่น');
+    const head = el('div', 'r'), txt = el('div', 't'), time = el('span', '', '0:00 / ' + fmtT(a.duration));
+    txt.append(el('b', '', '🎧 ฟังตอนนี้'), time);
+    head.append(play, txt, back, fwd, rate);
+    const seek = el('input'); seek.type = 'range'; seek.min = '0'; seek.max = '1000'; seek.value = '0'; seek.setAttribute('aria-label', 'ตำแหน่งเสียง');
+    box.append(head, seek, au);
+
+    const dur = () => (isFinite(au.duration) && au.duration > 0 ? au.duration : a.duration || 0);
+    const paint = () => { const d = dur(); time.textContent = fmtT(au.currentTime) + ' / ' + fmtT(d); if (!dragging) seek.value = d ? String(Math.round(au.currentTime / d * 1000)) : '0'; };
+    let dragging = false, lastSave = 0, rIdx = 0;
+    const posKeyA = `nv:aud:${slug}:${no}`;
+    try { const r = parseFloat(localStorage.getItem('nv:aud:rate')); const i = AUD_RATES.indexOf(r); if (i >= 0) rIdx = i; } catch {}
+    const setRate = () => { au.playbackRate = AUD_RATES[rIdx]; rate.textContent = AUD_RATES[rIdx] + '×'; try { localStorage.setItem('nv:aud:rate', String(AUD_RATES[rIdx])); } catch {} };
+    setRate();
+    let saved = NaN; try { saved = parseFloat(localStorage.getItem(posKeyA)); } catch {}
+    if (saved > 3 && saved < (a.duration || Infinity) - 5) { au.addEventListener('loadedmetadata', () => { if (au.currentTime < 1) au.currentTime = saved; }, { once: true }); time.textContent = fmtT(saved) + ' / ' + fmtT(a.duration); seek.value = a.duration ? String(Math.round(saved / a.duration * 1000)) : '0'; }
+    const save = (force) => { const n = Date.now(); if (!force && n - lastSave < 3000) return; lastSave = n; try { au.currentTime > 3 && au.currentTime < dur() - 5 ? localStorage.setItem(posKeyA, String(Math.floor(au.currentTime))) : localStorage.removeItem(posKeyA); } catch {} };
+
+    const toggle = () => { if (au.paused) au.play().catch(() => NS.toast('เล่นเสียงไม่สำเร็จ ลองอีกครั้ง')); else au.pause(); };
+    play.addEventListener('click', toggle);
+    back.addEventListener('click', () => { au.currentTime = Math.max(0, au.currentTime - 15); paint(); });
+    fwd.addEventListener('click', () => { au.currentTime = Math.min(dur(), au.currentTime + 15); paint(); });
+    rate.addEventListener('click', () => { rIdx = (rIdx + 1) % AUD_RATES.length; setRate(); });
+    seek.addEventListener('input', () => { dragging = true; time.textContent = fmtT(dur() * seek.value / 1000) + ' / ' + fmtT(dur()); });
+    seek.addEventListener('change', () => { au.currentTime = dur() * seek.value / 1000; dragging = false; paint(); save(true); });
+    au.addEventListener('timeupdate', () => { paint(); save(false); });
+    au.addEventListener('loadedmetadata', paint);
+    au.addEventListener('play', () => { play.innerHTML = ICON.pause; play.setAttribute('aria-label', 'หยุดเสียงชั่วคราว'); });
+    au.addEventListener('pause', () => { play.innerHTML = ICON.play; play.setAttribute('aria-label', 'เล่นเสียง'); save(true); });
+    au.addEventListener('error', () => { if (au.error && au.currentSrc) NS.toast('โหลดเสียงไม่สำเร็จ ลองรีเฟรชหน้านี้'); });
+    au.addEventListener('ended', () => {
+      try { localStorage.removeItem(posKeyA); } catch {}
+      const nx = document.querySelector('a[rel="next"]');
+      if (nx && nx.href) NS.toast('ฟังจบตอนนี้แล้ว', { label: 'ตอนถัดไป', fn: () => { location.href = nx.href; } });
+    });
+    addEventListener('pagehide', () => save(true));
+    if ('mediaSession' in navigator && window.MediaMetadata) {
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({ title: 'ตอนที่ ' + no, artist: document.title.split('|')[0].trim() });
+        navigator.mediaSession.setActionHandler('play', toggle); navigator.mediaSession.setActionHandler('pause', toggle);
+        navigator.mediaSession.setActionHandler('seekbackward', () => back.click()); navigator.mediaSession.setActionHandler('seekforward', () => fwd.click());
+      } catch {}
+    }
+    // วางไว้เหนือเนื้อหา · Safari ไม่มี scroll anchoring จึงชดเชยความสูงเองถ้าผู้อ่านเลื่อนลงมาแล้ว
+    const y0 = scrollY; art.parentNode.insertBefore(box, art);
+    if (y0 > 60 && !(window.CSS && CSS.supports && CSS.supports('overflow-anchor', 'auto'))) window.scrollBy(0, box.offsetHeight + 20);
+  }
+
   // ================= เริ่มทำงานเมื่อมีเนื้อหา =================
   function onContentReady() {
     if (contentReady) return;
     contentReady = true;
     injectBubbles(); if (prefs.par !== 'off') loadCounts();
+    mountAudio();
     curP = readP(); if (progI) progI.style.transform = `scaleX(${curP.toFixed(4)})`;
     // นับวิว: อ่านจริงอย่างน้อย 4 วินาทีและแท็บยังเปิดอยู่
     setTimeout(() => { if (document.visibilityState === 'visible') NS.view(slug, no); }, 4000);
