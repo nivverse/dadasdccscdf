@@ -161,8 +161,8 @@
         // ---------- หน้าต่างอัปโหลด + ปรับตำแหน่ง ----------
         function openPicker(kind) {
             const isAv = kind === 'avatar';
-            const FW = isAv ? 280 : 300, FH = isAv ? 280 : 150;      // กรอบที่เห็นบนจอ
-            const OW = isAv ? 512 : 1200, OH = isAv ? 512 : 600;     // ขนาดไฟล์ที่ส่งขึ้น
+            const FW = isAv ? 280 : 300, FH = isAv ? 280 : 100;      // กรอบที่เห็นบนจอ
+            const OW = isAv ? 512 : 1200, OH = isAv ? 512 : 400;     // ขนาดไฟล์ที่ส่งขึ้น
             const prevOv = document.body.style.overflow; document.body.style.overflow = 'hidden';
             const ov = el('div', 'fixed inset-0 z-[70] flex items-end sm:items-center justify-center sm:p-4 bg-black/75 backdrop-blur-sm');
             const panel = el('div', 'w-full sm:max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-white dark:bg-[#121212] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 shadow-2xl p-5');
@@ -193,7 +193,7 @@
                 drop.innerHTML = ic('upload', 'w-8 h-8');
                 drop.append(el('span', 'text-sm font-semibold', 'เลือกรูปจากเครื่อง'), el('span', sub, 'JPG / PNG / WebP · ระบบจะบีบรูปให้อัตโนมัติ'));
                 drop.onclick = () => { nsfwModel(); file.click(); };   // เริ่มโหลดโมเดลตรวจภาพรอไว้
-                const parts = [header(isAv ? 'อัปโหลดรูปโปรไฟล์' : 'อัปโหลดภาพปก', isAv ? 'ภาพจะถูกครอปเป็นรูปสี่เหลี่ยมจัตุรัส' : 'ภาพจะถูกครอปเป็นแถบกว้าง 2:1'), drop];
+                const parts = [header(isAv ? 'อัปโหลดรูปโปรไฟล์' : 'อัปโหลดภาพปก', isAv ? 'ภาพจะถูกครอปเป็นรูปสี่เหลี่ยมจัตุรัส' : 'ภาพจะถูกครอปเป็นแถบกว้าง 3:1'), drop];
                 if (!isAv) {
                     const vb = iconBtn('mt-4 w-full px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-300 dark:border-white/15 text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10', 'upload', 'เลือกวิดีโอจากโพสต์ / รีโพสต์ของฉัน');
                     vb.onclick = pickFromPosts;
@@ -208,11 +208,12 @@
             async function pickFromPosts() {
                 panel.replaceChildren(file, header('เลือกวิดีโอเป็นปก', 'กำลังโหลดวิดีโอของคุณ ...'));
                 const enc = encodeURIComponent(uid);
-                const get = async path => { try { const r = await fetch(`${API}${path}&_=${Date.now()}`); const d = await r.json(); return d.posts || []; } catch (e) { return []; } };
-                const [mine, reps] = await Promise.all([get(`/api/blog/user?id=${enc}`), get(`/api/blog/reposts?id=${enc}&limit=30`)]);
-                const vids = ps => { const out = [], seen = new Set(); for (const p of ps) for (const u of (p.videos || [])) if (/^https:\/\//.test(u) && VIDEO_RE.test(u) && !seen.has(u)) { seen.add(u); out.push({ url: u, title: p.title || '' }); } return out.slice(0, 16); };
-                const lists = { mine: vids(mine), rep: vids(reps) };
-                let tab = lists.mine.length || !lists.rep.length ? 'mine' : 'rep', sel = '';
+                // โหลดทีละแท็บเมื่อเปิดดูเท่านั้น (ไม่ใส่ตัวกันแคช เพื่อใช้แคชของเซิร์ฟเวอร์) — โพสต์ของฉันแสดง 4 คลิป, รีโพสต์แสดง 2 คลิปล่าสุด
+                const get = async path => { try { const r = await fetch(API + path); const d = await r.json(); return d.posts || []; } catch (e) { return []; } };
+                const vids = (ps, n) => { const out = [], seen = new Set(); for (const p of ps) for (const u of (p.videos || [])) if (/^https:\/\//.test(u) && VIDEO_RE.test(u) && !seen.has(u)) { seen.add(u); out.push({ url: u, title: p.title || '' }); } return out.slice(0, n); };
+                const lists = {};
+                const load = async t => { if (!lists[t]) lists[t] = t === 'mine' ? vids(await get(`/api/blog/user?id=${enc}&videos=1&limit=4`), 4) : vids(await get(`/api/blog/reposts?id=${enc}&videos=1&limit=2`), 2); return lists[t]; };
+                let tab = 'mine', sel = '';
                 const tabs = el('div', 'flex gap-2 mb-3');
                 const tMine = el('button', '', 'โพสต์ของฉัน'), tRep = el('button', '', 'รีโพสต์');
                 tMine.type = tRep.type = 'button';
@@ -226,7 +227,7 @@
                     tMine.className = 'flex-1 px-3 py-2 rounded-lg text-sm font-semibold ' + (tab === 'mine' ? T.primary : 'bg-slate-200 dark:bg-white/10');
                     tRep.className = 'flex-1 px-3 py-2 rounded-lg text-sm font-semibold ' + (tab === 'rep' ? T.primary : 'bg-slate-200 dark:bg-white/10');
                     grid.replaceChildren();
-                    const list = lists[tab];
+                    const list = lists[tab] || [];
                     if (!list.length) { grid.append(el('p', 'col-span-2 text-sm text-slate-500 dark:text-neutral-400 text-center py-8', tab === 'mine' ? 'ยังไม่มีวิดีโอในโพสต์ของคุณ' : 'ไม่มีรีโพสต์ที่มีวิดีโออัปโหลด (ลิงก์ YouTube ใช้เป็นปกไม่ได้)')); return; }
                     for (const it of list) {
                         const card = el('button', 'relative block w-full aspect-[2/1] overflow-hidden rounded-lg bg-black ' + (sel === it.url ? 'ring-2 ring-offset-2 ring-sky-500 dark:ring-offset-neutral-900' : 'ring-1 ring-white/10'));
@@ -242,7 +243,8 @@
                         card.append(v); grid.append(card);
                     }
                 };
-                tMine.onclick = () => { tab = 'mine'; draw(); }; tRep.onclick = () => { tab = 'rep'; draw(); };
+                const show = async t => { tab = t; if (!lists[t]) { grid.replaceChildren(el('p', 'col-span-2 text-sm text-slate-500 dark:text-neutral-400 text-center py-8', 'กำลังโหลด ...')); await load(t); if (tab !== t) return; } draw(); };
+                tMine.onclick = () => show('mine'); tRep.onclick = () => show('rep');
                 tabs.append(tMine, tRep);
                 back.onclick = () => { if (!busy) start(); };
                 ok.onclick = async () => {
@@ -253,6 +255,8 @@
                 };
                 row.append(back, ok);
                 panel.replaceChildren(file, header('เลือกวิดีโอเป็นปก', 'เลือกจากวิดีโอที่เคยโพสต์ไว้ หรือจากโพสต์ที่รีโพสต์'), tabs, grid, status, row);
+                await load('mine');
+                if (!lists.mine.length) { tab = 'rep'; await load('rep'); }   // ไม่มีวิดีโอในโพสต์ → ลองดูรีโพสต์ให้เลย
                 draw();
             }
 
