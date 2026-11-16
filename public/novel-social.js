@@ -32,7 +32,19 @@
   const ico = (name, cls) => { if (!PATHS[name]) console.warn('NovelSocial.ico: ไม่มีไอคอน', name); const t = document.createElement('span'); t.innerHTML = `<svg class="${cls || 'nv-i'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${PATHS[name]}</svg>`; return t.firstChild; };
 
   // ไอคอนหูฟัง "ตอนนี้มีเสียงประกอบ" ใช้ในสารบัญ (หน้านิยาย + หน้าต่างสารบัญในหน้าอ่าน)
-  const audioIco = () => { const s = document.createElement('span'); s.className = 'nv-aud-i inline-flex items-center shrink-0'; s.style.color = '#f59e0b'; s.title = 'มีเสียงประกอบ'; s.setAttribute('role', 'img'); s.setAttribute('aria-label', 'มีเสียงประกอบ'); s.append(ico('headphones')); return s; };
+  const audioIcoCss = () => {
+    if (document.getElementById('nv-aud-i-css')) return;
+    const st = document.createElement('style'); st.id = 'nv-aud-i-css';
+    st.textContent = '.nv-aud-i{position:relative;width:1.5rem;height:1.5rem;justify-content:center;border-radius:999px;background:rgba(245,158,11,.14)}'
+      + '.nv-aud-i .nv-i{width:.9rem;height:.9rem}'
+      + '.nv-aud-i::after{content:"";position:absolute;inset:0;border-radius:inherit;border:1.5px solid #f59e0b;opacity:0;animation:nv-aud-ping 2.8s ease-out infinite;animation-delay:var(--d,0s);pointer-events:none}'
+      + '@keyframes nv-aud-ping{0%{transform:scale(1);opacity:.55}70%,100%{transform:scale(1.8);opacity:0}}'
+      + 'a:hover .nv-aud-i svg{animation:nv-aud-bob .55s ease-in-out}'
+      + '@keyframes nv-aud-bob{0%,100%{transform:rotate(0) scale(1)}30%{transform:rotate(-14deg) scale(1.2)}65%{transform:rotate(10deg) scale(1.2)}}'
+      + '@media (prefers-reduced-motion:reduce){.nv-aud-i::after,.nv-aud-i svg{animation:none!important}}';
+    document.head.append(st);
+  };
+  const audioIco = () => { audioIcoCss(); const s = document.createElement('span'); s.className = 'nv-aud-i inline-flex items-center shrink-0'; s.style.color = '#f59e0b'; s.style.setProperty('--d', '-' + (Math.random() * 2.8).toFixed(2) + 's'); s.title = 'มีเสียงประกอบ'; s.setAttribute('role', 'img'); s.setAttribute('aria-label', 'มีเสียงประกอบ'); s.append(ico('headphones')); return s; };
   // เลขตอนที่มีเสียงของนิยายเรื่องนี้ (Set) — ขอครั้งเดียวต่อหน้า ล้มเหลว = Set ว่าง (ไม่ติดไอคอน ไม่กระทบหน้า)
   const audioCache = {};
   const audioNos = (slug) => audioCache[slug] || (audioCache[slug] = api('/api/blog/novel-audio-list?slug=' + enc(slug)).then((r) => new Set(r.ok && Array.isArray(r.data.audio) ? r.data.audio.map((x) => Number(x.no)) : [])));

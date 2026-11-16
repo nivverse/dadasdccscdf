@@ -139,7 +139,7 @@
     const mark = (a) => {
       if (a.querySelector('.nv-aud-i') || !nos.has(Number(a.dataset.no))) return;
       const ic = NS.audioIco();
-      if (a.children.length > 1) a.lastElementChild.prepend(ic); else (a.firstElementChild || a).append(ic);
+      (a.querySelector('.nv-meta') || a).prepend(ic);   // วางในกล่องขวาที่แสดงเสมอ (เดิมไปอยู่ในวันที่ที่ซ่อนบนมือถือ)
     };
     document.querySelectorAll('.nv-toc').forEach((toc) => {
       toc.querySelectorAll('a[data-no]').forEach(mark);

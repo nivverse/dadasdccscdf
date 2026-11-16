@@ -31,9 +31,9 @@ export async function onRequestGet({ request, env, params }) {
 
   const rows = slice.map((c, i) => `<li class="nv-reveal" style="--i:${Math.min(i, 8)}"><a href="${novelHref(n.slug, c.no)}" data-no="${c.no}" class="flex items-center justify-between gap-3 px-4 min-h-[3.25rem] py-2 hover:bg-amber-500/10">
       <span class="min-w-0 flex items-baseline gap-2"><span class="shrink-0 text-xs text-slate-400 dark:text-neutral-500 tabular-nums">${fmtNum(c.no)}</span><span class="truncate">${esc(c.title)}</span></span>
-      ${c.price > 0
-        ? `<span class="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400">${ICON.lock}${fmtNum(c.price)}</span>`
-        : `<span class="shrink-0 hidden sm:inline text-xs text-slate-400 dark:text-neutral-500">${fmtDate(c.updated_at)}</span>`}</a></li>`).join('');
+      <span class="nv-meta shrink-0 inline-flex items-center gap-2">${c.price > 0
+        ? `<span class="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400">${ICON.lock}${fmtNum(c.price)}</span>`
+        : `<span class="hidden sm:inline text-xs text-slate-400 dark:text-neutral-500">${fmtDate(c.updated_at)}</span>`}</span></a></li>`).join('');
 
   const cpHref = (p) => path + (p > 1 ? '?cp=' + p : '');
   const pgBtn = 'inline-flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 hover:border-amber-500 transition-colors';

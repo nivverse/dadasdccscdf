@@ -155,16 +155,46 @@
   function audioCss() {
     if (document.getElementById('nv-aud-css')) return;
     const st = document.createElement('style'); st.id = 'nv-aud-css';
-    st.textContent = '.nv-aud{margin:0 0 1.25rem;padding:.75rem .875rem;border-radius:1rem;display:grid;gap:.5rem;color:inherit;font-family:var(--rd-font,inherit);'
-      + 'border:1px solid color-mix(in srgb,currentColor 16%,transparent);background:color-mix(in srgb,currentColor 5%,transparent);overflow-anchor:none}'
-      + '.nv-aud .r{display:flex;align-items:center;gap:.5rem}.nv-aud .t{flex:1;min-width:0;font-size:.8125rem;line-height:1.2}.nv-aud .t b{display:block;font-weight:600}'
-      + '.nv-aud .t span{opacity:.65;font-variant-numeric:tabular-nums}'
-      + '.nv-aud button{display:inline-flex;align-items:center;justify-content:center;min-width:2.5rem;height:2.5rem;padding:0 .5rem;border-radius:999px;font-size:.75rem;font-weight:600;color:inherit;'
-      + 'background:color-mix(in srgb,currentColor 8%,transparent);cursor:pointer;-webkit-tap-highlight-color:transparent}'
-      + '.nv-aud button:hover{background:color-mix(in srgb,currentColor 14%,transparent)}'
-      + '.nv-aud button.play{width:3rem;height:3rem;background:#f59e0b;color:#fff}.nv-aud button.play:hover{background:#d97706}'
-      + '.nv-aud svg{width:1.25rem;height:1.25rem}.nv-aud input[type=range]{width:100%;accent-color:#f59e0b;height:1.5rem;margin:0}'
-      + '.nv-aud button:focus-visible,.nv-aud input:focus-visible{outline:2px solid #f59e0b;outline-offset:2px}';
+    st.textContent = `
+.nv-ap{position:fixed;z-index:60;width:min(20rem,calc(100vw - 1.5rem));box-sizing:border-box;padding:.875rem 1rem .75rem;border-radius:1.375rem;display:grid;gap:.625rem;color:#f4f4f5;background:rgba(24,24,27,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);box-shadow:0 16px 48px rgba(0,0,0,.4);font-family:var(--rd-font,inherit);opacity:0;visibility:hidden;transform:translateY(12px) scale(.94);transform-origin:100% 100%;transition:opacity .2s,transform .32s cubic-bezier(.2,.9,.3,1.25),visibility 0s .32s}
+.nv-ap.show{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+.nv-ap .h{display:flex;align-items:center;gap:.75rem}
+.nv-ap .t{flex:1;min-width:0;font-size:.8125rem;line-height:1.3}.nv-ap .t b{display:block;font-weight:700}.nv-ap .t span{opacity:.7;font-variant-numeric:tabular-nums}
+.nv-ap .c{display:flex;align-items:center;justify-content:center;gap:.75rem}
+.nv-ap button{display:inline-flex;align-items:center;justify-content:center;min-width:2.5rem;height:2.5rem;padding:0 .5rem;border-radius:999px;font-size:.75rem;font-weight:700;color:inherit;background:rgba(255,255,255,.1);cursor:pointer;border:0;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .15s}
+.nv-ap button:hover{background:rgba(255,255,255,.18)}.nv-ap button:active{transform:scale(.9)}
+.nv-ap button.play{width:3.25rem;height:3.25rem;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;box-shadow:0 6px 18px rgba(245,158,11,.45)}
+.nv-ap button.play:hover{filter:brightness(1.08)}
+.nv-ap button.rate{background:rgba(245,158,11,.18);color:#fbbf24;min-width:3rem}
+.nv-ap svg{width:1.25rem;height:1.25rem}.nv-ap button.play svg{width:1.5rem;height:1.5rem}
+.nv-ap button:focus-visible,.nv-ap input:focus-visible{outline:2px solid #fbbf24;outline-offset:2px}
+.nv-ap .spinb svg{animation:nv-spin .5s ease-out reverse}.nv-ap .spinf svg{animation:nv-spin .5s ease-out}
+@keyframes nv-spin{to{transform:rotate(360deg)}}
+.nv-ap input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:1.5rem;margin:0;background:transparent;cursor:pointer}
+.nv-ap input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:linear-gradient(90deg,#f59e0b var(--p,0%),rgba(255,255,255,.18) var(--p,0%))}
+.nv-ap input[type=range]::-moz-range-track{height:6px;border-radius:99px;background:linear-gradient(90deg,#f59e0b var(--p,0%),rgba(255,255,255,.18) var(--p,0%))}
+.nv-ap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-5px;border-radius:50%;background:#fff;border:3px solid #f59e0b;box-shadow:0 2px 6px rgba(0,0,0,.4);transition:transform .15s}
+.nv-ap input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid #f59e0b}
+.nv-ap input[type=range]:active::-webkit-slider-thumb{transform:scale(1.25)}
+.nv-eq{display:inline-flex;align-items:flex-end;gap:3px;height:1.5rem;width:1.75rem}
+.nv-eq i{flex:1;height:100%;border-radius:2px;background:linear-gradient(#fbbf24,#f59e0b);transform-origin:bottom;transform:scaleY(.22);transition:transform .3s}
+.nv-ap.playing .nv-eq i{animation:nv-eq 1s ease-in-out infinite}
+.nv-ap.playing .nv-eq i:nth-child(2){animation-duration:.75s;animation-delay:-.3s}
+.nv-ap.playing .nv-eq i:nth-child(3){animation-duration:1.15s;animation-delay:-.6s}
+.nv-ap.playing .nv-eq i:nth-child(4){animation-duration:.9s;animation-delay:-.15s}
+@keyframes nv-eq{0%,100%{transform:scaleY(.22)}50%{transform:scaleY(1)}}
+.nv-ring{position:absolute;left:-5px;top:-5px;width:calc(100% + 10px);height:calc(100% + 10px);transform:rotate(-90deg);pointer-events:none;overflow:visible}
+.nv-ring circle{fill:none;stroke-width:4}
+.nv-ring .bg{stroke:rgba(245,158,11,.22)}
+.nv-ring .fg{stroke:#f59e0b;stroke-linecap:round;stroke-dasharray:289;stroke-dashoffset:289;transition:stroke-dashoffset .4s linear}
+.nv-halo{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0}
+.nv-fab-on .nv-halo{animation:nv-halo 1.8s ease-out infinite}
+@keyframes nv-halo{0%{opacity:.6;box-shadow:0 0 0 0 rgba(245,158,11,.55)}100%{opacity:0;box-shadow:0 0 0 16px rgba(245,158,11,0)}}
+.nv-fab-idle>svg:not(.nv-ring){animation:nv-wig 5s ease-in-out infinite;transform-origin:50% 60%}
+@keyframes nv-wig{0%,84%,100%{transform:rotate(0)}88%{transform:rotate(-14deg)}92%{transform:rotate(12deg)}96%{transform:rotate(-6deg)}}
+.nv-fab-pop{animation:nv-pop .35s cubic-bezier(.2,.9,.3,1.5)}
+@keyframes nv-pop{50%{transform:scale(1.14)}}
+@media (prefers-reduced-motion:reduce){.nv-ap,.nv-ap *,.nv-halo,.nv-fab-idle>svg,.nv-fab-pop,.nv-ring .fg{animation:none!important;transition:none!important}}`;
     document.head.append(st);
   }
   async function mountAudio() {
@@ -179,39 +209,95 @@
       back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>',
       fwd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 11-9-9 9 9 0 016.4 2.6L21 8"/><path d="M21 3v5h-5"/></svg>',
     };
-    const box = el('section', 'nv-aud'); box.setAttribute('aria-label', 'เสียงประกอบตอนนี้');
+    // แผงควบคุมลอย (ไม่อยู่บนสุดของหน้าแล้ว): เด้งขึ้นเหนือปุ่มลอยเมื่อกดเล่น/หยุด แล้วหุบเองใน 5 วินาที
+    const panel = el('div', 'nv-ap'); panel.setAttribute('role', 'group'); panel.setAttribute('aria-label', 'ควบคุมเสียงประกอบตอนนี้');
     const au = el('audio'); au.preload = 'none'; au.src = a.url;
     const mk = (cls, icon, label) => { const b = el('button', cls); b.type = 'button'; b.setAttribute('aria-label', label); b.innerHTML = icon; return b; };
     const play = mk('play', ICON.play, 'เล่นเสียง'), back = mk('', ICON.back, 'ย้อนกลับ 15 วินาที'), fwd = mk('', ICON.fwd, 'ข้ามไปข้างหน้า 15 วินาที');
-    const rate = el('button', '', '1×'); rate.type = 'button'; rate.setAttribute('aria-label', 'ความเร็วในการเล่น');
-    const head = el('div', 'r'), txt = el('div', 't'), time = el('span', '', '0:00 / ' + fmtT(a.duration));
-    txt.append(el('b', '', '🎧 ฟังตอนนี้'), time);
-    head.append(play, txt, back, fwd, rate);
+    const rate = el('button', 'rate', '1×'); rate.type = 'button'; rate.setAttribute('aria-label', 'ความเร็วในการเล่น');
+    const eq = el('span', 'nv-eq'); eq.setAttribute('aria-hidden', 'true'); eq.innerHTML = '<i></i><i></i><i></i><i></i>';
+    const head = el('div', 'h'), txt = el('div', 't'), time = el('span', '', '0:00 / ' + fmtT(a.duration));
+    txt.append(el('b', '', 'ฟังตอนที่ ' + no), time);
+    head.append(eq, txt, rate);
     const seek = el('input'); seek.type = 'range'; seek.min = '0'; seek.max = '1000'; seek.value = '0'; seek.setAttribute('aria-label', 'ตำแหน่งเสียง');
-    box.append(head, seek, au);
+    const ctr = el('div', 'c'); ctr.append(back, play, fwd);
+    panel.append(head, seek, ctr, au);
+    document.body.append(panel);
 
+    const fab = document.getElementById('rd-cm');
+    let ringFg = null;
+    // ปุ่มลอยเดิม = ไปคอมเมนต์ → ตอนที่มีเสียงเปลี่ยนเป็นปุ่มเสียง: หูฟัง = เล่น · ขีดคู่ = หยุด + วงแหวนบอกความคืบหน้า + คลื่นเรืองแสงตอนเล่น
+    let setFab = () => {};
+    if (fab) {
+      const old = fab.querySelector('svg'), cls = old ? old.getAttribute('class') : '';
+      if (getComputedStyle(fab).position === 'static') fab.style.position = 'relative';
+      setFab = (on) => {
+        const ic = NS.ico(on ? 'pause' : 'headphones', cls), cur = fab.querySelector('svg:not(.nv-ring)');
+        if (cur) cur.replaceWith(ic); else fab.prepend(ic);
+        const t = on ? 'หยุดเสียงชั่วคราว' : 'ฟังเสียงตอนนี้'; fab.setAttribute('aria-label', t); fab.title = t;
+        fab.classList.toggle('nv-fab-on', on); if (on) fab.classList.remove('nv-fab-idle');
+        fab.classList.remove('nv-fab-pop'); void fab.offsetWidth; fab.classList.add('nv-fab-pop');
+      };
+      fabAudio = true; setFab(false); fab.classList.add('nv-fab-idle');
+      fab.insertAdjacentHTML('beforeend', '<svg class="nv-ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="46"/><circle class="fg" cx="50" cy="50" r="46"/></svg><span class="nv-halo"></span>');
+      ringFg = fab.querySelector('.nv-ring .fg');
+      fab.addEventListener('animationend', (e) => { if (e.animationName === 'nv-pop') fab.classList.remove('nv-fab-pop'); });
+    }
+
+    // ---- แสดง/ซ่อนแผง ----
+    let hideT = 0, over = false, dragging = false;
+    const place = () => {
+      if (!fab) { panel.style.right = '1rem'; panel.style.bottom = '5rem'; return; }
+      const r = fab.getBoundingClientRect();
+      panel.style.right = Math.max(12, innerWidth - r.right) + 'px';
+      panel.style.bottom = Math.max(12, innerHeight - r.top + 14) + 'px';
+    };
+    const hidePanel = () => { clearTimeout(hideT); panel.classList.remove('show'); };
+    const arm = () => { clearTimeout(hideT); if (!fab) return; hideT = setTimeout(() => (over || dragging ? arm() : hidePanel()), 5000); };
+    const showPanel = () => { place(); panel.classList.add('show'); arm(); };
+    panel.addEventListener('pointerenter', () => { over = true; }); panel.addEventListener('pointerleave', () => { over = false; arm(); });
+    panel.addEventListener('focusin', () => { over = true; }); panel.addEventListener('focusout', () => { over = false; arm(); });
+    panel.addEventListener('pointerdown', arm);
+    document.addEventListener('pointerdown', (e) => { if (fab && !panel.contains(e.target) && !fab.contains(e.target)) hidePanel(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePanel(); });
+    addEventListener('resize', () => { if (panel.classList.contains('show')) place(); });
+    if (!fab) showPanel();
+
+    // ---- เครื่องเล่น ----
     const dur = () => (isFinite(au.duration) && au.duration > 0 ? au.duration : a.duration || 0);
-    const paint = () => { const d = dur(); time.textContent = fmtT(au.currentTime) + ' / ' + fmtT(d); if (!dragging) seek.value = d ? String(Math.round(au.currentTime / d * 1000)) : '0'; };
-    let dragging = false, lastSave = 0, rIdx = 0;
+    const ratio = (t) => { const d = dur(); return d ? Math.min(1, Math.max(0, t / d)) : 0; };
+    const paint = () => {
+      const d = dur(), r = ratio(au.currentTime);
+      time.textContent = fmtT(au.currentTime) + ' / ' + fmtT(d);
+      if (!dragging) { seek.value = String(Math.round(r * 1000)); seek.style.setProperty('--p', (r * 100).toFixed(1) + '%'); }
+      if (ringFg) ringFg.style.strokeDashoffset = String((289 * (1 - r)).toFixed(1));
+    };
+    let lastSave = 0, rIdx = 0;
     const posKeyA = `nv:aud:${slug}:${no}`;
     try { const r = parseFloat(localStorage.getItem('nv:aud:rate')); const i = AUD_RATES.indexOf(r); if (i >= 0) rIdx = i; } catch {}
     const setRate = () => { au.playbackRate = AUD_RATES[rIdx]; rate.textContent = AUD_RATES[rIdx] + '×'; try { localStorage.setItem('nv:aud:rate', String(AUD_RATES[rIdx])); } catch {} };
     setRate();
     let saved = NaN; try { saved = parseFloat(localStorage.getItem(posKeyA)); } catch {}
-    if (saved > 3 && saved < (a.duration || Infinity) - 5) { au.addEventListener('loadedmetadata', () => { if (au.currentTime < 1) au.currentTime = saved; }, { once: true }); time.textContent = fmtT(saved) + ' / ' + fmtT(a.duration); seek.value = a.duration ? String(Math.round(saved / a.duration * 1000)) : '0'; }
+    if (saved > 3 && saved < (a.duration || Infinity) - 5) {
+      au.addEventListener('loadedmetadata', () => { if (au.currentTime < 1) au.currentTime = saved; }, { once: true });
+      time.textContent = fmtT(saved) + ' / ' + fmtT(a.duration);
+      const r0 = a.duration ? saved / a.duration : 0; seek.value = String(Math.round(r0 * 1000)); seek.style.setProperty('--p', (r0 * 100).toFixed(1) + '%');
+      if (ringFg) ringFg.style.strokeDashoffset = String((289 * (1 - r0)).toFixed(1));
+    }
     const save = (force) => { const n = Date.now(); if (!force && n - lastSave < 3000) return; lastSave = n; try { au.currentTime > 3 && au.currentTime < dur() - 5 ? localStorage.setItem(posKeyA, String(Math.floor(au.currentTime))) : localStorage.removeItem(posKeyA); } catch {} };
 
     const toggle = () => { if (au.paused) au.play().catch(() => NS.toast('เล่นเสียงไม่สำเร็จ ลองอีกครั้ง')); else au.pause(); };
+    const kick = (b, c) => { b.classList.remove('spinb', 'spinf'); void b.offsetWidth; b.classList.add(c); };
     play.addEventListener('click', toggle);
-    back.addEventListener('click', () => { au.currentTime = Math.max(0, au.currentTime - 15); paint(); });
-    fwd.addEventListener('click', () => { au.currentTime = Math.min(dur(), au.currentTime + 15); paint(); });
+    back.addEventListener('click', () => { au.currentTime = Math.max(0, au.currentTime - 15); kick(back, 'spinb'); paint(); });
+    fwd.addEventListener('click', () => { au.currentTime = Math.min(dur(), au.currentTime + 15); kick(fwd, 'spinf'); paint(); });
     rate.addEventListener('click', () => { rIdx = (rIdx + 1) % AUD_RATES.length; setRate(); });
-    seek.addEventListener('input', () => { dragging = true; time.textContent = fmtT(dur() * seek.value / 1000) + ' / ' + fmtT(dur()); });
+    seek.addEventListener('input', () => { dragging = true; seek.style.setProperty('--p', (seek.value / 10) + '%'); time.textContent = fmtT(dur() * seek.value / 1000) + ' / ' + fmtT(dur()); });
     seek.addEventListener('change', () => { au.currentTime = dur() * seek.value / 1000; dragging = false; paint(); save(true); });
     au.addEventListener('timeupdate', () => { paint(); save(false); });
     au.addEventListener('loadedmetadata', paint);
-    au.addEventListener('play', () => { play.innerHTML = ICON.pause; play.setAttribute('aria-label', 'หยุดเสียงชั่วคราว'); });
-    au.addEventListener('pause', () => { play.innerHTML = ICON.play; play.setAttribute('aria-label', 'เล่นเสียง'); save(true); });
+    au.addEventListener('play', () => { panel.classList.add('playing'); play.innerHTML = ICON.pause; play.setAttribute('aria-label', 'หยุดเสียงชั่วคราว'); setFab(true); });
+    au.addEventListener('pause', () => { panel.classList.remove('playing'); play.innerHTML = ICON.play; play.setAttribute('aria-label', 'เล่นเสียง'); setFab(false); save(true); });
     au.addEventListener('error', () => { if (au.error && au.currentSrc) NS.toast('โหลดเสียงไม่สำเร็จ ลองรีเฟรชหน้านี้'); });
     au.addEventListener('ended', () => {
       try { localStorage.removeItem(posKeyA); } catch {}
@@ -219,19 +305,7 @@
       if (nx && nx.href) NS.toast('ฟังจบตอนนี้แล้ว', { label: 'ตอนถัดไป', fn: () => { location.href = nx.href; } });
     });
     addEventListener('pagehide', () => save(true));
-    // ปุ่มลอยเดิม = ไปคอมเมนต์ → ตอนที่มีเสียงเปลี่ยนเป็นปุ่มเสียง: หูฟัง = เล่น · ขีดคู่ = หยุด (คอมเมนต์ยังอ่านได้ที่ท้ายตอนและฟองรายย่อหน้า)
-    const fab = document.getElementById('rd-cm');
-    if (fab) {
-      const old = fab.querySelector('svg'), cls = old ? old.getAttribute('class') : '';
-      const setFab = (on) => {
-        const ic = NS.ico(on ? 'pause' : 'headphones', cls), cur = fab.querySelector('svg');
-        if (cur) cur.replaceWith(ic); else fab.prepend(ic);
-        const t = on ? 'หยุดเสียงชั่วคราว' : 'ฟังเสียงตอนนี้'; fab.setAttribute('aria-label', t); fab.title = t;
-      };
-      fabAudio = true; setFab(false);
-      fab.addEventListener('click', (e) => { e.preventDefault(); toggle(); });
-      au.addEventListener('play', () => setFab(true)); au.addEventListener('pause', () => setFab(false));
-    }
+    if (fab) fab.addEventListener('click', (e) => { e.preventDefault(); toggle(); showPanel(); });
     if ('mediaSession' in navigator && window.MediaMetadata) {
       try {
         navigator.mediaSession.metadata = new MediaMetadata({ title: 'ตอนที่ ' + no, artist: document.title.split('|')[0].trim() });
@@ -239,9 +313,6 @@
         navigator.mediaSession.setActionHandler('seekbackward', () => back.click()); navigator.mediaSession.setActionHandler('seekforward', () => fwd.click());
       } catch {}
     }
-    // วางไว้เหนือเนื้อหา · Safari ไม่มี scroll anchoring จึงชดเชยความสูงเองถ้าผู้อ่านเลื่อนลงมาแล้ว
-    const y0 = scrollY; art.parentNode.insertBefore(box, art);
-    if (y0 > 60 && !(window.CSS && CSS.supports && CSS.supports('overflow-anchor', 'auto'))) window.scrollBy(0, box.offsetHeight + 20);
   }
 
   // ================= เริ่มทำงานเมื่อมีเนื้อหา =================
