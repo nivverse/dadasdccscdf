@@ -1515,7 +1515,7 @@
 .dark #niv-tabbar .tb{color:#a3a3a3}
 #niv-tabbar .tb.on{color:#f59e0b}
 @media (min-width:1024px){#niv-tabbar{display:none}}
-@media (min-width:640px) and (max-width:1023px){
+@media (min-width:500px) and (max-width:1023px){
   #niv-tabbar{left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100vw - 24px);bottom:calc(16px + env(safe-area-inset-bottom));padding:0 12px;gap:4px;border:0;border-radius:999px;
     background:rgba(255,255,255,.96);box-shadow:0 10px 30px rgba(15,23,42,.16),0 0 0 1px rgba(15,23,42,.05)}
   .dark #niv-tabbar{background:rgba(30,30,30,.94);box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08)}
@@ -1525,7 +1525,7 @@
   .dark #niv-tabbar .tb.on{color:#fff}
   body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 }
-@media (max-width:639px){body{padding-bottom:calc(3.5rem + env(safe-area-inset-bottom))}}
+@media (max-width:499px){body{padding-bottom:calc(3.5rem + env(safe-area-inset-bottom))}}
 #niv-drawer{position:fixed;inset:0;z-index:50;visibility:hidden;pointer-events:none;transition:visibility 0s linear .3s}
 #niv-drawer.is-open{visibility:visible;pointer-events:auto;transition:visibility 0s}
 #niv-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;transition:opacity .3s ease;will-change:opacity}
