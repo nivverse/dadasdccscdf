@@ -109,7 +109,26 @@
 
   // ================= ฟองคอมเมนต์รายย่อหน้า =================
   const paras = () => [...art.querySelectorAll('.rd-text > p')];
+  // มือถือ: ไม่เว้นช่องว่างขวาให้ฟองคอมเมนต์แล้ว → ย้ายปุ่มไปไว้ใต้ย่อหน้า (จอใหญ่ใช้ตำแหน่งเดิม)
+  function bubbleCss() {
+    if (document.getElementById('nv-pb-css')) return;
+    const st = document.createElement('style'); st.id = 'nv-pb-css';
+    const ic = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a8 8 0 01-11.6 7.1L3 21l1.9-5.4A8 8 0 1121 12z'/%3E%3C/svg%3E\")";
+    st.textContent = '@media (max-width:639px){'
+      + '.rd-text{padding-right:0!important;margin-right:0!important}'
+      + '.rd-text>p{padding-right:0!important;margin-right:0!important}'
+      + '.rd-text>p>.rd-pb{position:static!important;inset:auto!important;transform:none!important;display:flex!important;align-items:center;justify-content:center;gap:.3rem;'
+      +   'width:auto!important;min-width:2.25rem;height:1.75rem!important;margin:.35rem 0 0 auto!important;padding:0 .6rem!important;border-radius:999px!important;'
+      +   'font-size:.75rem!important;line-height:1;font-variant-numeric:tabular-nums;color:inherit!important;opacity:.6;background:transparent!important;'
+      +   'border:1px solid color-mix(in srgb,currentColor 25%,transparent)!important;box-shadow:none!important;cursor:pointer}'
+      + '.rd-text>p>.rd-pb::before{content:"";width:1rem;height:1rem;background:currentColor;-webkit-mask:' + ic + ' center/contain no-repeat;mask:' + ic + ' center/contain no-repeat}'
+      + '.rd-text>p>.rd-pb[data-c]{opacity:.9}'
+      + '[data-par="off"] .rd-text>p>.rd-pb,[data-par="some"] .rd-text>p>.rd-pb:not([data-c]){display:none!important}'
+      + '}';
+    document.head.append(st);
+  }
   function injectBubbles() {
+    bubbleCss();
     paras().forEach((p, i) => {
       if (p.querySelector('.rd-pb')) return;
       p.dataset.p = String(i + 1);
