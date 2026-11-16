@@ -97,10 +97,10 @@
           body: JSON.stringify({ slug, userId: uid }),
         });
         const d = await r.json();
-        if (!d.success) { revert(); return toast(d.error || 'ทำรายการไม่สำเร็จ'); }
+        if (!d.success) { revert(); return toast(d.error || 'ทำรายการไม่สำเร็จ', { type: 'error' }); }
         paint(slug, d.liked);
         counters.forEach((n) => (n.textContent = d.likeCount));
-      } catch { revert(); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'); }
+      } catch { revert(); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง', { type: 'error' }); }
       finally { delete likeBtn.dataset.busy; }
       return;
     }
@@ -117,7 +117,7 @@
     if (shareBtn) {
       const { url, title } = shareBtn.dataset;
       if (navigator.share) { try { await navigator.share({ title, url }); } catch {} return; }
-      try { await navigator.clipboard.writeText(url); toast('คัดลอกลิงก์แล้ว'); }
+      try { await navigator.clipboard.writeText(url); toast('คัดลอกลิงก์แล้ว', { icon: 'link', type: 'success' }); }
       catch { prompt('คัดลอกลิงก์นี้', url); }
     }
   });
@@ -137,7 +137,7 @@
 
   // ข้อความแจ้งพร้อมปุ่ม "เลิกทำ" (6 วินาที · ปัดทิ้งได้ · หยุดนับเวลาตอนแตะ/ชี้)
   const toastAction = (msg, label, fn) => {
-    if (window.NIV && typeof NIV.toast === 'function') return NIV.toast(msg, { action: { label, onClick: fn }, duration: 6000 });
+    if (window.NIV && typeof NIV.toast === 'function') return NIV.toast(msg, { icon: 'repost', type: 'success', action: { label, onClick: fn }, duration: 6000 });
     const t = mk('div', 'fixed left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 pl-4 pr-2 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg');
     t.style.bottom = 'calc(1.5rem + env(safe-area-inset-bottom, 0px))';
     t.append(mk('span', '', msg));
@@ -182,22 +182,22 @@
     rpApply(slug, true, was ? base : base + 1, !was); if (!was) celebrate(btn, true);
     try {
       const d = await repostCall(slug, { action: 'set', note });
-      if (!d.success) { rpApply(slug, was, base, false); toast(d.error || 'ทำรายการไม่สำเร็จ'); return false; }
+      if (!d.success) { rpApply(slug, was, base, false); toast(d.error || 'ทำรายการไม่สำเร็จ', { type: 'error' }); return false; }
       rpApply(slug, true, d.repostCount, false);
-      if (was) toast('แก้ข้อความแล้ว');
-      else if (note) toast('รีโพสต์พร้อมข้อความแล้ว — ผู้ติดตามของคุณจะเห็น');
+      if (was) toast('แก้ข้อความแล้ว', { icon: 'check', type: 'success' });
+      else if (note) toast('รีโพสต์พร้อมข้อความแล้ว — ผู้ติดตามของคุณจะเห็น', { icon: 'repost', type: 'success' });
       else toastAction('รีโพสต์แล้ว — ผู้ติดตามของคุณจะเห็น', 'เลิกทำ', () => doUndo(btn, slug));
       return true;
-    } catch { rpApply(slug, was, base, false); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'); return false; }
+    } catch { rpApply(slug, was, base, false); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง', { type: 'error' }); return false; }
   }
   async function doUndo(btn, slug) {
     const was = rpOn(slug), base = rpBase(slug);
     rpApply(slug, false, Math.max(0, base - (was ? 1 : 0)), false); celebrate(btn, false);
     try {
       const d = await repostCall(slug, { action: 'undo' });
-      if (!d.success) { rpApply(slug, was, base, false); toast(d.error || 'ทำรายการไม่สำเร็จ'); return; }
-      rpApply(slug, false, d.repostCount, false); toast('ยกเลิกรีโพสต์แล้ว');
-    } catch { rpApply(slug, was, base, false); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'); }
+      if (!d.success) { rpApply(slug, was, base, false); toast(d.error || 'ทำรายการไม่สำเร็จ', { type: 'error' }); return; }
+      rpApply(slug, false, d.repostCount, false); toast('ยกเลิกรีโพสต์แล้ว', { icon: 'undo' });
+    } catch { rpApply(slug, was, base, false); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง', { type: 'error' }); }
   }
 
   // ---- ชั้นซ้อน (เมนู / ชีตเขียนข้อความ) ----
@@ -372,7 +372,7 @@
         feed.dataset.nextPage = r.headers.get('X-Has-More') === '1' ? String(+next + 1) : '';
         loadLiked();
         if (!feed.dataset.nextPage) end();
-      } catch { failed = true; toast('โหลดโพสต์เพิ่มไม่สำเร็จ'); }
+      } catch { failed = true; toast('โหลดโพสต์เพิ่มไม่สำเร็จ', { type: 'error' }); }
       finally { loading = false; sk && sk.remove(); recheck(failed ? 2500 : 80); }
     }, { rootMargin: '1200px' });
 
