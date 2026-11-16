@@ -156,21 +156,11 @@
     if (document.getElementById('nv-aud-css')) return;
     const st = document.createElement('style'); st.id = 'nv-aud-css';
     st.textContent = `
-.nv-ring{position:absolute;left:-5px;top:-5px;width:calc(100% + 10px);height:calc(100% + 10px);transform:rotate(-90deg);pointer-events:none;overflow:visible;opacity:0;transition:opacity .25s}
+.nv-ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);pointer-events:none;opacity:0}
 .nv-fab-on .nv-ring{opacity:1}
-.nv-ring circle{fill:none;stroke-width:4}
-.nv-ring .bg{stroke:rgba(245,158,11,.22)}
-.nv-ring .fg{stroke:#f59e0b;stroke-linecap:round;stroke-dasharray:289;stroke-dashoffset:289;transition:stroke-dashoffset .4s linear}
-.nv-halo{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0}
-.nv-fab-on .nv-halo{animation:nv-halo 1.8s ease-out infinite}
-@keyframes nv-halo{0%{opacity:.6;box-shadow:0 0 0 0 rgba(245,158,11,.55)}100%{opacity:0;box-shadow:0 0 0 16px rgba(245,158,11,0)}}
-.nv-fab-on .nv-dot{animation:nv-dot 1.4s ease-in-out infinite}
-@keyframes nv-dot{0%,100%{transform:scale(.8)}50%{transform:scale(1.15)}}
-.nv-fab-idle>svg:not(.nv-ring){animation:nv-wig 5s ease-in-out infinite;transform-origin:50% 60%}
-@keyframes nv-wig{0%,84%,100%{transform:rotate(0)}88%{transform:rotate(-14deg)}92%{transform:rotate(12deg)}96%{transform:rotate(-6deg)}}
-.nv-fab-pop{animation:nv-pop .35s cubic-bezier(.2,.9,.3,1.5)}
-@keyframes nv-pop{50%{transform:scale(1.14)}}
-@media (prefers-reduced-motion:reduce){.nv-halo,.nv-dot,.nv-fab-idle>svg,.nv-fab-pop,.nv-ring,.nv-ring .fg{animation:none!important;transition:none!important}}`;
+.nv-ring circle{fill:none;stroke-width:5}
+.nv-ring .bg{stroke:rgba(245,158,11,.25)}
+.nv-ring .fg{stroke:#f59e0b;stroke-linecap:round;stroke-dasharray:295.3;stroke-dashoffset:295.3}`;
     document.head.append(st);
   }
   async function mountAudio() {
@@ -193,19 +183,17 @@
     // ปุ่มลอยเดิม = ไปคอมเมนต์ → ตอนที่มีเสียง: หยุดอยู่ = หูฟังเฉยๆ · กำลังเล่น = วงกลมเดียว (วงแหวนความคืบหน้า + จุดเต้น) · แตะเพื่อสลับเล่น/หยุด
     const old = fab.querySelector('svg'), cls = old ? old.getAttribute('class') : '';
     if (getComputedStyle(fab).position === 'static') fab.style.position = 'relative';
-    const dot = () => { const t = document.createElement('span'); t.innerHTML = `<svg class="${cls || ''} nv-dot" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" fill="currentColor"/></svg>`; return t.firstChild; };
+    const dot = () => { const t = document.createElement('span'); t.innerHTML = `<svg class="${cls || ''}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" fill="currentColor"/></svg>`; return t.firstChild; };
     const setFab = (on) => {
       const ic = on ? dot() : NS.ico('headphones', cls), cur = fab.querySelector('svg:not(.nv-ring)');
       if (cur) cur.replaceWith(ic); else fab.prepend(ic);
       const t = on ? 'หยุดเสียงชั่วคราว' : 'ฟังเสียงตอนนี้'; fab.setAttribute('aria-label', t); fab.title = t;
-      fab.classList.toggle('nv-fab-on', on); if (on) fab.classList.remove('nv-fab-idle');
-      fab.classList.remove('nv-fab-pop'); void fab.offsetWidth; fab.classList.add('nv-fab-pop');
+      fab.classList.toggle('nv-fab-on', on);
     };
-    fabAudio = true; setFab(false); fab.classList.add('nv-fab-idle');
-    fab.insertAdjacentHTML('beforeend', '<svg class="nv-ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="46"/><circle class="fg" cx="50" cy="50" r="46"/></svg><span class="nv-halo"></span>');
+    fabAudio = true; setFab(false);
+    fab.insertAdjacentHTML('beforeend', '<svg class="nv-ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="47"/><circle class="fg" cx="50" cy="50" r="47"/></svg>');
     const ringFg = fab.querySelector('.nv-ring .fg');
-    const paint = () => { const d = dur(), r = d ? Math.min(1, Math.max(0, au.currentTime / d)) : 0; ringFg.style.strokeDashoffset = String((289 * (1 - r)).toFixed(1)); };
-    fab.addEventListener('animationend', (e) => { if (e.animationName === 'nv-pop') fab.classList.remove('nv-fab-pop'); });
+    const paint = () => { const d = dur(), r = d ? Math.min(1, Math.max(0, au.currentTime / d)) : 0; ringFg.style.strokeDashoffset = String((295.3 * (1 - r)).toFixed(1)); };
 
     const toggle = () => { if (au.paused) au.play().catch(() => NS.toast('เล่นเสียงไม่สำเร็จ ลองอีกครั้ง')); else au.pause(); };
     fab.addEventListener('click', (e) => { e.preventDefault(); toggle(); });
