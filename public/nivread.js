@@ -166,73 +166,44 @@
   const setCount = (type, key, v) => countEls(type, key).forEach((n) => { n.textContent = Math.max(0, v).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH'); });
   const bumpCount = (type, key, d) => countEls(type, key).forEach((n) => { n.textContent = Math.max(0, (parseInt(String(n.textContent).replace(/[^\d]/g, ''), 10) || 0) + d).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH'); });
 
-  // ---------- toast: แจ้งเตือนขอบล่าง (ปัดทิ้งได้ / ปุ่มเลิกทำ / มีชีวิตชีวา / ใช้ได้ทุกอุปกรณ์) ----------
-  // ใช้: toast('ข้อความ')  หรือ  toast('รีโพสต์แล้ว', { icon:'repost', type:'success', action:{ label:'เลิกทำ', onClick }, duration:6000 })
-  // opts: icon ('check'|'repost'|'undo'|'link'|'error'|'info'), type ('default'|'success'|'error'), action, duration (ms, 0 = ไม่หายเอง), onClose(reason)  → คืน { dismiss() }
+  // ---------- toast: แจ้งเตือนขอบล่าง (หน้าตาเดิม โปร่งขึ้น · ปัดทิ้งได้ทุกอัน · มีปุ่มเลิกทำได้) ----------
+  // ใช้: toast('ข้อความ')  หรือ  toast('รีโพสต์แล้ว', { icon:'repost', action:{ label:'เลิกทำ', onClick }, duration:6000 })
+  // opts: icon ('check'|'repost'|'undo'|'link'|'error'|'info'), type ('error' = อ่านออกเสียงทันที, สีเหมือนกันหมด), action, duration (ms, 0 = ไม่หายเอง), onClose(reason) → คืน { dismiss() }
   if (!document.getElementById('niv-toast-css')) {
     const tc = document.createElement('style'); tc.id = 'niv-toast-css';
     tc.textContent = `
-#niv-toasts{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;gap:10px;
-  padding:0 12px calc(16px + env(safe-area-inset-bottom,0px));margin-bottom:var(--niv-toast-bottom,0px);pointer-events:none}
-.niv-toast{--c:#fb923c;position:relative;overflow:hidden;pointer-events:auto;display:flex;align-items:center;gap:12px;max-width:min(94vw,30rem);box-sizing:border-box;
-  padding:12px 10px 13px 12px;border-radius:18px;color:#fff;font-family:inherit;font-size:14px;font-weight:500;line-height:1.35;
-  background:linear-gradient(135deg,rgba(30,41,59,.96),rgba(15,23,42,.96));backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);
-  box-shadow:0 14px 34px -8px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.09),0 0 24px -6px var(--c);
+#niv-toasts{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:0 12px calc(24px + env(safe-area-inset-bottom,0px));margin-bottom:var(--niv-toast-bottom,0px);pointer-events:none}
+.niv-toast{pointer-events:auto;display:flex;align-items:center;gap:12px;max-width:min(94vw,30rem);box-sizing:border-box;padding:10px 10px 10px 16px;border-radius:12px;
+  color:#fff;font-family:inherit;font-size:14px;font-weight:400;line-height:1.4;background:rgba(15,23,42,.92);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 6px 20px rgba(0,0,0,.22);
   touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;cursor:grab;will-change:transform,opacity;
-  animation:niv-t-in .55s cubic-bezier(.34,1.56,.64,1) backwards}
-.niv-toast.success{--c:#22c55e}.niv-toast.error{--c:#fb7185}
-.niv-toast.error{animation:niv-t-in .55s cubic-bezier(.34,1.56,.64,1) backwards,niv-t-nudge .4s .35s ease}
-.niv-toast:not(:last-child){opacity:.82}
+  animation:niv-t-in .28s cubic-bezier(.2,1,.3,1) backwards}
+.niv-toast:not(:last-child){opacity:.85}
 .niv-toast.dragging{cursor:grabbing;transition:none}
-.niv-toast.settle{transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .25s}
-.niv-toast.out{transition:transform .26s cubic-bezier(.5,0,.9,.4),opacity .26s ease-in;pointer-events:none}
-.niv-toast-ic{position:relative;flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--c);
-  background:color-mix(in srgb,var(--c) 18%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent);animation:niv-t-pop .5s .12s cubic-bezier(.34,1.8,.5,1) backwards}
-.niv-toast-ic svg{width:18px;height:18px;overflow:visible}
-.niv-draw{stroke-dasharray:1;stroke-dashoffset:0;animation:niv-t-draw .45s .3s ease-out backwards}
-.niv-spin,.niv-spin-rev,.niv-shake{transform-box:fill-box;transform-origin:center}
-.niv-spin{animation:niv-t-spin .7s .15s cubic-bezier(.3,1.4,.5,1) backwards}
-.niv-spin-rev{animation:niv-t-spin-rev .5s .15s ease-out backwards}
-.niv-shake{animation:niv-t-shake .5s .25s ease}
-.niv-sp{position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px;border-radius:50%;background:var(--c);pointer-events:none;
-  transform:rotate(var(--a)) translateX(12px);opacity:0;animation:niv-t-sp .65s .2s ease-out backwards}
-.niv-toast-msg{flex:1;min-width:0;overflow-wrap:anywhere;animation:niv-t-fade .4s .1s ease backwards}
-.niv-toast-act{position:relative;overflow:hidden;flex:none;border:0;border-radius:999px;padding:8px 16px;min-height:34px;cursor:pointer;color:#fff;font:700 13px/1 inherit;font-family:inherit;
-  background:linear-gradient(110deg,#f97316 30%,#fdba74 50%,#f97316 70%);background-size:220% 100%;animation:niv-t-shine 2.6s 1s linear infinite,niv-t-pop .45s .25s cubic-bezier(.34,1.8,.5,1) backwards;
-  transition:transform .15s}
-.niv-toast-act:hover{transform:scale(1.06)}.niv-toast-act:active{transform:scale(.88)}
+.niv-toast.settle{transition:transform .3s cubic-bezier(.2,1,.3,1),opacity .2s}
+.niv-toast.out{transition:transform .22s ease-in,opacity .22s ease-in;pointer-events:none}
+.niv-toast-ic{flex:none;display:grid;place-items:center;color:#fb923c;margin-right:-2px}
+.niv-toast-ic svg{width:18px;height:18px}
+.niv-toast-msg{flex:1;min-width:0;overflow-wrap:anywhere}
+.niv-toast-act{flex:none;border:0;border-radius:8px;padding:6px 12px;min-height:32px;cursor:pointer;background:#f97316;color:#fff;
+  font-family:inherit;font-size:13px;font-weight:600;line-height:1;transition:background .15s,transform .12s}
+.niv-toast-act:hover{background:#fb923c}.niv-toast-act:active{transform:scale(.94)}
 .niv-toast-act:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.niv-toast-life{position:absolute;left:0;bottom:0;height:3px;width:100%;background:linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 40%,#fff));
-  transform-origin:left;animation:niv-t-life var(--life,3s) linear forwards;border-radius:0 3px 3px 0}
-.niv-toast.paused .niv-toast-life{animation-play-state:paused}
-.niv-toast-grab{display:none;position:absolute;top:4px;left:50%;width:30px;height:3px;margin-left:-15px;border-radius:3px;background:rgba(255,255,255,.28);animation:niv-t-wig 1s .7s ease}
-@media (pointer:coarse){.niv-toast-grab{display:block}.niv-toast{padding-top:15px}}
-@keyframes niv-t-in{0%{opacity:0;transform:translateY(46px) scale(.82) rotate(-1.5deg)}60%{opacity:1}100%{transform:none}}
-@keyframes niv-t-pop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:none}}
-@keyframes niv-t-fade{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
-@keyframes niv-t-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
-@keyframes niv-t-spin{0%{transform:rotate(-200deg) scale(.6)}60%{transform:rotate(12deg) scale(1.2)}100%{transform:none}}
-@keyframes niv-t-spin-rev{from{transform:rotate(160deg) scale(.7)}to{transform:none}}
-@keyframes niv-t-shake{0%,100%{transform:none}20%{transform:translateX(-3px) rotate(-8deg)}45%{transform:translateX(3px) rotate(8deg)}70%{transform:translateX(-2px) rotate(-4deg)}}
-@keyframes niv-t-nudge{0%,100%{translate:0}25%{translate:-6px}50%{translate:6px}75%{translate:-3px}}
-@keyframes niv-t-sp{0%{opacity:1;transform:rotate(var(--a)) translateX(10px) scale(1)}100%{opacity:0;transform:rotate(var(--a)) translateX(30px) scale(.2)}}
-@keyframes niv-t-shine{0%{background-position:120% 0}100%{background-position:-120% 0}}
-@keyframes niv-t-life{from{transform:scaleX(1)}to{transform:scaleX(0)}}
-@keyframes niv-t-wig{0%,100%{transform:none}30%{transform:translateY(3px) scaleX(1.25)}60%{transform:translateY(-1px)}}
-@media (prefers-reduced-motion:reduce){.niv-toast,.niv-toast *{animation:none!important}.niv-toast.settle,.niv-toast.out{transition:opacity .15s}.niv-toast-life{animation:niv-t-life var(--life,3s) linear forwards!important}}
+@keyframes niv-t-in{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.niv-toast{animation:none}.niv-toast.settle,.niv-toast.out{transition:opacity .15s}}
 `;
     document.head.appendChild(tc);
   }
   const TOAST_MAX = 3;
   const TOAST_ICONS = {
-    check: '<path d="M5 12.5l4.5 4.5L19 7.5" pathLength="1" class="niv-draw"/>',
-    repost: '<g class="niv-spin"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></g>',
-    undo: '<g class="niv-spin-rev"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-15-6.7L3 13"/></g>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+    repost: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>',
+    undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-15-6.7L3 13"/>',
     link: '<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>',
-    error: '<g class="niv-shake"><path d="M12 6.5v7"/><path d="M12 17.5v.01"/></g>',
-    info: '<path d="M12 10.5v6.5"/><path d="M12 7v.01"/>'
+    error: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5"/><path d="M12 16v.01"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.8v.01"/>'
   };
-  const buzz = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
   function toastHost() {
     let h = document.getElementById('niv-toasts');
     if (!h) {
@@ -245,7 +216,7 @@
   function toast(msg, opts) {
     if (typeof opts === 'number') opts = { duration: opts };
     opts = opts || {};
-    const type = opts.type === 'error' || opts.type === 'success' ? opts.type : '';
+    const isErr = opts.type === 'error';
     const host = toastHost();
     // มือถือมีแถบเมนูล่าง (#niv-tabbar) → ยกแถบแจ้งเตือนให้พ้น (ความสูงแถบรวม safe-area แล้ว)
     const tb = document.getElementById('niv-tabbar');
@@ -253,50 +224,44 @@
     host.style.paddingBottom = tbH ? (tbH + 12) + 'px' : '';
     while (host.children.length >= TOAST_MAX) host.firstElementChild.dispatchEvent(new CustomEvent('niv-toast-close'));
 
-    const duration = opts.duration == null ? (opts.action ? 6000 : 3200) : opts.duration;
+    const duration = opts.duration == null ? (opts.action ? 6000 : 3000) : opts.duration;
     const t = document.createElement('div');
-    t.className = 'niv-toast' + (type ? ' ' + type : '');
-    t.setAttribute('role', type === 'error' ? 'alert' : 'status');
-    t.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
-    t.style.setProperty('--life', duration + 'ms');
-    const grab = document.createElement('i'); grab.className = 'niv-toast-grab'; t.appendChild(grab);
-
-    const iconKey = opts.icon || (type === 'success' ? 'check' : type === 'error' ? 'error' : '');
+    t.className = 'niv-toast';
+    t.setAttribute('role', isErr ? 'alert' : 'status');
+    t.setAttribute('aria-live', isErr ? 'assertive' : 'polite');
+    const iconKey = opts.icon || (isErr ? 'error' : '');
     if (iconKey && TOAST_ICONS[iconKey]) {
       const ic = document.createElement('span'); ic.className = 'niv-toast-ic';
-      ic.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TOAST_ICONS[iconKey] + '</svg>';
-      if (type !== 'error' && iconKey !== 'error') for (let i = 0; i < 6; i++) { const sp = document.createElement('i'); sp.className = 'niv-sp'; sp.style.setProperty('--a', (i * 60 + 15) + 'deg'); ic.appendChild(sp); }
+      ic.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TOAST_ICONS[iconKey] + '</svg>';
       t.appendChild(ic);
     }
     const m = document.createElement('span'); m.className = 'niv-toast-msg'; m.textContent = msg; t.appendChild(m);
 
     let closed = false, timer = 0, left = duration, startedAt = 0;
-    const close = (reason, dx, dy, rot, scale) => {
+    const close = (reason, dx, dy) => {
       if (closed) return; closed = true; clearTimeout(timer);
       t.classList.remove('dragging', 'settle'); t.classList.add('out');
-      t.style.transform = 'translate(' + (dx || 0) + 'px,' + (dy == null ? 18 : dy) + 'px) rotate(' + (rot || 0) + 'deg) scale(' + (scale == null ? .94 : scale) + ')';
-      t.style.opacity = '0';
+      t.style.transform = 'translate(' + (dx || 0) + 'px,' + (dy == null ? 12 : dy) + 'px)'; t.style.opacity = '0';
       let done = false;
       const fin = () => { if (done) return; done = true; t.remove(); try { opts.onClose && opts.onClose(reason); } catch {} };
-      t.addEventListener('transitionend', fin, { once: true }); setTimeout(fin, 360);
+      t.addEventListener('transitionend', fin, { once: true }); setTimeout(fin, 300);
     };
     t.addEventListener('niv-toast-close', () => close('replaced'));
-    const arm = () => { t.classList.remove('paused'); if (duration > 0 && !closed && !timer) { startedAt = Date.now(); timer = setTimeout(() => close('timeout'), Math.max(200, left)); } };
-    const pause = () => { t.classList.add('paused'); if (timer) { clearTimeout(timer); timer = 0; left -= Date.now() - startedAt; } };
+    const arm = () => { if (duration > 0 && !closed && !timer) { startedAt = Date.now(); timer = setTimeout(() => close('timeout'), Math.max(400, left)); } };
+    const pause = () => { if (timer) { clearTimeout(timer); timer = 0; left -= Date.now() - startedAt; } };
 
-    if (duration > 0) { const life = document.createElement('i'); life.className = 'niv-toast-life'; t.appendChild(life); }
     if (opts.action && opts.action.label) {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'niv-toast-act'; b.textContent = opts.action.label;
       b.addEventListener('pointerdown', (e) => e.stopPropagation()); // กดปุ่มต้องไม่ถูกนับเป็นการลาก
       b.addEventListener('click', (e) => {
-        e.stopPropagation(); buzz(12);
-        close('action', 0, -6, 0, .88);
+        e.stopPropagation();
+        close('action', 0, 0);
         try { opts.action.onClick && opts.action.onClick(); } catch {}
       });
       t.appendChild(b);
     }
 
-    // ปัดทิ้ง: ซ้าย/ขวา/ลง — เอียงตามนิ้ว, ดึงขึ้นมีแรงต้านเหมือนยาง, ปัดเร็วหรือเลย 35% = ปลิวออก ไม่งั้นเด้งกลับแบบสปริง
+    // ปัดทิ้งได้ทุกอัน: ซ้าย / ขวา / ลง — เลย 35% ของความกว้าง หรือปัดเร็ว = หาย · ไม่ถึงก็เด้งกลับ (ดึงขึ้นมีแรงต้านเล็กน้อย)
     let sx = 0, sy = 0, st = 0, dx = 0, dy = 0, drag = false, pid = null;
     t.addEventListener('pointerdown', (e) => {
       if (closed || (e.pointerType === 'mouse' && e.button !== 0)) return;
@@ -307,9 +272,9 @@
     t.addEventListener('pointermove', (e) => {
       if (!drag || e.pointerId !== pid) return;
       dx = e.clientX - sx; const rawY = e.clientY - sy; dy = rawY < 0 ? rawY * .15 : rawY;
-      const w = t.offsetWidth || 300, far = Math.max(Math.abs(dx), Math.max(0, dy));
-      t.style.transform = 'translate(' + dx + 'px,' + dy + 'px) rotate(' + (dx / w * 9) + 'deg) scale(' + Math.max(.9, 1 - far / (w * 3)) + ')';
-      t.style.opacity = String(Math.max(.2, 1 - far / (w * 1.1)));
+      const far = Math.max(Math.abs(dx), Math.max(0, dy));
+      t.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      t.style.opacity = String(Math.max(.2, 1 - far / ((t.offsetWidth || 300) * 1.1)));
     });
     const end = (e) => {
       if (!drag || (e && e.pointerId !== pid)) return;
@@ -317,9 +282,9 @@
       const dt = Math.max(1, (e ? e.timeStamp : st + 1) - st), vx = Math.abs(dx) / dt, vy = Math.max(0, dy) / dt;
       const w = t.offsetWidth || 300;
       if (e && e.type !== 'pointercancel' && (Math.abs(dx) > w * .35 || dy > 50 || vx > .6 || vy > .6)) {
-        buzz(8);
+        try { navigator.vibrate && navigator.vibrate(8); } catch {}
         const side = Math.abs(dx) >= dy;
-        close('swipe', side ? Math.sign(dx || 1) * (w + 80) : dx, side ? dy : 120, side ? Math.sign(dx || 1) * 16 : 0, .9);
+        close('swipe', side ? Math.sign(dx || 1) * (w + 60) : dx, side ? dy : 100);
       } else {
         t.classList.remove('dragging'); t.classList.add('settle'); t.style.transform = ''; t.style.opacity = '';
         if (!t.matches(':hover')) arm();
@@ -331,7 +296,6 @@
     t.addEventListener('keydown', (e) => { if (e.key === 'Escape') close('escape'); });
 
     host.appendChild(t);
-    if (type === 'success' || opts.action) buzz(10); else if (type === 'error') buzz([12, 40, 12]);
     arm();
     return { dismiss: () => close('api') };
   }
@@ -389,7 +353,7 @@
     if (!b) return;
     const url = b.dataset.nivShare, title = b.dataset.shareTitle || '';
     if (navigator.share) { try { await navigator.share({ title, url }); } catch {} return; }
-    try { await navigator.clipboard.writeText(url); toast('คัดลอกลิงก์แล้ว', { icon: 'link', type: 'success' }); } catch { toast('คัดลอกลิงก์ไม่สำเร็จ', { type: 'error' }); }
+    try { await navigator.clipboard.writeText(url); toast('คัดลอกลิงก์แล้ว', { icon: 'link' }); } catch { toast('คัดลอกลิงก์ไม่สำเร็จ', { type: 'error' }); }
   });
 
   // ไอคอน SVG ของการ์ด — คัดลอกจาก ICON / icon() ใน functions/_lib/render.js ตรง ๆ (ต้องตรงกับการ์ดฝั่งเซิร์ฟเวอร์เสมอ)

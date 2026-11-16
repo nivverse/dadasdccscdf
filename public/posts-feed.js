@@ -18,8 +18,23 @@
     document.head.appendChild(st);
   }
 
-  // แจ้งเตือนขอบล่าง: ใช้ระบบกลางของ nivread.js (ปัดทิ้งได้ / มีปุ่มเลิกทำ / รองรับ safe-area) · ถ้าไม่มี NIV ใช้แบบเรียบ ๆ แทน
+  // แจ้งเตือนขอบล่าง: ใช้ระบบกลางของ nivread.js (ปัดทิ้งได้ / ปุ่มเลิกทำ / รองรับ safe-area) · ถ้าไม่มี NIV ใช้แบบเรียบ ๆ ที่ยังปัดทิ้งได้
   // เรียกตอนผู้ใช้กดเท่านั้น จึงไม่ขึ้นกับลำดับโหลดสคริปต์
+  const swipeAway = (t) => {
+    let sx = 0, sy = 0, dx = 0, dy = 0, on = false;
+    t.style.touchAction = 'none'; t.style.transition = 'transform .25s, opacity .25s';
+    t.addEventListener('pointerdown', (e) => { on = true; sx = e.clientX; sy = e.clientY; dx = dy = 0; t.style.transition = 'none'; try { t.setPointerCapture(e.pointerId); } catch {} });
+    t.addEventListener('pointermove', (e) => {
+      if (!on) return; dx = e.clientX - sx; dy = Math.max(0, e.clientY - sy);
+      t.style.transform = 'translate(calc(-50% + ' + dx + 'px),' + dy + 'px)'; t.style.opacity = String(Math.max(.2, 1 - Math.max(Math.abs(dx), dy) / 300));
+    });
+    const up = () => {
+      if (!on) return; on = false; t.style.transition = 'transform .25s, opacity .25s';
+      if (Math.abs(dx) > 90 || dy > 50) { t.style.transform = 'translate(calc(-50% + ' + (dx ? Math.sign(dx) * 400 : 0) + 'px),' + (dx ? 0 : 100) + 'px)'; t.style.opacity = '0'; setTimeout(() => t.remove(), 260); }
+      else { t.style.transform = ''; t.style.opacity = ''; }
+    };
+    t.addEventListener('pointerup', up); t.addEventListener('pointercancel', up);
+  };
   const toast = (msg, opts) => {
     if (window.NIV && typeof NIV.toast === 'function') return NIV.toast(msg, opts);
     const t = document.createElement('div');
@@ -27,7 +42,7 @@
     t.setAttribute('role', 'status');
     t.className = 'fixed left-1/2 -translate-x-1/2 z-[90] px-4 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg';
     t.style.bottom = 'calc(1.5rem + env(safe-area-inset-bottom, 0px))';
-    document.body.appendChild(t);
+    document.body.appendChild(t); swipeAway(t);
     const h = { dismiss: () => t.remove() };
     setTimeout(h.dismiss, 2200);
     return h;
@@ -117,7 +132,7 @@
     if (shareBtn) {
       const { url, title } = shareBtn.dataset;
       if (navigator.share) { try { await navigator.share({ title, url }); } catch {} return; }
-      try { await navigator.clipboard.writeText(url); toast('คัดลอกลิงก์แล้ว', { icon: 'link', type: 'success' }); }
+      try { await navigator.clipboard.writeText(url); toast('คัดลอกลิงก์แล้ว', { icon: 'link' }); }
       catch { prompt('คัดลอกลิงก์นี้', url); }
     }
   });
@@ -137,13 +152,13 @@
 
   // ข้อความแจ้งพร้อมปุ่ม "เลิกทำ" (6 วินาที · ปัดทิ้งได้ · หยุดนับเวลาตอนแตะ/ชี้)
   const toastAction = (msg, label, fn) => {
-    if (window.NIV && typeof NIV.toast === 'function') return NIV.toast(msg, { icon: 'repost', type: 'success', action: { label, onClick: fn }, duration: 6000 });
+    if (window.NIV && typeof NIV.toast === 'function') return NIV.toast(msg, { icon: 'repost', action: { label, onClick: fn }, duration: 6000 });
     const t = mk('div', 'fixed left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 pl-4 pr-2 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-lg');
     t.style.bottom = 'calc(1.5rem + env(safe-area-inset-bottom, 0px))';
     t.append(mk('span', '', msg));
     const b = mk('button', 'px-3 py-1 rounded-lg bg-orange-500 hover:bg-orange-400 text-white font-semibold cursor-pointer', label); b.type = 'button';
     b.addEventListener('click', () => { t.remove(); fn(); });
-    t.append(b); document.body.appendChild(t); setTimeout(() => t.remove(), 6000);
+    t.append(b); document.body.appendChild(t); swipeAway(t); setTimeout(() => t.remove(), 6000);
   };
 
   const rpAll = (slug) => [...document.querySelectorAll(`[data-repost="${CSS.escape(slug)}"]`)];
@@ -184,8 +199,8 @@
       const d = await repostCall(slug, { action: 'set', note });
       if (!d.success) { rpApply(slug, was, base, false); toast(d.error || 'ทำรายการไม่สำเร็จ', { type: 'error' }); return false; }
       rpApply(slug, true, d.repostCount, false);
-      if (was) toast('แก้ข้อความแล้ว', { icon: 'check', type: 'success' });
-      else if (note) toast('รีโพสต์พร้อมข้อความแล้ว — ผู้ติดตามของคุณจะเห็น', { icon: 'repost', type: 'success' });
+      if (was) toast('แก้ข้อความแล้ว', { icon: 'check' });
+      else if (note) toast('รีโพสต์พร้อมข้อความแล้ว — ผู้ติดตามของคุณจะเห็น', { icon: 'repost' });
       else toastAction('รีโพสต์แล้ว — ผู้ติดตามของคุณจะเห็น', 'เลิกทำ', () => doUndo(btn, slug));
       return true;
     } catch { rpApply(slug, was, base, false); toast('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง', { type: 'error' }); return false; }
