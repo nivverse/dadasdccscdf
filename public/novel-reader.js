@@ -149,7 +149,7 @@
   // ================= เสียงประกอบตอน (แสดงเฉพาะตอนที่แอดมินอัปโหลดไว้ · ไฟล์เสิร์ฟจากโดเมน R2/CDN ตรง ๆ ไม่ผ่าน Worker) =================
   //  · ตอนที่มีราคา: เรียกหลังเนื้อหาแสดงแล้วเท่านั้น (onContentReady) จึงไม่โผล่ตัวเล่นให้คนที่ยังไม่ปลดล็อก
   //  · preload="none" ไม่โหลดไฟล์จนกว่าจะกดเล่น · จำตำแหน่งที่ฟังค้าง + ความเร็ว · ปุ่มบนหน้าจอล็อก (Media Session)
-  let audioMounted = false;
+  let audioMounted = false, fabAudio = false;   // fabAudio = ปุ่มลอย (#rd-cm) ถูกเปลี่ยนจากคอมเมนต์เป็นปุ่มเสียงแล้ว
   const AUD_RATES = [1, 1.25, 1.5, 1.75, 2, 0.75];
   const fmtT = (t) => { t = Math.max(0, Math.floor(t || 0)); const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), x = t % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0'); };
   function audioCss() {
@@ -219,6 +219,19 @@
       if (nx && nx.href) NS.toast('ฟังจบตอนนี้แล้ว', { label: 'ตอนถัดไป', fn: () => { location.href = nx.href; } });
     });
     addEventListener('pagehide', () => save(true));
+    // ปุ่มลอยเดิม = ไปคอมเมนต์ → ตอนที่มีเสียงเปลี่ยนเป็นปุ่มเสียง: หูฟัง = เล่น · ขีดคู่ = หยุด (คอมเมนต์ยังอ่านได้ที่ท้ายตอนและฟองรายย่อหน้า)
+    const fab = document.getElementById('rd-cm');
+    if (fab) {
+      const old = fab.querySelector('svg'), cls = old ? old.getAttribute('class') : '';
+      const setFab = (on) => {
+        const ic = NS.ico(on ? 'pause' : 'headphones', cls), cur = fab.querySelector('svg');
+        if (cur) cur.replaceWith(ic); else fab.prepend(ic);
+        const t = on ? 'หยุดเสียงชั่วคราว' : 'ฟังเสียงตอนนี้'; fab.setAttribute('aria-label', t); fab.title = t;
+      };
+      fabAudio = true; setFab(false);
+      fab.addEventListener('click', (e) => { e.preventDefault(); toggle(); });
+      au.addEventListener('play', () => setFab(true)); au.addEventListener('pause', () => setFab(false));
+    }
     if ('mediaSession' in navigator && window.MediaMetadata) {
       try {
         navigator.mediaSession.metadata = new MediaMetadata({ title: 'ตอนที่ ' + no, artist: document.title.split('|')[0].trim() });
@@ -296,7 +309,7 @@
     NS.openSheet({ title: 'สารบัญ', render: async (body) => {
       const wait = el('p', 'nv-pulse text-sm text-slate-500', 'กำลังโหลดสารบัญ…'); body.append(wait);
       const get = async (qs) => { try { const d = await (await fetch(NIV.API + '/api/novel/get?slug=' + enc(slug) + '&' + qs)).json(); return d && d.chapters ? d : null; } catch { return null; } };
-      const d = await get(`from=${Math.max(1, no - 40)}&limit=100`);
+      const [d, aNos] = await Promise.all([get(`from=${Math.max(1, no - 40)}&limit=100`), NS.audioNos(slug)]);
       if (!d) { wait.textContent = 'โหลดสารบัญไม่สำเร็จ'; wait.classList.remove('nv-pulse'); return; }
       const meta = d.meta || {};
       const ul = el('ul', 'nv-toc divide-y divide-slate-200 dark:divide-white/10 -mx-2');
@@ -308,6 +321,7 @@
         a.href = `/novels/${enc(slug)}/${c.no}`;
         const l = el('span', 'min-w-0 truncate'); l.append(el('span', 'text-slate-400 mr-2', String(c.no)), document.createTextNode(c.title));
         const pr = el('span', 'shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400');
+        if (aNos.has(c.no)) pr.append(NS.audioIco());   // ตอนที่มีเสียงประกอบ
         if (c.price > 0) pr.append(NS.ico('lock'), document.createTextNode(String(c.price)));
         a.append(l, pr);
         if (c.no === no) { a.setAttribute('aria-current', 'true'); cur = a; }
@@ -371,7 +385,7 @@
 
   // ================= คอมเมนต์ท้ายตอน (โหลดเมื่อเลื่อนใกล้ถึง) =================
   const cmRoot = document.getElementById('cm-root');
-  document.getElementById('rd-cm')?.addEventListener('click', () => document.getElementById('chapter-comments')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  document.getElementById('rd-cm')?.addEventListener('click', () => { if (fabAudio) return; document.getElementById('chapter-comments')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   if (cmRoot) {
     const title = document.getElementById('cm-total');
     let total = 0;

@@ -25,9 +25,17 @@
     x: '<path d="M18 6L6 18M6 6l12 12"/>',
     send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
     lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>',
+    headphones: '<path d="M4 14v-2a8 8 0 0116 0v2M4 14h3v5H5a1 1 0 01-1-1v-4zM20 14h-3v5h2a1 1 0 001-1v-4z"/>',
+    pause: '<path d="M9 5v14"/><path d="M15 5v14"/>',
   };
   // SVG คงที่ (ไม่มีข้อมูลผู้ใช้) เส้นตาม currentColor ขนาดตามคลาส .nv-i
   const ico = (name, cls) => { if (!PATHS[name]) console.warn('NovelSocial.ico: ไม่มีไอคอน', name); const t = document.createElement('span'); t.innerHTML = `<svg class="${cls || 'nv-i'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${PATHS[name]}</svg>`; return t.firstChild; };
+
+  // ไอคอนหูฟัง "ตอนนี้มีเสียงประกอบ" ใช้ในสารบัญ (หน้านิยาย + หน้าต่างสารบัญในหน้าอ่าน)
+  const audioIco = () => { const s = document.createElement('span'); s.className = 'nv-aud-i inline-flex items-center shrink-0'; s.style.color = '#f59e0b'; s.title = 'มีเสียงประกอบ'; s.setAttribute('role', 'img'); s.setAttribute('aria-label', 'มีเสียงประกอบ'); s.append(ico('headphones')); return s; };
+  // เลขตอนที่มีเสียงของนิยายเรื่องนี้ (Set) — ขอครั้งเดียวต่อหน้า ล้มเหลว = Set ว่าง (ไม่ติดไอคอน ไม่กระทบหน้า)
+  const audioCache = {};
+  const audioNos = (slug) => audioCache[slug] || (audioCache[slug] = api('/api/blog/novel-audio-list?slug=' + enc(slug)).then((r) => new Set(r.ok && Array.isArray(r.data.audio) ? r.data.audio.map((x) => Number(x.no)) : [])));
 
   function ago(ms) {
     const d = Math.max(0, Date.now() - ms) / 1000;
@@ -290,5 +298,5 @@
     return { reload: () => load(false), focus: comp.focus };
   }
 
-  window.NovelSocial = { call: api, toast, openSheet, closeSheet, mountComments, toggle, rate, me, view, share, ago, num, loginHref, authed, ico };
+  window.NovelSocial = { call: api, toast, openSheet, closeSheet, mountComments, toggle, rate, me, view, share, ago, num, loginHref, authed, ico, audioIco, audioNos };
 })();

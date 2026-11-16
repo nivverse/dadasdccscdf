@@ -1,6 +1,7 @@
 // /novel-page.js — หน้านิยายเรื่องเดียว
 //  · ปกเอียงตามเมาส์ (เฉพาะอุปกรณ์ที่มีเมาส์และไม่ได้ตั้งลดการเคลื่อนไหว)
 //  · ถูกใจ / เก็บเข้าชั้น / แชร์ / ให้คะแนนดาว (อัปเดตทันที ถ้าพลาดย้อนกลับ)
+//  · ไอคอนหูฟังในสารบัญตอนที่มีเสียงประกอบ
 //  · ปุ่ม "อ่านต่อ" จากตำแหน่งที่อ่านค้าง (บัญชี + ในเครื่อง) · คอมเมนต์ทั้งเรื่อง (โหลดตอนเลื่อนใกล้ถึง)
 (() => {
   const page = document.getElementById('novel-page');
@@ -131,6 +132,20 @@
       if (d.progress && (!local || d.progress.updated_at >= (local.t || 0))) setResume(d.progress.chapter_no, d.progress.pct);
     });
   }
+
+  // ---------- ไอคอนหูฟังในสารบัญ: ตอนที่มีเสียงประกอบ (วางฝั่งขวาข้างราคา · เฝ้าแถวที่ถูกเพิ่มทีหลังด้วย) ----------
+  NS.audioNos(slug).then((nos) => {
+    if (!nos.size) return;
+    const mark = (a) => {
+      if (a.querySelector('.nv-aud-i') || !nos.has(Number(a.dataset.no))) return;
+      const ic = NS.audioIco();
+      if (a.children.length > 1) a.lastElementChild.prepend(ic); else (a.firstElementChild || a).append(ic);
+    };
+    document.querySelectorAll('.nv-toc').forEach((toc) => {
+      toc.querySelectorAll('a[data-no]').forEach(mark);
+      if ('MutationObserver' in window) new MutationObserver(() => toc.querySelectorAll('a[data-no]').forEach(mark)).observe(toc, { childList: true, subtree: true });
+    });
+  });
 
   // ---------- เรื่องย่อ: มือถือย่อ 4 บรรทัด + ปุ่มอ่านเพิ่มเติม (โชว์ปุ่มเฉพาะเมื่อข้อความยาวเกินจริง) ----------
   const syn = $('syn'), synMore = $('syn-more');
