@@ -1030,10 +1030,13 @@
 html:not(.niv-single) [data-view-slug]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html:not(.niv-single) [data-view-slug] :is(h2,p)>a[href^="/posts/"],html:not(.niv-single) [data-view-slug] :is(h2,p)>a[href^="/posts/"]:hover{color:inherit!important;text-decoration:none}
 html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์ต่อ"],html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์ต่อ"]:hover{color:#94a3b8!important}
-.niv-burst{position:fixed;z-index:90;width:96px;height:96px;margin:-48px 0 0 -48px;color:#f43f5e;pointer-events:none;filter:drop-shadow(0 4px 14px rgba(244,63,94,.55));animation:niv-burst .85s cubic-bezier(.2,1.2,.4,1) forwards}
-.niv-burst svg{width:100%;height:100%}
-@keyframes niv-burst{0%{opacity:0;transform:scale(.3) rotate(-12deg)}18%{opacity:1;transform:scale(1.15) rotate(4deg)}32%{transform:scale(.95)}60%{opacity:1;transform:scale(1)}100%{opacity:0;transform:translateY(-28px) scale(1.05)}}
-@media (prefers-reduced-motion:reduce){.niv-burst{animation:niv-burst-rm .6s forwards}@keyframes niv-burst-rm{0%,70%{opacity:1}100%{opacity:0}}}
+.niv-burst,.niv-bp{position:fixed;z-index:90;left:0;top:0;pointer-events:none;will-change:transform,opacity}
+.niv-burst{width:104px;height:104px;filter:drop-shadow(0 6px 18px rgba(244,63,94,.45)) drop-shadow(0 0 22px rgba(251,146,60,.35))}
+.niv-bp{width:22px;height:22px;filter:drop-shadow(0 2px 6px rgba(244,63,94,.4))}
+.niv-burst svg,.niv-bp svg{display:block;width:100%;height:100%}
+.niv-liked-pop svg{animation:niv-pop .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes niv-pop{0%{transform:scale(1)}35%{transform:scale(1.4)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.niv-liked-pop svg{animation:none}}
 `;
     document.head.appendChild(st);
   }
@@ -1051,12 +1054,39 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
     }, true);
     let last = { t: 0, card: null, x: 0, y: 0 }, navT = 0;
 
+    // หัวใจ: ไล่สี ชมพู→ส้ม ทรงมนขึ้น · เด้งเข้าแบบสปริงนุ่ม ๆ ค้างครู่หนึ่ง แล้วลอยขึ้นจางหาย พร้อมหัวใจเล็กกระจายขึ้นด้านบน
+    const HEART_D = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
+    let gid = 0;
+    const heartSvg = () => { const id = 'nbg' + (++gid); return '<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fb7185"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs><path d="' + HEART_D + '" fill="url(#' + id + ')"/></svg>'; };
+    const calm = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
+    const rnd = (a, b) => a + Math.random() * (b - a);
     const burst = (x, y) => {
-      const b = el('div', 'niv-burst'); b.setAttribute('aria-hidden', 'true');
-      b.style.left = x + 'px'; b.style.top = y + 'px';
-      b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">' + CARD_IC.heart + '</svg>';
-      document.body.append(b);
-      setTimeout(() => b.remove(), 900);
+      const m = el('div', 'niv-burst'); m.setAttribute('aria-hidden', 'true'); m.innerHTML = heartSvg();
+      document.body.append(m);
+      const at = (dx, dy, sc, rot) => 'translate(' + (x - 52 + dx) + 'px,' + (y - 52 + dy) + 'px) scale(' + sc + ') rotate(' + rot + 'deg)';
+      const r = rnd(-10, 10);
+      if (calm) {
+        m.animate([{ opacity: 0, transform: at(0, 0, 1, 0) }, { opacity: 1, offset: .2 }, { opacity: 1, offset: .7 }, { opacity: 0 }], { duration: 700, easing: 'ease-out' }).onfinish = () => m.remove();
+        return;
+      }
+      m.animate([
+        { opacity: 0, transform: at(0, 6, .35, r) },
+        { opacity: 1, transform: at(0, 0, 1.12, r * .4), offset: .3, easing: 'cubic-bezier(.3,0,.2,1)' },
+        { opacity: 1, transform: at(0, 0, 1, 0), offset: .55 },
+        { opacity: 0, transform: at(0, -34, .92, 0) },
+      ], { duration: 1150, easing: 'cubic-bezier(.22,1,.36,1)' }).onfinish = () => m.remove();
+      for (let i = 0; i < 7; i++) {
+        const p = el('div', 'niv-bp'); p.setAttribute('aria-hidden', 'true'); p.innerHTML = heartSvg();
+        document.body.append(p);
+        const ang = rnd(-Math.PI * .95, -Math.PI * .05), dist = rnd(46, 96), sc = rnd(.5, 1);
+        const ex = Math.cos(ang) * dist, ey = Math.sin(ang) * dist - 14;
+        const pos = (dx, dy, k) => 'translate(' + (x - 11 + dx) + 'px,' + (y - 11 + dy) + 'px) scale(' + k + ')';
+        p.animate([
+          { opacity: 0, transform: pos(0, 0, .2) },
+          { opacity: .95, transform: pos(ex * .45, ey * .45, sc), offset: .3 },
+          { opacity: 0, transform: pos(ex, ey - 18, sc * .8) },
+        ], { duration: rnd(800, 1100), delay: rnd(40, 160), easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'backwards' }).onfinish = () => p.remove();
+      }
     };
     const isOn = (b) => b.getAttribute('aria-pressed') === 'true' || b.dataset.liked === '1' || /\b(liked|is-liked)\b/.test(b.className);
     function likeCard(card, x, y) {
@@ -1069,7 +1099,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
       } else {
         handled = !card.dispatchEvent(new CustomEvent('niv:like', { bubbles: true, cancelable: true, detail: { slug } }));
       }
-      if (handled) { burst(x, y); try { navigator.vibrate && navigator.vibrate(10); } catch {} }
+      if (handled) { burst(x, y); if (b && !calm) { b.classList.remove('niv-liked-pop'); void b.offsetWidth; b.classList.add('niv-liked-pop'); } try { navigator.vibrate && navigator.vibrate(10); } catch {} }
     }
 
     document.addEventListener('click', (e) => {
