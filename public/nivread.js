@@ -1102,13 +1102,22 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
       if (handled) { burst(x, y); if (b && !calm) { b.classList.remove('niv-liked-pop'); void b.offsetWidth; b.classList.add('niv-liked-pop'); } try { navigator.vibrate && navigator.vibrate(10); } catch {} }
     }
 
+    // วิดีโอ: แตะครั้งเดียว = หยุด/เล่น (หน่วง 280ms เพื่อรอดูว่าจะแตะซ้ำไหม — จะได้ไม่กระตุกหยุดแล้วเล่นต่อตอนถูกใจ) · แตะสองครั้ง = ถูกใจ สถานะเล่น/หยุดคงเดิม
+    // เราดักคลิปบนวิดีโอไว้เองทั้งหมด (ปุ่มเล่นกลางจอที่โผล่ตอนหยุดก็นับเป็นพื้นที่วิดีโอ ไม่งั้นแตะครั้งที่สองโดนปุ่มนั้นแล้วหัวใจไม่ขึ้น)
+    const toggleVid = (v) => {
+      if (!v || !v.isConnected) return;
+      if (v.paused) { delete v.dataset.up; v.play().catch(() => { if (!v.muted) { v.muted = true; v.play().catch(() => {}); } }); }
+      else { v.dataset.up = '1'; v.pause(); }
+    };
+    let downT = 0, vidT = 0;
+    document.addEventListener('pointerdown', () => { downT = Date.now(); }, true);
     document.addEventListener('click', (e) => {
       if (e.button > 0) return;
       const t = e.target; if (!(t instanceof Element)) return;
       const card = t.closest('[data-view-slug]'); if (!card) return;
-      if (t.closest(IGNORE)) return;
-      const vid = !!t.closest('.uv');
-      if (IS_SINGLE_POST && !vid) return; // หน้าโพสต์เดี่ยว: ให้เลือก/คัดลอกข้อความได้ตามปกติ ดับเบิลแตะถูกใจเฉพาะวิดีโอ
+      if (!t.closest('.bp-play') && t.closest(IGNORE)) return;
+      const vbox = t.closest('.uv');
+      if (IS_SINGLE_POST && !vbox) return; // หน้าโพสต์เดี่ยว: ให้เลือก/คัดลอกข้อความได้ตามปกติ ดับเบิลแตะถูกใจเฉพาะวิดีโอ
       let open = null;
       const a = t.closest('a');
       if (a) {
@@ -1116,15 +1125,25 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
         if (a.origin !== location.origin || !/^\/posts\/[^/]+\/?$/.test(a.pathname) || a.hash || IS_SINGLE_POST) return;
         open = a;
       }
+      if (vbox && (e.detail === 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) return; // คีย์บอร์ด: ใช้ระบบเดิมของตัวเล่น
       const now = Date.now();
+      if (vbox && now - downT >= 340) return; // กดค้างเพื่อเร่ง 2x แล้วปล่อย: ไม่ใช่การแตะ ปล่อยให้ตัวเล่นจัดการ
       const dbl = last.card === card && now - last.t < DBL && Math.hypot(e.clientX - last.x, e.clientY - last.y) < MOVE;
       if (dbl) {
-        clearTimeout(navT); navT = 0; last = { t: 0, card: null, x: 0, y: 0 };
-        if (!vid) { e.preventDefault(); e.stopPropagation(); } // วิดีโอปล่อยให้สลับเล่น/หยุดอีกรอบ = กลับสู่สถานะเดิม
+        clearTimeout(navT); navT = 0; clearTimeout(vidT); vidT = 0;
+        last = { t: 0, card: null, x: 0, y: 0 };
+        e.preventDefault(); e.stopPropagation();
         likeCard(card, e.clientX, e.clientY);
         return;
       }
       last = { t: now, card, x: e.clientX, y: e.clientY };
+      if (vbox) {
+        e.preventDefault(); e.stopPropagation(); // ตัวเล่นเดิมจะไม่ได้รับคลิปนี้ → เราสั่งหยุด/เล่นเองหลังรอ
+        clearTimeout(vidT);
+        const v = vbox.querySelector('video');
+        vidT = setTimeout(() => { vidT = 0; toggleVid(v); }, DBL);
+        return;
+      }
       if (open && e.detail > 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && open.target !== '_blank') {
         e.preventDefault(); // หน่วงการเปิดโพสต์ไว้ รอดูว่าจะแตะซ้ำไหม
         clearTimeout(navT);
