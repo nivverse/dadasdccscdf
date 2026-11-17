@@ -1017,6 +1017,93 @@
     onNewNodes(bpScan);
   }
 
+  // ---------- ท่าทางแบบแอป ----------
+  // • แตะสองครั้งที่การ์ด (ที่ว่าง / รูป / ข้อความ / วิดีโอ) = ถูกใจ (มีหัวใจเด้งตรงจุดที่แตะ) · ถูกใจอย่างเดียว ไม่ยกเลิกถูกใจ
+  // • แตะครั้งเดียวที่รูปหรือข้อความ (ชื่อโพสต์/คำโปรย/"...") = เปิดหน้าโพสต์เดี่ยว (รอ 280ms เผื่อเป็นการแตะสองครั้ง)
+  // • วิดีโอ: แตะครั้งเดียว = เล่น/หยุด (ระบบเดิม) · แตะสองครั้ง = ถูกใจ · จะไปหน้าโพสต์ให้แตะที่ข้อความ
+  // • ปุ่ม/ลิงก์อื่น (โปรไฟล์ หมวดหมู่ ความคิดเห็น แก้ไข แชร์ ติดตาม) ทำงานตามปกติ ไม่ถูกดัก
+  // • การกดถูกใจจริงใช้ปุ่มหัวใจของการ์ดเอง (ล็อกอิน/เรียก API ตามเดิม) · ถ้าการ์ดไม่มีปุ่มหัวใจ จะยิงอีเวนต์ 'niv:like' (cancelable) ให้โค้ดอื่นรับไปทำ
+  if (!document.getElementById('niv-app-css')) {
+    const st = document.createElement('style'); st.id = 'niv-app-css';
+    st.textContent = `
+[data-view-slug] a{-webkit-tap-highlight-color:transparent}
+html:not(.niv-single) [data-view-slug]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html:not(.niv-single) [data-view-slug] :is(h2,p)>a[href^="/posts/"],html:not(.niv-single) [data-view-slug] :is(h2,p)>a[href^="/posts/"]:hover{color:inherit!important;text-decoration:none}
+html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์ต่อ"],html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์ต่อ"]:hover{color:#94a3b8!important}
+.niv-burst{position:fixed;z-index:90;width:96px;height:96px;margin:-48px 0 0 -48px;color:#f43f5e;pointer-events:none;filter:drop-shadow(0 4px 14px rgba(244,63,94,.55));animation:niv-burst .85s cubic-bezier(.2,1.2,.4,1) forwards}
+.niv-burst svg{width:100%;height:100%}
+@keyframes niv-burst{0%{opacity:0;transform:scale(.3) rotate(-12deg)}18%{opacity:1;transform:scale(1.15) rotate(4deg)}32%{transform:scale(.95)}60%{opacity:1;transform:scale(1)}100%{opacity:0;transform:translateY(-28px) scale(1.05)}}
+@media (prefers-reduced-motion:reduce){.niv-burst{animation:niv-burst-rm .6s forwards}@keyframes niv-burst-rm{0%,70%{opacity:1}100%{opacity:0}}}
+`;
+    document.head.appendChild(st);
+  }
+  {
+    const DBL = 280, MOVE = 40;
+    // ส่วนที่ต้องปล่อยให้ทำงานเดิม (ปุ่ม, แถบควบคุมวิดีโอ, YouTube, ป้ายเสียง, ปุ่มติดตาม/แชร์, แกลเลอรีที่เปิด lightbox ในหน้าโพสต์เดี่ยว)
+    const IGNORE = 'button,input,textarea,select,label,summary,.bp-bar,.bp-hit,.bp-play,.snd-badge,[data-follow-type],[data-niv-share],.vg,[data-imgs]';
+    const HEART = '[data-like],[data-like-slug],button[aria-label*="ถูกใจ"],button[title*="ถูกใจ"],button[aria-label*="like" i]';
+    const liked = new Set();
+    // ผู้ใช้กดปุ่มหัวใจเอง (isTrusted) = สถานะเปลี่ยนแล้ว ล้างความจำของดับเบิลแตะ ไม่งั้นเลิกถูกใจแล้วดับเบิลแตะไม่ติด
+    document.addEventListener('click', (e) => {
+      if (!e.isTrusted || !(e.target instanceof Element)) return;
+      const hb = e.target.closest('[data-like]');
+      if (hb) liked.delete(hb.dataset.like);
+    }, true);
+    let last = { t: 0, card: null, x: 0, y: 0 }, navT = 0;
+
+    const burst = (x, y) => {
+      const b = el('div', 'niv-burst'); b.setAttribute('aria-hidden', 'true');
+      b.style.left = x + 'px'; b.style.top = y + 'px';
+      b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">' + CARD_IC.heart + '</svg>';
+      document.body.append(b);
+      setTimeout(() => b.remove(), 900);
+    };
+    const isOn = (b) => b.getAttribute('aria-pressed') === 'true' || b.dataset.liked === '1' || /\b(liked|is-liked)\b/.test(b.className);
+    function likeCard(card, x, y) {
+      const slug = card.dataset.viewSlug || '';
+      const b = card.querySelector(HEART);
+      let handled = false;
+      if (b) {
+        if (!isOn(b) && !liked.has(slug)) b.click(); // ถูกใจเท่านั้น ไม่กดซ้ำจนกลายเป็นเลิกถูกใจ (กันไว้สองชั้น เผื่อปุ่มไม่อัปเดต aria-pressed)
+        liked.add(slug); handled = true;
+      } else {
+        handled = !card.dispatchEvent(new CustomEvent('niv:like', { bubbles: true, cancelable: true, detail: { slug } }));
+      }
+      if (handled) { burst(x, y); try { navigator.vibrate && navigator.vibrate(10); } catch {} }
+    }
+
+    document.addEventListener('click', (e) => {
+      if (e.button > 0) return;
+      const t = e.target; if (!(t instanceof Element)) return;
+      const card = t.closest('[data-view-slug]'); if (!card) return;
+      if (t.closest(IGNORE)) return;
+      const vid = !!t.closest('.uv');
+      if (IS_SINGLE_POST && !vid) return; // หน้าโพสต์เดี่ยว: ให้เลือก/คัดลอกข้อความได้ตามปกติ ดับเบิลแตะถูกใจเฉพาะวิดีโอ
+      let open = null;
+      const a = t.closest('a');
+      if (a) {
+        // ลิงก์ที่ "เปิดโพสต์" = ชื่อ/คำโปรย/"..."/รูป · ลิงก์อื่น (โปรไฟล์ หมวด #comments แก้ไข ฯลฯ) ปล่อยผ่าน
+        if (a.origin !== location.origin || !/^\/posts\/[^/]+\/?$/.test(a.pathname) || a.hash || IS_SINGLE_POST) return;
+        open = a;
+      }
+      const now = Date.now();
+      const dbl = last.card === card && now - last.t < DBL && Math.hypot(e.clientX - last.x, e.clientY - last.y) < MOVE;
+      if (dbl) {
+        clearTimeout(navT); navT = 0; last = { t: 0, card: null, x: 0, y: 0 };
+        if (!vid) { e.preventDefault(); e.stopPropagation(); } // วิดีโอปล่อยให้สลับเล่น/หยุดอีกรอบ = กลับสู่สถานะเดิม
+        likeCard(card, e.clientX, e.clientY);
+        return;
+      }
+      last = { t: now, card, x: e.clientX, y: e.clientY };
+      if (open && e.detail > 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && open.target !== '_blank') {
+        e.preventDefault(); // หน่วงการเปิดโพสต์ไว้ รอดูว่าจะแตะซ้ำไหม
+        clearTimeout(navT);
+        navT = setTimeout(() => { navT = 0; location.href = open.href; }, DBL);
+      }
+    }, true);
+    addEventListener('pageshow', () => { clearTimeout(navT); navT = 0; });
+  }
+
   // ---------- กล่องรายงาน (โพสต์ / ความคิดเห็น / ผู้ใช้) ----------
   const REASONS = {
     spam: 'สแปม / โฆษณา',
