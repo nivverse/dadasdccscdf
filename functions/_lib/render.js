@@ -230,7 +230,7 @@ ${ld}
 </div>
 <header id="main-header" class="z-20"></header>
 ${body}
-<script src="/nivread.js?v=20261117a"></script>
+<script src="/nivread.js?v=20261117d"></script>
 <script src="/posts-feed.js" defer></script>
 </body>
 </html>`;

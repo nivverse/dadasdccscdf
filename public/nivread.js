@@ -1031,8 +1031,8 @@ html:not(.niv-single) [data-view-slug]{-webkit-user-select:none;user-select:none
 html:not(.niv-single) [data-view-slug] :is(h2,p)>a[href^="/posts/"],html:not(.niv-single) [data-view-slug] :is(h2,p)>a[href^="/posts/"]:hover{color:inherit!important;text-decoration:none}
 html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์ต่อ"],html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์ต่อ"]:hover{color:#94a3b8!important}
 .niv-burst,.niv-bp{position:fixed;z-index:90;left:0;top:0;pointer-events:none;will-change:transform,opacity}
-.niv-burst{width:104px;height:104px;filter:drop-shadow(0 6px 18px rgba(244,63,94,.45)) drop-shadow(0 0 22px rgba(251,146,60,.35))}
-.niv-bp{width:22px;height:22px;filter:drop-shadow(0 2px 6px rgba(244,63,94,.4))}
+.niv-burst{width:104px;height:104px;filter:drop-shadow(0 4px 12px rgba(244,63,94,.45))}
+.niv-bp{width:22px;height:22px}
 .niv-burst svg,.niv-bp svg{display:block;width:100%;height:100%}
 .niv-liked-pop svg{animation:niv-pop .6s cubic-bezier(.34,1.56,.64,1)}
 @keyframes niv-pop{0%{transform:scale(1)}35%{transform:scale(1.4)}100%{transform:scale(1)}}
@@ -1075,7 +1075,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
         { opacity: 1, transform: at(0, 0, 1, 0), offset: .55 },
         { opacity: 0, transform: at(0, -34, .92, 0) },
       ], { duration: 1150, easing: 'cubic-bezier(.22,1,.36,1)' }).onfinish = () => m.remove();
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 5; i++) {
         const p = el('div', 'niv-bp'); p.setAttribute('aria-hidden', 'true'); p.innerHTML = heartSvg();
         document.body.append(p);
         const ang = rnd(-Math.PI * .95, -Math.PI * .05), dist = rnd(46, 96), sc = rnd(.5, 1);
