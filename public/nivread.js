@@ -1043,7 +1043,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
   {
     const DBL = 280, MOVE = 40;
     // ส่วนที่ต้องปล่อยให้ทำงานเดิม (ปุ่ม, แถบควบคุมวิดีโอ, YouTube, ป้ายเสียง, ปุ่มติดตาม/แชร์, แกลเลอรีที่เปิด lightbox ในหน้าโพสต์เดี่ยว)
-    const IGNORE = 'button,input,textarea,select,label,summary,.bp-bar,.bp-hit,.bp-play,.snd-badge,[data-follow-type],[data-niv-share],.vg,[data-imgs]';
+    const IGNORE = 'button,input,textarea,select,label,summary,.bp-bar,.bp-hit,.bp-play,.snd-badge,[data-follow-type],[data-niv-share],[data-imgs]';
     const HEART = '[data-like],[data-like-slug],button[aria-label*="ถูกใจ"],button[title*="ถูกใจ"],button[aria-label*="like" i]';
     const liked = new Set();
     // ผู้ใช้กดปุ่มหัวใจเอง (isTrusted) = สถานะเปลี่ยนแล้ว ล้างความจำของดับเบิลแตะ ไม่งั้นเลิกถูกใจแล้วดับเบิลแตะไม่ติด
