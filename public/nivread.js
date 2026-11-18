@@ -1944,3 +1944,21 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
   // ---------- footer ----------
   // (ถอด footer ล่างสุดของหน้าออกแล้ว — เมนูแฮมเบอร์เกอร์ไม่เปลี่ยน)
 })();
+// ---------- การ์ดตัวละครในฟีด: ปุ่มลูกศรเลื่อนแถวรูป (.cx-*) · เมาส์เท่านั้น (จอสัมผัสปัดนิ้วเอง) ----------
+(function () {
+  function edges(f) {
+    const t = f.querySelector('.cx-track'); if (!t) return;
+    const p = f.querySelector('.cx-prev'), n = f.querySelector('.cx-next');
+    if (p) p.hidden = t.scrollLeft <= 2;
+    if (n) n.hidden = t.scrollLeft >= t.scrollWidth - t.clientWidth - 2;
+  }
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest && e.target.closest('.cx-nav'); if (!b) return;
+    e.preventDefault();
+    const f = b.closest('.cx-feed'), t = f.querySelector('.cx-track'), s = f.querySelector('.cx-slide');
+    const step = (s ? s.getBoundingClientRect().width : t.clientWidth * 0.8) + 10;
+    t.scrollBy({ left: b.classList.contains('cx-prev') ? -step : step, behavior: 'smooth' });
+  });
+  document.addEventListener('scroll', (e) => { const t = e.target; if (t && t.classList && t.classList.contains('cx-track')) edges(t.parentNode); }, true);
+  document.addEventListener('mouseover', (e) => { const f = e.target.closest && e.target.closest('.cx-multi'); if (f && !f.dataset.cxInit) { f.dataset.cxInit = '1'; edges(f); } });
+})();

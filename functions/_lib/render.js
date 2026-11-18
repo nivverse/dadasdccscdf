@@ -173,96 +173,98 @@ function cardHtml(p, origin, first = false) {
 </article>`;
 }
 
-// การ์ดตัวละครในฟีด: โพสต์เดียวมีหลายสไลด์ เลื่อนแนวนอนทีละตัวละคร (CSS scroll-snap ล้วน ไม่ใช้ JS)
-// แต่ละสไลด์มีรูป + ชื่อ + ชื่อต้นฉบับ + แท็กบทบาท/เพศ/อายุ + เครดิต ของตัวนั้น → เลื่อนแล้วข้อมูลด้านล่างเปลี่ยนตาม
-// หัวการ์ด ปุ่มไลก์ รีโพสต์ แชร์ เหมือนโพสต์ทั่วไป
-function charCardHtml(p, origin, first, href) {
+// ---------- ตัวละคร: ข้อมูลต่อตัว (ใช้ร่วมกันทั้งฟีดและหน้าโพสต์เดี่ยว) ----------
+// meta ใหม่: { kind:'character', characters:[{ name, orig, role, gender, age, cv, desc, credit, image }] }
+// meta เก่า (ตัวเดียว): { kind:'character', orig, role, gender, age, credit } → ชื่อ = หัวข้อโพสต์ รูป = รูปแรกของโพสต์
+// รูปของตัวละครอ่านจาก c.image ก่อน (ผูกกับตัวละครตรง ๆ) ถ้าไม่มี (โพสต์ที่สร้างก่อนหน้านี้) ค่อยใช้ลำดับรูปของโพสต์
+const CHAR_IMG = /^https:\/\/[^\s"'<>]{4,500}$/;
+export function charList(p) {
   const m = postMeta(p) || {};
+  const multi = Array.isArray(m.characters) && m.characters.length > 0;
+  const raw = multi ? m.characters.slice(0, 10) : [m];
   const imgs = postImages(p);
-  const chars = Array.isArray(m.characters) ? m.characters.slice(0, 10) : [m];
-  const n = Math.max(1, chars.length);
-  const slides = [];
-  for (let i = 0; i < n; i++) {
-    const c = chars[i] || {};
-    const u = imgs[i] || (i === 0 ? p.cover_url : '') || '';
-    const name = metaText(c.name, 150) || metaText(p.title, 150);
-    const sub = metaText(c.orig, 80);
-    const tags = [c.role, c.gender, c.age].map((v) => metaText(v, 40)).filter(Boolean)
-      .map((v) => `<span class="px-2.5 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-300">${esc(v)}</span>`).join('');
-    const credit = creditHtml(c.credit);
-    const pic = /^https:\/\//i.test(u)
-      ? `<img src="${esc(u)}" alt="${esc(name)}" class="w-full h-full object-cover" loading="${first && i === 0 ? 'eager' : 'lazy'}" decoding="async">`
-      : '<span class="text-xs text-slate-400">ไม่มีรูป</span>';
-    slides.push(`<div class="w-full shrink-0" style="scroll-snap-align:start" data-char-slide="${i + 1}">
-      <a href="${href}" class="group block mx-auto w-full max-w-[300px] aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 flex items-center justify-center">${pic}</a>
-      <div class="pt-3 text-center">
-        <div class="text-base font-bold text-slate-900 dark:text-white">${esc(name)}</div>
-        ${sub ? `<div class="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">${esc(sub)}</div>` : ''}
-        ${tags ? `<div class="mt-2 flex flex-wrap justify-center gap-1.5">${tags}</div>` : ''}
-        ${credit ? `<p class="mt-2 text-[11px] text-slate-500 dark:text-neutral-400">เครดิตภาพ: ${credit}</p>` : ''}
-      </div>
-    </div>`);
-  }
-  const cat = p.category ? `<a href="${catHref(p.category)}" class="text-xs font-medium text-amber-600 dark:text-amber-400 hover:text-amber-500">จากเรื่อง: ${esc(p.category)}</a>` : '<span></span>';
-  const count = `<span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-300">${n} ตัวละคร</span>`;
-  const hint = n > 1 ? '<p class="mt-1 text-center text-[11px] text-slate-400">เลื่อนดูตัวละครอื่น</p>' : '';
+  return raw.map((c, i) => {
+    c = c && typeof c === 'object' ? c : {};
+    const own = typeof c.image === 'string' && CHAR_IMG.test(c.image) ? c.image : '';
+    const fallback = multi ? (imgs[i] || (i === 0 ? p.cover_url : '') || '') : (imgs[0] || p.cover_url || '');
+    return {
+      name: metaText(c.name, 150) || (multi ? `ตัวละครที่ ${i + 1}` : metaText(p.title, 150)),
+      orig: metaText(c.orig, 80), role: metaText(c.role, 80), gender: metaText(c.gender, 40), age: metaText(c.age, 40),
+      cv: metaText(c.cv, 80), desc: metaText(c.desc, 1200), credit: c.credit,
+      image: CHAR_IMG.test(own || fallback) ? (own || fallback) : '',
+    };
+  });
+}
+const CHEV = (d) => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+
+// การ์ดตัวละครในฟีด (สไตล์เดียวกับ X): แถวรูปเลื่อนแนวนอน เห็นรูปถัดไปโผล่ขอบขวา ปัดนิ้วหรือกดลูกศรได้
+// แถวเลื่อนอยู่ "ในการ์ด" (overflow-x ของแถวเอง · การ์ดยัง overflow-hidden) จึงไม่ล้นการ์ด · สไตล์อยู่ที่ /niv.css (.cx-*) · ลูกศรอยู่ที่ /nivread.js
+// ลิงก์ <a href> จริงทุกสไลด์ (พาไปหน้าโพสต์ตรงตัวละครนั้น #cN) ให้ Google ตามเก็บได้
+function charCardHtml(p, origin, first, href) {
+  const list = charList(p);
+  const n = list.length;
+  const slides = list.map((c, i) => {
+    const tags = [c.role, c.gender, c.age].filter(Boolean).map((v) => `<em>${esc(v)}</em>`).join('');
+    const pic = c.image
+      ? `<img class="cx-img" src="${esc(c.image)}" alt="${esc(c.name)}${p.category ? ' - ' + esc(p.category) : ''}" loading="${first && i < 2 ? 'eager' : 'lazy'}" decoding="async" draggable="false">`
+      : '<span class="cx-noimg">ไม่มีรูป</span>';
+    return `<a href="${href}#c${i + 1}" class="cx-slide" data-char-slide="${i + 1}" aria-label="${esc(c.name)}"><span class="cx-frame">${pic}<span class="cx-shade"></span>${n > 1 ? `<span class="cx-idx">${i + 1}/${n}</span>` : ''}<span class="cx-cap"><b>${esc(c.name)}</b>${c.orig ? `<i>${esc(c.orig)}</i>` : ''}${tags}</span></span></a>`;
+  }).join('');
+  const cat = p.category ? `<a href="${catHref(p.category)}" class="cx-from">จากเรื่อง · ${esc(p.category)}</a>` : '<span></span>';
+  const count = `<span class="cx-count">${n} ตัวละคร</span>`;
+  const nav = n > 1 ? `<button type="button" class="cx-nav cx-prev" aria-label="ตัวละครก่อนหน้า" hidden>${CHEV('M15 5l-7 7 7 7')}</button><button type="button" class="cx-nav cx-next" aria-label="ตัวละครถัดไป">${CHEV('M9 5l7 7-7 7')}</button>` : '';
   return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
   ${postHead(p)}
-  <div class="px-4 pt-3 pb-2">
+  <div class="px-4 pb-3">
     <div class="flex items-center justify-between gap-2">${cat}${count}</div>
-    <div class="mt-3 flex overflow-x-auto snap-x snap-mandatory" style="scrollbar-width:none" role="region" aria-label="ตัวละครในโพสต์">${slides.join('')}</div>
-    ${hint}
-    ${p.excerpt ? `<p class="mt-3 text-sm leading-relaxed text-slate-700 dark:text-neutral-300 line-clamp-3">${esc(p.excerpt)}</p>` : ''}
+    <h2 class="mt-1.5 text-lg font-bold text-slate-900 dark:text-white leading-snug"><a href="${href}" class="hover:text-amber-500 transition-colors">${esc(p.title)}</a></h2>
+    ${p.excerpt ? `<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-2"><a href="${href}" class="block hover:text-amber-500 transition-colors">${esc(p.excerpt)}</a></p>` : ''}
   </div>
+  <div class="cx-feed${n > 1 ? ' cx-multi' : ''}"><div class="cx-track" role="region" aria-label="ตัวละครในโพสต์ ปัดเพื่อดูตัวถัดไป">${slides}</div>${nav}</div>
+  <div class="px-4 pt-3 pb-1"><a href="${href}" class="cx-more">ดูโปรไฟล์ตัวละครทั้งหมด <span aria-hidden="true">→</span></a></div>
   ${postBar(p, origin)}
 </article>`;
 }
 
-// หน้าโพสต์เดี่ยวของโพสต์ตัวละคร: เลื่อนดูทีละตัวละคร (radio + label ล้วน ไม่ใช้ JS)
-// แต่ละสไลด์มีรูป + ชื่อ + ชื่อต้นฉบับ + แท็ก + เครดิตของตัวนั้น · ตัวนับ "1 / N" อยู่ในสไลด์เอง จึงตรงเสมอ
+// หน้าโพสต์เดี่ยวสไตล์เว็บตัวละครทางการ: แถบเลือกตัวละคร (roster) → แผงโปรไฟล์ใหญ่ รูปแนวตั้ง + ชื่อ + ชื่อต้นฉบับตัวใหญ่ + ตารางข้อมูล + เรื่องราว
+// สลับตัวละครด้วย radio + label ล้วน (ไม่ต้องใช้ JS) · /posts/slug#c3 เปิดตัวที่ 3 ได้ด้วยสคริปต์เล็ก ๆ ท้ายส่วนนี้ · สไตล์ถาวรอยู่ที่ /niv.css (.cs-*)
 export function characterCarousel(p, eager = true) {
-  const m = postMeta(p) || {};
-  const imgs = postImages(p);
-  const chars = Array.isArray(m.characters) ? m.characters.slice(0, 10) : [m];
-  const n = chars.length;
+  const list = charList(p);
+  const n = list.length;
   if (!n) return '';
   const id = (i) => `cz-${i + 1}`;
-  const css = `<style>
-.cz-r{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
-.cz-s{display:none}
-${chars.map((_, i) => `#${id(i)}:checked ~ .cz-track .cz-s${i + 1}{display:block}
-#${id(i)}:checked ~ .cz-dots label[for="${id(i)}"]{background:#f59e0b;transform:scale(1.3)}`).join('\n')}
-</style>`;
-  const radios = chars.map((_, i) => `<input type="radio" name="cz" id="${id(i)}" class="cz-r" tabindex="-1" aria-hidden="true"${i === 0 ? ' checked' : ''}>`).join('');
-  const navBtn = (side, target, label) => `<label for="${target}" role="button" aria-label="${label}" class="absolute top-1/2 -translate-y-1/2 ${side} z-10 w-9 h-9 rounded-full bg-black/50 text-white grid place-items-center text-xl leading-none cursor-pointer select-none">${side.includes('left') ? '‹' : '›'}</label>`;
-  const slides = chars.map((c, i) => {
-    const u = imgs[i] || (i === 0 ? p.cover_url : '') || '';
-    const name = metaText(c.name, 150) || metaText(p.title, 150);
-    const sub = metaText(c.orig, 80);
-    const tags = [c.role, c.gender, c.age].map((v) => metaText(v, 40)).filter(Boolean)
-      .map((v) => `<span class="px-2.5 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-300">${esc(v)}</span>`).join('');
+  const pad = (i) => String(i + 1).padStart(2, '0');
+  const css = `<style>${list.map((_, i) => `#${id(i)}:checked~.cs-roster label[for="${id(i)}"] .cs-thi{border-color:#f59e0b;opacity:1;transform:translateY(-3px);box-shadow:0 8px 20px -8px rgba(245,158,11,.7)}
+#${id(i)}:checked~.cs-roster label[for="${id(i)}"] small{color:#f59e0b;font-weight:600}
+#${id(i)}:focus-visible~.cs-roster label[for="${id(i)}"] .cs-thi{outline:2px solid #f59e0b;outline-offset:2px}`).join('\n')}</style>`;
+  const radios = list.map((_, i) => `<input type="radio" name="cz" id="${id(i)}" class="cs-r" aria-label="ตัวละครที่ ${i + 1}"${i === 0 ? ' checked' : ''}>`).join('');
+  const roster = n > 1 ? `<nav class="cs-roster" aria-label="เลือกตัวละคร">${list.map((c, i) =>
+    `<label for="${id(i)}" class="cs-th" title="${esc(c.name)}"><span class="cs-thi">${c.image ? `<img src="${esc(c.image)}" alt="" loading="${i < 6 ? 'eager' : 'lazy'}" decoding="async">` : ''}</span><small>${esc(c.name)}</small></label>`).join('')}</nav>` : '';
+  const arrow = (side, target, label, d) => `<label for="${target}" role="button" aria-label="${label}" class="cs-arrow cs-a${side}">${CHEV(d)}</label>`;
+  const panels = list.map((c, i) => {
+    const pic = c.image
+      ? `<img src="${esc(c.image)}" alt="${esc(c.name)}${p.category ? ' - ' + esc(p.category) : ''}" ${eager && i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`
+      : '<span class="cs-noimg">ไม่มีรูป</span>';
     const credit = creditHtml(c.credit);
-    const pic = /^https:\/\//i.test(u)
-      ? `<img src="${esc(u)}" alt="${esc(name)}" class="w-full h-full object-cover" ${eager && i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`
-      : '<span class="text-sm text-slate-400">ไม่มีรูป</span>';
-    return `<div class="cz-s cz-s${i + 1}">
-      <div class="relative mx-auto w-full max-w-[320px] aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 flex items-center justify-center">
-        ${pic}
-        ${i > 0 ? navBtn('left-2', id(i - 1), 'ตัวละครก่อนหน้า') : ''}
-        ${i < n - 1 ? navBtn('right-2', id(i + 1), 'ตัวละครถัดไป') : ''}
-        <span class="absolute top-3 right-3 text-[11px] px-2 py-0.5 rounded-full bg-black/60 text-white">${i + 1} / ${n}</span>
-      </div>
-      <div class="pt-3 text-center">
-        <div class="text-lg font-bold text-slate-900 dark:text-white">${esc(name)}</div>
-        ${sub ? `<div class="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">${esc(sub)}</div>` : ''}
-        ${tags ? `<div class="mt-2 flex flex-wrap justify-center gap-1.5">${tags}</div>` : ''}
-        ${credit ? `<p class="mt-2 text-[11px] text-slate-500 dark:text-neutral-400">เครดิตภาพ: ${credit}</p>` : ''}
-      </div>
-    </div>`;
+    const rows = [['บทบาท', c.role], ['เพศ', c.gender], ['อายุ', c.age], ['CV', c.cv]].filter(([, v]) => v)
+      .map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('');
+    return `<div class="cs-p cs-p${i + 1}" data-c="${i + 1}">
+  <div class="cs-fig"><div class="cs-pic">${pic}<span class="cs-num" aria-hidden="true">${pad(i)}</span>
+    ${n > 1 && i > 0 ? arrow('l', id(i - 1), 'ตัวละครก่อนหน้า', 'M15 5l-7 7 7 7') : ''}${n > 1 && i < n - 1 ? arrow('r', id(i + 1), 'ตัวละครถัดไป', 'M9 5l7 7-7 7') : ''}
+  </div>${credit ? `<p class="cs-credit">เครดิตภาพ: ${credit}</p>` : ''}</div>
+  <div class="cs-info">
+    <span class="cs-wm" aria-hidden="true">${esc(c.orig || c.name)}</span>
+    <p class="cs-eyebrow">CHARACTER${n > 1 ? ` · ${pad(i)} / ${pad(n - 1)}` : ''}</p>
+    <h2 class="cs-name">${esc(c.name)}</h2>
+    ${c.orig ? `<p class="cs-orig">${esc(c.orig)}</p>` : ''}
+    ${rows ? `<dl class="cs-dl">${rows}</dl>` : ''}
+    ${c.desc ? `<div class="cs-desc"><h3>PROFILE</h3><p>${esc(c.desc)}</p></div>` : ''}
+  </div>
+</div>`;
   }).join('');
-  const dots = n > 1 ? `<div class="cz-dots mt-4 flex justify-center gap-2.5">${chars.map((_, i) =>
-    `<label for="${id(i)}" role="button" aria-label="ตัวละครที่ ${i + 1}" class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/25 cursor-pointer transition-all"></label>`).join('')}</div>` : '';
-  return `${css}<div class="cz relative px-4 pt-4">${radios}<div class="cz-track">${slides}</div>${dots}</div>`;
+  // เปิดตัวละครตาม #cN (ลิงก์จากฟีด) และตามเมื่อ hash เปลี่ยน
+  const js = n > 1 ? `<script>(function(){function go(){var m=/^#c(\\d{1,2})$/.exec(location.hash);if(!m)return;var r=document.getElementById('cz-'+m[1]);if(r)r.checked=true;}go();addEventListener('hashchange',go);})();</script>` : '';
+  return `${css}<section class="cs" aria-label="ตัวละคร">${radios}${roster}<div class="cs-stage">${panels}</div></section>${js}`;
 }
 
 export { postBar, postHead };
@@ -314,7 +316,7 @@ ${ld}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{font-family:'Kanit',sans-serif}.uv,.uv.bp{padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}.uv video{background:transparent!important;border:0!important}</style>
-<link id="niv-css" rel="stylesheet" href="/niv.css">
+<link id="niv-css" rel="stylesheet" href="/niv.css?v=20261119a">
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white transition-colors duration-300 min-h-screen flex flex-col relative overflow-x-hidden">
 <div class="fixed inset-0 pointer-events-none z-0">
@@ -323,7 +325,7 @@ ${ld}
 </div>
 <header id="main-header" class="z-20"></header>
 ${body}
-<script src="/nivread.js?v=20261117d"></script>
+<script src="/nivread.js?v=20261119a"></script>
 <script src="/posts-feed.js" defer></script>
 </body>
 </html>`;

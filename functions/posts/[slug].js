@@ -1,5 +1,5 @@
 // functions/posts/[slug].js — หน้าโพสต์เดี่ยว /posts/<slug> (SSR + meta + JSON-LD)
-import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard, characterInfo, characterHero, characterCarousel, isCharacter } from '../_lib/render.js';
+import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard, characterCarousel, isCharacter, charList } from '../_lib/render.js';
 import { videoGallery, videoLd } from '../_lib/videos.js';
 import { imageGallery, postImages } from '../_lib/gallery.js';
 
@@ -72,22 +72,40 @@ export async function onRequestGet({ request, env, params }) {
     },
   ];
 
-  const charBox = characterInfo(p); // โพสต์ทั่วไปไม่มี meta → '' (ไม่แสดงอะไร)
+  const isChar = isCharacter(p);
+  if (isChar) { // รายชื่อตัวละครให้ Google อ่าน (ItemList) · โพสต์ทั่วไปไม่ผ่านบล็อกนี้
+    const cl = charList(p);
+    jsonld.push({
+      '@context': 'https://schema.org', '@type': 'ItemList', name: `ตัวละครจาก ${p.category || p.title}`, numberOfItems: cl.length,
+      itemListElement: cl.map((c, i) => ({ '@type': 'ListItem', position: i + 1, item: { '@type': 'Thing', name: c.name, alternateName: c.orig || undefined, description: c.desc || [c.role, c.gender, c.age].filter(Boolean).join(' · ') || undefined, image: c.image || undefined } })),
+    });
+  }
 
   jsonld.push(...videoLd(p.videos, { title: p.title, desc, uploadDate: isoDate(p.published_at || p.updated_at) || undefined }));
 
-  const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
-  <nav aria-label="breadcrumb" class="mb-4 text-xs text-slate-500 dark:text-neutral-400">
-    <a href="/" class="hover:text-amber-500">หน้าแรก</a> / <a href="/posts" class="hover:text-amber-500">โพสต์</a>
-  </nav>
+  const crumbs = `<nav aria-label="breadcrumb" class="mb-4 text-xs text-slate-500 dark:text-neutral-400">
+    <a href="/" class="hover:text-amber-500">หน้าแรก</a> / <a href="/posts" class="hover:text-amber-500">โพสต์</a>${isChar && p.category ? ` / <a href="/category/${encodeURIComponent(p.category)}" class="hover:text-amber-500">${esc(p.category)}</a>` : ''}
+  </nav>`;
+  const dates = `<p class="mt-2 text-xs text-slate-500 dark:text-neutral-400">เผยแพร่ ${esc(fmtDate(p.published_at))}${p.updated_at - p.published_at > 86400000 ? ` · อัปเดต ${esc(fmtDate(p.updated_at))}` : ''}</p>`;
+  const head = isChar
+    ? `<div class="px-4 pt-6 pb-5">
+      <p class="text-[11px] font-semibold tracking-[.24em] text-amber-500">CHARACTER FILE${p.category ? ` · ${esc(String(p.category).toUpperCase())}` : ''}</p>
+      <h1 class="mt-2 text-2xl md:text-4xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
+      ${dates}
+    </div>`
+    : `<div class="px-4 pb-4">
+      <h1 class="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
+      ${dates}
+    </div>`;
+
+  const body = `<main class="flex-1 ${isChar ? 'max-w-4xl' : 'max-w-2xl'} w-full mx-auto px-4 sm:px-6 py-6 z-10">
+  ${crumbs}
   <article class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
     ${postHead(p)}
-    <div class="px-4 pb-4">
-      <h1 class="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
-      <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">เผยแพร่ ${esc(fmtDate(p.published_at))}${p.updated_at - p.published_at > 86400000 ? ` · อัปเดต ${esc(fmtDate(p.updated_at))}` : ''}</p>
-    </div>
-    ${isCharacter(p) ? characterCarousel(p, true) : imageGallery(postImages(p), p.title, true)}
-    <div id="post-body" class="px-4 py-6 space-y-5 text-[15px]">
+    ${head}
+    ${isChar ? characterCarousel(p, true) : imageGallery(postImages(p), p.title, true)}
+    ${isChar ? '<div class="cs-about"><h3>ABOUT</h3></div>' : ''}
+    <div id="post-body" class="${isChar ? 'px-4 pt-0 pb-6' : 'px-4 py-6'} space-y-5 text-[15px]">
 ${paragraphs}
     </div>
     ${videoGallery(p.videos, p.title)}

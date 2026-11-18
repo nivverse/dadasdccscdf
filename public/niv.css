@@ -121,3 +121,79 @@
 .bp-mute svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 @media (hover:none){.bp-bar{opacity:1}}
 @media (prefers-reduced-motion:reduce){.bp-fill,.bp-play,.bp-bar,.bp-fast-tag{transition:none}}
+/* ===== โพสต์ตัวละคร · ฟีด (.cx-*) — แถวรูปเลื่อนแนวนอนแบบ X อยู่ในการ์ด ไม่ล้นการ์ด ===== */
+.cx-from{font-size:12px;font-weight:500;color:#d97706;text-decoration:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.dark .cx-from{color:#fbbf24}
+.cx-from:hover{color:#f59e0b}
+.cx-count{flex-shrink:0;font-size:11px;padding:2px 9px;border-radius:999px;background:rgba(245,158,11,.14);color:#b45309;font-weight:500}
+html.dark .cx-count{color:#fcd34d}
+.cx-feed{position:relative}
+.cx-track{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-padding-inline:16px;padding:2px 16px 4px;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.cx-track::-webkit-scrollbar{display:none}
+.cx-slide{display:block;flex:0 0 min(78%,290px);scroll-snap-align:start;color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.cx-feed:not(.cx-multi) .cx-slide{flex-basis:min(100%,340px)}
+.cx-frame{position:relative;display:block;aspect-ratio:4/5;border-radius:18px;overflow:hidden;background:rgba(127,127,127,.16);box-shadow:inset 0 0 0 1px rgba(127,127,127,.22);isolation:isolate}
+.cx-img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 22%;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.cx-slide:hover .cx-img{transform:scale(1.045)}
+.cx-noimg{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;opacity:.5}
+.cx-shade{position:absolute;left:0;right:0;bottom:0;height:58%;background:linear-gradient(to top,rgba(0,0,0,.86),rgba(0,0,0,.35) 55%,rgba(0,0,0,0));pointer-events:none}
+.cx-idx{position:absolute;top:10px;right:10px;font-size:11px;line-height:1;padding:5px 9px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.cx-cap{position:absolute;left:0;right:0;bottom:0;padding:14px;color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:5px 6px}
+.cx-cap b{flex:0 0 100%;font-size:17px;font-weight:700;line-height:1.2;text-shadow:0 1px 8px rgba(0,0,0,.6);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cx-cap i{flex:0 0 100%;font-style:normal;font-size:12px;letter-spacing:.05em;color:#fcd34d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cx-cap em{font-style:normal;font-size:10.5px;line-height:1;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.cx-nav{position:absolute;top:calc(50% - 6px);transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
+.cx-nav:hover{background:rgba(245,158,11,.92)}
+.cx-nav[hidden]{display:none}
+.cx-prev{left:8px}.cx-next{right:8px}
+.cx-feed:hover .cx-nav,.cx-nav:focus-visible{opacity:1}
+@media (hover:none){.cx-nav{display:none}}
+.cx-more{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#d97706;text-decoration:none}
+html.dark .cx-more{color:#fbbf24}
+.cx-more:hover{color:#f59e0b}
+
+/* ===== โพสต์ตัวละคร · หน้าเดี่ยว (.cs-*) — สไตล์เว็บตัวละครทางการ ===== */
+.cs{position:relative;padding-top:4px}
+.cs-r{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.cs-roster{display:flex;gap:10px;overflow-x:auto;padding:6px 16px 18px;scrollbar-width:none;overscroll-behavior-x:contain}
+.cs-roster::-webkit-scrollbar{display:none}
+@media (min-width:768px){.cs-roster{flex-wrap:wrap;overflow:visible;padding-top:8px}}
+.cs-th{flex:0 0 64px;width:64px;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+.cs-thi{display:block;aspect-ratio:4/5;border-radius:12px;overflow:hidden;border:2px solid transparent;background:rgba(127,127,127,.18);opacity:.55;transition:opacity .2s,transform .25s,border-color .2s,box-shadow .25s}
+.cs-th:hover .cs-thi{opacity:.9}
+.cs-thi img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.cs-th small{display:block;margin-top:6px;font-size:10.5px;line-height:1.2;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs-stage{padding-bottom:8px}
+#cz-1:checked~.cs-stage .cs-p1,#cz-2:checked~.cs-stage .cs-p2,#cz-3:checked~.cs-stage .cs-p3,#cz-4:checked~.cs-stage .cs-p4,#cz-5:checked~.cs-stage .cs-p5,#cz-6:checked~.cs-stage .cs-p6,#cz-7:checked~.cs-stage .cs-p7,#cz-8:checked~.cs-stage .cs-p8,#cz-9:checked~.cs-stage .cs-p9,#cz-10:checked~.cs-stage .cs-p10{display:block}
+.cs-p{display:none;padding:0 16px;animation:csIn .5s cubic-bezier(.2,.7,.2,1)}
+@keyframes csIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (min-width:768px){.cs-p{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:36px;align-items:start}
+#cz-1:checked~.cs-stage .cs-p1,#cz-2:checked~.cs-stage .cs-p2,#cz-3:checked~.cs-stage .cs-p3,#cz-4:checked~.cs-stage .cs-p4,#cz-5:checked~.cs-stage .cs-p5,#cz-6:checked~.cs-stage .cs-p6,#cz-7:checked~.cs-stage .cs-p7,#cz-8:checked~.cs-stage .cs-p8,#cz-9:checked~.cs-stage .cs-p9,#cz-10:checked~.cs-stage .cs-p10{display:grid}}
+.cs-fig{min-width:0}
+.cs-pic{position:relative;aspect-ratio:4/5;width:100%;max-width:400px;margin:0 auto;border-radius:28px;overflow:hidden;background:rgba(127,127,127,.16);box-shadow:0 28px 60px -28px rgba(245,158,11,.55),inset 0 0 0 1px rgba(127,127,127,.25);isolation:isolate}
+.cs-pic>img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.cs-pic::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(to top,rgba(0,0,0,.55),rgba(0,0,0,0));pointer-events:none}
+.cs-noimg{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;opacity:.5}
+.cs-num{position:absolute;left:18px;bottom:6px;z-index:1;font-size:76px;font-weight:800;line-height:1;letter-spacing:-.02em;color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.75);pointer-events:none}
+.cs-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:background .2s}
+.cs-arrow:hover{background:rgba(245,158,11,.92)}
+.cs-al{left:10px}.cs-ar{right:10px}
+.cs-credit{max-width:400px;margin:10px auto 0;font-size:11px;opacity:.6;text-align:center}
+.cs-info{position:relative;min-width:0;padding-top:20px;overflow:hidden}
+@media (min-width:768px){.cs-info{padding-top:4px}}
+.cs-wm{position:absolute;right:-4px;top:-8px;max-width:100%;font-size:112px;font-weight:800;line-height:1;white-space:nowrap;opacity:.05;pointer-events:none;user-select:none;overflow:hidden}
+.cs-eyebrow{position:relative;font-size:11px;font-weight:600;letter-spacing:.24em;color:#f59e0b}
+.cs-name{position:relative;margin-top:8px;font-size:clamp(28px,6vw,42px);font-weight:800;line-height:1.12;overflow-wrap:anywhere}
+.cs-orig{position:relative;margin-top:8px;font-size:16px;letter-spacing:.1em;color:#d97706}
+html.dark .cs-orig{color:#fbbf24}
+.cs-dl{position:relative;margin-top:22px;border-top:1px solid rgba(127,127,127,.28)}
+.cs-dl>div{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;align-items:baseline;padding:12px 0;border-bottom:1px solid rgba(127,127,127,.28)}
+.cs-dl dt{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#f59e0b}
+.cs-dl dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.cs-desc{position:relative;margin-top:26px}
+.cs-desc h3{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:600;letter-spacing:.24em;color:#f59e0b}
+.cs-desc h3::after{content:"";flex:1;height:1px;background:rgba(127,127,127,.28)}
+.cs-desc p{margin-top:12px;font-size:15px;line-height:1.9;white-space:pre-line;opacity:.88;overflow-wrap:anywhere}
+.cs-about{margin:28px 16px 0;padding-top:22px;border-top:1px solid rgba(127,127,127,.25)}
+.cs-about>h3{font-size:11px;font-weight:600;letter-spacing:.24em;color:#f59e0b;margin-bottom:14px}
+@media (prefers-reduced-motion:reduce){.cs-p{animation:none}.cx-track{scroll-behavior:auto}.cx-img,.cs-thi{transition:none}}

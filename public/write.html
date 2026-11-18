@@ -142,7 +142,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   </div>
   <input id="cm-title" class="wr-f" maxlength="120" autocomplete="off" placeholder="หัวข้อโพสต์ เช่น ตัวละครจาก Frieren *" aria-label="หัวข้อโพสต์">
   <input id="cm-anime" class="wr-f" maxlength="40" autocomplete="off" placeholder="ชื่ออนิเมะ / หมวดหมู่ *" aria-label="ชื่ออนิเมะ">
-  <textarea id="cm-desc" class="wr-f" rows="3" maxlength="20000" placeholder="คำอธิบายของโพสต์ (อย่างน้อย 20 ตัวอักษร) *" aria-label="คำอธิบาย"></textarea>
+  <textarea id="cm-desc" class="wr-f" rows="3" maxlength="20000" placeholder="คำอธิบายของโพสต์ (อย่างน้อย 50 ตัวอักษร) *" aria-label="คำอธิบาย"></textarea>
   <label class="block rounded-2xl border-2 border-dashed border-white/15 p-5 text-center cursor-pointer hover:border-amber-500 transition-colors">
     <span class="font-semibold">เลือกรูปตัวละคร (หลายรูปพร้อมกัน)</span>
     <span class="block mt-1 text-xs opacity-60">JPG / PNG / WebP · รูปละ 1 ตัวละคร · ไม่เกิน 10 รูปต่อโพสต์</span>
@@ -183,11 +183,14 @@ textarea.wr-f{resize:none;line-height:1.6}
           <div class="text-sm font-semibold">ข้อมูลตัวละคร</div>
           <button id="ch-close" type="button" class="text-xs opacity-60 hover:opacity-100 cursor-pointer" aria-label="ปิดเครื่องมือตัวละคร">ปิด</button>
         </div>
-        <div class="grid grid-cols-2 gap-2">
+        <div id="ch-multi" class="hidden flex flex-col gap-3"></div>
+        <div id="ch-single" class="grid grid-cols-2 gap-2">
           <input id="ch-orig" class="wr-f col-span-2" maxlength="80" autocomplete="off" placeholder="ชื่อต้นฉบับ เช่น ชื่อภาษาญี่ปุ่น" aria-label="ชื่อต้นฉบับ">
           <input id="ch-role" class="wr-f col-span-2" maxlength="80" autocomplete="off" placeholder="บทบาท เช่น ผู้กล้า" aria-label="บทบาท">
           <input id="ch-gender" class="wr-f" maxlength="20" autocomplete="off" placeholder="เพศ" aria-label="เพศ">
           <input id="ch-age" class="wr-f" maxlength="20" autocomplete="off" placeholder="อายุ" aria-label="อายุ">
+          <input id="ch-cv" class="wr-f col-span-2" maxlength="80" autocomplete="off" placeholder="นักพากย์ (CV)" aria-label="นักพากย์">
+          <textarea id="ch-desc" class="wr-f col-span-2" rows="3" maxlength="1200" placeholder="โปรไฟล์ / เรื่องราวของตัวละคร" aria-label="โปรไฟล์ตัวละคร"></textarea>
           <input id="ch-credit" class="wr-f col-span-2" maxlength="200" autocomplete="off" placeholder="เครดิตภาพ (ชื่อศิลปิน หรือลิงก์ https://)" aria-label="เครดิตภาพ">
         </div>
         <p class="mt-2 text-xs opacity-60">ชื่ออนิเมะที่ตัวละครมาจาก ให้ใส่ในช่องหมวดหมู่ด้านบน</p>
@@ -570,7 +573,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   // ---------- อัปโหลดวิดีโอ 1 คลิป/โพสต์ + ปุ่มลิงก์รูป/GIF (เฉพาะบัญชีที่แอดมินอนุญาต · วิดีโอไม่เกิน 30 วินาที · บีบในเบราว์เซอร์ก่อนส่ง) ----------
   api('/api/blog/me?userId=' + encodeURIComponent(s.userId)).then((r) => {
     if (r.ok && r.data.canVideo) { $('vid-up').classList.remove('hidden'); renderVideos(); }
-    if (r.ok && r.data.canChar) { canChar = true; if (editMeta) setChar(true); }
+    if (r.ok && r.data.canChar) { canChar = true; if (editMeta) setChar(true); $('content').dispatchEvent(new Event('input')); }
     // ลิงก์รูป/GIF: เฉพาะบัญชีที่แอดมินอนุญาต (สิทธิ์เดียวกับอัปโหลดวิดีโอ) — คนอื่นไม่เห็นปุ่มนี้ แต่ยังอัปโหลดรูปจากเครื่องได้ · ปุ่ม/ช่องลิงก์ YouTube แสดงให้ทุกคน
     if (r.ok && (r.data.canLinks !== undefined ? r.data.canLinks : r.data.canVideo)) $('tg-img').classList.remove('hidden');
   }).catch(() => {});
@@ -918,13 +921,40 @@ textarea.wr-f{resize:none;line-height:1.6}
     ta.dispatchEvent(new Event('input')); // ให้ตัวนับตัวอักษรอัปเดตตามข้อความใหม่ (คำสั่งถูกลบแล้ว จึงไม่วนซ้ำ)
   });
   $('ch-close').addEventListener('click', () => setChar(false));
-  const charMeta = () => ({ kind: 'character', orig: $('ch-orig').value, role: $('ch-role').value, gender: $('ch-gender').value, age: $('ch-age').value, credit: $('ch-credit').value });
+  // โพสต์ตัวละครหลายตัว (สร้างจากโหมดอัปโหลด) ต้องส่ง characters[] กลับไปครบ — ห้ามส่งแบบตัวเดียวทับ ไม่งั้นข้อมูลทั้งชุดหาย
+  let multiChars = null; // อาร์เรย์ตัวละครของโพสต์ที่กำลังแก้ (null = โพสต์ตัวเดียว/โพสต์ใหม่)
+  const MULTI_FIELDS = [['name', 'ชื่อตัวละคร *', 150, 1], ['orig', 'ชื่อต้นฉบับ', 80, 1], ['role', 'บทบาท', 80], ['gender', 'เพศ', 20], ['age', 'อายุ', 20], ['cv', 'นักพากย์ (CV)', 80, 1], ['credit', 'เครดิตภาพ (ศิลปิน หรือลิงก์ https://)', 200, 1]];
+  function buildMultiEditor(chars) {
+    multiChars = chars.slice(0, 10).map((c) => ({ ...(c && typeof c === 'object' ? c : {}) }));
+    const box = $('ch-multi'); box.replaceChildren(); box.classList.remove('hidden'); $('ch-single').classList.add('hidden'); $('ch-close').classList.add('hidden');
+    multiChars.forEach((c, i) => {
+      const card = document.createElement('div'); card.className = 'rounded-2xl border border-white/10 p-3 grid grid-cols-2 gap-2';
+      const hd = document.createElement('div'); hd.className = 'col-span-2 text-xs font-semibold text-amber-500'; hd.textContent = 'ตัวละครที่ ' + (i + 1); card.append(hd);
+      MULTI_FIELDS.forEach(([k, ph, max, wide]) => {
+        const inp = document.createElement('input'); inp.className = 'wr-f' + (wide ? ' col-span-2' : ''); inp.placeholder = ph; inp.maxLength = max; inp.autocomplete = 'off'; inp.value = c[k] || ''; inp.dataset.i = i; inp.dataset.k = k; card.append(inp);
+      });
+      const ta = document.createElement('textarea'); ta.className = 'wr-f col-span-2'; ta.rows = 3; ta.maxLength = 1200; ta.placeholder = 'โปรไฟล์ / เรื่องราวของตัวละคร'; ta.value = c.desc || ''; ta.dataset.i = i; ta.dataset.k = 'desc'; card.append(ta);
+      box.append(card);
+    });
+  }
+  function multiMeta() {
+    document.querySelectorAll('#ch-multi [data-k]').forEach((el) => { multiChars[+el.dataset.i][el.dataset.k] = el.value.trim(); });
+    // ผูกรูปกับตัวละครตรง ๆ (โพสต์ที่สร้างก่อนหน้านี้ยังไม่มี image) → ลำดับรูปเปลี่ยนภายหลังก็ไม่ทำให้รูปสลับกับชื่อ
+    multiChars.forEach((c, i) => { if (!c.image && images[i]) c.image = typeof images[i] === 'string' ? images[i] : images[i].url || ''; });
+    return { kind: 'character', characters: multiChars };
+  }
+  const charMeta = () => multiChars ? multiMeta() : ({ kind: 'character', orig: $('ch-orig').value, role: $('ch-role').value, gender: $('ch-gender').value, age: $('ch-age').value, cv: $('ch-cv').value, desc: $('ch-desc').value, credit: $('ch-credit').value });
 
   // ---------- โหมดอัปโหลดตัวละคร: หลายตัวละครรวมเป็นโพสต์เดียว (ชุดละไม่เกิน 10 รูป) · เลื่อนดูรูปทีละตัวในฟีด ----------
-  let cmRows = [], cmBusy = false;
-  const CM_MAX = 10, CM_PER_POST = 10, CM_DESC_MIN = 20;
+  let cmRows = [], cmBusy = false, cmPosted = 0; // cmPosted = จำนวนโพสต์ที่ส่งสำเร็จแล้วในชุดนี้ (ใช้เลขชุด 2/3, 3/3 ให้ต่อเนื่องตอนกดลองใหม่)
+  const CM_MAX = 10, CM_PER_POST = 10, CM_DESC_MIN = 50; // เท่ากับโพสต์ปกติ (minlength 50) กันเซิร์ฟเวอร์ปฏิเสธ
   const cmH = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
-  function enterCharMode() { $('post-form').style.display = 'none'; $('cm').hidden = false; cmCount(); }
+  function enterCharMode() {
+    const mv = (from, to) => { const a = $(from), b = $(to); if (a.value.trim() && !b.value.trim()) { b.value = a.value.trim(); a.value = ''; } };
+    mv('title', 'cm-title'); mv('category', 'cm-anime'); mv('content', 'cm-desc');
+    $('count').textContent = '0 / 20000';
+    $('post-form').style.display = 'none'; $('cm').hidden = false; cmCount();
+  }
   function exitCharMode() { if (cmBusy) return; $('cm').hidden = true; $('post-form').style.display = ''; }
   $('cm-exit').addEventListener('click', exitCharMode);
   function cmCount() {
@@ -941,13 +971,15 @@ textarea.wr-f{resize:none;line-height:1.6}
     const f = {
       name: field('ชื่อตัวละคร *', 150, true), orig: field('ชื่อต้นฉบับ', 80, true),
       role: field('บทบาท', 80), gender: field('เพศ', 20), age: field('อายุ', 20),
+      cv: field('นักพากย์ (CV)', 80, true),
       credit: field('เครดิตภาพ (ศิลปิน หรือลิงก์ https://)', 200, true),
     };
+    const desc = cmH('textarea', 'wr-f col-span-2'); desc.rows = 2; desc.maxLength = 1200; desc.placeholder = 'โปรไฟล์ / เรื่องราวของตัวละคร'; f.desc = desc;
     const msg = cmH('p', 'col-span-2 text-xs min-h-[1rem]');
     const rm = cmH('button', 'justify-self-end text-xs opacity-60 hover:opacity-100 cursor-pointer', 'เอาออก'); rm.type = 'button';
     const row = { file, el: wrap, f, msg, url: '', done: false };
     rm.addEventListener('click', () => { if (cmBusy) return; URL.revokeObjectURL(thumb.src); cmRows = cmRows.filter((x) => x !== row); wrap.remove(); cmCount(); });
-    grid.append(f.name, f.orig, f.role, f.gender, f.age, f.credit, msg, rm);
+    grid.append(f.name, f.orig, f.role, f.gender, f.age, f.cv, f.desc, f.credit, msg, rm);
     wrap.append(thumb, grid);
     return row;
   }
@@ -955,6 +987,7 @@ textarea.wr-f{resize:none;line-height:1.6}
     const list = [...e.target.files];
     e.target.value = '';
     const ok = list.filter((f) => /^image\/(jpeg|png|webp)$/.test(f.type) || isHeic(f));
+    if (cmRows.length && cmRows.every((r) => r.done)) { cmRows.forEach((r) => URL.revokeObjectURL(r.el.querySelector('img').src)); cmRows = []; cmPosted = 0; $('cm-rows').replaceChildren(); }
     const room = CM_MAX - cmRows.length;
     $('cm-msg').textContent = ok.length < list.length ? 'ข้ามไฟล์ที่ไม่ใช่ JPG / PNG / WebP' : (ok.length > room ? `เพิ่มได้อีก ${Math.max(0, room)} รูป (สูงสุด ${CM_MAX} ตัวต่อโพสต์)` : '');
     ok.slice(0, Math.max(0, room)).forEach((file) => { const row = cmMakeRow(file); cmRows.push(row); $('cm-rows').append(row.el); });
@@ -982,16 +1015,17 @@ textarea.wr-f{resize:none;line-height:1.6}
     return r.url;
   }
   async function cmCreate(chunk, part, total) {
-    const title = $('cm-title').value.trim() + (total > 1 ? ` (${part}/${total})` : '');
+    const sfx = total > 1 ? ` (${part}/${total})` : '';
+    const title = [...$('cm-title').value.trim()].slice(0, 120 - sfx.length).join('') + sfx;
     const urls = chunk.map((r) => r.url);
     const payload = {
-      userId: s.userId, title, content: $('cm-desc').value.trim(), excerpt: $('cm-desc').value.trim().slice(0, 120),
+      userId: s.userId, title, content: $('cm-desc').value.trim(), excerpt: [...$('cm-desc').value.trim()].slice(0, 120).join(''),
       category: $('cm-anime').value.trim(), coverUrl: urls[0], images: urls, locks: [], videos: [], soundId: '',
       meta: {
         kind: 'character',
         characters: chunk.map((r) => ({
           name: r.f.name.value.trim(), orig: r.f.orig.value.trim(), role: r.f.role.value.trim(),
-          gender: r.f.gender.value.trim(), age: r.f.age.value.trim(), credit: r.f.credit.value.trim(),
+          gender: r.f.gender.value.trim(), age: r.f.age.value.trim(), cv: r.f.cv.value.trim(), desc: r.f.desc.value.trim(), credit: r.f.credit.value.trim(), image: r.url,
         })),
       },
     };
@@ -1035,9 +1069,9 @@ textarea.wr-f{resize:none;line-height:1.6}
       for (let c = 0; c < chunks.length; c++) {
         $('cm-msg').textContent = `กำลังโพสต์ ${c + 1} / ${chunks.length}...`;
         try {
-          await cmCreate(chunks[c], c + 1, chunks.length);
+          await cmCreate(chunks[c], cmPosted + c + 1, cmPosted + chunks.length);
           chunks[c].forEach((r) => { r.done = true; r.el.style.opacity = '0.6'; r.msg.className = 'col-span-2 text-xs min-h-[1rem] text-emerald-400'; r.msg.textContent = 'โพสต์แล้ว'; });
-          posted++;
+          posted++; cmPosted++;
         } catch (err) {
           chunks[c].forEach((r) => { r.msg.className = 'col-span-2 text-xs min-h-[1rem] text-rose-400'; r.msg.textContent = err.message || 'โพสต์ไม่สำเร็จ'; });
           break;
@@ -1123,7 +1157,7 @@ textarea.wr-f{resize:none;line-height:1.6}
     const p = r.data.post;
     $('title').value = p.title || '';
     $('category').value = p.category || '';
-    if (p.meta && p.meta.kind === 'character') { editMeta = p.meta; hadMeta = true; $('ch-orig').value = p.meta.orig || ''; $('ch-role').value = p.meta.role || ''; $('ch-gender').value = p.meta.gender || ''; $('ch-age').value = p.meta.age || ''; $('ch-credit').value = p.meta.credit || ''; if (canChar) setChar(true); }
+    if (p.meta && p.meta.kind === 'character') { editMeta = p.meta; hadMeta = true; if (Array.isArray(p.meta.characters) && p.meta.characters.length) { images = Array.isArray(p.images) ? p.images.slice(0, IMG_MAX) : []; buildMultiEditor(p.meta.characters); } $('ch-cv').value = p.meta.cv || ''; $('ch-desc').value = p.meta.desc || ''; $('ch-orig').value = p.meta.orig || ''; $('ch-role').value = p.meta.role || ''; $('ch-gender').value = p.meta.gender || ''; $('ch-age').value = p.meta.age || ''; $('ch-credit').value = p.meta.credit || ''; if (canChar) setChar(true); }
     images = Array.isArray(p.images) ? p.images.slice(0, IMG_MAX) : []; savedImages.clear(); images.forEach((u) => savedImages.add(u)); renderImages();
     $('content').value = p.content || '';
     videos = Array.isArray(p.videos) ? p.videos.slice(0, YT_MAX) : []; savedVideos = new Set(videos); renderVideos();
