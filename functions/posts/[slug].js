@@ -1,5 +1,5 @@
 // functions/posts/[slug].js — หน้าโพสต์เดี่ยว /posts/<slug> (SSR + meta + JSON-LD)
-import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard } from '../_lib/render.js';
+import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard, characterInfo } from '../_lib/render.js';
 import { videoGallery, videoLd } from '../_lib/videos.js';
 import { imageGallery, postImages } from '../_lib/gallery.js';
 
@@ -72,6 +72,8 @@ export async function onRequestGet({ request, env, params }) {
     },
   ];
 
+  const charBox = characterInfo(p); // โพสต์ทั่วไปไม่มี meta → '' (ไม่แสดงอะไร)
+
   jsonld.push(...videoLd(p.videos, { title: p.title, desc, uploadDate: isoDate(p.published_at || p.updated_at) || undefined }));
 
   const body = `<main class="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 z-10">
@@ -85,6 +87,7 @@ export async function onRequestGet({ request, env, params }) {
       <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">เผยแพร่ ${esc(fmtDate(p.published_at))}${p.updated_at - p.published_at > 86400000 ? ` · อัปเดต ${esc(fmtDate(p.updated_at))}` : ''}</p>
     </div>
     ${imageGallery(postImages(p), p.title, true)}
+    ${charBox ? `<div class="px-4 pt-4">${charBox}</div>` : ''}
     <div id="post-body" class="px-4 py-6 space-y-5 text-[15px]">
 ${paragraphs}
     </div>

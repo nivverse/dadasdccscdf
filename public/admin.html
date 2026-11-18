@@ -36,11 +36,12 @@
   <h1 class="text-3xl font-extrabold tracking-tight">รายงาน</h1>
   <p class="text-sm text-slate-600 dark:text-neutral-400 mt-1">เรื่องที่สมาชิกรายงานเข้ามา — โพสต์ ความคิดเห็น ผู้ใช้ และเสียง</p>
 
-  <nav class="mt-5 flex border-b border-slate-200 dark:border-white/10" aria-label="สถานะรายงาน">
+  <nav class="mt-5 flex overflow-x-auto border-b border-slate-200 dark:border-white/10" aria-label="สถานะรายงาน">
     <button type="button" data-tab="open" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">รอตรวจสอบ <span id="open-n" class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs hidden"></span></button>
     <button type="button" data-tab="done" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">ตรวจแล้ว</button>
     <button type="button" data-tab="video" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">สิทธิ์วิดีโอ</button>
     <button type="button" data-tab="chat" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">สิทธิ์แชท</button>
+    <button type="button" data-tab="char" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer whitespace-nowrap">สิทธิ์ตัวละคร</button>
     <button type="button" data-tab="junk" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">ไฟล์ขยะ</button>
   </nav>
 
@@ -189,6 +190,7 @@
   // ---------- สิทธิ์ที่แอดมินเลือกบัญชีให้ได้ (วิดีโอ / แชท) ใช้ฟังก์ชันเดียวกัน ----------
   const PERMS = {
     video: { users: '/api/blog/video-users', perm: '/api/blog/video-perm', file: 'blog-api.js', title: 'บัญชีที่อัปโหลดวิดีโอได้', desc: 'วิดีโอยาวไม่เกิน 30 วินาที อัปโหลดได้เฉพาะบัญชีในรายการนี้ (แอดมินอัปโหลดได้เสมอ)' },
+    char: { users: '/api/blog/char-users', perm: '/api/blog/char-perm', file: 'blog-api.js', title: 'บัญชีที่โพสต์ข้อมูลตัวละครได้', desc: 'เครื่องมืออัปโหลดตัวละครจะขึ้นในหน้าเขียนโพสต์เมื่อพิมพ์ /charecter ในคำอธิบาย เฉพาะบัญชีในรายการนี้ (แอดมินใช้ได้เสมอ)' },
     chat: { users: '/api/chat/perm-users', perm: '/api/chat/perm', file: 'chat-api.js', title: 'บัญชีที่ใช้แชทได้', desc: 'หน้าแชทเปิดให้เฉพาะบัญชีในรายการนี้ (แอดมินใช้ได้เสมอ) และแชทกันได้เฉพาะคู่ที่ติดตามกันและกันและได้รับอนุญาตทั้งคู่' },
   };
   async function loadPerms(cfg) {

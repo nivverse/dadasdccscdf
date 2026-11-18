@@ -238,3 +238,49 @@ ${body}
 
 export const htmlResponse = (html, status = 200, cache = 'public, max-age=0, s-maxage=300, stale-while-revalidate=600') =>
   new Response(html, { status, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': cache } });
+
+
+// ======================= ข้อมูลตัวละคร (ใช้เฉพาะหน้าโพสต์เดี่ยว) =======================
+// เพิ่มใหม่ล้วน ๆ ไม่แก้ฟังก์ชันเดิม · โพสต์ทั่วไปไม่มี meta → postMeta() = null / characterInfo() = '' จึงไม่กระทบอะไร
+// p.meta = { kind: 'character', orig, role, gender, age, credit } (ออบเจ็กต์ หรือสตริง JSON ก็ได้)
+// จากเรื่อง = p.category (ใช้ช่องหมวดหมู่เดิม) · รูป/เรื่องย่อ = รูปและเนื้อหาของโพสต์ตามปกติ
+const CHAR_FIELDS = [['orig', 'ชื่อต้นฉบับ'], ['role', 'บทบาท'], ['gender', 'เพศ'], ['age', 'อายุ']];
+const metaText = (v, n = 80) => String(v ?? '').trim().slice(0, n);
+
+export function postMeta(p) {
+  let m = p && p.meta;
+  if (typeof m === 'string') { try { m = JSON.parse(m); } catch { m = null; } }
+  return m && typeof m === 'object' && m.kind === 'character' ? m : null;
+}
+export const isCharacter = (p) => !!postMeta(p);
+
+// เครดิตภาพ: ถ้าเป็นลิงก์ http(s) ทำเป็นลิงก์ (nofollow) ไม่งั้นแสดงเป็นข้อความ
+function creditHtml(raw) {
+  const t = metaText(raw, 200);
+  if (!t) return '';
+  try {
+    const u = new URL(t);
+    if (u.protocol === 'http:' || u.protocol === 'https:') {
+      return `<a href="${esc(u.href)}" target="_blank" rel="nofollow noopener noreferrer ugc" class="text-amber-600 dark:text-amber-400 hover:text-amber-500 break-all">${esc(u.hostname.replace(/^www\./, ''))}</a>`;
+    }
+  } catch {}
+  return esc(t);
+}
+
+// กล่องข้อมูลตัวละคร วางไว้เหนือเนื้อหาหรือใต้รูปในหน้าโพสต์เดี่ยว
+export function characterInfo(p) {
+  const m = postMeta(p);
+  if (!m) return '';
+  const rows = [];
+  if (p.category) rows.push(['จากเรื่อง', `<a href="${catHref(p.category)}" class="text-amber-600 dark:text-amber-400 hover:text-amber-500">${esc(p.category)}</a>`]);
+  CHAR_FIELDS.forEach(([k, label]) => { const v = metaText(m[k]); if (v) rows.push([label, esc(v)]); });
+  const credit = creditHtml(m.credit);
+  if (!rows.length && !credit) return '';
+  return `<section aria-label="ข้อมูลตัวละคร" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4">
+  <h2 class="text-sm font-semibold text-slate-900 dark:text-white">ข้อมูลตัวละคร</h2>
+  ${rows.length ? `<dl class="mt-2 divide-y divide-slate-200 dark:divide-white/10 text-sm">
+    ${rows.map(([k, v]) => `<div class="flex items-baseline justify-between gap-4 py-2"><dt class="text-slate-500 dark:text-neutral-400 flex-shrink-0">${k}</dt><dd class="text-right font-medium text-slate-900 dark:text-white min-w-0 break-words">${v}</dd></div>`).join('\n    ')}
+  </dl>` : ''}
+  ${credit ? `<p class="mt-2 text-xs text-slate-500 dark:text-neutral-400">เครดิตภาพ: ${credit}</p>` : ''}
+</section>`;
+}

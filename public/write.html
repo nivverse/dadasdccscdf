@@ -156,6 +156,23 @@ textarea.wr-f{resize:none;line-height:1.6}
       </div>
     </div>
 
+    <div class="px-4 pt-3">
+      <div id="char-panel" class="hidden" style="border:1.5px solid var(--line);border-radius:16px;padding:12px">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <div class="text-sm font-semibold">ข้อมูลตัวละคร</div>
+          <button id="ch-close" type="button" class="text-xs opacity-60 hover:opacity-100 cursor-pointer" aria-label="ปิดเครื่องมือตัวละคร">ปิด</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="ch-orig" class="wr-f col-span-2" maxlength="80" autocomplete="off" placeholder="ชื่อต้นฉบับ เช่น ชื่อภาษาญี่ปุ่น" aria-label="ชื่อต้นฉบับ">
+          <input id="ch-role" class="wr-f col-span-2" maxlength="80" autocomplete="off" placeholder="บทบาท เช่น ผู้กล้า" aria-label="บทบาท">
+          <input id="ch-gender" class="wr-f" maxlength="20" autocomplete="off" placeholder="เพศ" aria-label="เพศ">
+          <input id="ch-age" class="wr-f" maxlength="20" autocomplete="off" placeholder="อายุ" aria-label="อายุ">
+          <input id="ch-credit" class="wr-f col-span-2" maxlength="200" autocomplete="off" placeholder="เครดิตภาพ (ชื่อศิลปิน หรือลิงก์ https://)" aria-label="เครดิตภาพ">
+        </div>
+        <p class="mt-2 text-xs opacity-60">ชื่ออนิเมะที่ตัวละครมาจาก ให้ใส่ในช่องหมวดหมู่ด้านบน</p>
+      </div>
+    </div>
+
     <div class="flex-1 flex flex-col px-4 pt-6">
       <input id="title" class="wr-title" required minlength="5" maxlength="120" placeholder="หัวข้อโพสต์..." aria-label="หัวข้อ">
       <textarea id="content" class="wr-desc" required minlength="50" maxlength="20000" placeholder="เขียนคำอธิบายหรือเนื้อหาโพสต์..." aria-label="คำอธิบาย"></textarea>
@@ -532,6 +549,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   // ---------- อัปโหลดวิดีโอ 1 คลิป/โพสต์ + ปุ่มลิงก์รูป/GIF (เฉพาะบัญชีที่แอดมินอนุญาต · วิดีโอไม่เกิน 30 วินาที · บีบในเบราว์เซอร์ก่อนส่ง) ----------
   api('/api/blog/me?userId=' + encodeURIComponent(s.userId)).then((r) => {
     if (r.ok && r.data.canVideo) { $('vid-up').classList.remove('hidden'); renderVideos(); }
+    if (r.ok && r.data.canChar) { canChar = true; if (editMeta) setChar(true); }
     // ลิงก์รูป/GIF: เฉพาะบัญชีที่แอดมินอนุญาต (สิทธิ์เดียวกับอัปโหลดวิดีโอ) — คนอื่นไม่เห็นปุ่มนี้ แต่ยังอัปโหลดรูปจากเครื่องได้ · ปุ่ม/ช่องลิงก์ YouTube แสดงให้ทุกคน
     if (r.ok && (r.data.canLinks !== undefined ? r.data.canLinks : r.data.canVideo)) $('tg-img').classList.remove('hidden');
   }).catch(() => {});
@@ -859,6 +877,27 @@ textarea.wr-f{resize:none;line-height:1.6}
   $('content').addEventListener('change', renderLocks);
   setLkMode('follow');
 
+  // ---------- เครื่องมือโพสต์ตัวละคร: ขึ้นเมื่อพิมพ์ /charecter ในคำอธิบาย (เฉพาะบัญชีที่แอดมินอนุญาต · ข้อความคำสั่งจะถูกลบออกจากเนื้อหา) ----------
+  const charPanel = $('char-panel');
+  let canChar = false;  // ได้จาก /api/blog/me (แอดมิน หรือบัญชีที่แอดมินอนุญาต)
+  let charOn = false;   // เครื่องมือเปิดอยู่ไหม
+  let hadMeta = false;  // โพสต์ที่กำลังแก้เคยเป็นตัวละครไหม (ปิดเครื่องมือแล้วบันทึก = ส่ง meta: null เพื่อเปลี่ยนกลับเป็นโพสต์ทั่วไป)
+  let editMeta = null;  // ข้อมูลตัวละครของโพสต์ที่กำลังแก้ (รอผลสิทธิ์จาก /me)
+  const setChar = (on) => { charOn = !!on && canChar; charPanel.classList.toggle('hidden', !charOn); };
+  const CHAR_CMD = /(^|\s)\/char(?:ecter|acter)(?=\s|$)/i; // รับทั้ง /charecter และ /character
+  $('content').addEventListener('input', () => {
+    if (!canChar) return;
+    const ta = $('content'), m = CHAR_CMD.exec(ta.value);
+    if (!m) return;
+    const at = m.index + m[1].length;
+    ta.value = ta.value.slice(0, m.index) + m[1] + ta.value.slice(m.index + m[0].length);
+    try { ta.setSelectionRange(at, at); } catch {}
+    setChar(true);
+    ta.dispatchEvent(new Event('input')); // ให้ตัวนับตัวอักษรอัปเดตตามข้อความใหม่ (คำสั่งถูกลบแล้ว จึงไม่วนซ้ำ)
+  });
+  $('ch-close').addEventListener('click', () => setChar(false));
+  const charMeta = () => ({ kind: 'character', orig: $('ch-orig').value, role: $('ch-role').value, gender: $('ch-gender').value, age: $('ch-age').value, credit: $('ch-credit').value });
+
   $('post-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     syncLocks();
@@ -877,12 +916,14 @@ textarea.wr-f{resize:none;line-height:1.6}
           videos,
           locks: locksPayload(),
           soundId: sound ? sound.id : '',
+          ...(charOn ? { meta: charMeta() } : (hadMeta && canChar ? { meta: null } : {})),
         },
       });
       if (r.status === 401) return needLogin();
       if (!r.ok) return msg(r.data.error || 'ส่งโพสต์ไม่สำเร็จ', 'err');
 
       if (editSlug) {
+        if (canChar) hadMeta = charOn;
         const m = msg('', 'ok');
         const a = el('a', 'font-semibold', 'เปิดดูโพสต์');
         a.href = '/posts/' + editSlug;
@@ -893,7 +934,7 @@ textarea.wr-f{resize:none;line-height:1.6}
         if (r.data.edits_left === 0) { $('submit-btn').classList.add('hidden'); [...$('post-form').elements].forEach((x) => { if (x.id !== 'submit-btn') x.disabled = true; }); }
         return;
       }
-      $('post-form').reset();
+      $('post-form').reset(); setChar(false);
       images = []; renderImages(); imgMsg('');
       videos = []; renderVideos(); ytMsg('');
       sound = null; renderSound();
@@ -930,6 +971,7 @@ textarea.wr-f{resize:none;line-height:1.6}
     const p = r.data.post;
     $('title').value = p.title || '';
     $('category').value = p.category || '';
+    if (p.meta && p.meta.kind === 'character') { editMeta = p.meta; hadMeta = true; $('ch-orig').value = p.meta.orig || ''; $('ch-role').value = p.meta.role || ''; $('ch-gender').value = p.meta.gender || ''; $('ch-age').value = p.meta.age || ''; $('ch-credit').value = p.meta.credit || ''; if (canChar) setChar(true); }
     images = Array.isArray(p.images) ? p.images.slice(0, IMG_MAX) : []; savedImages.clear(); images.forEach((u) => savedImages.add(u)); renderImages();
     $('content').value = p.content || '';
     videos = Array.isArray(p.videos) ? p.videos.slice(0, YT_MAX) : []; savedVideos = new Set(videos); renderVideos();
