@@ -134,6 +134,24 @@ textarea.wr-f{resize:none;line-height:1.6}
 <header id="main-header" class="z-20"></header>
 
 <main class="flex-1 w-full max-w-2xl mx-auto z-10 flex flex-col">
+<section id="cm" hidden style="padding:16px 16px 40px">
+  <style>#cm[hidden]{display:none!important}#cm:not([hidden]){display:flex;flex-direction:column;gap:12px}</style>
+  <div class="flex items-start justify-between gap-3">
+    <div><div class="text-base font-bold">โหมดอัปโหลดตัวละคร</div><div class="text-xs opacity-60 mt-0.5">เลือกรูปได้หลายรูป รูปละ 1 ตัวละคร · โพสต์แล้วจะขึ้นในฟีดเป็นการ์ดตัวละคร</div></div>
+    <button id="cm-exit" type="button" class="text-sm underline opacity-80 hover:opacity-100 cursor-pointer whitespace-nowrap">กลับไปโพสต์ปกติ</button>
+  </div>
+  <label class="block rounded-2xl border-2 border-dashed border-white/15 p-5 text-center cursor-pointer hover:border-amber-500 transition-colors">
+    <span class="font-semibold">เลือกรูปตัวละคร (หลายรูปพร้อมกัน)</span>
+    <span class="block mt-1 text-xs opacity-60">JPG / PNG / WebP · ไม่เกิน 30 รูปต่อครั้ง</span>
+    <input id="cm-files" type="file" accept="image/jpeg,image/png,image/webp" multiple class="sr-only">
+  </label>
+  <p id="cm-count" class="text-sm opacity-70"></p>
+  <div id="cm-rows" class="flex flex-col gap-3"></div>
+  <div class="sticky bottom-0 py-3 flex items-center gap-3">
+    <button id="cm-submit" type="button" disabled class="wr-go disabled:opacity-40 disabled:cursor-not-allowed">อัปโหลดทั้งหมด</button>
+    <p id="cm-msg" class="text-sm min-w-0" role="status"></p>
+  </div>
+</section>
   <form id="post-form" class="flex-1 flex flex-col">
     <div class="flex items-center justify-between gap-3 px-4 pt-5">
       <div class="min-w-0">
@@ -892,11 +910,104 @@ textarea.wr-f{resize:none;line-height:1.6}
     const at = m.index + m[1].length;
     ta.value = ta.value.slice(0, m.index) + m[1] + ta.value.slice(m.index + m[0].length);
     try { ta.setSelectionRange(at, at); } catch {}
+    if (!editSlug) { enterCharMode(); return; } // โพสต์ใหม่: สลับมาโหมดอัปโหลดตัวละครในหน้านี้
     setChar(true);
     ta.dispatchEvent(new Event('input')); // ให้ตัวนับตัวอักษรอัปเดตตามข้อความใหม่ (คำสั่งถูกลบแล้ว จึงไม่วนซ้ำ)
   });
   $('ch-close').addEventListener('click', () => setChar(false));
   const charMeta = () => ({ kind: 'character', orig: $('ch-orig').value, role: $('ch-role').value, gender: $('ch-gender').value, age: $('ch-age').value, credit: $('ch-credit').value });
+
+  // ---------- โหมดอัปโหลดตัวละคร (สลับในหน้าเขียนโพสต์ · หลายรูป รูปละ 1 ตัวละคร · โพสต์เป็นโพสต์ตัวละครที่แสดงบนฟีด) ----------
+  let cmRows = [], cmBusy = false;
+  const CM_MAX = 30, CM_DESC_MIN = 20;
+  const cmH = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  function enterCharMode() { $('post-form').style.display = 'none'; $('cm').hidden = false; cmCount(); }
+  function exitCharMode() { if (cmBusy) return; $('cm').hidden = true; $('post-form').style.display = ''; }
+  $('cm-exit').addEventListener('click', exitCharMode);
+  function cmCount() {
+    const left = cmRows.filter((r) => !r.done).length;
+    $('cm-count').textContent = cmRows.length ? `เลือกไว้ ${cmRows.length} รูป · รอโพสต์ ${left} รูป` : '';
+    $('cm-submit').disabled = !left || cmBusy;
+  }
+  function cmMakeRow(file) {
+    const wrap = cmH('div', 'flex gap-3 p-3 rounded-2xl border border-white/10');
+    const thumb = cmH('img', 'w-20 h-28 object-cover rounded-xl flex-shrink-0');
+    thumb.src = URL.createObjectURL(file); thumb.alt = '';
+    const grid = cmH('div', 'min-w-0 flex-1 grid grid-cols-2 gap-2');
+    const field = (ph, max, wide) => { const i = cmH('input', 'wr-f' + (wide ? ' col-span-2' : '')); i.placeholder = ph; i.maxLength = max; i.autocomplete = 'off'; return i; };
+    const f = {
+      name: field('ชื่อตัวละคร *', 150, true), anime: field('ชื่ออนิเมะ *', 40, true), orig: field('ชื่อต้นฉบับ', 80, true),
+      role: field('บทบาท', 80), gender: field('เพศ', 20), age: field('อายุ', 20), credit: field('เครดิตภาพ (ศิลปิน หรือลิงก์ https://)', 200, true),
+    };
+    const desc = cmH('textarea', 'wr-f col-span-2'); desc.rows = 2; desc.maxLength = 1000;
+    desc.placeholder = `เรื่องย่อ / บทบาท (อย่างน้อย ${CM_DESC_MIN} ตัวอักษร) *`;
+    const msg = cmH('p', 'col-span-2 text-xs min-h-[1rem]');
+    const rm = cmH('button', 'justify-self-end text-xs opacity-60 hover:opacity-100 cursor-pointer', 'เอาออก'); rm.type = 'button';
+    const row = { file, el: wrap, f, desc, msg, done: false };
+    rm.addEventListener('click', () => { if (cmBusy) return; URL.revokeObjectURL(thumb.src); cmRows = cmRows.filter((x) => x !== row); wrap.remove(); cmCount(); });
+    grid.append(f.name, f.anime, f.orig, f.role, f.gender, f.age, f.credit, desc, msg, rm);
+    wrap.append(thumb, grid);
+    return row;
+  }
+  $('cm-files').addEventListener('change', (e) => {
+    const list = [...e.target.files];
+    e.target.value = '';
+    const ok = list.filter((f) => /^image\/(jpeg|png|webp)$/.test(f.type));
+    const room = CM_MAX - cmRows.length;
+    $('cm-msg').textContent = ok.length < list.length ? 'ข้ามไฟล์ที่ไม่ใช่ JPG / PNG / WebP' : (ok.length > room ? `เพิ่มได้อีก ${Math.max(0, room)} รูปต่อครั้ง` : '');
+    ok.slice(0, Math.max(0, room)).forEach((file) => { const row = cmMakeRow(file); cmRows.push(row); $('cm-rows').append(row.el); });
+    cmCount();
+  });
+  function cmCheck(r) {
+    if (!r.f.name.value.trim()) return 'ใส่ชื่อตัวละคร';
+    if (!r.f.anime.value.trim()) return 'ใส่ชื่ออนิเมะ';
+    if ([...r.desc.value.trim()].length < CM_DESC_MIN) return `เรื่องย่อต้องมีอย่างน้อย ${CM_DESC_MIN} ตัวอักษร`;
+    return '';
+  }
+  async function cmPost(r) {
+    const up = await fetch(NIV.API + '/api/blog/upload?userId=' + encodeURIComponent(s.userId), {
+      method: 'POST', headers: { Authorization: 'Bearer ' + s.token, 'Content-Type': r.file.type }, body: r.file,
+    });
+    const ud = await up.json().catch(() => ({}));
+    if (!up.ok || !ud.success) throw new Error(ud.error || 'อัปโหลดรูปไม่สำเร็จ');
+    const payload = {
+      userId: s.userId, title: r.f.name.value.trim(), content: r.desc.value.trim(), excerpt: '',
+      category: r.f.anime.value.trim(), coverUrl: ud.url, images: [ud.url], locks: [], videos: [], soundId: '',
+      meta: { kind: 'character', orig: r.f.orig.value.trim(), role: r.f.role.value.trim(), gender: r.f.gender.value.trim(), age: r.f.age.value.trim(), credit: r.f.credit.value.trim() },
+    };
+    const cr = await fetch(NIV.API + '/api/blog/create', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.token }, body: JSON.stringify(payload),
+    });
+    const cd = await cr.json().catch(() => ({}));
+    if (!cr.ok || !cd.success) throw new Error(cd.error || 'โพสต์ไม่สำเร็จ');
+    return cd;
+  }
+  $('cm-submit').addEventListener('click', async () => {
+    if (cmBusy) return;
+    const todo = cmRows.filter((r) => !r.done);
+    todo.forEach((r) => { const e = cmCheck(r); r.msg.textContent = e; r.msg.className = 'col-span-2 text-xs min-h-[1rem] ' + (e ? 'text-rose-400' : ''); });
+    const valid = todo.filter((r) => !cmCheck(r));
+    if (!valid.length) { $('cm-msg').textContent = todo.length ? 'กรอกข้อมูลให้ครบก่อนอัปโหลด' : ''; return; }
+    cmBusy = true; $('cm-submit').disabled = true;
+    let okN = 0, failN = 0;
+    for (let k = 0; k < valid.length; k++) {
+      const r = valid[k];
+      $('cm-msg').textContent = `กำลังโพสต์ ${k + 1} / ${valid.length}...`;
+      r.msg.className = 'col-span-2 text-xs min-h-[1rem] opacity-70'; r.msg.textContent = 'กำลังอัปโหลด...';
+      try {
+        const cd = await cmPost(r);
+        r.done = true; okN++; r.el.style.opacity = '0.6';
+        r.msg.className = 'col-span-2 text-xs min-h-[1rem] text-emerald-400'; r.msg.replaceChildren();
+        if (cd.slug) { const a = cmH('a', 'underline', 'ดูโพสต์แล้ว'); a.href = '/posts/' + encodeURIComponent(cd.slug); r.msg.append('โพสต์แล้ว · ', a); }
+        else r.msg.textContent = 'โพสต์แล้ว';
+      } catch (err) {
+        failN++; r.msg.className = 'col-span-2 text-xs min-h-[1rem] text-rose-400'; r.msg.textContent = err.message || 'เกิดข้อผิดพลาด ลองใหม่ได้';
+      }
+    }
+    cmBusy = false;
+    $('cm-msg').textContent = `เสร็จแล้ว: สำเร็จ ${okN}${failN ? ` · ไม่สำเร็จ ${failN} (กดอีกครั้งเพื่อลองใหม่)` : ''}`;
+    cmCount();
+  });
 
   $('post-form').addEventListener('submit', async (e) => {
     e.preventDefault();

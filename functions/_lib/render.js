@@ -159,6 +159,7 @@ export function postCard(p, origin, first = false, viewerId = '') {
 }
 function cardHtml(p, origin, first = false) {
   const href = `/posts/${p.slug}`;
+  if (isCharacter(p)) return charCardHtml(p, origin, first, href);
   return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
   ${postHead(p)}
   <div class="px-4 pb-3">
@@ -168,6 +169,30 @@ function cardHtml(p, origin, first = false) {
     ${(p.lock_count || 0) > 0 ? `<div class="mt-2"><a href="${href}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">🔒 มีเนื้อหาที่ถูกล็อก${Number(p.lock_count) > 1 ? ' ' + Number(p.lock_count) + ' กล่อง' : ''} · กดเพื่อปลดล็อก</a></div>` : ''}
   </div>
   ${(p.videos && p.videos.length) ? videoGallery(p.videos, p.title, true, first, href) : imageGallery(postImages(p), p.title, first, href)}
+  ${postBar(p, origin)}
+</article>`;
+}
+
+// การ์ดตัวละครในฟีด: รูปแนวตั้ง + ชื่อ + ชื่ออนิเมะ + แท็กบทบาท/เพศ/อายุ · หัวการ์ด ปุ่มไลก์ รีโพสต์ แชร์ เหมือนโพสต์ทั่วไป
+function charCardHtml(p, origin, first, href) {
+  const m = postMeta(p) || {};
+  const imgs = postImages(p);
+  const f0 = imgs[0];
+  const src = (typeof f0 === 'string' ? f0 : f0 && f0.url) || p.cover_url || '';
+  const sub = [m.orig, p.category].map((v) => metaText(v)).filter(Boolean).map((v) => esc(v)).join(' · ');
+  const tags = [m.role, m.gender, m.age].map((v) => metaText(v, 40)).filter(Boolean)
+    .map((v) => `<span class="px-2 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-300">${esc(v)}</span>`).join('');
+  const pic = src && /^(https?:\/\/|\/)/i.test(src)
+    ? `<img src="${esc(src)}" alt="${esc(p.title)}" class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" loading="${first ? 'eager' : 'lazy'}" decoding="async">`
+    : '<span class="text-xs text-slate-400">ไม่มีรูป</span>';
+  return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
+  ${postHead(p)}
+  <a href="${href}" class="group block px-4 pb-3">
+    <div class="mx-auto w-full max-w-[280px] aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 flex items-center justify-center">${pic}</div>
+    <h2 class="mt-3 text-lg font-bold text-slate-900 dark:text-white leading-snug">${esc(p.title)}</h2>
+    ${sub ? `<p class="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">${sub}</p>` : ''}
+    ${tags ? `<div class="mt-2 flex flex-wrap gap-1.5">${tags}</div>` : ''}
+  </a>
   ${postBar(p, origin)}
 </article>`;
 }
