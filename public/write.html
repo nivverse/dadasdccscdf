@@ -985,7 +985,7 @@ textarea.wr-f{resize:none;line-height:1.6}
     const title = $('cm-title').value.trim() + (total > 1 ? ` (${part}/${total})` : '');
     const urls = chunk.map((r) => r.url);
     const payload = {
-      userId: s.userId, title, content: $('cm-desc').value.trim(), excerpt: '',
+      userId: s.userId, title, content: $('cm-desc').value.trim(), excerpt: $('cm-desc').value.trim().slice(0, 120),
       category: $('cm-anime').value.trim(), coverUrl: urls[0], images: urls, locks: [], videos: [], soundId: '',
       meta: {
         kind: 'character',

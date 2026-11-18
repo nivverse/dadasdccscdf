@@ -173,31 +173,46 @@ function cardHtml(p, origin, first = false) {
 </article>`;
 }
 
-// การ์ดตัวละครในฟีด: แกลเลอรีรูปเลื่อนได้ (หลายตัวละครต่อโพสต์) + รายการชื่อ/ชื่อต้นฉบับ/บทบาท/เพศ/อายุของแต่ละตัวละคร
-// หัวการ์ด ปุ่มไลก์ รีโพสต์ แชร์ เหมือนโพสต์ทั่วไป · โพสต์เดิมที่มีตัวละครตัวเดียวก็แสดงได้
+// การ์ดตัวละครในฟีด: โพสต์เดียวมีหลายสไลด์ เลื่อนแนวนอนทีละตัวละคร (CSS scroll-snap ล้วน ไม่ใช้ JS)
+// แต่ละสไลด์มีรูป + ชื่อ + ชื่อต้นฉบับ + แท็กบทบาท/เพศ/อายุ + เครดิต ของตัวนั้น → เลื่อนแล้วข้อมูลด้านล่างเปลี่ยนตาม
+// หัวการ์ด ปุ่มไลก์ รีโพสต์ แชร์ เหมือนโพสต์ทั่วไป
 function charCardHtml(p, origin, first, href) {
   const m = postMeta(p) || {};
-  const list = Array.isArray(m.characters) ? m.characters : [m];
-  const shown = list.slice(0, 4);
-  const items = shown.map((c) => {
-    const name = metaText(c.name || p.title, 150) || metaText(p.title, 150);
+  const imgs = postImages(p);
+  const chars = Array.isArray(m.characters) ? m.characters.slice(0, 10) : [m];
+  const n = Math.max(1, chars.length);
+  const slides = [];
+  for (let i = 0; i < n; i++) {
+    const c = chars[i] || {};
+    const u = imgs[i] || (i === 0 ? p.cover_url : '') || '';
+    const name = metaText(c.name, 150) || metaText(p.title, 150);
     const sub = metaText(c.orig, 80);
     const tags = [c.role, c.gender, c.age].map((v) => metaText(v, 40)).filter(Boolean)
-      .map((v) => `<span class="px-2 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-300">${esc(v)}</span>`).join('');
-    return `<li class="py-2 border-t border-slate-200 dark:border-white/10 first:border-t-0">
-      <div class="text-sm font-semibold text-slate-900 dark:text-white">${esc(name)}</div>
-      ${sub ? `<div class="text-xs text-slate-500 dark:text-neutral-400">${esc(sub)}</div>` : ''}
-      ${tags ? `<div class="mt-1 flex flex-wrap gap-1.5">${tags}</div>` : ''}
-    </li>`;
-  }).join('');
-  const more = list.length > shown.length ? `<li class="pt-2 text-xs text-slate-500 dark:text-neutral-400">+${list.length - shown.length} ตัวละครอื่น</li>` : '';
-  const cat = p.category ? `<a href="${catHref(p.category)}" class="inline-block text-xs font-medium text-amber-600 dark:text-amber-400 hover:text-amber-500">จากเรื่อง: ${esc(p.category)}</a>` : '';
+      .map((v) => `<span class="px-2.5 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-300">${esc(v)}</span>`).join('');
+    const credit = creditHtml(c.credit);
+    const pic = /^https:\/\//i.test(u)
+      ? `<img src="${esc(u)}" alt="${esc(name)}" class="w-full h-full object-cover" loading="${first && i === 0 ? 'eager' : 'lazy'}" decoding="async">`
+      : '<span class="text-xs text-slate-400">ไม่มีรูป</span>';
+    slides.push(`<div class="w-full shrink-0" style="scroll-snap-align:start" data-char-slide="${i + 1}">
+      <a href="${href}" class="group block mx-auto w-full max-w-[300px] aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 flex items-center justify-center">${pic}</a>
+      <div class="pt-3 text-center">
+        <div class="text-base font-bold text-slate-900 dark:text-white">${esc(name)}</div>
+        ${sub ? `<div class="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">${esc(sub)}</div>` : ''}
+        ${tags ? `<div class="mt-2 flex flex-wrap justify-center gap-1.5">${tags}</div>` : ''}
+        ${credit ? `<p class="mt-2 text-[11px] text-slate-500 dark:text-neutral-400">เครดิตภาพ: ${credit}</p>` : ''}
+      </div>
+    </div>`);
+  }
+  const cat = p.category ? `<a href="${catHref(p.category)}" class="text-xs font-medium text-amber-600 dark:text-amber-400 hover:text-amber-500">จากเรื่อง: ${esc(p.category)}</a>` : '<span></span>';
+  const count = `<span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-300">${n} ตัวละคร</span>`;
+  const hint = n > 1 ? '<p class="mt-1 text-center text-[11px] text-slate-400">เลื่อนดูตัวละครอื่น</p>' : '';
   return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
   ${postHead(p)}
-  ${imageGallery(postImages(p), p.title, first, href)}
   <div class="px-4 pt-3 pb-2">
-    ${cat}
-    <ul class="mt-1">${items}${more}</ul>
+    <div class="flex items-center justify-between gap-2">${cat}${count}</div>
+    <div class="mt-3 flex overflow-x-auto snap-x snap-mandatory" style="scrollbar-width:none" role="region" aria-label="ตัวละครในโพสต์">${slides.join('')}</div>
+    ${hint}
+    ${p.excerpt ? `<p class="mt-3 text-sm leading-relaxed text-slate-700 dark:text-neutral-300 line-clamp-3">${esc(p.excerpt)}</p>` : ''}
   </div>
   ${postBar(p, origin)}
 </article>`;
