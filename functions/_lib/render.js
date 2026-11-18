@@ -218,6 +218,53 @@ function charCardHtml(p, origin, first, href) {
 </article>`;
 }
 
+// หน้าโพสต์เดี่ยวของโพสต์ตัวละคร: เลื่อนดูทีละตัวละคร (radio + label ล้วน ไม่ใช้ JS)
+// แต่ละสไลด์มีรูป + ชื่อ + ชื่อต้นฉบับ + แท็ก + เครดิตของตัวนั้น · ตัวนับ "1 / N" อยู่ในสไลด์เอง จึงตรงเสมอ
+export function characterCarousel(p, eager = true) {
+  const m = postMeta(p) || {};
+  const imgs = postImages(p);
+  const chars = Array.isArray(m.characters) ? m.characters.slice(0, 10) : [m];
+  const n = chars.length;
+  if (!n) return '';
+  const id = (i) => `cz-${i + 1}`;
+  const css = `<style>
+.cz-r{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.cz-s{display:none}
+${chars.map((_, i) => `#${id(i)}:checked ~ .cz-track .cz-s${i + 1}{display:block}
+#${id(i)}:checked ~ .cz-dots label[for="${id(i)}"]{background:#f59e0b;transform:scale(1.3)}`).join('\n')}
+</style>`;
+  const radios = chars.map((_, i) => `<input type="radio" name="cz" id="${id(i)}" class="cz-r" tabindex="-1" aria-hidden="true"${i === 0 ? ' checked' : ''}>`).join('');
+  const navBtn = (side, target, label) => `<label for="${target}" role="button" aria-label="${label}" class="absolute top-1/2 -translate-y-1/2 ${side} z-10 w-9 h-9 rounded-full bg-black/50 text-white grid place-items-center text-xl leading-none cursor-pointer select-none">${side.includes('left') ? '‹' : '›'}</label>`;
+  const slides = chars.map((c, i) => {
+    const u = imgs[i] || (i === 0 ? p.cover_url : '') || '';
+    const name = metaText(c.name, 150) || metaText(p.title, 150);
+    const sub = metaText(c.orig, 80);
+    const tags = [c.role, c.gender, c.age].map((v) => metaText(v, 40)).filter(Boolean)
+      .map((v) => `<span class="px-2.5 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-300">${esc(v)}</span>`).join('');
+    const credit = creditHtml(c.credit);
+    const pic = /^https:\/\//i.test(u)
+      ? `<img src="${esc(u)}" alt="${esc(name)}" class="w-full h-full object-cover" ${eager && i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`
+      : '<span class="text-sm text-slate-400">ไม่มีรูป</span>';
+    return `<div class="cz-s cz-s${i + 1}">
+      <div class="relative mx-auto w-full max-w-[320px] aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 flex items-center justify-center">
+        ${pic}
+        ${i > 0 ? navBtn('left-2', id(i - 1), 'ตัวละครก่อนหน้า') : ''}
+        ${i < n - 1 ? navBtn('right-2', id(i + 1), 'ตัวละครถัดไป') : ''}
+        <span class="absolute top-3 right-3 text-[11px] px-2 py-0.5 rounded-full bg-black/60 text-white">${i + 1} / ${n}</span>
+      </div>
+      <div class="pt-3 text-center">
+        <div class="text-lg font-bold text-slate-900 dark:text-white">${esc(name)}</div>
+        ${sub ? `<div class="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">${esc(sub)}</div>` : ''}
+        ${tags ? `<div class="mt-2 flex flex-wrap justify-center gap-1.5">${tags}</div>` : ''}
+        ${credit ? `<p class="mt-2 text-[11px] text-slate-500 dark:text-neutral-400">เครดิตภาพ: ${credit}</p>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  const dots = n > 1 ? `<div class="cz-dots mt-4 flex justify-center gap-2.5">${chars.map((_, i) =>
+    `<label for="${id(i)}" role="button" aria-label="ตัวละครที่ ${i + 1}" class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/25 cursor-pointer transition-all"></label>`).join('')}</div>` : '';
+  return `${css}<div class="cz relative px-4 pt-4">${radios}<div class="cz-track">${slides}</div>${dots}</div>`;
+}
+
 export { postBar, postHead };
 
 // ธีมเทศกาล: ตัดสินและโหลดฝั่งเบราว์เซอร์โดย /festival.js (ช่วงวันที่อยู่ที่ public/festival.js ที่เดียว)
