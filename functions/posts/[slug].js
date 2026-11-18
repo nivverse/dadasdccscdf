@@ -1,5 +1,5 @@
 // functions/posts/[slug].js — หน้าโพสต์เดี่ยว /posts/<slug> (SSR + meta + JSON-LD)
-import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard, characterInfo } from '../_lib/render.js';
+import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard, characterInfo, characterHero, isCharacter } from '../_lib/render.js';
 import { videoGallery, videoLd } from '../_lib/videos.js';
 import { imageGallery, postImages } from '../_lib/gallery.js';
 
@@ -86,8 +86,8 @@ export async function onRequestGet({ request, env, params }) {
       <h1 class="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
       <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">เผยแพร่ ${esc(fmtDate(p.published_at))}${p.updated_at - p.published_at > 86400000 ? ` · อัปเดต ${esc(fmtDate(p.updated_at))}` : ''}</p>
     </div>
-    ${imageGallery(postImages(p), p.title, true)}
-    ${charBox ? `<div class="px-4 pt-4">${charBox}</div>` : ''}
+    ${isCharacter(p) ? characterHero(postImages(p), p.cover_url, p.title) : imageGallery(postImages(p), p.title, true)}
+    ${charBox}
     <div id="post-body" class="px-4 py-6 space-y-5 text-[15px]">
 ${paragraphs}
     </div>

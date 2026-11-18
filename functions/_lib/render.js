@@ -267,20 +267,34 @@ function creditHtml(raw) {
   return esc(t);
 }
 
-// กล่องข้อมูลตัวละคร วางไว้เหนือเนื้อหาหรือใต้รูปในหน้าโพสต์เดี่ยว
+// รูปภาพตัวละคร: รูปหลักสัดส่วนแนวตั้ง 4:5 ตรงกลาง + แถบรูปย่อ (ถ้ามีหลายรูป) · ไม่มีรูปเลยคืน '' (โพสต์ทั่วไปไม่ใช้ฟังก์ชันนี้)
+export function characterHero(images, cover, title) {
+  const srcs = [...(Array.isArray(images) ? images : []), cover]
+    .map((x) => (typeof x === 'string' ? x : x && x.url))
+    .filter((u) => typeof u === 'string' && /^https?:\/\//i.test(u) || (typeof u === 'string' && u.startsWith('/')));
+  const uniq = [...new Set(srcs)].slice(0, 5);
+  if (!uniq.length) return '';
+  const alt = esc(String(title || '').slice(0, 120));
+  const main = `<figure class="px-4 pt-4"><div class="mx-auto w-full max-w-[360px] aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10"><img src="${esc(uniq[0])}" alt="${alt}" class="w-full h-full object-cover" loading="eager" decoding="async"></div>`;
+  const thumbs = uniq.length > 1 ? `<ul class="mx-auto mt-3 max-w-[360px] flex gap-2 overflow-x-auto" aria-label="รูปเพิ่มเติม">${uniq.map((u, k) => `<li class="flex-shrink-0"><a href="${esc(u)}" target="_blank" rel="noopener" class="block w-12 h-12 overflow-hidden rounded-lg border ${k ? 'border-slate-200 dark:border-white/10' : 'border-amber-500'}"><img src="${esc(u)}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async"></a></li>`).join('')}</ul>` : '';
+  return main + thumbs + '</figure>';
+}
+
+// กล่องข้อมูลตัวละคร (ตามแบบ): ชื่อต้นฉบับ · จากเรื่อง / แถวบทบาท-เพศ-อายุ / เครดิตภาพ · วางต่อจากรูปหลัก
 export function characterInfo(p) {
   const m = postMeta(p);
   if (!m) return '';
+  const sub = [];
+  const orig = metaText(m.orig);
+  if (orig) sub.push(esc(orig));
+  if (p.category) sub.push(`จาก <a href="${catHref(p.category)}" class="font-medium text-amber-600 dark:text-amber-400 hover:text-amber-500">${esc(p.category)}</a>`);
   const rows = [];
-  if (p.category) rows.push(['จากเรื่อง', `<a href="${catHref(p.category)}" class="text-amber-600 dark:text-amber-400 hover:text-amber-500">${esc(p.category)}</a>`]);
-  CHAR_FIELDS.forEach(([k, label]) => { const v = metaText(m[k]); if (v) rows.push([label, esc(v)]); });
+  [['role', 'บทบาท'], ['gender', 'เพศ'], ['age', 'อายุ']].forEach(([k, label]) => { const v = metaText(m[k]); if (v) rows.push([label, esc(v)]); });
   const credit = creditHtml(m.credit);
-  if (!rows.length && !credit) return '';
-  return `<section aria-label="ข้อมูลตัวละคร" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm p-4">
-  <h2 class="text-sm font-semibold text-slate-900 dark:text-white">ข้อมูลตัวละคร</h2>
-  ${rows.length ? `<dl class="mt-2 divide-y divide-slate-200 dark:divide-white/10 text-sm">
-    ${rows.map(([k, v]) => `<div class="flex items-baseline justify-between gap-4 py-2"><dt class="text-slate-500 dark:text-neutral-400 flex-shrink-0">${k}</dt><dd class="text-right font-medium text-slate-900 dark:text-white min-w-0 break-words">${v}</dd></div>`).join('\n    ')}
-  </dl>` : ''}
+  if (!sub.length && !rows.length && !credit) return '';
+  return `<section aria-label="ข้อมูลตัวละคร" class="mx-4 mt-4 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm px-4 py-3">
+  ${sub.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${sub.join(' · ')}</p>` : ''}
+  ${rows.length ? `<dl class="mt-2 text-sm">${rows.map(([k, v]) => `<div class="flex items-baseline justify-between gap-4 py-2 border-t border-slate-200 dark:border-white/10"><dt class="text-slate-500 dark:text-neutral-400">${k}</dt><dd class="font-medium text-slate-900 dark:text-white text-right min-w-0 break-words">${v}</dd></div>`).join('')}</dl>` : ''}
   ${credit ? `<p class="mt-2 text-xs text-slate-500 dark:text-neutral-400">เครดิตภาพ: ${credit}</p>` : ''}
 </section>`;
 }
