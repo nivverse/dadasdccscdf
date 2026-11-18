@@ -195,5 +195,5 @@ html.dark .cs-orig{color:#fbbf24}
 .cs-desc h3::after{content:"";flex:1;height:1px;background:rgba(127,127,127,.28)}
 .cs-desc p{margin-top:12px;font-size:15px;line-height:1.9;white-space:pre-line;opacity:.88;overflow-wrap:anywhere}
 .cs-about{margin:28px 16px 0;padding-top:22px;border-top:1px solid rgba(127,127,127,.25)}
-.cs-about>h3{font-size:11px;font-weight:600;letter-spacing:.24em;color:#f59e0b;margin-bottom:14px}
+.cs-about>h3{font-size:11px;font-weight:600;letter-spacing:.24em;color:#f59e0b;margin-bottom:10px}
 @media (prefers-reduced-motion:reduce){.cs-p{animation:none}.cx-track{scroll-behavior:auto}.cx-img,.cs-thi{transition:none}}

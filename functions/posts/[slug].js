@@ -88,10 +88,8 @@ export async function onRequestGet({ request, env, params }) {
   </nav>`;
   const dates = `<p class="mt-2 text-xs text-slate-500 dark:text-neutral-400">เผยแพร่ ${esc(fmtDate(p.published_at))}${p.updated_at - p.published_at > 86400000 ? ` · อัปเดต ${esc(fmtDate(p.updated_at))}` : ''}</p>`;
   const head = isChar
-    ? `<div class="px-4 pt-6 pb-5">
+    ? `<div class="px-4 pt-6 pb-3">
       <p class="text-[11px] font-semibold tracking-[.24em] text-amber-500">CHARACTER FILE${p.category ? ` · ${esc(String(p.category).toUpperCase())}` : ''}</p>
-      <h1 class="mt-2 text-2xl md:text-4xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
-      ${dates}
     </div>`
     : `<div class="px-4 pb-4">
       <h1 class="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>
@@ -104,8 +102,8 @@ export async function onRequestGet({ request, env, params }) {
     ${postHead(p)}
     ${head}
     ${isChar ? characterCarousel(p, true) : imageGallery(postImages(p), p.title, true)}
-    ${isChar ? '<div class="cs-about"><h3>ABOUT</h3></div>' : ''}
-    <div id="post-body" class="${isChar ? 'px-4 pt-0 pb-6' : 'px-4 py-6'} space-y-5 text-[15px]">
+    ${isChar ? `<div class="cs-about"><h3>ABOUT</h3><h1 class="text-2xl md:text-4xl font-extrabold leading-tight text-slate-900 dark:text-white">${esc(p.title)}</h1>${dates}</div>` : ''}
+    <div id="post-body" class="${isChar ? 'px-4 pt-5 pb-6' : 'px-4 py-6'} space-y-5 text-[15px]">
 ${paragraphs}
     </div>
     ${videoGallery(p.videos, p.title)}

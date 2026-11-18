@@ -277,7 +277,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   <p class="wr-hint" style="font-size:11px">เสียงที่เจ้าของไม่ได้เปิดให้ใช้จะไม่แสดงในรายการ · พบเสียงละเมิดกดรายงานได้ที่หน้าเสียง</p>
 </div>
 <div id="wr-bd" class="wr-bd"></div>
-<script src="/nivread.js"></script>
+<script src="/nivread.js?v=20261119a"></script>
 <script>
   const { session, api, el } = NIV;
   const s = session();
@@ -1015,11 +1015,12 @@ textarea.wr-f{resize:none;line-height:1.6}
     return r.url;
   }
   async function cmCreate(chunk, part, total) {
+    const idem = chunk[0].idem || (chunk[0].idem = (crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : Math.random().toString(36).slice(2).padEnd(16, '0') + Date.now().toString(36))); // ค่าเดิมเมื่อกดลองใหม่ → เซิร์ฟเวอร์ไม่สร้างโพสต์ซ้ำ
     const sfx = total > 1 ? ` (${part}/${total})` : '';
     const title = [...$('cm-title').value.trim()].slice(0, 120 - sfx.length).join('') + sfx;
     const urls = chunk.map((r) => r.url);
     const payload = {
-      userId: s.userId, title, content: $('cm-desc').value.trim(), excerpt: [...$('cm-desc').value.trim()].slice(0, 120).join(''),
+      userId: s.userId, idem, title, content: $('cm-desc').value.trim(), excerpt: [...$('cm-desc').value.trim()].slice(0, 120).join(''),
       category: $('cm-anime').value.trim(), coverUrl: urls[0], images: urls, locks: [], videos: [], soundId: '',
       meta: {
         kind: 'character',
