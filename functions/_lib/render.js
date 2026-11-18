@@ -173,26 +173,32 @@ function cardHtml(p, origin, first = false) {
 </article>`;
 }
 
-// การ์ดตัวละครในฟีด: รูปแนวตั้ง + ชื่อ + ชื่ออนิเมะ + แท็กบทบาท/เพศ/อายุ · หัวการ์ด ปุ่มไลก์ รีโพสต์ แชร์ เหมือนโพสต์ทั่วไป
+// การ์ดตัวละครในฟีด: แกลเลอรีรูปเลื่อนได้ (หลายตัวละครต่อโพสต์) + รายการชื่อ/ชื่อต้นฉบับ/บทบาท/เพศ/อายุของแต่ละตัวละคร
+// หัวการ์ด ปุ่มไลก์ รีโพสต์ แชร์ เหมือนโพสต์ทั่วไป · โพสต์เดิมที่มีตัวละครตัวเดียวก็แสดงได้
 function charCardHtml(p, origin, first, href) {
   const m = postMeta(p) || {};
-  const imgs = postImages(p);
-  const f0 = imgs[0];
-  const src = (typeof f0 === 'string' ? f0 : f0 && f0.url) || p.cover_url || '';
-  const sub = [m.orig, p.category].map((v) => metaText(v)).filter(Boolean).map((v) => esc(v)).join(' · ');
-  const tags = [m.role, m.gender, m.age].map((v) => metaText(v, 40)).filter(Boolean)
-    .map((v) => `<span class="px-2 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-300">${esc(v)}</span>`).join('');
-  const pic = src && /^(https?:\/\/|\/)/i.test(src)
-    ? `<img src="${esc(src)}" alt="${esc(p.title)}" class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" loading="${first ? 'eager' : 'lazy'}" decoding="async">`
-    : '<span class="text-xs text-slate-400">ไม่มีรูป</span>';
+  const list = Array.isArray(m.characters) ? m.characters : [m];
+  const shown = list.slice(0, 4);
+  const items = shown.map((c) => {
+    const name = metaText(c.name || p.title, 150) || metaText(p.title, 150);
+    const sub = metaText(c.orig, 80);
+    const tags = [c.role, c.gender, c.age].map((v) => metaText(v, 40)).filter(Boolean)
+      .map((v) => `<span class="px-2 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-300">${esc(v)}</span>`).join('');
+    return `<li class="py-2 border-t border-slate-200 dark:border-white/10 first:border-t-0">
+      <div class="text-sm font-semibold text-slate-900 dark:text-white">${esc(name)}</div>
+      ${sub ? `<div class="text-xs text-slate-500 dark:text-neutral-400">${esc(sub)}</div>` : ''}
+      ${tags ? `<div class="mt-1 flex flex-wrap gap-1.5">${tags}</div>` : ''}
+    </li>`;
+  }).join('');
+  const more = list.length > shown.length ? `<li class="pt-2 text-xs text-slate-500 dark:text-neutral-400">+${list.length - shown.length} ตัวละครอื่น</li>` : '';
+  const cat = p.category ? `<a href="${catHref(p.category)}" class="inline-block text-xs font-medium text-amber-600 dark:text-amber-400 hover:text-amber-500">จากเรื่อง: ${esc(p.category)}</a>` : '';
   return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
   ${postHead(p)}
-  <a href="${href}" class="group block px-4 pb-3">
-    <div class="mx-auto w-full max-w-[280px] aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 flex items-center justify-center">${pic}</div>
-    <h2 class="mt-3 text-lg font-bold text-slate-900 dark:text-white leading-snug">${esc(p.title)}</h2>
-    ${sub ? `<p class="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">${sub}</p>` : ''}
-    ${tags ? `<div class="mt-2 flex flex-wrap gap-1.5">${tags}</div>` : ''}
-  </a>
+  ${imageGallery(postImages(p), p.title, first, href)}
+  <div class="px-4 pt-3 pb-2">
+    ${cat}
+    <ul class="mt-1">${items}${more}</ul>
+  </div>
   ${postBar(p, origin)}
 </article>`;
 }
