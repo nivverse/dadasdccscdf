@@ -35,7 +35,7 @@ ${feed ? '</a>' : '</div>'}</div>`;
       ? `<a class="gal-t" href="${esc(href)}" aria-label="เปิดโพสต์ ${alt}">${img}</a>`
       : `<button type="button" class="gal-t" data-i="${i}" aria-label="ดูรูปเต็ม">${img}</button>`;
   }).join('');
-  const nav = n > 2 ? `<button type="button" class="gal-nav gal-p" aria-label="รูปก่อนหน้า" hidden>${CHEV('M15 5l-7 7 7 7')}</button><button type="button" class="gal-nav gal-nx" aria-label="รูปถัดไป">${CHEV('M9 5l7 7-7 7')}</button>` : '';
-  const dots = n > 2 ? `<div class="gal-dots" aria-hidden="true">${urls.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</div>` : '';
+  const nav = n > 1 ? `<button type="button" class="gal-nav gal-p" aria-label="รูปก่อนหน้า" hidden>${CHEV('M15 5l-7 7 7 7')}</button><button type="button" class="gal-nav gal-nx" aria-label="รูปถัดไป">${CHEV('M9 5l7 7-7 7')}</button>` : '';
+  const dots = n > 1 ? `<div class="gal-dots" aria-hidden="true">${urls.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</div>` : '';
   return `<div class="gal gal-xw${feed ? ' gal-l' : ''}">${dots}<div class="gal-x gal-x-${n === 2 ? '2' : 'm'}"${feed ? '' : ` data-imgs="${data}"`}>${tiles}</div>${nav}</div>`;
 }
