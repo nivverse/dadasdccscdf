@@ -212,15 +212,12 @@ function charCardHtml(p, origin, first, href) {
       : '<span class="cx-noimg">ไม่มีรูป</span>';
     return `<a href="${href}#c${i + 1}" class="cx-slide" aria-label="${esc(c.name)}"><span class="cx-frame">${pic}<span class="cx-shade"></span>${total > 1 ? `<span class="cx-idx">${i + 1}/${total}</span>` : ''}<span class="cx-cap"><b>${esc(c.name)}</b></span></span></a>`;
   }).join('') + (total > list.length ? `<a href="${href}" class="cx-slide" aria-label="ดูตัวละครทั้งหมด"><span class="cx-frame cx-rest">+${total - list.length}<br>ดูทั้งหมด</span></a>` : '');
-  const cat = p.category ? `<a href="${catHref(p.category)}" class="cx-from">จากเรื่อง · ${esc(p.category)}</a>` : '<span></span>';
-  const count = `<span class="cx-count">${total} ตัวละคร</span>`;
   const multi = total > 1;
   const nav = multi ? `<button type="button" class="cx-nav cx-prev" aria-label="ตัวละครก่อนหน้า" hidden>${CHEV('M15 5l-7 7 7 7')}</button><button type="button" class="cx-nav cx-next" aria-label="ตัวละครถัดไป">${CHEV('M9 5l7 7-7 7')}</button>` : '';
   return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden">
   ${postHead(p)}
   <div class="px-4 pb-3">
-    <div class="flex items-center justify-between gap-2">${cat}${count}</div>
-    <h2 class="mt-1.5 text-lg font-bold text-slate-900 dark:text-white leading-snug"><a href="${href}" class="hover:text-amber-500 transition-colors">${esc(p.title)}</a></h2>
+    <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-snug"><a href="${href}" class="hover:text-amber-500 transition-colors">${esc(p.title)}</a></h2>
     ${p.excerpt ? `<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-2"><a href="${href}" class="block hover:text-amber-500 transition-colors">${esc(p.excerpt)}</a></p>` : ''}
   </div>
   <div class="cx-feed${multi ? ' cx-multi' : ''}"><div class="cx-track" role="region" aria-label="ตัวละครในโพสต์ ปัดเพื่อดูตัวถัดไป">${slides}</div>${nav}</div>
@@ -320,7 +317,7 @@ ${ld}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{font-family:'Kanit',sans-serif}.uv,.uv.bp{padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}.uv video{background:transparent!important;border:0!important}</style>
-<link id="niv-css" rel="stylesheet" href="/niv.css?v=20261119b">
+<link id="niv-css" rel="stylesheet" href="/niv.css?v=20261119c">
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white transition-colors duration-300 min-h-screen flex flex-col relative overflow-x-hidden">
 <div class="fixed inset-0 pointer-events-none z-0">
@@ -329,7 +326,7 @@ ${ld}
 </div>
 <header id="main-header" class="z-20"></header>
 ${body}
-<script src="/nivread.js?v=20261119b"></script>
+<script src="/nivread.js?v=20261119c"></script>
 <script src="/posts-feed.js" defer></script>
 </body>
 </html>`;

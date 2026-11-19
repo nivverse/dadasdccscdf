@@ -161,7 +161,10 @@ textarea.wr-f{resize:none;line-height:1.6}
   <div class="cm-card">
     <div class="cm-sec">1 · ข้อมูลโพสต์</div>
     <input id="cm-title" class="wr-f" maxlength="120" autocomplete="off" placeholder="หัวข้อโพสต์ เช่น ตัวละครจาก Frieren *" aria-label="หัวข้อโพสต์">
-    <input id="cm-anime" class="wr-f" maxlength="40" autocomplete="off" placeholder="ชื่ออนิเมะ / หมวดหมู่ *" aria-label="ชื่ออนิเมะ">
+    <div class="relative">
+      <input id="cm-anime" class="wr-f" maxlength="40" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="cm-cat-sug" placeholder="หมวดหมู่" aria-label="หมวดหมู่">
+      <ul id="cm-cat-sug" role="listbox" class="hidden absolute left-0 top-full mt-1 z-30 w-[min(100%,320px)] max-h-64 overflow-y-auto rounded-xl bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/10 shadow-xl py-1"></ul>
+    </div>
     <textarea id="cm-desc" class="wr-f" rows="3" maxlength="20000" placeholder="คำอธิบายของโพสต์ (อย่างน้อย 20 ตัวอักษร) *" aria-label="คำอธิบาย"></textarea>
   </div>
 
@@ -283,7 +286,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   <p class="wr-hint" style="font-size:11px">เสียงที่เจ้าของไม่ได้เปิดให้ใช้จะไม่แสดงในรายการ · พบเสียงละเมิดกดรายงานได้ที่หน้าเสียง</p>
 </div>
 <div id="wr-bd" class="wr-bd"></div>
-<script src="/nivread.js?v=20261119b"></script>
+<script src="/nivread.js?v=20261119c"></script>
 <script>
   const { session, api, el } = NIV;
   const s = session();
@@ -1198,53 +1201,57 @@ textarea.wr-f{resize:none;line-height:1.6}
 
   // ---------- หมวดหมู่ที่เคยมีผู้ใช้ใส่ (พิมพ์แล้วแนะนำให้เลือก เช่น พิมพ์ ani → anime, การ์ → การ์ตูน) ----------
   let allCats = [];
-  let sugIdx = -1;
-  const sug = $('cat-sug'), catIn = $('category');
   const norm = (t) => String(t).toLowerCase().replace(/\s+/g, ' ').trim();
-  function hideSug() { sug.classList.add('hidden'); catIn.setAttribute('aria-expanded', 'false'); sugIdx = -1; }
-  function pickCat(name) { catIn.value = name; hideSug(); }
-  function showSug() {
-    const q = norm(catIn.value.replace(/^#+/, ''));
-    if (!q) return hideSug();
-    // ขึ้นต้นด้วยคำที่พิมพ์ก่อน แล้วค่อยตามด้วยที่มีคำนั้นอยู่ตรงกลาง
-    const starts = allCats.filter((c) => norm(c.name).startsWith(q));
-    const has = allCats.filter((c) => !norm(c.name).startsWith(q) && norm(c.name).includes(q));
-    const found = [...starts, ...has].slice(0, 8);
-    sug.replaceChildren();
-    found.forEach((c) => {
-      const li = el('li', 'flex items-center justify-between gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-amber-500/10 aria-selected:bg-amber-500/15');
-      li.setAttribute('role', 'option');
-      li.append(el('span', 'truncate', c.name), el('span', 'text-xs text-slate-400 shrink-0', c.n + ' โพสต์'));
-      li.addEventListener('mousedown', (e) => { e.preventDefault(); pickCat(c.name); });
-      sug.append(li);
-    });
-    const exact = allCats.some((c) => norm(c.name) === q);
-    if (!exact) {
-      const li = el('li', 'px-4 py-2 text-sm cursor-pointer text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 aria-selected:bg-amber-500/15');
-      li.setAttribute('role', 'option'); li.dataset.new = '1';
-      li.textContent = 'สร้างหมวดใหม่ "' + catIn.value.replace(/^#+/, '').trim() + '"';
-      li.addEventListener('mousedown', (e) => { e.preventDefault(); pickCat(catIn.value.replace(/^#+/, '').replace(/\s+/g, ' ').trim()); });
-      sug.append(li);
+  // ผูกช่องหมวดหมู่กับรายการแนะนำ — ใช้ทั้งฟอร์มโพสต์ปกติ (#category) และโหมดตัวละคร (#cm-anime)
+  function bindCategory(catIn, sug) {
+  let sugIdx = -1;
+    function hideSug() { sug.classList.add('hidden'); catIn.setAttribute('aria-expanded', 'false'); sugIdx = -1; }
+    function pickCat(name) { catIn.value = name; hideSug(); }
+    function showSug() {
+      const q = norm(catIn.value.replace(/^#+/, ''));
+      if (!q) return hideSug();
+      // ขึ้นต้นด้วยคำที่พิมพ์ก่อน แล้วค่อยตามด้วยที่มีคำนั้นอยู่ตรงกลาง
+      const starts = allCats.filter((c) => norm(c.name).startsWith(q));
+      const has = allCats.filter((c) => !norm(c.name).startsWith(q) && norm(c.name).includes(q));
+      const found = [...starts, ...has].slice(0, 8);
+      sug.replaceChildren();
+      found.forEach((c) => {
+        const li = el('li', 'flex items-center justify-between gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-amber-500/10 aria-selected:bg-amber-500/15');
+        li.setAttribute('role', 'option');
+        li.append(el('span', 'truncate', c.name), el('span', 'text-xs text-slate-400 shrink-0', c.n + ' โพสต์'));
+        li.addEventListener('mousedown', (e) => { e.preventDefault(); pickCat(c.name); });
+        sug.append(li);
+      });
+      const exact = allCats.some((c) => norm(c.name) === q);
+      if (!exact) {
+        const li = el('li', 'px-4 py-2 text-sm cursor-pointer text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 aria-selected:bg-amber-500/15');
+        li.setAttribute('role', 'option'); li.dataset.new = '1';
+        li.textContent = 'สร้างหมวดใหม่ "' + catIn.value.replace(/^#+/, '').trim() + '"';
+        li.addEventListener('mousedown', (e) => { e.preventDefault(); pickCat(catIn.value.replace(/^#+/, '').replace(/\s+/g, ' ').trim()); });
+        sug.append(li);
+      }
+      sugIdx = -1;
+      sug.classList.remove('hidden'); catIn.setAttribute('aria-expanded', 'true');
     }
-    sugIdx = -1;
-    sug.classList.remove('hidden'); catIn.setAttribute('aria-expanded', 'true');
+    catIn.addEventListener('input', showSug);
+    catIn.addEventListener('focus', showSug);
+    catIn.addEventListener('blur', () => setTimeout(hideSug, 120));
+    catIn.addEventListener('keydown', (e) => {
+      const items = [...sug.children];
+      if (sug.classList.contains('hidden') || !items.length) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        sugIdx = (sugIdx + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+        items.forEach((li, i) => li.setAttribute('aria-selected', i === sugIdx ? 'true' : 'false'));
+        items[sugIdx].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter' && sugIdx >= 0) {
+        e.preventDefault();
+        items[sugIdx].dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+      } else if (e.key === 'Escape') hideSug();
+    });
   }
-  catIn.addEventListener('input', showSug);
-  catIn.addEventListener('focus', showSug);
-  catIn.addEventListener('blur', () => setTimeout(hideSug, 120));
-  catIn.addEventListener('keydown', (e) => {
-    const items = [...sug.children];
-    if (sug.classList.contains('hidden') || !items.length) return;
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      sugIdx = (sugIdx + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
-      items.forEach((li, i) => li.setAttribute('aria-selected', i === sugIdx ? 'true' : 'false'));
-      items[sugIdx].scrollIntoView({ block: 'nearest' });
-    } else if (e.key === 'Enter' && sugIdx >= 0) {
-      e.preventDefault();
-      items[sugIdx].dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-    } else if (e.key === 'Escape') hideSug();
-  });
+  bindCategory($('category'), $('cat-sug'));
+  bindCategory($('cm-anime'), $('cm-cat-sug'));
 
   (async () => {
     try {

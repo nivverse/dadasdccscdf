@@ -404,7 +404,7 @@
   }
   function charBlockEl(p, full) { // แสดงแค่ที่จำเป็น (รูป + ชื่อ + เลขลำดับ) · จำกัด 8 สไลด์ — ตรงกับ charCardHtml() ฝั่งเซิร์ฟเวอร์
     if (!document.getElementById('niv-css') && !document.getElementById('niv-char-css')) {
-      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261119b'; document.head.appendChild(l);
+      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261119c'; document.head.appendChild(l);
     }
     const href = '/posts/' + encodeURIComponent(p.slug), total = full.length, list = full.slice(0, 8);
     const slides = list.map((c, i) => {
@@ -413,10 +413,9 @@
     }).join('') + (total > list.length ? '<a href="' + href + '" class="cx-slide" aria-label="ดูตัวละครทั้งหมด"><span class="cx-frame cx-rest">+' + (total - list.length) + '<br>ดูทั้งหมด</span></a>' : '');
     const chev = (d) => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
     const nav = total > 1 ? '<button type="button" class="cx-nav cx-prev" aria-label="ตัวละครก่อนหน้า" hidden>' + chev('M15 5l-7 7 7 7') + '</button><button type="button" class="cx-nav cx-next" aria-label="ตัวละครถัดไป">' + chev('M9 5l7 7-7 7') + '</button>' : '';
-    const cat = p.category ? '<a href="/category/' + encodeURIComponent(p.category) + '" class="cx-from">จากเรื่อง · ' + escH(p.category) + '</a>' : '<span></span>';
     const box = document.createElement('div');
-    box.innerHTML = '<div class="px-4 pb-3"><div class="flex items-center justify-between gap-2">' + cat + '<span class="cx-count">' + total + ' ตัวละคร</span></div>'
-      + '<h2 class="mt-1.5 text-lg font-bold leading-snug"><a href="' + href + '" class="hover:text-amber-500 transition-colors">' + escH(p.title) + '</a></h2>'
+    box.innerHTML = '<div class="px-4 pb-3">'
+      + '<h2 class="text-lg font-bold leading-snug"><a href="' + href + '" class="hover:text-amber-500 transition-colors">' + escH(p.title) + '</a></h2>'
       + (p.excerpt ? '<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-2"><a href="' + href + '" class="block hover:text-amber-500 transition-colors">' + escH(p.excerpt) + '</a></p>' : '') + '</div>'
       + '<div class="cx-feed' + (total > 1 ? ' cx-multi' : '') + '"><div class="cx-track" role="region" aria-label="ตัวละครในโพสต์ ปัดเพื่อดูตัวถัดไป">' + slides + '</div>' + nav + '</div>';
     return box;
@@ -536,7 +535,7 @@
 `;
 
 
-  // ---------- แกลเลอรีรูปแบบ Facebook + ดูรูปเต็ม (lightbox) ----------
+  // ---------- แกลเลอรีรูปแบบ X (แถวรูปเลื่อนแนวนอน) + ดูรูปเต็ม (lightbox) ----------
   const IMG_OK = /^https:\/\/[^\s"'<>]{4,500}$/;
   function galleryEl(list, title, href) {
     const urls = (Array.isArray(list) ? list : []).filter((x) => IMG_OK.test(x)).slice(0, 10);
@@ -549,15 +548,16 @@
       root.innerHTML = (feed ? '<a class="gal-s" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' : '<div class="gal-s" data-imgs="' + data + '" data-i="0" role="button" tabindex="0" aria-label="ดูรูปเต็ม">') +
         '<img class="bg" src="' + escHtml(urls[0]) + '" alt="" aria-hidden="true" loading="lazy" decoding="async">' +
         '<img class="fg" src="' + escHtml(urls[0]) + '" alt="' + alt + '" loading="lazy" decoding="async">' + (feed ? '</a>' : '</div>');
-    } else {
-      root.innerHTML = '<div class="gal-g gal-' + Math.min(n, 5) + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.slice(0, 5).map((u, i) => {
-        const more = i === 4 && n > 5;
-        const im = '<img src="' + escHtml(u) + '" alt="' + alt + ' รูปที่ ' + (i + 1) + '" loading="lazy" decoding="async">';
-        const mo = more ? ' data-more="+' + (n - 5) + '"' : '';
+    } else { // หลายรูป = แถวรูปเลื่อนแนวนอนแบบ X (ไม่มีเลขลำดับ/ป้าย +N) · 2 รูปเต็มแถว · 3+ รูปเห็นรูปถัดไปโผล่ขอบขวา
+      const chev = (d) => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
+      root.classList.add('gal-xw');
+      root.innerHTML = '<div class="gal-x gal-x-' + (n === 2 ? '2' : 'm') + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.map((u, i) => {
+        const im = '<img src="' + escHtml(u) + '" alt="' + alt + '" loading="lazy" decoding="async">';
         return feed
-          ? '<a class="gal-t' + (more ? ' gal-more' : '') + '" href="' + escHtml(href) + '"' + mo + ' aria-label="เปิดโพสต์ ' + alt + '">' + im + '</a>'
-          : '<button type="button" class="gal-t' + (more ? ' gal-more' : '') + '" data-i="' + i + '"' + mo + ' aria-label="ดูรูปที่ ' + (i + 1) + '">' + im + '</button>';
-      }).join('') + '</div>';
+          ? '<a class="gal-t" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' + im + '</a>'
+          : '<button type="button" class="gal-t" data-i="' + i + '" aria-label="ดูรูปเต็ม">' + im + '</button>';
+      }).join('') + '</div>'
+        + (n > 2 ? '<button type="button" class="gal-nav gal-p" aria-label="รูปก่อนหน้า" hidden>' + chev('M15 5l-7 7 7 7') + '</button><button type="button" class="gal-nav gal-nx" aria-label="รูปถัดไป">' + chev('M9 5l7 7-7 7') + '</button>' : '');
     }
     return root;
   }
@@ -568,16 +568,9 @@
 .gal-s .bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(26px) brightness(.5);pointer-events:none}
 .gal-s .fg{position:relative;display:block;width:auto;height:auto;max-width:100%;max-height:36rem;transition:transform .4s ease}
 .gal-s:hover .fg{transform:scale(1.015)}
-.gal-g{display:grid;gap:4px;border-radius:16px;overflow:hidden}
 .gal-t{position:relative;min-height:0;padding:0;border:0;background:#111;cursor:zoom-in;overflow:hidden}
 .gal-t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease,filter .3s}
 .gal-t:hover img{transform:scale(1.05);filter:brightness(1.08)}
-.gal-2{grid-template-columns:1fr 1fr;aspect-ratio:4/3}
-.gal-3{grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;aspect-ratio:4/3}
-.gal-3 .gal-t:first-child{grid-row:span 2}
-.gal-4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;aspect-ratio:1/1}
-.gal-5{grid-template-columns:repeat(6,1fr);grid-template-rows:3fr 2fr;aspect-ratio:1/1}
-.gal-5 .gal-t:nth-child(-n+2){grid-column:span 3}.gal-5 .gal-t:nth-child(n+3){grid-column:span 2}
 .gal-s:not(.ok){min-height:11rem}
 @media (min-width:500px){html:not(.niv-single) .gal-s.ok .fg{width:100%!important;height:auto!important;max-height:36rem!important;object-fit:cover!important}html:not(.niv-single) .gal-s.ok .bg{display:none!important}}
 .gal-s:not(.ok)::before,.gal-t:not(.ok)::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#e4e4de 25%,#f2f2ed 50%,#e4e4de 75%) 0 0/200% 100%;animation:gal-sh 1.3s linear infinite}
@@ -585,7 +578,19 @@
 @keyframes gal-sh{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.gal-s:not(.ok)::before,.gal-t:not(.ok)::before{animation:none}}
 .gal-l .gal-t,.gal-l .gal-s{cursor:pointer}
-.gal-more::after{content:attr(data-more);position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff;font-size:1.9rem;font-weight:700;font-family:'Josefin Sans','Kanit',sans-serif}
+.gal-xw{position:relative}
+.gal-x{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.gal-x::-webkit-scrollbar{display:none}
+.gal-x .gal-t{display:block;flex:0 0 calc(46% - 3px);aspect-ratio:4/5;border-radius:16px;scroll-snap-align:start}
+.gal-x-2 .gal-t{flex:1 1 0}
+.gal-x .gal-t img{transition:none}
+.gal-x .gal-t:hover img{transform:none;filter:none}
+.gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
+.gal-nav:hover{background:rgba(245,158,11,.92)}
+.gal-nav[hidden]{display:none}
+.gal-p{left:8px}.gal-nx{right:8px}
+.gal-xw:hover .gal-nav,.gal-nav:focus-visible{opacity:1}
+@media (hover:none){.gal-nav{display:none}}
 #niv-lb{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:lb-in .2s ease}
 @keyframes lb-in{from{opacity:0}to{opacity:1}}
 #niv-lb img{max-width:100vw;max-height:100dvh;object-fit:contain;padding:3.25rem .5rem;user-select:none;-webkit-user-drag:none;touch-action:pan-y}
@@ -1572,7 +1577,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
     const cr = card.getBoundingClientRect(); if (!cr.width) return null;
     const items = [];
     card.querySelectorAll('a,button').forEach((x) => {
-      if (x === badge || x.hidden || x.closest('.uv,.vg,.gal-s,.gal-g,.snd-badge')) return;
+      if (x === badge || x.hidden || x.closest('.uv,.vg,.gal-s,.gal-x,.snd-badge')) return;
       const r = x.getBoundingClientRect();
       if (!r.width || !r.height || r.width > 120 || r.height > 64) return;
       if (r.top - cr.top > SND_BAND || r.bottom < cr.top) return;
@@ -1984,6 +1989,25 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
 
   // ---------- footer ----------
   // (ถอด footer ล่างสุดของหน้าออกแล้ว — เมนูแฮมเบอร์เกอร์ไม่เปลี่ยน)
+})();
+// ---------- แกลเลอรีรูปแบบ X (.gal-x): ปุ่มลูกศรเลื่อนแถวรูป · เมาส์เท่านั้น (จอสัมผัสปัดนิ้วเอง) ----------
+(function () {
+  function edges(w) {
+    const t = w.querySelector('.gal-x'); if (!t) return;
+    const p = w.querySelector('.gal-p'), n = w.querySelector('.gal-nx');
+    if (p) p.hidden = t.scrollLeft <= 2;
+    if (n) n.hidden = t.scrollLeft >= t.scrollWidth - t.clientWidth - 2;
+  }
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest && e.target.closest('.gal-nav'); if (!b) return;
+    e.preventDefault();
+    const w = b.closest('.gal-xw'), t = w.querySelector('.gal-x'), s = w.querySelector('.gal-t');
+    const step = (s ? s.getBoundingClientRect().width : t.clientWidth * 0.8) + 6;
+    t.scrollBy({ left: b.classList.contains('gal-p') ? -step : step, behavior: 'smooth' });
+  });
+  let raf = 0; // อัปเดตลูกศรไม่เกินหนึ่งครั้งต่อเฟรม
+  document.addEventListener('scroll', (e) => { const t = e.target; if (!t || !t.classList || !t.classList.contains('gal-x') || raf) return; raf = requestAnimationFrame(() => { raf = 0; edges(t.parentNode); }); }, { capture: true, passive: true });
+  document.addEventListener('mouseover', (e) => { const w = e.target.closest && e.target.closest('.gal-xw'); if (w && !w.dataset.galInit) { w.dataset.galInit = '1'; edges(w); } });
 })();
 // ---------- การ์ดตัวละครในฟีด: ปุ่มลูกศรเลื่อนแถวรูป (.cx-*) · เมาส์เท่านั้น (จอสัมผัสปัดนิ้วเอง) ----------
 (function () {
