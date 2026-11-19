@@ -551,13 +551,13 @@
     } else { // หลายรูป = แถวรูปเลื่อนแนวนอนแบบ X (ไม่มีเลขลำดับ/ป้าย +N) · 2 รูปเต็มแถว · 3+ รูปเห็นรูปถัดไปโผล่ขอบขวา
       const chev = (d) => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
       root.classList.add('gal-xw');
-      root.innerHTML = (n > 2 ? '<div class="gal-dots" aria-hidden="true">' + urls.map((_, i) => '<i' + (i ? '' : ' class="on"') + '></i>').join('') + '</div>' : '') + '<div class="gal-x gal-x-' + (n === 2 ? '2' : 'm') + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.map((u, i) => {
+      root.innerHTML = (n > 1 ? '<div class="gal-dots" aria-hidden="true">' + urls.map((_, i) => '<i' + (i ? '' : ' class="on"') + '></i>').join('') + '</div>' : '') + '<div class="gal-x gal-x-' + (n === 2 ? '2' : 'm') + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.map((u, i) => {
         const im = '<img src="' + escHtml(u) + '" alt="' + alt + '" loading="lazy" decoding="async">';
         return feed
           ? '<a class="gal-t" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' + im + '</a>'
           : '<button type="button" class="gal-t" data-i="' + i + '" aria-label="ดูรูปเต็ม">' + im + '</button>';
       }).join('') + '</div>'
-        + (n > 2 ? '<button type="button" class="gal-nav gal-p" aria-label="รูปก่อนหน้า" hidden>' + chev('M15 5l-7 7 7 7') + '</button><button type="button" class="gal-nav gal-nx" aria-label="รูปถัดไป">' + chev('M9 5l7 7-7 7') + '</button>' : '');
+        + (n > 1 ? '<button type="button" class="gal-nav gal-p" aria-label="รูปก่อนหน้า" hidden>' + chev('M15 5l-7 7 7 7') + '</button><button type="button" class="gal-nav gal-nx" aria-label="รูปถัดไป">' + chev('M9 5l7 7-7 7') + '</button>' : '');
     }
     return root;
   }
@@ -576,14 +576,13 @@
 @keyframes gal-sh{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.gal-s:not(.ok)::before,.gal-t:not(.ok)::before{animation:none}}
 .gal-l .gal-t,.gal-l .gal-s{cursor:pointer}
-.gal-xw{position:relative}
-.gal-dots{display:flex;align-items:center;gap:5px;margin:0 0 8px;padding:0 2px}
+.gal-xw{position:relative;margin-left:0;margin-right:0}
+.gal-dots{display:flex;align-items:center;gap:5px;margin:0 0 8px;padding:0 1rem}
 .gal-dots i{display:block;height:4px;width:6px;border-radius:999px;background:currentColor;opacity:.28;transition:width .2s,opacity .2s}
 .gal-dots i.on{width:22px;opacity:.75}
-.gal-x{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-x .gal-t{display:block;flex:0 0 calc(46% - 3px);aspect-ratio:var(--gr,4/5);border-radius:16px;scroll-snap-align:start}
-.gal-x-2 .gal-t{flex:1 1 0}
+.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 88%;aspect-ratio:var(--gr,4/5);border:1px solid rgba(127,127,127,.28);border-radius:14px;scroll-snap-align:start}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
@@ -2004,7 +2003,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     if (p) p.hidden = t.scrollLeft <= 2;
     if (n) n.hidden = t.scrollLeft >= t.scrollWidth - t.clientWidth - 2;
     const d = w.querySelectorAll('.gal-dots i'); if (!d.length) return; // แถบขีดบอกตำแหน่ง (ตัวที่เลือกยาวกว่า)
-    const s = t.querySelector('.gal-t'), st = (s ? s.getBoundingClientRect().width : t.clientWidth) + 6;
+    const s = t.querySelector('.gal-t'), st = (s ? s.getBoundingClientRect().width : t.clientWidth) + 8;
     let i = t.scrollLeft >= t.scrollWidth - t.clientWidth - 2 ? d.length - 1 : Math.round(t.scrollLeft / st);
     i = Math.max(0, Math.min(d.length - 1, i));
     d.forEach((x, k) => x.classList.toggle('on', k === i));
@@ -2013,7 +2012,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     const b = e.target.closest && e.target.closest('.gal-nav'); if (!b) return;
     e.preventDefault();
     const w = b.closest('.gal-xw'), t = w.querySelector('.gal-x'), s = w.querySelector('.gal-t');
-    const step = (s ? s.getBoundingClientRect().width : t.clientWidth * 0.8) + 6;
+    const step = (s ? s.getBoundingClientRect().width : t.clientWidth * 0.8) + 8;
     t.scrollBy({ left: b.classList.contains('gal-p') ? -step : step, behavior: 'smooth' });
   });
   let raf = 0; // อัปเดตลูกศรไม่เกินหนึ่งครั้งต่อเฟรม
