@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<script src="/i18n.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ค้นหา | nivread</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/img/icon-48.png" type="image/png" sizes="48x48">
+<link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d0d0d">
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Kanit',sans-serif}
+  .line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  #sq::-webkit-search-cancel-button{display:none}
+  .noscroll{scrollbar-width:none}.noscroll::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+<header id="main-header" class="z-20"></header>
+
+<main class="flex-1 z-10 w-full max-w-2xl mx-auto">
+  <!-- แถบค้นหา (ติดบนเวลาเลื่อน) -->
+  <div class="sticky top-0 z-20 px-4 sm:px-6 pt-4 pb-2 bg-[#f3f4f6]/90 dark:bg-[#0d0d0d]/90 backdrop-blur">
+    <form id="sf" action="/search" method="get" role="search" class="relative">
+      <label for="sq" class="sr-only">คำค้นหา</label>
+      <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-slate-400 dark:text-neutral-500 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="sq" name="q" type="search" maxlength="40" autocomplete="off" enterkeyhint="search" placeholder="ค้นหา โพสต์ หมวดหมู่ หรือไอดีผู้ใช้"
+        class="w-full h-11 pl-11 pr-11 rounded-full text-[15px] bg-white dark:bg-black border border-slate-300 dark:border-white/15 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-colors">
+      <button id="sx" type="button" aria-label="ล้าง" class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-amber-500 text-white items-center justify-center cursor-pointer">
+        <svg class="w-3.5 h-3.5 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </form>
+    <!-- แท็บผลลัพธ์ (แสดงเฉพาะตอนมีผลค้นหา) -->
+    <nav id="tabs" class="hidden mt-2 -mx-4 sm:-mx-6 px-2 sm:px-4 border-b border-slate-200 dark:border-white/10 overflow-x-auto noscroll flex" role="tablist"></nav>
+  </div>
+
+  <div id="view" class="px-4 sm:px-6 pb-10 pt-2" role="region" aria-live="polite"></div>
+</main>
+<div id="main-footer" class="z-10"></div>
+
+<script src="/nivread.js?v=20261119a"></script>
+<script>
+(() => {
+  const { api, el, userUrl, avatarEl, postCardEl } = NIV;
+  const $ = (id) => document.getElementById(id);
+  const input = $('sq'), view = $('view'), tabsEl = $('tabs'), clearBtn = $('sx');
+  const S = NIV.session();
+  const loggedIn = !!(S.token && S.userId);
+
+  // ---------- เก็บข้อมูลในเครื่อง (ไม่เรียกเซิร์ฟเวอร์) ----------
+  // ประวัติค้นหาแยกตามบัญชี (เครื่องที่ใช้ร่วมกันจะไม่เห็นประวัติของคนอื่น)
+  const H_KEY = 'niv_sh_' + (S.userId || ''), C_KEY = 'niv_cats', H_MAX = 10;
+  const CAT_TTL = 10 * 60e3, RES_TTL = 2 * 60e3;
+  const lsGet = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+  const ssGet = (k) => { try { return JSON.parse(sessionStorage.getItem(k) || 'null'); } catch { return null; } };
+  const ssSet = (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+  const getHist = () => { const h = lsGet(H_KEY); return Array.isArray(h) ? h.filter((x) => typeof x === 'string').slice(0, H_MAX) : []; };
+  const addHist = (q) => { lsSet(H_KEY, [q, ...getHist().filter((x) => x.toLowerCase() !== q.toLowerCase())].slice(0, H_MAX)); };
+  const delHist = (q) => lsSet(H_KEY, getHist().filter((x) => x !== q));
+  const clearHist = () => { try { localStorage.removeItem(H_KEY); } catch {} };
+
+  // หมวดหมู่: แคช 10 นาที ใช้ร่วมทั้งหน้า "ยอดนิยม" และคำแนะนำตอนพิมพ์ (ยิง API ไม่เกิน 1 ครั้ง/10 นาที/เครื่อง)
+  let cats = [];
+  const loadCats = async () => {
+    const c = lsGet(C_KEY);
+    if (c && Array.isArray(c.d)) { cats = c.d; if (Date.now() - c.t < CAT_TTL) return; }
+    try {
+      const r = await api('/api/blog/categories');
+      if (r.ok && Array.isArray(r.data.categories)) { cats = r.data.categories; lsSet(C_KEY, { t: Date.now(), d: cats }); }
+    } catch {}
+  };
+
+  // ---------- ตัวช่วยวาดหน้า ----------
+  const svg = (d, cls = 'w-5 h-5') => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2'); s.setAttribute('stroke-linecap', 'round'); s.setAttribute('class', cls); s.innerHTML = d; return s; };
+  const ICON = {
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    hash: '<path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16"/>',
+    x: '<path d="M6 6l12 12M18 6 6 18"/>',
+    arrow: '<path d="M7 17 17 7M9 7h8v8"/>',
+  };
+  const catUrl = (n) => '/category/' + encodeURIComponent(n);
+  const heading = (text, right) => {
+    const h = el('div', 'flex items-center justify-between pt-4 pb-1');
+    h.append(el('h2', 'text-xl font-extrabold tracking-tight', text));
+    if (right) h.append(right);
+    return h;
+  };
+  const rowCls = 'flex items-center gap-3 px-1 py-3 border-b border-slate-200/70 dark:border-white/5 hover:bg-amber-500/5 transition-colors';
+
+  const histRow = (q) => {
+    const row = el('div', rowCls + ' group');
+    const go = el('button', 'flex-1 min-w-0 flex items-center gap-3 text-left cursor-pointer');
+    go.type = 'button';
+    go.append(svg(ICON.clock, 'w-5 h-5 shrink-0 text-slate-400 dark:text-neutral-500'), el('span', 'truncate text-[15px]', q));
+    go.onclick = () => run(q);
+    const del = el('button', 'w-8 h-8 shrink-0 rounded-full text-slate-400 hover:text-amber-500 hover:bg-amber-500/10 flex items-center justify-center cursor-pointer');
+    del.type = 'button'; del.setAttribute('aria-label', 'ลบ ' + q);
+    del.append(svg(ICON.x, 'w-4 h-4'));
+    del.onclick = () => { delHist(q); row.remove(); if (!getHist().length) home(); };
+    row.append(go, del);
+    return row;
+  };
+
+  const catRow = (c, i) => {
+    const a = el('a', rowCls + ' items-start');
+    a.href = catUrl(c.name);
+    const t = el('div', 'min-w-0 flex-1');
+    t.append(
+      el('div', 'text-[13px] text-slate-500 dark:text-neutral-500', (i != null ? (i + 1) + ' · ' : '') + 'หมวดหมู่'),
+      el('div', 'font-bold text-[16px] truncate', c.name),
+      el('div', 'text-[13px] text-slate-500 dark:text-neutral-500', c.n + ' โพสต์'),
+    );
+    a.append(t);
+    return a;
+  };
+
+  // ---------- โหมด 1: หน้าแรก (ประวัติ + หมวดหมู่ยอดนิยม) ----------
+  let token = 0;
+  function setTabs(list, active) {
+    tabsEl.textContent = '';
+    if (!list) { tabsEl.classList.add('hidden'); return; }
+    tabsEl.classList.remove('hidden');
+    for (const [id, label, n] of list) {
+      const b = el('button', 'relative shrink-0 px-4 py-3 text-[15px] font-semibold cursor-pointer transition-colors ' + (id === active ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-neutral-200'));
+      b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', id === active);
+      b.append(document.createTextNode(label));
+      if (n != null) b.append(el('span', 'ml-1 text-xs opacity-60', n));
+      if (id === active) b.append(el('span', 'absolute left-3 right-3 bottom-0 h-1 rounded-full bg-amber-500'));
+      b.onclick = () => { curTab = id; paint(); };
+      tabsEl.append(b);
+    }
+  }
+
+  async function home() {
+    token++;
+    const my = token;
+    setTabs(null);
+    view.textContent = '';
+    const hist = getHist();
+    if (hist.length) {
+      const clr = el('button', 'text-sm font-medium text-amber-500 hover:underline cursor-pointer', 'ล้างทั้งหมด');
+      clr.type = 'button';
+      clr.onclick = () => { clearHist(); home(); };
+      view.append(heading('ค้นหาล่าสุด', clr));
+      const box = el('div');
+      hist.forEach((q) => box.append(histRow(q)));
+      view.append(box);
+    }
+    const sec = el('div');
+    view.append(sec);
+    const paintCats = () => {
+      sec.textContent = '';
+      if (!cats.length) return;
+      const more = el('a', 'text-sm font-medium text-amber-500 hover:underline', 'ดูทั้งหมด');
+      more.href = '/categories';
+      sec.append(heading('หมวดหมู่ยอดนิยม', more));
+      cats.slice(0, 10).forEach((c, i) => sec.append(catRow(c, i)));
+    };
+    paintCats();
+    if (!cats.length) { await loadCats(); if (my === token) paintCats(); }
+    if (!hist.length && !cats.length && my === token) view.append(el('p', 'pt-6 text-sm text-slate-500 dark:text-neutral-400', 'พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาโพสต์ หมวดหมู่ หรือไอดีผู้ใช้'));
+  }
+
+  // ---------- โหมด 2: คำแนะนำตอนพิมพ์ (คำนวณในเครื่องล้วน ไม่ยิงเซิร์ฟเวอร์) ----------
+  function suggest(v) {
+    token++;
+    setTabs(null);
+    view.textContent = '';
+    const ql = v.toLowerCase();
+    const go = el('button', rowCls + ' w-full text-left cursor-pointer');
+    go.type = 'button';
+    go.append(svg(ICON.search, 'w-5 h-5 shrink-0 text-amber-500'), el('span', 'truncate text-[15px] font-medium', v.length < 2 ? 'พิมพ์อีกนิดเพื่อค้นหา' : 'ค้นหา "' + v + '"'));
+    if (v.length >= 2) go.onclick = () => run(v); else go.disabled = true;
+    view.append(go);
+    getHist().filter((h) => h.toLowerCase().includes(ql) && h.toLowerCase() !== ql).slice(0, 4).forEach((h) => view.append(histRow(h)));
+    cats.filter((c) => String(c.name).toLowerCase().includes(ql)).slice(0, 6).forEach((c) => {
+      const a = el('a', rowCls); a.href = catUrl(c.name);
+      a.append(svg(ICON.hash, 'w-5 h-5 shrink-0 text-slate-400 dark:text-neutral-500'), el('span', 'flex-1 truncate text-[15px]', c.name), el('span', 'text-xs text-slate-500 dark:text-neutral-500', c.n + ' โพสต์'));
+      view.append(a);
+    });
+  }
+
+  // ---------- โหมด 3: ผลการค้นหา ----------
+  let data = null, curTab = 'all', curQ = '';
+  const skeleton = () => { view.textContent = ''; view.append(NIV.skel(3)); };
+
+  // ต้องเข้าสู่ระบบก่อนค้นหา: แสดงการ์ดชวนล็อกอินแทนผลลัพธ์ (ไม่ยิง API เลย)
+  function gate(expired) {
+    token++;
+    setTabs(null);
+    view.textContent = '';
+    const box = el('div', 'mt-10 mx-auto max-w-sm text-center rounded-3xl p-8 bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10');
+    const ic = el('div', 'mx-auto w-14 h-14 rounded-full grid place-items-center bg-amber-500/15 text-amber-500');
+    ic.append(svg('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>', 'w-7 h-7'));
+    const go = el('a', 'mt-5 inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110', 'เข้าสู่ระบบ');
+    go.href = '/login?redirect=' + encodeURIComponent(location.pathname + location.search);
+    const cat = el('a', 'mt-3 inline-block text-sm font-medium text-amber-500 hover:underline', 'หรือดูหมวดหมู่ทั้งหมด');
+    cat.href = '/categories';
+    box.append(ic,
+      el('h2', 'mt-4 text-lg font-extrabold', expired ? 'เซสชันหมดอายุ' : 'เข้าสู่ระบบเพื่อค้นหา'),
+      el('p', 'mt-1 text-sm text-slate-500 dark:text-neutral-400', expired ? 'กรุณาเข้าสู่ระบบอีกครั้งเพื่อใช้งานการค้นหา' : 'สมาชิกเท่านั้นที่ค้นหาโพสต์ หมวดหมู่ และผู้ใช้ได้'),
+      go, cat);
+    view.append(box);
+  }
+
+  class NeedLogin extends Error {}
+  async function fetchResults(q) {
+    const key = 'niv_sr:' + S.userId + ':' + q.toLowerCase();
+    const c = ssGet(key);
+    if (c && Date.now() - c.t < RES_TTL) return c.d;            // แคช 2 นาทีในแท็บนี้ → กลับมาดูซ้ำไม่เสียคำขอ
+    const r = await api('/api/blog/search?q=' + encodeURIComponent(q) + '&userId=' + encodeURIComponent(S.userId));
+    if (r.status === 401) throw new NeedLogin();
+    if (!r.ok) throw new Error(r.data && r.data.error || 'ค้นหาไม่สำเร็จ กรุณาลองใหม่');
+    const d = { users: r.data.users || [], posts: r.data.posts || [] };
+    ssSet(key, { t: Date.now(), d });
+    return d;
+  }
+
+  async function run(q, opt = {}) {
+    q = String(q || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+    if (!loggedIn) { gate(); return; }
+    if (q.length < 2) { input.focus(); return; }
+    input.value = q; toggleClear();
+    input.blur();
+    document.title = `ค้นหา "${q}" | nivread`;
+    if (!opt.pop) history.pushState({ q }, '', '/search?q=' + encodeURIComponent(q));
+    addHist(q);
+    const my = ++token;
+    curQ = q; curTab = 'all';
+    setTabs(null); skeleton();
+    if (!cats.length) await loadCats();
+    let d;
+    try { d = await fetchResults(q); }
+    catch (e) {
+      if (my !== token) return;
+      if (e instanceof NeedLogin) { gate(true); return; }
+      view.textContent = ''; view.append(el('p', 'pt-6 text-sm text-slate-500 dark:text-neutral-400', e.message)); return;
+    }
+    if (my !== token) return;                                    // มีการค้นหาใหม่แทรกแล้ว
+    const ql = q.toLowerCase().replace(/\s+/g, ' ');
+    data = { users: d.users, posts: d.posts, cats: cats.filter((c) => String(c.name).toLowerCase().includes(ql)).slice(0, 12) };
+    feedSignal(q, d.posts);
+    paint();
+  }
+
+  // ส่งสัญญาณ "สิ่งที่ค้นหา" ให้ฟีดหน้าแรก โดยไม่เรียกเซิร์ฟเวอร์เพิ่ม:
+  // เก็บ slug ของผลค้นหาที่ตรงที่สุด 2 โพสต์ลงรายการความสนใจในเครื่อง (ที่เดียวกับโพสต์ที่ผู้ใช้ค้างอ่าน)
+  // ฟีด "รู้ใจ" ส่งรายการนี้ไปกับคำขอ ?i= อยู่แล้ว → เซิร์ฟเวอร์เอาเวกเตอร์ที่ฝังไว้แล้วของโพสต์เหล่านี้มาหาโพสต์ที่คล้ายกัน (ไม่เรียก AI)
+  function feedSignal(q, posts) {
+    try {
+      if (!NIV.recordInterest) return;
+      const ql = q.toLowerCase(), list = (posts || []).filter((p) => p && p.slug);
+      const hit = (p) => String(p.title || '').toLowerCase().includes(ql) || String(p.category || '').toLowerCase().includes(ql);
+      const pick = [...list.filter(hit), ...list].filter((p, i, a) => a.findIndex((x) => x.slug === p.slug) === i).slice(0, 2);
+      pick.reverse().forEach((p) => NIV.recordInterest(p.slug)); // ตัวที่ตรงที่สุดบันทึกท้ายสุด = ใหม่สุด = น้ำหนักสูงสุด
+    } catch {}
+  }
+
+  function paint() {
+    if (!data) return;
+    const { users, posts, cats: cs } = data;
+    const total = users.length + posts.length + cs.length;
+    view.textContent = '';
+    if (!total) {
+      setTabs(null);
+      const b = el('div', 'pt-10 text-center');
+      b.append(el('div', 'text-lg font-bold', `ไม่พบผลลัพธ์สำหรับ "${curQ}"`), el('p', 'mt-1 text-sm text-slate-500 dark:text-neutral-400', 'ลองตรวจตัวสะกด หรือใช้คำที่สั้นลง'));
+      view.append(b);
+      return;
+    }
+    setTabs([['all', 'ทั้งหมด', null], ['posts', 'โพสต์', posts.length], ['users', 'ผู้ใช้', users.length], ['cats', 'หมวดหมู่', cs.length]], curTab);
+    const all = curTab === 'all';
+    if ((all || curTab === 'cats') && cs.length) {
+      if (all) view.append(heading('หมวดหมู่'));
+      cs.forEach((c) => view.append(catRow(c)));
+    }
+    if ((all || curTab === 'users') && users.length) {
+      if (all) view.append(heading('ผู้ใช้'));
+      const g = el('div', 'grid gap-2 mt-2');
+      for (const u of users) {
+        const a = el('a', 'flex items-center gap-3 p-3 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-amber-500/50 transition-colors');
+        a.href = userUrl(u.id);
+        const t = el('div', 'min-w-0');
+        t.append(el('div', 'font-semibold text-sm truncate', u.display_name), el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + u.id));
+        a.append(avatarEl(u, 'w-11 h-11'), t);
+        g.append(a);
+      }
+      view.append(g);
+    }
+    if ((all || curTab === 'posts') && posts.length) {
+      if (all) view.append(heading('โพสต์'));
+      const g = el('div', 'space-y-6 mt-3');
+      posts.forEach((p) => g.append(postCardEl(p)));
+      view.append(g);
+    }
+    if (!view.children.length) view.append(el('p', 'pt-8 text-center text-sm text-slate-500 dark:text-neutral-400', 'ไม่มีรายการในแท็บนี้'));
+  }
+
+  // ---------- การควบคุมช่องค้นหา ----------
+  const toggleClear = () => { const on = input.value.length > 0; clearBtn.classList.toggle('hidden', !on); clearBtn.classList.toggle('flex', on); };
+  let timer;
+  input.addEventListener('input', () => {
+    toggleClear();
+    clearTimeout(timer);
+    const v = input.value.trim();
+    timer = setTimeout(() => { if (!v) home(); else suggest(v); }, 120);
+  });
+  input.addEventListener('focus', () => { if (!input.value.trim() && tabsEl.classList.contains('hidden')) home(); });
+  clearBtn.addEventListener('click', () => {
+    input.value = ''; toggleClear(); input.focus();
+    document.title = 'ค้นหา | nivread';
+    history.pushState({}, '', '/search');
+    home();
+  });
+  $('sf').addEventListener('submit', (e) => { e.preventDefault(); run(input.value); });
+  window.addEventListener('popstate', () => {
+    const q = (new URLSearchParams(location.search).get('q') || '').trim().slice(0, 40);
+    if (q.length >= 2) run(q, { pop: true }); else { input.value = ''; toggleClear(); document.title = 'ค้นหา | nivread'; home(); }
+  });
+
+  // ---------- เริ่มต้น ----------
+  const q0 = (new URLSearchParams(location.search).get('q') || '').trim().slice(0, 40);
+  if (!loggedIn) {
+    // ยังไม่ล็อกอิน: ปิดช่องค้นหา แสดงการ์ดชวนเข้าสู่ระบบ ไม่โหลดอะไรจากเซิร์ฟเวอร์
+    input.disabled = true; input.placeholder = 'เข้าสู่ระบบเพื่อค้นหา';
+    input.value = q0;
+    gate();
+  } else {
+    loadCats();
+    if (q0.length >= 2) { history.replaceState({ q: q0 }, '', location.href); run(q0, { pop: true }); }
+    else home();
+  }
+})();
+</script>
+</body>
+</html>
