@@ -181,8 +181,8 @@ const CHAR_IMG = /^https:\/\/[^\s"'<>]{4,500}$/;
 export function charList(p) {
   const m = postMeta(p) || {};
   const multi = Array.isArray(m.characters) && m.characters.length > 0;
-  const raw = multi ? m.characters.slice(0, 10) : [m];
-  const imgs = postImages(p);
+  const raw = multi ? m.characters.slice(0, 100) : [m];
+  const imgs = postImages(p, 100);
   return raw.map((c, i) => {
     c = c && typeof c === 'object' ? c : {};
     const own = typeof c.image === 'string' && CHAR_IMG.test(c.image) ? c.image : '';
@@ -200,28 +200,30 @@ const CHEV = (d) => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none"
 // การ์ดตัวละครในฟีด (สไตล์เดียวกับ X): แถวรูปเลื่อนแนวนอน เห็นรูปถัดไปโผล่ขอบขวา ปัดนิ้วหรือกดลูกศรได้
 // แถวเลื่อนอยู่ "ในการ์ด" (overflow-x ของแถวเอง · การ์ดยัง overflow-hidden) จึงไม่ล้นการ์ด · สไตล์อยู่ที่ /niv.css (.cx-*) · ลูกศรอยู่ที่ /nivread.js
 // ลิงก์ <a href> จริงทุกสไลด์ (พาไปหน้าโพสต์ตรงตัวละครนั้น #cN) ให้ Google ตามเก็บได้
+// ฟีดแสดงแค่ที่จำเป็น: รูป + ชื่อ + เลขลำดับ · จำกัด FEED_MAX สไลด์ (ที่เหลือรวมเป็นสไลด์ "ดูทั้งหมด +N") · ข้อมูลเต็มดูที่หน้าโพสต์เดี่ยว
+const FEED_MAX = 8;
 function charCardHtml(p, origin, first, href) {
-  const list = charList(p);
-  const n = list.length;
+  const full = charList(p);
+  const total = full.length;
+  const list = full.slice(0, FEED_MAX);
   const slides = list.map((c, i) => {
-    const tags = [c.role, c.gender, c.age].filter(Boolean).map((v) => `<em>${esc(v)}</em>`).join('');
     const pic = c.image
-      ? `<img class="cx-img" src="${esc(c.image)}" alt="${esc(c.name)}${p.category ? ' - ' + esc(p.category) : ''}" loading="${first && i < 2 ? 'eager' : 'lazy'}" decoding="async" draggable="false">`
+      ? `<img class="cx-img" src="${esc(c.image)}" alt="${esc(c.name)}${p.category ? ' - ' + esc(p.category) : ''}" loading="${first && i === 0 ? 'eager' : 'lazy'}" decoding="async" draggable="false">`
       : '<span class="cx-noimg">ไม่มีรูป</span>';
-    return `<a href="${href}#c${i + 1}" class="cx-slide" data-char-slide="${i + 1}" aria-label="${esc(c.name)}"><span class="cx-frame">${pic}<span class="cx-shade"></span>${n > 1 ? `<span class="cx-idx">${i + 1}/${n}</span>` : ''}<span class="cx-cap"><b>${esc(c.name)}</b>${c.orig ? `<i>${esc(c.orig)}</i>` : ''}${tags}</span></span></a>`;
-  }).join('');
+    return `<a href="${href}#c${i + 1}" class="cx-slide" aria-label="${esc(c.name)}"><span class="cx-frame">${pic}<span class="cx-shade"></span>${total > 1 ? `<span class="cx-idx">${i + 1}/${total}</span>` : ''}<span class="cx-cap"><b>${esc(c.name)}</b></span></span></a>`;
+  }).join('') + (total > list.length ? `<a href="${href}" class="cx-slide" aria-label="ดูตัวละครทั้งหมด"><span class="cx-frame cx-rest">+${total - list.length}<br>ดูทั้งหมด</span></a>` : '');
   const cat = p.category ? `<a href="${catHref(p.category)}" class="cx-from">จากเรื่อง · ${esc(p.category)}</a>` : '<span></span>';
-  const count = `<span class="cx-count">${n} ตัวละคร</span>`;
-  const nav = n > 1 ? `<button type="button" class="cx-nav cx-prev" aria-label="ตัวละครก่อนหน้า" hidden>${CHEV('M15 5l-7 7 7 7')}</button><button type="button" class="cx-nav cx-next" aria-label="ตัวละครถัดไป">${CHEV('M9 5l7 7-7 7')}</button>` : '';
-  return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm overflow-hidden">
+  const count = `<span class="cx-count">${total} ตัวละคร</span>`;
+  const multi = total > 1;
+  const nav = multi ? `<button type="button" class="cx-nav cx-prev" aria-label="ตัวละครก่อนหน้า" hidden>${CHEV('M15 5l-7 7 7 7')}</button><button type="button" class="cx-nav cx-next" aria-label="ตัวละครถัดไป">${CHEV('M9 5l7 7-7 7')}</button>` : '';
+  return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden">
   ${postHead(p)}
   <div class="px-4 pb-3">
     <div class="flex items-center justify-between gap-2">${cat}${count}</div>
     <h2 class="mt-1.5 text-lg font-bold text-slate-900 dark:text-white leading-snug"><a href="${href}" class="hover:text-amber-500 transition-colors">${esc(p.title)}</a></h2>
     ${p.excerpt ? `<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-2"><a href="${href}" class="block hover:text-amber-500 transition-colors">${esc(p.excerpt)}</a></p>` : ''}
   </div>
-  <div class="cx-feed${n > 1 ? ' cx-multi' : ''}"><div class="cx-track" role="region" aria-label="ตัวละครในโพสต์ ปัดเพื่อดูตัวถัดไป">${slides}</div>${nav}</div>
-  <div class="px-4 pt-3 pb-1"><a href="${href}" class="cx-more">ดูโปรไฟล์ตัวละครทั้งหมด <span aria-hidden="true">→</span></a></div>
+  <div class="cx-feed${multi ? ' cx-multi' : ''}"><div class="cx-track" role="region" aria-label="ตัวละครในโพสต์ ปัดเพื่อดูตัวถัดไป">${slides}</div>${nav}</div>
   ${postBar(p, origin)}
 </article>`;
 }
@@ -234,7 +236,9 @@ export function characterCarousel(p, eager = true) {
   if (!n) return '';
   const id = (i) => `cz-${i + 1}`;
   const pad = (i) => String(i + 1).padStart(2, '0');
-  const css = `<style>${list.map((_, i) => `#${id(i)}:checked~.cs-roster label[for="${id(i)}"] .cs-thi{border-color:#f59e0b;opacity:1;transform:translateY(-3px);box-shadow:0 8px 20px -8px rgba(245,158,11,.7)}
+  const sel = list.map((_, i) => `#${id(i)}:checked~.cs-stage .cs-p${i + 1}`).join(',');
+  const css = `<style>${sel}{display:block}@media(min-width:768px){${sel}{display:grid}}
+${list.map((_, i) => `#${id(i)}:checked~.cs-roster label[for="${id(i)}"] .cs-thi{border-color:#f59e0b;opacity:1;transform:translateY(-3px);box-shadow:0 8px 20px -8px rgba(245,158,11,.7)}
 #${id(i)}:checked~.cs-roster label[for="${id(i)}"] small{color:#f59e0b;font-weight:600}
 #${id(i)}:focus-visible~.cs-roster label[for="${id(i)}"] .cs-thi{outline:2px solid #f59e0b;outline-offset:2px}`).join('\n')}</style>`;
   const radios = list.map((_, i) => `<input type="radio" name="cz" id="${id(i)}" class="cs-r" aria-label="ตัวละครที่ ${i + 1}"${i === 0 ? ' checked' : ''}>`).join('');
@@ -263,7 +267,7 @@ export function characterCarousel(p, eager = true) {
 </div>`;
   }).join('');
   // เปิดตัวละครตาม #cN (ลิงก์จากฟีด) และตามเมื่อ hash เปลี่ยน
-  const js = n > 1 ? `<script>(function(){function go(){var m=/^#c(\\d{1,2})$/.exec(location.hash);if(!m)return;var r=document.getElementById('cz-'+m[1]);if(r)r.checked=true;}go();addEventListener('hashchange',go);})();</script>` : '';
+  const js = n > 1 ? `<script>(function(){function go(){var m=/^#c(\\d{1,3})$/.exec(location.hash);if(!m)return;var r=document.getElementById('cz-'+m[1]);if(r)r.checked=true;}go();addEventListener('hashchange',go);})();</script>` : '';
   return `${css}<section class="cs" aria-label="ตัวละคร">${radios}${roster}<div class="cs-stage">${panels}</div></section>${js}`;
 }
 
@@ -316,7 +320,7 @@ ${ld}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{font-family:'Kanit',sans-serif}.uv,.uv.bp{padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}.uv video{background:transparent!important;border:0!important}</style>
-<link id="niv-css" rel="stylesheet" href="/niv.css?v=20261119a">
+<link id="niv-css" rel="stylesheet" href="/niv.css?v=20261119b">
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white transition-colors duration-300 min-h-screen flex flex-col relative overflow-x-hidden">
 <div class="fixed inset-0 pointer-events-none z-0">
@@ -325,7 +329,7 @@ ${ld}
 </div>
 <header id="main-header" class="z-20"></header>
 ${body}
-<script src="/nivread.js?v=20261119a"></script>
+<script src="/nivread.js?v=20261119b"></script>
 <script src="/posts-feed.js" defer></script>
 </body>
 </html>`;

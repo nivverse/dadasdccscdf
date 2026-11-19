@@ -6,6 +6,25 @@ import { api, postCard, shell, htmlResponse } from './_lib/render.js';
 
 const PER_PAGE = 10;
 
+// ฟีดรู้ใจ/ฟีดติดตามจาก Worker (/api/blog/for-you, /api/blog/feed) อาจไม่ส่ง p.meta (และรูปครบทุกตัวละคร) มาด้วย
+// → postCard() ไม่รู้ว่าเป็นโพสต์ตัวละคร จึงตกไปเป็นการ์ดรูปทั่วไป ไม่เหมือนหน้าโพสต์/หน้า /posts
+// แก้: โพสต์ไหนไม่มีคีย์ meta เลย (undefined) ให้ดึงจาก /api/blog/post แล้วเติม meta + รูป · โพสต์ที่ส่ง meta มาแล้ว (แม้เป็น null) ไม่ต้องดึงซ้ำ
+// api() แคช 60 วิ และดึงขนานกัน · ถ้าดึงไม่สำเร็จ คงการ์ดเดิมไว้ (ไม่ทำให้ฟีดล้ม)
+async function withCharMeta(env, posts) {
+  return Promise.all((posts || []).map(async (p) => {
+    if (!p || !p.slug || p.meta !== undefined) return p;
+    const r = await api(env, `/api/blog/post?slug=${encodeURIComponent(p.slug)}`);
+    const full = r && r.post;
+    if (!full) return p;
+    const out = { ...p, meta: full.meta == null ? null : full.meta };
+    if (out.meta) { // โพสต์ตัวละคร: ต้องใช้รูปครบทุกตัว
+      if (Array.isArray(full.images) && full.images.length) out.images = full.images;
+      if (!out.cover_url && full.cover_url) out.cover_url = full.cover_url;
+    }
+    return out;
+  }));
+}
+
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const origin = url.origin;
@@ -36,7 +55,8 @@ export async function onRequestGet({ request, env }) {
       ({ status, d } = await ask(`/api/blog/feed?userId=${encodeURIComponent(userId)}&page=${page}&limit=${PER_PAGE}`));
     }
     if (!d || !d.success) return new Response('', { status: status === 401 ? 401 : 502, headers: noStore });
-    const html = (d.posts || []).map((p) => postCard(p, origin, false, userId)).join('\n');
+    const posts = await withCharMeta(env, d.posts);
+    const html = posts.map((p) => postCard(p, origin, false, userId)).join('\n');
     return new Response(html, {
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
