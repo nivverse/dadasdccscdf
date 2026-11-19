@@ -391,7 +391,7 @@
     if (typeof m === 'string') { try { m = JSON.parse(m); } catch { m = null; } }
     if (!m || typeof m !== 'object' || m.kind !== 'character') return null;
     const multi = Array.isArray(m.characters) && m.characters.length > 0;
-    const raw = multi ? m.characters.slice(0, 10) : [m];
+    const raw = multi ? m.characters.slice(0, 100) : [m];
     const imgs = Array.isArray(p.images) ? p.images.filter((u) => CHAR_IMG.test(u)) : [];
     const t = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
     return raw.map((c, i) => {
@@ -402,25 +402,23 @@
       return { name: t(c.name, 150) || (multi ? 'ตัวละครที่ ' + (i + 1) : t(p.title, 150)), orig: t(c.orig, 80), role: t(c.role, 40), gender: t(c.gender, 40), age: t(c.age, 40), image: CHAR_IMG.test(img) ? img : '' };
     });
   }
-  function charBlockEl(p, list) {
+  function charBlockEl(p, full) { // แสดงแค่ที่จำเป็น (รูป + ชื่อ + เลขลำดับ) · จำกัด 8 สไลด์ — ตรงกับ charCardHtml() ฝั่งเซิร์ฟเวอร์
     if (!document.getElementById('niv-css') && !document.getElementById('niv-char-css')) {
-      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261119a'; document.head.appendChild(l);
+      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261119b'; document.head.appendChild(l);
     }
-    const href = '/posts/' + encodeURIComponent(p.slug), n = list.length;
+    const href = '/posts/' + encodeURIComponent(p.slug), total = full.length, list = full.slice(0, 8);
     const slides = list.map((c, i) => {
-      const tags = [c.role, c.gender, c.age].filter(Boolean).map((v) => '<em>' + escH(v) + '</em>').join('');
       const pic = c.image ? '<img class="cx-img" src="' + escH(c.image) + '" alt="' + escH(c.name) + '" loading="lazy" decoding="async" draggable="false">' : '<span class="cx-noimg">ไม่มีรูป</span>';
-      return '<a href="' + href + '#c' + (i + 1) + '" class="cx-slide" aria-label="' + escH(c.name) + '"><span class="cx-frame">' + pic + '<span class="cx-shade"></span>' + (n > 1 ? '<span class="cx-idx">' + (i + 1) + '/' + n + '</span>' : '') + '<span class="cx-cap"><b>' + escH(c.name) + '</b>' + (c.orig ? '<i>' + escH(c.orig) + '</i>' : '') + tags + '</span></span></a>';
-    }).join('');
+      return '<a href="' + href + '#c' + (i + 1) + '" class="cx-slide" aria-label="' + escH(c.name) + '"><span class="cx-frame">' + pic + '<span class="cx-shade"></span>' + (total > 1 ? '<span class="cx-idx">' + (i + 1) + '/' + total + '</span>' : '') + '<span class="cx-cap"><b>' + escH(c.name) + '</b></span></span></a>';
+    }).join('') + (total > list.length ? '<a href="' + href + '" class="cx-slide" aria-label="ดูตัวละครทั้งหมด"><span class="cx-frame cx-rest">+' + (total - list.length) + '<br>ดูทั้งหมด</span></a>' : '');
     const chev = (d) => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
-    const nav = n > 1 ? '<button type="button" class="cx-nav cx-prev" aria-label="ตัวละครก่อนหน้า" hidden>' + chev('M15 5l-7 7 7 7') + '</button><button type="button" class="cx-nav cx-next" aria-label="ตัวละครถัดไป">' + chev('M9 5l7 7-7 7') + '</button>' : '';
+    const nav = total > 1 ? '<button type="button" class="cx-nav cx-prev" aria-label="ตัวละครก่อนหน้า" hidden>' + chev('M15 5l-7 7 7 7') + '</button><button type="button" class="cx-nav cx-next" aria-label="ตัวละครถัดไป">' + chev('M9 5l7 7-7 7') + '</button>' : '';
     const cat = p.category ? '<a href="/category/' + encodeURIComponent(p.category) + '" class="cx-from">จากเรื่อง · ' + escH(p.category) + '</a>' : '<span></span>';
     const box = document.createElement('div');
-    box.innerHTML = '<div class="px-4 pb-3"><div class="flex items-center justify-between gap-2">' + cat + '<span class="cx-count">' + n + ' ตัวละคร</span></div>'
+    box.innerHTML = '<div class="px-4 pb-3"><div class="flex items-center justify-between gap-2">' + cat + '<span class="cx-count">' + total + ' ตัวละคร</span></div>'
       + '<h2 class="mt-1.5 text-lg font-bold leading-snug"><a href="' + href + '" class="hover:text-amber-500 transition-colors">' + escH(p.title) + '</a></h2>'
       + (p.excerpt ? '<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-2"><a href="' + href + '" class="block hover:text-amber-500 transition-colors">' + escH(p.excerpt) + '</a></p>' : '') + '</div>'
-      + '<div class="cx-feed' + (n > 1 ? ' cx-multi' : '') + '"><div class="cx-track" role="region" aria-label="ตัวละครในโพสต์ ปัดเพื่อดูตัวถัดไป">' + slides + '</div>' + nav + '</div>'
-      + '<div class="px-4 pt-3 pb-3"><a href="' + href + '" class="cx-more">ดูโปรไฟล์ตัวละครทั้งหมด <span aria-hidden="true">→</span></a></div>';
+      + '<div class="cx-feed' + (total > 1 ? ' cx-multi' : '') + '"><div class="cx-track" role="region" aria-label="ตัวละครในโพสต์ ปัดเพื่อดูตัวถัดไป">' + slides + '</div>' + nav + '</div>';
     return box;
   }
 
@@ -2002,6 +2000,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     const step = (s ? s.getBoundingClientRect().width : t.clientWidth * 0.8) + 10;
     t.scrollBy({ left: b.classList.contains('cx-prev') ? -step : step, behavior: 'smooth' });
   });
-  document.addEventListener('scroll', (e) => { const t = e.target; if (t && t.classList && t.classList.contains('cx-track')) edges(t.parentNode); }, true);
+  let raf = 0; // จำกัดความถี่: อัปเดตลูกศรไม่เกินหนึ่งครั้งต่อเฟรม (กันกระตุกตอนปัด)
+  document.addEventListener('scroll', (e) => { const t = e.target; if (!t || !t.classList || !t.classList.contains('cx-track') || raf) return; raf = requestAnimationFrame(() => { raf = 0; edges(t.parentNode); }); }, { capture: true, passive: true });
   document.addEventListener('mouseover', (e) => { const f = e.target.closest && e.target.closest('.cx-multi'); if (f && !f.dataset.cxInit) { f.dataset.cxInit = '1'; edges(f); } });
 })();
