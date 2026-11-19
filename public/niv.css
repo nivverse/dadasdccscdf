@@ -45,10 +45,9 @@
 
 
 .gal{margin:.25rem 1rem .75rem}
-.gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:#0a0a0a;cursor:zoom-in}
-.gal-s .bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(26px) brightness(.5);pointer-events:none}
-.gal-s .fg{position:relative;display:block;width:auto;height:auto;max-width:100%;max-height:36rem;transition:transform .4s ease}
-.gal-s:hover .fg{transform:scale(1.015)}
+.gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:transparent;cursor:zoom-in}
+.gal-s .bg{display:none}
+.gal-s .fg{position:relative;display:block;width:100%;height:auto;max-width:100%;max-height:none;object-fit:contain}
 .gal-t{position:relative;min-height:0;padding:0;border:0;background:#111;cursor:zoom-in;overflow:hidden}
 .gal-t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease,filter .3s}
 .gal-t:hover img{transform:scale(1.05);filter:brightness(1.08)}
@@ -59,9 +58,12 @@
 @media (prefers-reduced-motion:reduce){.gal-s:not(.ok)::before,.gal-t:not(.ok)::before{animation:none}}
 .gal-l .gal-t,.gal-l .gal-s{cursor:pointer}
 .gal-xw{position:relative}
+.gal-dots{display:flex;align-items:center;gap:5px;margin:0 0 8px;padding:0 2px}
+.gal-dots i{display:block;height:4px;width:6px;border-radius:999px;background:currentColor;opacity:.28;transition:width .2s,opacity .2s}
+.gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-x .gal-t{display:block;flex:0 0 calc(46% - 3px);aspect-ratio:4/5;border-radius:16px;scroll-snap-align:start}
+.gal-x .gal-t{display:block;flex:0 0 calc(46% - 3px);aspect-ratio:var(--gr,4/5);border-radius:16px;scroll-snap-align:start}
 .gal-x-2 .gal-t{flex:1 1 0}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}

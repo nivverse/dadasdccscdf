@@ -551,7 +551,7 @@
     } else { // หลายรูป = แถวรูปเลื่อนแนวนอนแบบ X (ไม่มีเลขลำดับ/ป้าย +N) · 2 รูปเต็มแถว · 3+ รูปเห็นรูปถัดไปโผล่ขอบขวา
       const chev = (d) => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
       root.classList.add('gal-xw');
-      root.innerHTML = '<div class="gal-x gal-x-' + (n === 2 ? '2' : 'm') + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.map((u, i) => {
+      root.innerHTML = (n > 2 ? '<div class="gal-dots" aria-hidden="true">' + urls.map((_, i) => '<i' + (i ? '' : ' class="on"') + '></i>').join('') + '</div>' : '') + '<div class="gal-x gal-x-' + (n === 2 ? '2' : 'm') + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.map((u, i) => {
         const im = '<img src="' + escHtml(u) + '" alt="' + alt + '" loading="lazy" decoding="async">';
         return feed
           ? '<a class="gal-t" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' + im + '</a>'
@@ -564,24 +564,25 @@
 
   const GALCSS = `
 .gal{margin:.25rem 1rem .75rem}
-.gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:#0a0a0a;cursor:zoom-in}
-.gal-s .bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(26px) brightness(.5);pointer-events:none}
-.gal-s .fg{position:relative;display:block;width:auto;height:auto;max-width:100%;max-height:36rem;transition:transform .4s ease}
-.gal-s:hover .fg{transform:scale(1.015)}
+.gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:transparent;cursor:zoom-in}
+.gal-s .bg{display:none}
+.gal-s .fg{position:relative;display:block;width:100%;height:auto;max-width:100%;max-height:none;object-fit:contain}
 .gal-t{position:relative;min-height:0;padding:0;border:0;background:#111;cursor:zoom-in;overflow:hidden}
 .gal-t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease,filter .3s}
 .gal-t:hover img{transform:scale(1.05);filter:brightness(1.08)}
 .gal-s:not(.ok){min-height:11rem}
-@media (min-width:500px){html:not(.niv-single) .gal-s.ok .fg{width:100%!important;height:auto!important;max-height:36rem!important;object-fit:cover!important}html:not(.niv-single) .gal-s.ok .bg{display:none!important}}
 .gal-s:not(.ok)::before,.gal-t:not(.ok)::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#e4e4de 25%,#f2f2ed 50%,#e4e4de 75%) 0 0/200% 100%;animation:gal-sh 1.3s linear infinite}
 .dark .gal-s:not(.ok)::before,.dark .gal-t:not(.ok)::before{background:linear-gradient(90deg,#1a1a1a 25%,#262626 50%,#1a1a1a 75%) 0 0/200% 100%}
 @keyframes gal-sh{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.gal-s:not(.ok)::before,.gal-t:not(.ok)::before{animation:none}}
 .gal-l .gal-t,.gal-l .gal-s{cursor:pointer}
 .gal-xw{position:relative}
+.gal-dots{display:flex;align-items:center;gap:5px;margin:0 0 8px;padding:0 2px}
+.gal-dots i{display:block;height:4px;width:6px;border-radius:999px;background:currentColor;opacity:.28;transition:width .2s,opacity .2s}
+.gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-x .gal-t{display:block;flex:0 0 calc(46% - 3px);aspect-ratio:4/5;border-radius:16px;scroll-snap-align:start}
+.gal-x .gal-t{display:block;flex:0 0 calc(46% - 3px);aspect-ratio:var(--gr,4/5);border-radius:16px;scroll-snap-align:start}
 .gal-x-2 .gal-t{flex:1 1 0}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
@@ -608,16 +609,21 @@
     // PC: รูปเดี่ยวซูมเต็มกรอบ (ครอปส่วนเกิน) — ฉีดเสมอ เพราะหน้า SSR ใช้ /niv.css (ข้อความข้างบนข้าม GALCSS) จึงไม่ได้รับ CSS ชุดนี้
     if (!document.getElementById('niv-fit')) {
       const fit = document.createElement('style'); fit.id = 'niv-fit';
-      fit.textContent = '@media (min-width:500px){html:not(.niv-single) .gal-s .bg{display:none!important}html:not(.niv-single) .gal-s{background:transparent!important}html:not(.niv-single) .gal-s img.fg{width:100%!important;height:auto!important;max-width:100%!important;max-height:36rem!important;object-fit:cover!important}}'
-        + '.niv-single .gal-s img.fg{width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;object-fit:contain!important}.niv-single .uv.bp video{object-fit:contain!important;max-height:85vh!important;max-height:85dvh!important}';
+      fit.textContent = '.niv-single .uv.bp video{object-fit:contain!important;max-height:85vh!important;max-height:85dvh!important}';
       document.head.appendChild(fit);
     }
 
     // รูปโหลดเสร็จ/พลาด → เอา skeleton ออก
     const markOk = (img) => { const c = img.closest && img.closest('.gal-s,.gal-t'); if (c) c.classList.add('ok'); };
-    document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') markOk(e.target); }, true);
+    const fitRow = (img) => { // แถวรูป: สไลด์ใช้สัดส่วนของรูปแรก (ไม่ครอปเป็น 4:5 ตายตัว)
+      const x = img.closest && img.closest('.gal-x');
+      if (!x || x.dataset.r || !img.naturalWidth || img !== x.querySelector('img')) return;
+      x.dataset.r = '1';
+      x.style.setProperty('--gr', Math.min(1.91, Math.max(0.5625, img.naturalWidth / img.naturalHeight)).toFixed(4));
+    };
+    document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') { markOk(e.target); fitRow(e.target); } }, true);
     document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') markOk(e.target); }, true);
-    document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) markOk(im); });
+    document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); } });
 
     let lb = null, urls = [], idx = 0;
     const show = () => {
@@ -1997,6 +2003,11 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     const p = w.querySelector('.gal-p'), n = w.querySelector('.gal-nx');
     if (p) p.hidden = t.scrollLeft <= 2;
     if (n) n.hidden = t.scrollLeft >= t.scrollWidth - t.clientWidth - 2;
+    const d = w.querySelectorAll('.gal-dots i'); if (!d.length) return; // แถบขีดบอกตำแหน่ง (ตัวที่เลือกยาวกว่า)
+    const s = t.querySelector('.gal-t'), st = (s ? s.getBoundingClientRect().width : t.clientWidth) + 6;
+    let i = t.scrollLeft >= t.scrollWidth - t.clientWidth - 2 ? d.length - 1 : Math.round(t.scrollLeft / st);
+    i = Math.max(0, Math.min(d.length - 1, i));
+    d.forEach((x, k) => x.classList.toggle('on', k === i));
   }
   document.addEventListener('click', (e) => {
     const b = e.target.closest && e.target.closest('.gal-nav'); if (!b) return;
