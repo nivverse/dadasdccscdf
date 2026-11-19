@@ -567,6 +567,7 @@
 .gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:transparent;cursor:zoom-in}
 .gal-s .bg{display:none}
 .gal-s .fg{position:relative;display:block;width:100%;height:auto;max-width:100%;max-height:none;object-fit:contain}
+@media (min-width:768px){.gal-s .fg{width:auto;max-height:560px;border-radius:16px}}
 .gal-t{position:relative;min-height:0;padding:0;border:0;background:#111;cursor:zoom-in;overflow:hidden}
 .gal-t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease,filter .3s}
 .gal-t:hover img{transform:scale(1.05);filter:brightness(1.08)}
@@ -582,7 +583,7 @@
 .gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 88%;aspect-ratio:var(--gr,4/5);border:1px solid rgba(127,127,127,.28);border-radius:14px;scroll-snap-align:start}
+.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 min(88%,340px);max-height:560px;aspect-ratio:var(--gr,4/5);border:1px solid rgba(127,127,127,.28);border-radius:14px;scroll-snap-align:start}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
