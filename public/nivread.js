@@ -615,8 +615,8 @@
 
     // รูปโหลดเสร็จ/พลาด → เอา skeleton ออก
     const markOk = (img) => { const c = img.closest && img.closest('.gal-s,.gal-t'); if (c) c.classList.add('ok'); };
-    const fitRow = (img) => { // แถวรูป: สไลด์ใช้สัดส่วนของรูปแรก (ไม่ครอปเป็น 4:5 ตายตัว)
-      const x = img.closest && img.closest('.gal-x');
+    const fitRow = (img) => { // แถวรูป (แกลเลอรี + การ์ดตัวละครในฟีด): สไลด์ใช้สัดส่วนของรูปแรก (ไม่ครอปเป็น 4:5 ตายตัว)
+      const x = img.closest && img.closest('.gal-x,.cx-track');
       if (!x || x.dataset.r || !img.naturalWidth || img !== x.querySelector('img')) return;
       x.dataset.r = '1';
       x.style.setProperty('--gr', Math.min(1.91, Math.max(0.5625, img.naturalWidth / img.naturalHeight)).toFixed(4));

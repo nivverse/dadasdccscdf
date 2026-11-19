@@ -317,7 +317,7 @@ ${ld}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{font-family:'Kanit',sans-serif}.uv,.uv.bp{padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}.uv video{background:transparent!important;border:0!important}</style>
-<link id="niv-css" rel="stylesheet" href="/niv.css?v=20261119g">
+<link id="niv-css" rel="stylesheet" href="/niv.css?v=20261119i">
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white transition-colors duration-300 min-h-screen flex flex-col relative overflow-x-hidden">
 <div class="fixed inset-0 pointer-events-none z-0">
@@ -326,7 +326,7 @@ ${ld}
 </div>
 <header id="main-header" class="z-20"></header>
 ${body}
-<script src="/nivread.js?v=20261119g"></script>
+<script src="/nivread.js?v=20261119i"></script>
 <script src="/posts-feed.js" defer></script>
 </body>
 </html>`;
