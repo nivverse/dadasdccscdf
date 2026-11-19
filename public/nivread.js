@@ -224,7 +224,8 @@
     const host = toastHost();
     // มือถือมีแถบเมนูล่าง (#niv-tabbar) → ยกแถบแจ้งเตือนให้พ้น (ความสูงแถบรวม safe-area แล้ว)
     const tb = document.getElementById('niv-tabbar');
-    const tbOff = tb && getComputedStyle(tb).display !== 'none' ? Math.max(0, innerHeight - tb.getBoundingClientRect().top) : 0; // ระยะจากขอบล่างจอถึงบนสุดของแถบเมนู (ทั้งแถบเต็มบนมือถือ และปุ่มลอยบนแท็บเล็ต)
+    const tbR = tb && getComputedStyle(tb).display !== 'none' ? tb.getBoundingClientRect() : null;
+    const tbOff = tbR && tbR.width > tbR.height ? Math.max(0, innerHeight - tbR.top) : 0; // ระยะจากขอบล่างจอถึงบนสุดของแถบเมนู (ทั้งแถบเต็มบนมือถือ และปุ่มลอยบนแท็บเล็ต)
     host.style.paddingBottom = tbOff ? (tbOff + 12) + 'px' : '';
     while (host.children.length >= TOAST_MAX) host.firstElementChild.dispatchEvent(new CustomEvent('niv-toast-close'));
 
@@ -1707,16 +1708,34 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
 #niv-tabbar .tb{flex:1;height:3.5rem;display:grid;place-items:center;color:#64748b;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .dark #niv-tabbar .tb{color:#a3a3a3}
 #niv-tabbar .tb.on{color:#f59e0b}
-@media (min-width:1024px){#niv-tabbar{display:none}}
-@media (min-width:500px) and (max-width:1023px){
+#niv-tabbar .tb{position:relative}
+#niv-tabbar .tb-d{display:none}
+#niv-tabbar .nv-badge{top:7px;right:9px;box-shadow:0 0 0 2px rgba(255,255,255,.96)}
+.dark #niv-tabbar .nv-badge{box-shadow:0 0 0 2px #1e1e1e}
+@media (min-width:500px){
+  /* แท็บเล็ต + คอม: ซ่อนแถบ header ด้านบน ใช้ tabbar ลอยแทน (กระดิ่ง/เขียนโพสต์อยู่ใน tabbar) */
+  #main-header .niv-topbar{display:none}
   #niv-tabbar{left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100vw - 24px);bottom:calc(16px + env(safe-area-inset-bottom));padding:0 12px;gap:4px;border:0;border-radius:999px;
     background:rgba(255,255,255,.96);box-shadow:0 10px 30px rgba(15,23,42,.16),0 0 0 1px rgba(15,23,42,.05)}
   .dark #niv-tabbar{background:rgba(30,30,30,.94);box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08)}
   #niv-tabbar .tb{flex:none;width:58px;height:56px;transition:transform .15s,color .15s}
+  #niv-tabbar .tb-d{display:grid}
   #niv-tabbar .tb:active{transform:scale(.88)}
   #niv-tabbar .tb.on{color:#0f172a}
   .dark #niv-tabbar .tb.on{color:#fff}
+}
+@media (min-width:500px) and (max-width:1023px){
   body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+}
+@media (min-width:1024px){
+  /* คอม: tabbar แนวตั้งลอยชิดซ้าย กึ่งกลางจอ */
+  #niv-tabbar{left:20px;right:auto;margin:0;top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;justify-content:flex-start;align-items:center;
+    width:60px;max-width:none;max-height:calc(100vh - 32px);overflow-y:auto;scrollbar-width:none;padding:10px 0;gap:4px;border-radius:999px}
+  #niv-tabbar::-webkit-scrollbar{display:none}
+  #niv-tabbar .tb{width:48px;height:48px;border-radius:999px}
+  #niv-tabbar .tb:hover{background:rgba(148,163,184,.18)}
+  #niv-tabbar .nv-badge{top:4px;right:3px}
+  body{padding-left:92px}
 }
 @media (max-width:499px){body{padding-bottom:calc(3.5rem + env(safe-area-inset-bottom))}}
 #niv-drawer{position:fixed;inset:0;z-index:50;visibility:hidden;pointer-events:none;transition:visibility 0s linear .3s}
@@ -1802,7 +1821,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
 
     header.innerHTML = `
 <style id="niv-style">${CSS}</style>
-<div class="sticky top-0 z-30 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0d0d0d]/80 backdrop-blur-md">
+<div class="niv-topbar sticky top-0 z-30 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0d0d0d]/80 backdrop-blur-md">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
     <a href="/" class="flex items-center gap-2 mr-auto sm:mr-0" aria-label="nivread">
       <img src="/img/icon-96.png" alt="" width="32" height="32" class="w-8 h-8 rounded-lg object-contain">
@@ -1829,6 +1848,8 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     { href: loggedIn ? userUrl(s.userId) : '/login?redirect=' + here, label: 'โปรไฟล์', ic: 'user', on: loggedIn && isMyProfile(s.userId) },
     { href: '/search', label: 'ค้นหา', ic: 'search', on: path === '/search' },
   ].map((t) => `<a href="${t.href}" class="tb${t.on ? ' on' : ''}" aria-label="${t.label}"${t.on ? ' aria-current="page"' : ''}>${svg(t.ic, 'w-6 h-6')}</a>`).join('')}
+  ${loggedIn ? `<a href="/write" class="tb tb-d${path === '/write' ? ' on' : ''}" aria-label="เขียนโพสต์">${svg('write', 'w-6 h-6')}</a>
+  <a id="niv-bell-tb" href="/notifications" class="tb tb-d${path === '/notifications' ? ' on' : ''}" aria-label="การแจ้งเตือน"${path === '/notifications' ? ' aria-current="page"' : ''}>${svg('bell', 'w-6 h-6')}<span id="niv-bell-tb-n" class="nv-badge" hidden></span></a>` : ''}
   <button id="niv-burger-m" type="button" class="tb" aria-label="เมนู" aria-expanded="false" aria-controls="niv-drawer"><span class="nv-burger" aria-hidden="true"><i></i><i></i><i></i></span></button>
 </nav>
 
@@ -1941,8 +1962,8 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
 
     const ncRead = () => { try { const o = JSON.parse(ls(NC_KEY) || 'null'); return o && o.u === session().userId ? o : null; } catch { return null; } };
     const ncPaint = (n) => {
-      document.querySelectorAll('#niv-bell-n, #niv-nav-bell-n').forEach((b) => { b.textContent = n > 99 ? '99+' : String(n); b.hidden = !(n > 0); });
-      document.getElementById('niv-bell')?.setAttribute('aria-label', n > 0 ? `การแจ้งเตือน (${n > 99 ? '99+' : n} รายการใหม่)` : 'การแจ้งเตือน');
+      document.querySelectorAll('#niv-bell-n, #niv-bell-tb-n, #niv-nav-bell-n').forEach((b) => { b.textContent = n > 99 ? '99+' : String(n); b.hidden = !(n > 0); });
+      document.querySelectorAll('#niv-bell, #niv-bell-tb').forEach((a) => a.setAttribute('aria-label', n > 0 ? `การแจ้งเตือน (${n > 99 ? '99+' : n} รายการใหม่)` : 'การแจ้งเตือน'));
       try { if (n > 0) navigator.setAppBadge?.(Math.min(n, 99)); else navigator.clearAppBadge?.(); } catch {}
     };
     const ncSet = (n) => { lsSet(NC_KEY, JSON.stringify({ u: session().userId, n, t: Date.now() })); ncPaint(n); };
