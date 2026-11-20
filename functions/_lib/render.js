@@ -54,15 +54,29 @@ export function ago(ms) {
 
 export async function api(env, path) {
   const base = String(env.API_BASE || '').replace(/\/+$/, '');
-  if (!base) return { error: 'API_BASE not set' };
-  try {
-    const r = await fetch(base + path, { cf: { cacheTtl: 60, cacheEverything: true } });
-    if (r.status === 404) return { notFound: true };
-    if (!r.ok) return { error: `api ${r.status}` };
-    return await r.json();
-  } catch (e) {
-    return { error: String(e.message || e) };
+  if (!base) { console.error('[api] API_BASE not set'); return { error: 'API_BASE not set' }; }
+  let last = 'unknown';
+  for (let i = 0; i < 2; i++) { // ลองซ้ำ 1 ครั้งเมื่อเป็น 5xx / 429 / เชื่อมต่อไม่ได้
+    const t0 = Date.now();
+    try {
+      const r = await fetch(base + path, { cf: { cacheTtl: 60, cacheEverything: true } });
+      if (r.status === 404) return { notFound: true };
+      if (r.ok) {
+        try { return await r.json(); }
+        catch (e) { last = 'bad json: ' + String(e.message || e); break; }
+      }
+      let body = ''; try { body = (await r.text()).replace(/\s+/g, ' ').slice(0, 200); } catch {}
+      last = `api ${r.status}`;
+      console.error(`[api] ${path.split('?')[0]} -> ${r.status} (try ${i + 1}, ${Date.now() - t0}ms, cf-ray=${r.headers.get('cf-ray') || '-'}) ${body}`);
+      if (r.status < 500 && r.status !== 429) break; // 4xx อื่นๆ ไม่ต้องลองซ้ำ
+    } catch (e) {
+      last = String(e.message || e);
+      console.error(`[api] ${path.split('?')[0]} fetch failed (try ${i + 1}, ${Date.now() - t0}ms): ${last}`);
+    }
+    if (i === 0) await new Promise((res) => setTimeout(res, 150));
   }
+  console.error(`[api] giving up: ${path.split('?')[0]} (${last})`);
+  return { error: last };
 }
 
 const ICON = {
