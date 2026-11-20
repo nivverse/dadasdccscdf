@@ -259,7 +259,7 @@ textarea.wr-f{resize:none;line-height:1.6}
     <div class="wr-tray" role="group" aria-label="เพิ่มในโพสต์">
       <input id="img-file" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple class="hidden">
       <input id="vid-file" type="file" accept="video/*" class="hidden">
-      <button id="img-up" type="button" class="wr-tool" title="อัปโหลดรูป (สูงสุด 3 รูป)" aria-label="อัปโหลดรูป"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>รูปภาพ<span id="up-count">0 / 3</span></button>
+      <button id="img-up" type="button" class="wr-tool" title="อัปโหลดรูป (สูงสุด 6 รูป)" aria-label="อัปโหลดรูป"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>รูปภาพ<span id="up-count">0 / 3</span></button>
       <button id="tg-img" type="button" aria-pressed="false" class="wr-tool hidden" title="ลิงก์รูปหรือ GIF" aria-label="ลิงก์รูปหรือ GIF"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.5-1.5"/></svg>ลิงก์/GIF<span id="img-count">0 / 10</span></button>
       <button id="tg-yt" type="button" aria-pressed="false" class="wr-tool" title="วิดีโอ YouTube" aria-label="วิดีโอ YouTube"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.5v5l4.5-2.5z"/></svg>YouTube<span id="yt-count">0 / 15</span></button>
       <button id="vid-up" type="button" class="wr-tool hidden" title="อัปโหลดวิดีโอ (ยาวเกิน 30 วินาทีเลือกช่วงที่จะใช้ได้)" aria-label="อัปโหลดวิดีโอ"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg>วิดีโอ<span id="vid-count">0 / 1</span></button>
@@ -309,7 +309,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   // ---------- รูปภาพ (ช่องเดียว วางได้หลายลิงก์ สูงสุด 10) ----------
   const IMG_MAX = 10;
   let images = [];
-  const UP_MAX = 3;
+  const UP_MAX = 6;
   let uploading = false;
   // รูปที่อัปโหลดเอง: แบบเดิม …/api/blog/img/u/<key> หรือแบบใหม่จากโดเมน CDN …/u/<ผู้ใช้>/<ไฟล์>.webp|jpg|png (ใช้นับโควตาในหน้าจอเท่านั้น ฝั่งเซิร์ฟเวอร์ตรวจจริงอีกชั้น)
   const isUp = (u) => u.includes('/api/blog/img/u/') || /^https:\/\/[^/\s]+\/u\/[A-Za-z0-9._~%-]+\/[a-z0-9]{6,40}\.(?:webp|jpg|png)$/.test(u);

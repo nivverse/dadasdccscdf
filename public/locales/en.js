@@ -482,7 +482,7 @@ NIV_I18N.register('en', {
   "เว้นบรรทัดว่างหนึ่งบรรทัดเพื่อขึ้นย่อหน้าใหม่": "Leave one blank line to start a new paragraph",
   "เนื้อหาเป็นข้อความล้วน ยาวอย่างน้อย 50 ตัวอักษร": "Plain text, at least 50 characters long",
   "เพิ่มในโพสต์": "Add to post",
-  "อัปโหลดรูป (สูงสุด 3 รูป)": "Upload images (up to 3)",
+  "อัปโหลดรูป (สูงสุด 6 รูป)": "Upload images (up to 6)",
   "อัปโหลดรูป": "Upload images",
   "ลิงก์รูปหรือ GIF": "Image or GIF link",
   "วิดีโอ YouTube": "YouTube video",

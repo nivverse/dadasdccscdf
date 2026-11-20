@@ -457,7 +457,7 @@ NIV_I18N.register('ms', {
   "เว้นบรรทัดว่างหนึ่งบรรทัดเพื่อขึ้นย่อหน้าใหม่": "Tinggalkan satu baris kosong untuk memulakan perenggan baharu",
   "เนื้อหาเป็นข้อความล้วน ยาวอย่างน้อย 50 ตัวอักษร": "Kandungan adalah teks biasa, sekurang-kurangnya 50 aksara",
   "เพิ่มในโพสต์": "Tambah ke hantaran",
-  "อัปโหลดรูป (สูงสุด 3 รูป)": "Muat naik imej (maksimum 3)",
+  "อัปโหลดรูป (สูงสุด 6 รูป)": "Muat naik imej (maksimum 6)",
   "อัปโหลดรูป": "Muat naik imej",
   "ลิงก์รูปหรือ GIF": "Pautan imej atau GIF",
   "วิดีโอ YouTube": "Video YouTube",
