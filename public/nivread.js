@@ -405,7 +405,7 @@
   }
   function charBlockEl(p, full) { // แสดงแค่ที่จำเป็น (รูป + ชื่อ + เลขลำดับ) · จำกัด 8 สไลด์ — ตรงกับ charCardHtml() ฝั่งเซิร์ฟเวอร์
     if (!document.getElementById('niv-css') && !document.getElementById('niv-char-css')) {
-      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261119c'; document.head.appendChild(l);
+      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261119k'; document.head.appendChild(l);
     }
     const href = '/posts/' + encodeURIComponent(p.slug), total = full.length, list = full.slice(0, 8);
     const slides = list.map((c, i) => {
@@ -584,7 +584,7 @@
 .gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 min(88%,340px);max-height:560px;aspect-ratio:var(--gr,4/5);border:1px solid rgba(127,127,127,.28);border-radius:14px;scroll-snap-align:start}
+.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 min(88%,340px);max-height:560px;aspect-ratio:var(--gr,4/5);border-radius:14px;scroll-snap-align:start}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
