@@ -405,7 +405,7 @@
   }
   function charBlockEl(p, full) { // แสดงแค่ที่จำเป็น (รูป + ชื่อ + เลขลำดับ) · จำกัด 8 สไลด์ — ตรงกับ charCardHtml() ฝั่งเซิร์ฟเวอร์
     if (!document.getElementById('niv-css') && !document.getElementById('niv-char-css')) {
-      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261119k'; document.head.appendChild(l);
+      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261119l'; document.head.appendChild(l);
     }
     const href = '/posts/' + encodeURIComponent(p.slug), total = full.length, list = full.slice(0, 8);
     const slides = list.map((c, i) => {
@@ -568,7 +568,7 @@
 .gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:transparent;cursor:zoom-in}
 .gal-s .bg{display:none}
 .gal-s .fg{position:relative;display:block;width:100%;height:auto;max-width:100%;max-height:none;object-fit:contain}
-@media (min-width:768px){.gal-s .fg{width:auto;max-height:560px;border-radius:16px}}
+@media (min-width:768px){.gal-s .fg{width:100%;max-height:560px;object-fit:cover;object-position:50% 20%;border-radius:16px}}
 .gal-t{position:relative;min-height:0;padding:0;border:0;background:#111;cursor:zoom-in;overflow:hidden}
 .gal-t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease,filter .3s}
 .gal-t:hover img{transform:scale(1.05);filter:brightness(1.08)}
