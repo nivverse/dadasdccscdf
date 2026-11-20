@@ -405,7 +405,7 @@
   }
   function charBlockEl(p, full) { // แสดงแค่ที่จำเป็น (รูป + ชื่อ + เลขลำดับ) · จำกัด 8 สไลด์ — ตรงกับ charCardHtml() ฝั่งเซิร์ฟเวอร์
     if (!document.getElementById('niv-css') && !document.getElementById('niv-char-css')) {
-      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261120g'; document.head.appendChild(l);
+      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261120h'; document.head.appendChild(l);
     }
     const href = '/posts/' + encodeURIComponent(p.slug), total = full.length, list = full.slice(0, 8);
     const slides = list.map((c, i) => {
@@ -590,7 +590,7 @@
 .gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)),88%,340px);max-height:560px;height:var(--gh,420px);border-radius:14px;scroll-snap-align:start}
+.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)*var(--k,1)),88%,340px);max-height:560px;height:var(--gh,420px);border-radius:14px;scroll-snap-align:start}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
@@ -643,8 +643,14 @@
       const his = rs.map((r) => Math.min(H0, cap / r)); // ความสูงที่แต่ละรูปจะเห็นครบโดยไม่ครอป
       const lo = Math.min.apply(null, his), hi = Math.max.apply(null, his);
       let h = hi / lo > 1.5 ? Math.max(lo, H0 * 0.7) : lo; // ทุกรูปในแถว "สูงเท่ากัน" · แถวผสมสูง/กว้างมาก ยอมครอปรูปกว้างเล็กน้อยแทนการหดรูปสูง
-      const hf = (w - gaps) / sum; // ความสูงที่ทำให้ทั้งแถวพอดีจอ
-      if (hf >= h * 0.85 && hf <= 560 && hf >= H0 * 0.85) h = hf; // รูปสูงล้วนที่ใกล้พอดีจอ → จัดให้พอดีแถว
+      const hf = (w - gaps) / sum; // ความสูงที่ทำให้ทั้งแถวพอดีจอเป๊ะ (ไม่ครอป)
+      const need = w > 480 ? H0 * 0.67 : H0 * 0.85; // จอกว้างยอมให้รูปเตี้ยลงได้มากกว่าเพื่อให้ทั้งแถวอยู่ในกรอบ ไม่ต้องเลื่อน
+      let k = 1;
+      if (hf >= need) {
+        if (hf <= 560) h = hf; // พอดีแถวเป๊ะ
+        else { h = 560; k = Math.min(hf / 560, 1.5); } // รูปน้อย/แคบ: ความสูงเต็มที่ 560 แล้วขยายความกว้างให้เต็มแถว (ครอปบน-ล่างเล็กน้อย เหมือน X)
+      }
+      x.style.setProperty('--k', k.toFixed(3));
       x.style.setProperty('--gh', Math.round(h) + 'px');
     };
     const fitX = (img) => { // แต่ละรูปใช้สัดส่วนจริงของตัวเอง (ไม่ครอป ไม่บังคับเต็มจอ) เหมือน X
