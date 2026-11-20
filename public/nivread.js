@@ -1824,8 +1824,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
 <div class="niv-topbar sticky top-0 z-30 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0d0d0d]/80 backdrop-blur-md">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
     <a href="/" class="flex items-center gap-2 mr-auto sm:mr-0" aria-label="nivread">
-      <img src="/img/icon-96.png" alt="" width="32" height="32" class="w-8 h-8 rounded-lg object-contain">
-      <span class="nv-brand text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">nivread</span>
+      <img src="/img/logo-on-light.png?v=20261120" alt="nivread" width="114" height="30" class="block dark:hidden h-[30px] w-auto select-none" draggable="false"><img src="/img/logo-on-dark.png?v=20261120" alt="nivread" width="114" height="30" class="hidden dark:block h-[30px] w-auto select-none" draggable="false">
     </a>
     <div class="hidden sm:block flex-1 max-w-md mx-auto">${searchBox('niv-q')}</div>
     <nav class="flex items-center gap-1.5" aria-label="เมนูด่วน">
@@ -1857,7 +1856,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
   <div id="niv-backdrop"></div>
   <aside class="shadow-2xl border-l border-slate-200 dark:border-white/10 text-slate-800 dark:text-white" role="dialog" aria-label="เมนู">
     <div class="flex items-center justify-between px-5 h-14 border-b border-slate-200 dark:border-white/10 flex-none">
-      <span class="flex items-center gap-2"><img src="/img/icon-96.png" alt="" width="32" height="32" class="w-8 h-8 rounded-lg object-contain"><span class="nv-brand text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">nivread</span></span>
+      <span class="flex items-center gap-2"><img src="/img/logo-on-light.png?v=20261120" alt="nivread" width="114" height="30" class="block dark:hidden h-[30px] w-auto select-none" draggable="false"><img src="/img/logo-on-dark.png?v=20261120" alt="nivread" width="114" height="30" class="hidden dark:block h-[30px] w-auto select-none" draggable="false"></span>
       <button id="niv-close" type="button" class="w-9 h-9 grid place-items-center rounded-xl hover:bg-slate-200/70 dark:hover:bg-white/10 cursor-pointer" aria-label="ปิดเมนู">${svg('close', 'w-5 h-5')}</button>
     </div>
     <div class="nv-scroll">

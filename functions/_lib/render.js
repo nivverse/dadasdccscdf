@@ -288,7 +288,7 @@ export { postBar, postHead };
 
 export function shell({ origin, apiBase, path, title, desc, image, jsonld = [], body, robots = 'index, follow, max-image-preview:large', type = 'website', head = '' }) {
   const canonical = origin + path;
-  const img = image || `${origin}/og-image.jpg`;
+  const img = image || `${origin}/og-image.jpg?v=20261120`;
   const ld = jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`).join('\n');
   return `<!DOCTYPE html>
 <html lang="th" class="dark">
@@ -301,10 +301,10 @@ export function shell({ origin, apiBase, path, title, desc, image, jsonld = [], 
 <meta name="robots" content="${robots}">
 <meta name="author" content="nivread">
 <link rel="canonical" href="${esc(canonical)}">
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" href="/img/icon-48.png" type="image/png" sizes="48x48">
-<link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+<link rel="icon" href="/favicon.ico?v=20261120" sizes="any">
+<link rel="icon" href="/img/icon-48.png?v=20261120" type="image/png" sizes="48x48">
+<link rel="icon" href="/img/icon-192.png?v=20261120" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png?v=20261120">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#0d0d0d">
 <meta name="api-base" content="${esc(apiBase)}">
@@ -340,7 +340,7 @@ ${ld}
 </div>
 <header id="main-header" class="z-20"></header>
 ${body}
-<script src="/nivread.js?v=20261119l"></script>
+<script src="/nivread.js?v=20261120"></script>
 <script src="/posts-feed.js" defer></script>
 </body>
 </html>`;
