@@ -555,6 +555,14 @@
       root.innerHTML = (feed ? '<a class="gal-s" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' : '<div class="gal-s" data-imgs="' + data + '" data-i="0" role="button" tabindex="0" aria-label="ดูรูปเต็ม">') +
         '<img class="bg" src="' + escHtml(urls[0]) + '" alt="" aria-hidden="true" loading="lazy" decoding="async">' +
         '<img class="fg" src="' + escHtml(urls[0]) + '" alt="' + alt + '" loading="lazy" decoding="async">' + (feed ? '</a>' : '</div>');
+    } else if (n <= 4) { // 2–4 รูป = ตารางแบบ X (ไม่เลื่อน) · รูปสูงทั้งหมดจะถูกสลับเป็นแถวตามสัดส่วนจริงโดย fitGrid
+      root.classList.add('gal-gw');
+      root.innerHTML = '<div class="gal-g gal-g-' + n + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.map((u, i) => {
+        const im = '<img src="' + escHtml(u) + '" alt="' + alt + '" loading="lazy" decoding="async">';
+        return feed
+          ? '<a class="gal-t" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' + im + '</a>'
+          : '<button type="button" class="gal-t" data-i="' + i + '" aria-label="ดูรูปเต็ม">' + im + '</button>';
+      }).join('') + '</div>';
     } else { // หลายรูป = แถวรูปเลื่อนแนวนอนแบบ X (ไม่มีเลขลำดับ/ป้าย +N) · 2 รูปเต็มแถว · 3+ รูปเห็นรูปถัดไปโผล่ขอบขวา
       const chev = (d) => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
       root.classList.add('gal-xw');
@@ -590,9 +598,17 @@
 .gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 min(88%,340px);max-height:560px;aspect-ratio:var(--gr,4/5);border-radius:14px;scroll-snap-align:start}
+.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 clamp(130px,44%,260px);max-height:560px;aspect-ratio:var(--gr,4/5);border-radius:14px;scroll-snap-align:start}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
+/* แกลเลอรี 2–4 รูป: จัดเป็นตารางแบบ X (ไม่เลื่อน) — ดู fitGrid ใน nivread.js ที่สลับเป็นแถวตามสัดส่วนจริงเมื่อรูปสูงทั้งหมด */
+.gal-g{display:grid;gap:3px;aspect-ratio:16/10;max-height:640px;border-radius:16px;overflow:hidden;background:transparent}
+.gal-g .gal-t{min-width:0;min-height:0;border-radius:0}
+.gal-g-2{grid-template-columns:1fr 1fr}
+.gal-g-3,.gal-g-4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.gal-g-3 .gal-t:first-child{grid-row:1/3}
+.gal-g.gal-rw{display:flex;aspect-ratio:var(--ga,1)}
+.gal-g.gal-rw .gal-t{flex:1 1 0%}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
 .gal-nav:hover{background:rgba(245,158,11,.92)}
 .gal-nav[hidden]{display:none}
@@ -628,9 +644,21 @@
       x.dataset.r = '1';
       x.style.setProperty('--gr', Math.min(1.91, Math.max(0.5625, img.naturalWidth / img.naturalHeight)).toFixed(4));
     };
-    document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') { markOk(e.target); fitRow(e.target); } }, true);
-    document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') markOk(e.target); }, true);
-    document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); } });
+    const fitGrid = (img) => { // แกลเลอรี 2–4 รูป: ถ้ารวมสัดส่วนรูปแล้วเป็นแถวเดียวพอดี (รูปสูง/แนวตั้ง) จัดเป็นแถวตามสัดส่วนจริง ไม่ครอปจนเสียภาพ · ไม่งั้นใช้ตาราง X (1 ใหญ่ + เล็ก / 2×2)
+      const g = img.closest && img.closest('.gal-g'); if (!g || g.dataset.r) return;
+      const ims = [].slice.call(g.querySelectorAll('img'));
+      if (!ims.every((m) => m.complete)) return;
+      g.dataset.r = '1';
+      const rs = ims.map((m) => (m.naturalWidth && m.naturalHeight ? Math.min(3, Math.max(0.3, m.naturalWidth / m.naturalHeight)) : 1));
+      const sum = rs.reduce((a, b) => a + b, 0);
+      if (sum > 1.6) return;
+      g.classList.add('gal-rw');
+      g.style.setProperty('--ga', Math.max(0.75, sum).toFixed(3));
+      [].slice.call(g.querySelectorAll('.gal-t')).forEach((t, i) => { t.style.flex = (rs[i] / sum).toFixed(4) + ' 1 0%'; });
+    };
+    document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') { markOk(e.target); fitRow(e.target); fitGrid(e.target); } }, true);
+    document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') { markOk(e.target); fitGrid(e.target); } }, true);
+    document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); fitGrid(im); } });
 
     let lb = null, urls = [], idx = 0;
     const show = () => {
@@ -1590,7 +1618,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
     const cr = card.getBoundingClientRect(); if (!cr.width) return null;
     const items = [];
     card.querySelectorAll('a,button').forEach((x) => {
-      if (x === badge || x.hidden || x.closest('.uv,.vg,.gal-s,.gal-x,.snd-badge')) return;
+      if (x === badge || x.hidden || x.closest('.uv,.vg,.gal-s,.gal-x,.gal-g,.snd-badge')) return;
       const r = x.getBoundingClientRect();
       if (!r.width || !r.height || r.width > 120 || r.height > 64) return;
       if (r.top - cr.top > SND_BAND || r.bottom < cr.top) return;

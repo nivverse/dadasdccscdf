@@ -12,7 +12,7 @@ export function postImages(p, max = 10) { // max: โพสต์ตัวละ
 
 const CHEV = (d) => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
 
-// 1 รูป = สัดส่วนจริง (แนวตั้ง/แนวนอน) เห็นเต็มรูป · 2+ รูป = แถวรูปเลื่อนแนวนอนแบบ X (2 รูปเต็มแถว · 3+ รูปเห็นรูปถัดไปโผล่ขอบขวา · ไม่มีเลขลำดับ/ป้าย +N) · กดดูเต็มด้วย lightbox
+// 1 รูป = สัดส่วนจริง (แนวตั้ง/แนวนอน) เห็นเต็มรูป · 2–4 รูป = ตารางแบบ X (ไม่เลื่อน) · 5+ รูป = แถวรูปเลื่อนแนวนอน (เห็นรูปถัดไปโผล่ขอบขวา · ไม่มีเลขลำดับ/ป้าย +N) · กดดูเต็มด้วย lightbox
 // href = โหมดฟีด: แตะรูปแล้วเข้าหน้าโพสต์ (ยังไม่ขยายรูป) · ไม่ใส่ href = หน้าโพสต์: แตะแล้วเปิดดูรูปเต็ม
 // ลูกศรเลื่อน (.gal-nav) และสไตล์อยู่ที่ /niv.css + /nivread.js
 export function imageGallery(list, title, eager = false, href = '') {
@@ -35,7 +35,10 @@ ${feed ? '</a>' : '</div>'}</div>`;
       ? `<a class="gal-t" href="${esc(href)}" aria-label="เปิดโพสต์ ${alt}">${img}</a>`
       : `<button type="button" class="gal-t" data-i="${i}" aria-label="ดูรูปเต็ม">${img}</button>`;
   }).join('');
+  if (n <= 4) { // 2–4 รูป = ตารางแบบ X (ไม่เลื่อน) · รูปสูงทั้งหมดจะถูกสลับเป็นแถวตามสัดส่วนจริงโดย fitGrid ใน /nivread.js
+    return `<div class="gal gal-gw${feed ? ' gal-l' : ''}"><div class="gal-g gal-g-${n}"${feed ? '' : ` data-imgs="${data}"`}>${tiles}</div></div>`;
+  }
   const nav = n > 1 ? `<button type="button" class="gal-nav gal-p" aria-label="รูปก่อนหน้า" hidden>${CHEV('M15 5l-7 7 7 7')}</button><button type="button" class="gal-nav gal-nx" aria-label="รูปถัดไป">${CHEV('M9 5l7 7-7 7')}</button>` : '';
   const dots = n > 1 ? `<div class="gal-dots" aria-hidden="true">${urls.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</div>` : '';
-  return `<div class="gal gal-xw${feed ? ' gal-l' : ''}">${dots}<div class="gal-x gal-x-${n === 2 ? '2' : 'm'}"${feed ? '' : ` data-imgs="${data}"`}>${tiles}</div>${nav}</div>`;
+  return `<div class="gal gal-xw${feed ? ' gal-l' : ''}">${dots}<div class="gal-x gal-x-m"${feed ? '' : ` data-imgs="${data}"`}>${tiles}</div>${nav}</div>`;
 }

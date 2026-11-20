@@ -70,9 +70,17 @@
 .gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 min(88%,340px);max-height:560px;aspect-ratio:var(--gr,4/5);border-radius:14px;scroll-snap-align:start}
+.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 clamp(130px,44%,260px);max-height:560px;aspect-ratio:var(--gr,4/5);border-radius:14px;scroll-snap-align:start}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
+/* แกลเลอรี 2–4 รูป: จัดเป็นตารางแบบ X (ไม่เลื่อน) — ดู fitGrid ใน nivread.js ที่สลับเป็นแถวตามสัดส่วนจริงเมื่อรูปสูงทั้งหมด */
+.gal-g{display:grid;gap:3px;aspect-ratio:16/10;max-height:640px;border-radius:16px;overflow:hidden;background:transparent}
+.gal-g .gal-t{min-width:0;min-height:0;border-radius:0}
+.gal-g-2{grid-template-columns:1fr 1fr}
+.gal-g-3,.gal-g-4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.gal-g-3 .gal-t:first-child{grid-row:1/3}
+.gal-g.gal-rw{display:flex;aspect-ratio:var(--ga,1)}
+.gal-g.gal-rw .gal-t{flex:1 1 0%}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
 .gal-nav:hover{background:rgba(245,158,11,.92)}
 .gal-nav[hidden]{display:none}
