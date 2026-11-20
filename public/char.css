@@ -25,6 +25,7 @@ html.dark .cx-count{color:#fcd34d}
 .cx-nav{position:absolute;top:calc(50% - 6px);transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
 .cx-nav:hover{background:rgba(245,158,11,.92)}
 .cx-nav[hidden]{display:none}
+.nv-fit .gal-dots,.nv-fit .gal-nav,.nv-fit .cx-nav{display:none!important}
 .cx-prev{left:8px}.cx-next{right:8px}
 .cx-feed:hover .cx-nav,.cx-nav:focus-visible{opacity:1}
 @media (hover:none){.cx-nav{display:none}}

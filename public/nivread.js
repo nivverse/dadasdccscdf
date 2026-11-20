@@ -405,7 +405,7 @@
   }
   function charBlockEl(p, full) { // แสดงแค่ที่จำเป็น (รูป + ชื่อ + เลขลำดับ) · จำกัด 8 สไลด์ — ตรงกับ charCardHtml() ฝั่งเซิร์ฟเวอร์
     if (!document.getElementById('niv-css') && !document.getElementById('niv-char-css')) {
-      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261120h'; document.head.appendChild(l);
+      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261120i'; document.head.appendChild(l);
     }
     const href = '/posts/' + encodeURIComponent(p.slug), total = full.length, list = full.slice(0, 8);
     const slides = list.map((c, i) => {
@@ -596,6 +596,7 @@
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
 .gal-nav:hover{background:rgba(245,158,11,.92)}
 .gal-nav[hidden]{display:none}
+.nv-fit .gal-dots,.nv-fit .gal-nav,.nv-fit .cx-nav{display:none!important}
 .gal-p{left:8px}.gal-nx{right:8px}
 .gal-xw:hover .gal-nav,.gal-nav:focus-visible{opacity:1}
 @media (hover:none){.gal-nav{display:none}}
@@ -646,12 +647,13 @@
       const hf = (w - gaps) / sum; // ความสูงที่ทำให้ทั้งแถวพอดีจอเป๊ะ (ไม่ครอป)
       const need = w > 480 ? H0 * 0.67 : H0 * 0.85; // จอกว้างยอมให้รูปเตี้ยลงได้มากกว่าเพื่อให้ทั้งแถวอยู่ในกรอบ ไม่ต้องเลื่อน
       let k = 1;
-      if (hf >= need) {
+      if (hf >= need && hf * Math.min.apply(null, rs) >= 108) { // รูปที่แคบสุดต้องกว้างอย่างน้อย ~108px ไม่งั้นให้เลื่อนแทน (กันรูปเล็กจิ๋วเมื่อมีรูปเยอะ)
         if (hf <= 560) h = hf; // พอดีแถวเป๊ะ
         else { h = 560; k = Math.min(hf / 560, 1.5); } // รูปน้อย/แคบ: ความสูงเต็มที่ 560 แล้วขยายความกว้างให้เต็มแถว (ครอปบน-ล่างเล็กน้อย เหมือน X)
       }
       x.style.setProperty('--k', k.toFixed(3));
       x.style.setProperty('--gh', Math.round(h) + 'px');
+      if (x.parentNode) x.parentNode.classList.toggle('nv-fit', x.scrollWidth <= x.clientWidth + 2); // ทุกรูปอยู่ในกรอบหมด → ซ่อนจุด/ลูกศร (ไม่มีอะไรให้เลื่อน)
     };
     const fitX = (img) => { // แต่ละรูปใช้สัดส่วนจริงของตัวเอง (ไม่ครอป ไม่บังคับเต็มจอ) เหมือน X
       const t = img.closest && img.closest('.gal-x .gal-t,.cx-multi .cx-slide');
@@ -2065,8 +2067,10 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     if (p) p.hidden = t.scrollLeft <= 2;
     if (n) n.hidden = t.scrollLeft >= t.scrollWidth - t.clientWidth - 2;
     const d = w.querySelectorAll('.gal-dots i'); if (!d.length) return; // แถบขีดบอกตำแหน่ง (ตัวที่เลือกยาวกว่า)
-    const s = t.querySelector('.gal-t'), st = (s ? s.getBoundingClientRect().width : t.clientWidth) + 8;
-    let i = t.scrollLeft >= t.scrollWidth - t.clientWidth - 2 ? d.length - 1 : Math.round(t.scrollLeft / st);
+    const tl = t.getBoundingClientRect().left + (parseFloat(getComputedStyle(t).paddingLeft) || 0);
+    const ts = t.querySelectorAll('.gal-t'); let i = 0, best = 1e9; // จุดที่เลือก = รูปที่ชิดขอบซ้ายที่สุดตอนนี้ (รูปกว้างไม่เท่ากันก็ถูก)
+    for (let k = 0; k < ts.length; k++) { const dx = Math.abs(ts[k].getBoundingClientRect().left - tl); if (dx < best) { best = dx; i = k; } }
+    if (t.scrollLeft >= t.scrollWidth - t.clientWidth - 2) i = d.length - 1;
     i = Math.max(0, Math.min(d.length - 1, i));
     d.forEach((x, k) => x.classList.toggle('on', k === i));
   }
@@ -2074,7 +2078,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     const b = e.target.closest && e.target.closest('.gal-nav'); if (!b) return;
     e.preventDefault();
     const w = b.closest('.gal-xw'), t = w.querySelector('.gal-x'), s = w.querySelector('.gal-t');
-    const step = (s ? s.getBoundingClientRect().width : t.clientWidth * 0.8) + 8;
+    const step = Math.max(80, (t.clientWidth - 2 * (parseFloat(getComputedStyle(t).paddingLeft) || 0)) * 0.9); // เลื่อนทีละ "หน้า" · scroll-snap จะจับที่ต้นรูปที่ใกล้สุด
     t.scrollBy({ left: b.classList.contains('gal-p') ? -step : step, behavior: 'smooth' });
   });
   let raf = 0; // อัปเดตลูกศรไม่เกินหนึ่งครั้งต่อเฟรม
@@ -2093,7 +2097,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     const b = e.target.closest && e.target.closest('.cx-nav'); if (!b) return;
     e.preventDefault();
     const f = b.closest('.cx-feed'), t = f.querySelector('.cx-track'), s = f.querySelector('.cx-slide');
-    const step = (s ? s.getBoundingClientRect().width : t.clientWidth * 0.8) + 10;
+    const step = Math.max(80, (t.clientWidth - 2 * (parseFloat(getComputedStyle(t).paddingLeft) || 0)) * 0.9);
     t.scrollBy({ left: b.classList.contains('cx-prev') ? -step : step, behavior: 'smooth' });
   });
   let raf = 0; // จำกัดความถี่: อัปเดตลูกศรไม่เกินหนึ่งครั้งต่อเฟรม (กันกระตุกตอนปัด)

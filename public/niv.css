@@ -76,6 +76,7 @@
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
 .gal-nav:hover{background:rgba(245,158,11,.92)}
 .gal-nav[hidden]{display:none}
+.nv-fit .gal-dots,.nv-fit .gal-nav,.nv-fit .cx-nav{display:none!important}
 .gal-p{left:8px}.gal-nx{right:8px}
 .gal-xw:hover .gal-nav,.gal-nav:focus-visible{opacity:1}
 @media (hover:none){.gal-nav{display:none}}
