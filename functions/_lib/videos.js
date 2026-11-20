@@ -56,7 +56,7 @@ export function videoGallery(ids, title, compact = false, eager = false, href = 
     <div class="vg-stage">
       <button type="button" class="vg-poster" data-id="${first}" aria-label="เล่นวิดีโอ">
         <img class="vg-img" src="${thumb(first)}" alt="${esc(title)}" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">
-        <span class="vg-play"><img src="/img/icon-192.png" alt="" width="84" height="84"></span>
+        <span class="vg-play"><svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true" focusable="false"><defs><linearGradient id="vgg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs><circle class="vg-ring" cx="42" cy="42" r="34"/><circle class="vg-ring vg-r2" cx="42" cy="42" r="34"/><circle class="vg-disc" cx="42" cy="42" r="32" fill="url(#vgg)"/><circle cx="42" cy="42" r="31" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/><path class="vg-tri" d="M36 29.5 57 42 36 54.5Z" fill="#fff" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg></span>
       </button>
     </div>
   </div></div>

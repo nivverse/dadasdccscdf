@@ -510,7 +510,13 @@
 .vg-poster:hover img.vg-img{transform:scale(1.06);filter:brightness(1.08)}
 .vg-poster::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.55)),linear-gradient(0deg,rgba(0,0,0,.55),transparent 45%);pointer-events:none}
 .vg-play{position:absolute;left:50%;top:50%;z-index:1;width:84px;height:84px;margin:-42px 0 0 -42px;display:grid;place-items:center;transition:transform .25s}
-.vg-play img{width:100%;height:100%;object-fit:contain;background:none;border-radius:0;filter:drop-shadow(0 4px 14px rgba(0,0,0,.6)) drop-shadow(0 0 16px rgba(245,158,11,.75));animation:vg-beat 1.8s ease-in-out infinite}
+.vg-play svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 4px 14px rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(245,158,11,.6))}
+.vg-ring{fill:none;stroke:#fbbf24;stroke-width:2;transform-origin:42px 42px;transform-box:view-box;opacity:0;animation:vg-ripple 2.2s ease-out infinite}
+.vg-r2{animation-delay:1.1s}
+@keyframes vg-ripple{0%{transform:scale(.95);opacity:.85}100%{transform:scale(1.55);opacity:0}}
+.vg-disc{transform-origin:42px 42px;transform-box:view-box;animation:vg-beat 1.8s ease-in-out infinite}
+.vg-tri{transform-origin:42px 42px;transform-box:view-box;transition:transform .25s}
+.vg-poster:hover .vg-tri{transform:scale(1.15)}
 @keyframes vg-beat{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .vg-poster:hover .vg-play{transform:scale(1.12)}
 .vg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-top:.9rem}
@@ -532,7 +538,7 @@
 .vg-t b{position:absolute;left:.35rem;bottom:.3rem;font-size:.68rem;font-weight:700;color:#fff;background:rgba(0,0,0,.65);border-radius:6px;padding:0 .35rem;font-variant-numeric:tabular-nums}
 .vg-t[aria-current="true"]{opacity:1;box-shadow:0 0 0 2px #f59e0b,0 8px 22px rgba(245,158,11,.45)}
 @media (max-width:480px){.vg{margin:0 .75rem 1.25rem}.vg-t{width:112px}.vg-play{width:68px;height:68px;margin:-34px 0 0 -34px}}
-@media (prefers-reduced-motion:reduce){.vg-play img{animation:none}.vg-poster img.vg-img{transition:none}}
+@media (prefers-reduced-motion:reduce){.vg-play svg *{animation:none!important}.vg-poster img.vg-img{transition:none}}
 `;
 
 
@@ -701,7 +707,7 @@
       (list.length > 1 ? '<a class="vg-more">ดูทั้งหมด ' + list.length + ' คลิป</a>' : '') + '</div>' +
       '<div class="vg-stage"><button type="button" class="vg-poster" data-id="' + list[0] + '" aria-label="เล่นวิดีโอ">' +
       '<img class="vg-img" src="' + ytThumb(list[0]) + '" alt="" loading="lazy" decoding="async">' +
-      '<span class="vg-play"><img src="/img/icon-192.png" alt="" width="84" height="84"></span>' +
+      '<span class="vg-play"><svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true" focusable="false"><defs><linearGradient id="vgg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs><circle class="vg-ring" cx="42" cy="42" r="34"/><circle class="vg-ring vg-r2" cx="42" cy="42" r="34"/><circle class="vg-disc" cx="42" cy="42" r="32" fill="url(#vgg)"/><circle cx="42" cy="42" r="31" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/><path class="vg-tri" d="M36 29.5 57 42 36 54.5Z" fill="#fff" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg></span>' +
       '</button></div></div></div>';
     root.querySelector('.vg-img').alt = title || '';
     const more = root.querySelector('.vg-more'); if (more) more.href = href || '#';
@@ -1767,7 +1773,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
 .nv-mode-d{display:none}html:not(.dark) .nv-mode-d{display:inline}html:not(.dark) .nv-mode-n{display:none}
 html.theme-anim,html.theme-anim *{transition:background-color .4s ease,color .4s ease,border-color .4s ease!important}
 @media (prefers-reduced-motion:reduce){.nv-in,#niv-drawer.is-open .nv-in{opacity:1;transform:none;transition-delay:0s}#niv-drawer aside{transition-duration:.01ms}}
-html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-go,html.nv-menu-open .gal-s:not(.ok)::before,html.nv-menu-open .gal-t:not(.ok)::before,html.nv-menu-open .vg-play img,html.nv-menu-open .vg-eq s{animation-play-state:paused!important}
+html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-go,html.nv-menu-open .gal-s:not(.ok)::before,html.nv-menu-open .gal-t:not(.ok)::before,html.nv-menu-open .vg-play svg *,html.nv-menu-open .vg-eq s{animation-play-state:paused!important}
 `;
 
   // ---------- ไอคอน ----------
