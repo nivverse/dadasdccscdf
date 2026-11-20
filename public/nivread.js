@@ -590,7 +590,7 @@
 .gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 min(88%,340px);max-height:560px;aspect-ratio:var(--gr,4/5);border-radius:14px;scroll-snap-align:start}
+.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)),88%,340px);max-height:560px;aspect-ratio:var(--tr,.8);border-radius:14px;scroll-snap-align:start}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
@@ -628,9 +628,30 @@
       x.dataset.r = '1';
       x.style.setProperty('--gr', Math.min(1.91, Math.max(0.5625, img.naturalWidth / img.naturalHeight)).toFixed(4));
     };
-    document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') { markOk(e.target); fitRow(e.target); } }, true);
+    const layoutX = (x) => { // แถวรูปแกลเลอรี: รูปสูง/ยาวที่ทั้งแถวพอดีจอได้ → จัดความสูงให้พอดีแถว (สูงสุด 560px) · ไม่งั้นความสูงมาตรฐาน 420px แล้วเลื่อนดู
+      const ts = [].slice.call(x.querySelectorAll('.gal-t'));
+      const rs = ts.map((t) => parseFloat(t.style.getPropertyValue('--tr')));
+      if (!rs.length || rs.some((r) => isNaN(r))) return;
+      const cs = getComputedStyle(x), gap = 8, H0 = 420;
+      const w = x.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const sum = rs.reduce((a, b) => a + b, 0), gaps = gap * (rs.length - 1);
+      const hf = (w - gaps) / sum; // ความสูงที่ทำให้ทุกรูปพอดีแถว
+      const h = hf >= H0 * 0.85 ? Math.min(560, hf) : H0; // พอดีแถวได้โดยไม่เล็กกว่า 85% ของมาตรฐาน → จัดให้พอดี ไม่งั้นเลื่อนดู
+      x.style.setProperty('--gh', h.toFixed(1) + 'px');
+    };
+    const fitX = (img) => { // แต่ละรูปใช้สัดส่วนจริงของตัวเอง (ไม่ครอป ไม่บังคับเต็มจอ) เหมือน X
+      const t = img.closest && img.closest('.gal-x .gal-t');
+      if (!t || !img.naturalWidth || !img.naturalHeight) return;
+      const x = t.parentNode;
+      t.style.setProperty('--tr', Math.min(1.91, Math.max(0.2, img.naturalWidth / img.naturalHeight)).toFixed(4));
+      if (!x.dataset.e) { x.dataset.e = '1'; [].slice.call(x.querySelectorAll('img[loading="lazy"]')).forEach((m) => { m.loading = 'eager'; }); }
+      layoutX(x);
+    };
+    let rzT = 0;
+    window.addEventListener('resize', () => { cancelAnimationFrame(rzT); rzT = requestAnimationFrame(() => document.querySelectorAll('.gal-x').forEach(layoutX)); });
+    document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') { markOk(e.target); fitRow(e.target); fitX(e.target); } }, true);
     document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') markOk(e.target); }, true);
-    document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); } });
+    document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); fitX(im); } });
 
     let lb = null, urls = [], idx = 0;
     const show = () => {
