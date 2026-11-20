@@ -10,6 +10,10 @@ html.dark .cx-count{color:#fcd34d}
 .cx-slide{display:block;flex:0 0 min(88%,340px);scroll-snap-align:start;color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
 .cx-feed:not(.cx-multi) .cx-slide{flex-basis:min(100%,340px)}
 .cx-frame{position:relative;display:block;aspect-ratio:var(--gr,4/5);max-height:560px;border-radius:18px;overflow:hidden;background:rgba(127,127,127,.16);box-shadow:inset 0 0 0 1px rgba(127,127,127,.22)}
+/* ฟีดตัวละครหลายตัว: ขนาดรูปตามสัดส่วนจริงของแต่ละรูปเหมือนแกลเลอรี (ไม่ครอป ไม่เต็มจอ) · ตัวเดียวคงเดิม · JS: fitX/layoutX ใน nivread.js */
+.cx-multi .cx-slide{flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)),88%,340px);container-type:inline-size}
+.cx-multi .cx-frame{aspect-ratio:var(--tr,.8)}
+@container (max-width:190px){.cx-cap{padding:9px}.cx-cap b{font-size:12.5px;overflow-wrap:anywhere;hyphens:auto}.cx-cap i{font-size:10px}.cx-cap em{font-size:9.5px;padding:3px 7px}.cx-idx{top:6px;right:6px;font-size:10px;padding:4px 7px}.cx-rest{font-size:13px}}
 .cx-img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
 .cx-noimg{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;opacity:.5}
 .cx-shade{position:absolute;left:0;right:0;bottom:0;height:58%;background:linear-gradient(to top,rgba(0,0,0,.86),rgba(0,0,0,.35) 55%,rgba(0,0,0,0));pointer-events:none}

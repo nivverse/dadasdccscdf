@@ -405,7 +405,7 @@
   }
   function charBlockEl(p, full) { // แสดงแค่ที่จำเป็น (รูป + ชื่อ + เลขลำดับ) · จำกัด 8 สไลด์ — ตรงกับ charCardHtml() ฝั่งเซิร์ฟเวอร์
     if (!document.getElementById('niv-css') && !document.getElementById('niv-char-css')) {
-      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261119l'; document.head.appendChild(l);
+      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261120f'; document.head.appendChild(l);
     }
     const href = '/posts/' + encodeURIComponent(p.slug), total = full.length, list = full.slice(0, 8);
     const slides = list.map((c, i) => {
@@ -628,19 +628,23 @@
       x.dataset.r = '1';
       x.style.setProperty('--gr', Math.min(1.91, Math.max(0.5625, img.naturalWidth / img.naturalHeight)).toFixed(4));
     };
-    const layoutX = (x) => { // แถวรูปแกลเลอรี: รูปสูง/ยาวที่ทั้งแถวพอดีจอได้ → จัดความสูงให้พอดีแถว (สูงสุด 560px) · ไม่งั้นความสูงมาตรฐาน 420px แล้วเลื่อนดู
-      const ts = [].slice.call(x.querySelectorAll('.gal-t'));
-      const rs = ts.map((t) => parseFloat(t.style.getPropertyValue('--tr')));
+    const layoutX = (x) => { // แถวรูปที่ใช้สัดส่วนจริง (แกลเลอรี + การ์ดตัวละครหลายตัวในฟีด): ทั้งแถวพอดีจอได้ → จัดความสูงให้พอดีแถว (สูงสุด 560px) · ไม่งั้นความสูงมาตรฐาน 420px แล้วเลื่อนดู
+      const ts = [].slice.call(x.children);
+      const rs = ts.map((t) => {
+        let v = parseFloat(t.style.getPropertyValue('--tr'));
+        if (isNaN(v) && !t.querySelector('img')) { v = 0.6; t.style.setProperty('--tr', v); } // สไลด์ "+N ดูทั้งหมด" ไม่มีรูป
+        return v;
+      });
       if (!rs.length || rs.some((r) => isNaN(r))) return;
-      const cs = getComputedStyle(x), gap = 8, H0 = 420;
+      const cs = getComputedStyle(x), gap = parseFloat(cs.columnGap) || 8, H0 = 420;
       const w = x.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
       const sum = rs.reduce((a, b) => a + b, 0), gaps = gap * (rs.length - 1);
       const hf = (w - gaps) / sum; // ความสูงที่ทำให้ทุกรูปพอดีแถว
-      const h = hf >= H0 * 0.85 ? Math.min(560, hf) : H0; // พอดีแถวได้โดยไม่เล็กกว่า 85% ของมาตรฐาน → จัดให้พอดี ไม่งั้นเลื่อนดู
+      const h = hf >= H0 * 0.85 ? Math.min(560, hf) : H0;
       x.style.setProperty('--gh', h.toFixed(1) + 'px');
     };
     const fitX = (img) => { // แต่ละรูปใช้สัดส่วนจริงของตัวเอง (ไม่ครอป ไม่บังคับเต็มจอ) เหมือน X
-      const t = img.closest && img.closest('.gal-x .gal-t');
+      const t = img.closest && img.closest('.gal-x .gal-t,.cx-multi .cx-slide');
       if (!t || !img.naturalWidth || !img.naturalHeight) return;
       const x = t.parentNode;
       t.style.setProperty('--tr', Math.min(1.91, Math.max(0.2, img.naturalWidth / img.naturalHeight)).toFixed(4));
@@ -648,7 +652,7 @@
       layoutX(x);
     };
     let rzT = 0;
-    window.addEventListener('resize', () => { cancelAnimationFrame(rzT); rzT = requestAnimationFrame(() => document.querySelectorAll('.gal-x').forEach(layoutX)); });
+    window.addEventListener('resize', () => { cancelAnimationFrame(rzT); rzT = requestAnimationFrame(() => document.querySelectorAll('.gal-x,.cx-multi .cx-track').forEach(layoutX)); });
     document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') { markOk(e.target); fitRow(e.target); fitX(e.target); } }, true);
     document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') markOk(e.target); }, true);
     document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); fitX(im); } });
