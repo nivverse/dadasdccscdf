@@ -117,7 +117,7 @@ ${paragraphs}
     <div id="comment-list" class="mt-4 space-y-4"></div>
   </section>
 
-<script src="/comments.js" defer></script>
+<script src="/comments.js?v=20261120j" defer></script>
 <script src="/lock-box.js" defer></script>
 <script>document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('post-body');if(b&&window.NIVLocks)NIVLocks.mount(b,${JSON.stringify(p.slug).replace(/</g, '\\u003c')});});</script>
 <script>document.addEventListener('DOMContentLoaded',function(){if(window.NIV&&NIV.countView)NIV.countView(${JSON.stringify(p.slug).replace(/</g, '\\u003c')});});</script>
