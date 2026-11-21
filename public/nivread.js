@@ -723,6 +723,7 @@
     v.muted = true;      // <--- จำเป็นต้องปิดเสียงเพื่อให้เบราว์เซอร์ยอมเล่นออโต
     v.loop = true;       // <--- เล่นวนซ้ำ
     v.preload = 'none';     // โหลดแค่ poster ไฟล์วิดีโอจะถูกขอเมื่อเริ่มเล่นจริง
+    v.setAttribute('controlslist', 'nodownload noremoteplayback'); v.disableRemotePlayback = true; v.draggable = false; // ซ่อนปุ่มดาวน์โหลดใน ⋮ · ไม่ส่งลิงก์ไฟล์ให้อุปกรณ์แคสต์ · ลากไฟล์ออกไม่ได้
     v.poster = upPoster(u); 
     v.src = u; 
     v.setAttribute('aria-label', title || 'วิดีโอ');
@@ -781,6 +782,19 @@
       if (grid && t) stage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       if (strip && ts[i]) strip.scrollTo({ left: ts[i].offsetLeft - strip.clientWidth / 2 + ts[i].clientWidth / 2, behavior: 'smooth' });
     });
+  }
+
+  // ---------- กันบันทึก/ดึงวิดีโอแบบทั่วไป (เป็นด่านกันคนทั่วไป ไม่ใช่การป้องกันเด็ดขาด — ไฟล์ที่เบราว์เซอร์เล่นได้ย่อมมีทางดึงได้เสมอ) ----------
+  // คลิกขวา/กดค้าง (เมนู "บันทึกวิดีโอเป็น…" "คัดลอกที่อยู่วิดีโอ" "เปิดในแท็บใหม่") · ลากวิดีโอออกจากหน้า · ปุ่มดาวน์โหลดบนตัวควบคุมมาตรฐาน (controlslist ใน uvEl และ videos.js)
+  // ไม่ดักคีย์ลัด/DevTools: ไม่ได้ผลจริงและทำให้การใช้งานแย่ (โปรแกรมอ่านหน้าจอ, คัดลอกข้อความ ฯลฯ)
+  if (!window.__nivVidGuard) {
+    window.__nivVidGuard = 1;
+    const inUv = (e) => e.target && e.target.closest && e.target.closest('.uv');
+    document.addEventListener('contextmenu', (e) => { if (inUv(e)) e.preventDefault(); }, true);
+    document.addEventListener('dragstart', (e) => { if (inUv(e)) e.preventDefault(); }, true);
+    const gs = document.createElement('style');
+    gs.textContent = '.uv video{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none}';
+    document.head.appendChild(gs);
   }
 
   // ---------- ตัวเล่นวิดีโออัตโนมัติในฟีด (.uv video) ----------
@@ -904,6 +918,7 @@
     const observeVideos = () => {
       document.querySelectorAll('.uv video:not([data-observed])').forEach((v) => {
         v.dataset.observed = 'true';
+        v.setAttribute('controlslist', 'nodownload noremoteplayback'); v.disableRemotePlayback = true; v.draggable = false;
         if (v.getAttribute('src')) v.dataset.src = v.getAttribute('src'); // จำ src ไว้คืนหลังถูกปล่อย
         lockRatioFromPoster(v);
         near.observe(v);
