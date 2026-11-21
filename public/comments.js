@@ -231,7 +231,6 @@
   }
 
   // ---------- รายการเดียว ----------
-  const ADMIN_BADGE = '<svg class="w-4 h-4 text-sky-500 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-label="ผู้ดูแลระบบ"><title>ผู้ดูแลระบบ</title><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a.75.75 0 00-1.214-.882l-3.236 4.53L7.53 10.53a.75.75 0 00-1.06 1.061l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/></svg>';
 
   function itemEl(c, isReply) {
     const row = el('div', 'flex gap-3 cm-in');
@@ -246,7 +245,7 @@
     const head = el('div', 'flex items-center gap-1.5 flex-wrap');
     const nm = el('a', 'font-semibold text-sm truncate max-w-[60%] hover:text-amber-500', c.display_name || c.user_id); nm.href = userUrl(c.user_id);
     head.append(nm);
-    if (c.is_admin) { const b = el('span', 'inline-flex'); b.innerHTML = ADMIN_BADGE; head.append(b); }
+    { const b = window.NIV && NIV.badgeEl && NIV.badgeEl(c.badge || (c.is_admin ? 'admin' : null)); if (b) head.append(b); }
     if (postAuthor && c.user_id === postAuthor) head.append(el('span', 'px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30', 'ผู้เขียน'));
     head.append(el('span', 'text-xs text-slate-400 dark:text-neutral-500', '· ' + ago(c.created_at)));
     bubble.append(head);

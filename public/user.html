@@ -70,7 +70,7 @@
     <div id="rp-more" class="hidden mt-6 text-center"><button id="rp-more-btn" type="button" class="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer">โหลดเพิ่ม</button></div></section>
 </main>
 <div id="main-footer" class="z-10"></div>
-<script src="/nivread.js?v=20261120i"></script>
+<script src="/nivread.js?v=20261120j"></script>
 <script>
 (async () => {
   const { api, el, session, avatarEl, postCardEl } = NIV;
@@ -101,6 +101,7 @@
     $('cover-box').append(m);
   }
   $('name').textContent = user.display_name;
+  { const nb = NIV.badgeEl(user.badge); if (nb) { nb.style.marginLeft = '6px'; $('name').append(nb); } }
   $('uid').textContent = '@' + user.id;
   $('n-posts').textContent = (stats.posts || 0).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH');
   $('n-likes').textContent = (stats.likes || 0).toLocaleString(window.NIV_I18N ? NIV_I18N.locale : 'th-TH');
@@ -140,7 +141,7 @@
     for (const u of d.data.users) {
       const row = el('div', 'flex items-center gap-3');
       const a = el('a', 'flex items-center gap-3 min-w-0 flex-1'); a.href = NIV.userUrl(u.id);
-      a.append(avatarEl(u, 'w-10 h-10'), el('span', 'font-semibold text-sm truncate', u.display_name));
+      a.append(avatarEl(u, 'w-10 h-10'), el('span', 'font-semibold text-sm truncate', u.display_name)); { const fb = NIV.badgeEl(u.badge); if (fb) a.append(fb); }
       row.append(a, NIV.fbBtn('user', u.id, 'link')); list.append(row);
     }
     NIV.paintFollows(list);
@@ -211,7 +212,7 @@
     if (!rr.ok) { $('status').textContent = rr.data.error || 'โหลดรายการไม่สำเร็จ'; return; }
     rpPage++;
     for (const p of rr.data.posts) {
-      $('reposted').append(NIV.repostWrap(postCardEl(p), { by_id: user.id, by_name: user.display_name, by_avatar: user.avatar_url, at: p.reposted_at, note: p.repost_note }));
+      $('reposted').append(NIV.repostWrap(postCardEl(p), { by_id: user.id, by_name: user.display_name, by_avatar: user.avatar_url, by_badge: user.badge, at: p.reposted_at, note: p.repost_note }));
     }
     rpHasMore = !!rr.data.hasMore;
     if (!$('reposted').children.length) $('status').textContent = rpEmpty;

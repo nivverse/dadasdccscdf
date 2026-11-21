@@ -42,7 +42,8 @@
     <button type="button" data-tab="video" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">สิทธิ์วิดีโอ</button>
     <button type="button" data-tab="chat" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">สิทธิ์แชท</button>
     <button type="button" data-tab="char" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer whitespace-nowrap">สิทธิ์ตัวละคร</button>
-    <button type="button" data-tab="junk" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">ไฟล์ขยะ</button>
+    <button type="button" data-tab="verified" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer whitespace-nowrap">ติ๊กถูก</button>
+<button type="button" data-tab="junk" class="tab px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-neutral-400 cursor-pointer">ไฟล์ขยะ</button>
   </nav>
 
   <div id="message" class="mt-4 text-sm font-medium min-h-[1.25rem]" role="status"></div>
@@ -50,7 +51,7 @@
 </main>
 
 <div id="main-footer" class="z-10"></div>
-<script src="/nivread.js?v=20261120i"></script>
+<script src="/nivread.js?v=20261120j"></script>
 <script>
   const { session, api, el, userUrl, ago, REASONS } = NIV;
   const s = session();
@@ -61,7 +62,7 @@
                  comment: ['ความคิดเห็น', 'bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30'],
                  user: ['ผู้ใช้', 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'],
                  sound: ['เสียง', 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'] };
-  let tab = location.hash === '#done' ? 'done' : location.hash === '#video' ? 'video' : location.hash === '#chat' ? 'chat' : location.hash === '#junk' ? 'junk' : 'open';
+  let tab = ['done', 'video', 'chat', 'char', 'verified', 'junk'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'open';
 
   const say = (t, kind) => {
     const m = $('message');
@@ -191,6 +192,7 @@
   const PERMS = {
     video: { users: '/api/blog/video-users', perm: '/api/blog/video-perm', file: 'blog-api.js', title: 'บัญชีที่อัปโหลดวิดีโอได้', desc: 'วิดีโอยาวไม่เกิน 30 วินาที อัปโหลดได้เฉพาะบัญชีในรายการนี้ (แอดมินอัปโหลดได้เสมอ)' },
     char: { users: '/api/blog/char-users', perm: '/api/blog/char-perm', file: 'blog-api.js', title: 'บัญชีที่โพสต์ข้อมูลตัวละครได้', desc: 'เครื่องมืออัปโหลดตัวละครจะขึ้นในหน้าเขียนโพสต์เมื่อพิมพ์ /charecter ในคำอธิบาย เฉพาะบัญชีในรายการนี้ (แอดมินใช้ได้เสมอ)' },
+    verified: { users: '/api/blog/verified-users', perm: '/api/blog/verified-perm', file: 'blog-api.js', title: 'บัญชีที่ได้รับติ๊กถูก', desc: 'แสดงไอคอนติ๊กถูกสีฟ้าข้างชื่อในโพสต์ คอมเมนต์ และโปรไฟล์ของบัญชีในรายการนี้ (บัญชีแอดมินได้ติ๊กสีทองอัตโนมัติ ไม่ต้องเพิ่ม)', add: 'มอบติ๊ก', rm: 'ถอนติ๊ก', has: 'บัญชีนี้ได้ติ๊กอยู่แล้ว', none: 'ยังไม่มีบัญชีที่ได้รับติ๊กถูก', onMsg: 'มอบติ๊กให้', offMsg: 'ถอนติ๊กของ' },
     chat: { users: '/api/chat/perm-users', perm: '/api/chat/perm', file: 'chat-api.js', title: 'บัญชีที่ใช้แชทได้', desc: 'หน้าแชทเปิดให้เฉพาะบัญชีในรายการนี้ (แอดมินใช้ได้เสมอ) และแชทกันได้เฉพาะคู่ที่ติดตามกันและกันและได้รับอนุญาตทั้งคู่' },
   };
   async function loadPerms(cfg) {
@@ -206,24 +208,24 @@
     const form = el('form', 'mt-3 flex gap-2');
     const inp = el('input', 'min-w-0 flex-1 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500');
     inp.placeholder = 'ไอดีผู้ใช้ (username)'; inp.maxLength = 60; inp.autocomplete = 'off'; inp.setAttribute('aria-label', 'ไอดีผู้ใช้');
-    const add = el('button', 'shrink-0 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold cursor-pointer', 'อนุญาต'); add.type = 'submit';
+    const add = el('button', 'shrink-0 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold cursor-pointer', cfg.add || 'อนุญาต'); add.type = 'submit';
     form.append(inp, add);
     const ul = el('ul', 'mt-4 space-y-2');
     const row = (u) => {
       const li = el('li', 'flex items-center gap-3');
       const a = el('a', 'flex items-center gap-3 min-w-0 flex-1'); a.href = userUrl(u.id);
       a.append(NIV.avatarEl(u, 'w-9 h-9'), el('span', 'text-sm font-semibold truncate', u.display_name + ' '), el('span', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + u.id));
-      const rm = el('button', 'px-3 py-1.5 rounded-lg text-xs border border-rose-500/50 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 cursor-pointer', 'ถอนสิทธิ์'); rm.type = 'button';
+      const rm = el('button', 'px-3 py-1.5 rounded-lg text-xs border border-rose-500/50 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 cursor-pointer', cfg.rm || 'ถอนสิทธิ์'); rm.type = 'button';
       rm.addEventListener('click', async () => {
         rm.disabled = true;
         const d = await api(cfg.perm, { method: 'POST', body: { userId: s.userId, target: u.id, allow: false } });
         if (!d.ok) { rm.disabled = false; return say(d.data.error || 'ทำรายการไม่สำเร็จ', 'err'); }
-        li.remove(); say('ถอนสิทธิ์ @' + u.id + ' แล้ว', 'ok');
+        li.remove(); say((cfg.offMsg || 'ถอนสิทธิ์') + ' @' + u.id + ' แล้ว', 'ok');
         if (!ul.children.length) ul.append(empty());
       });
       li.append(a, rm); return li;
     };
-    const empty = () => el('li', 'text-sm text-slate-500 dark:text-neutral-400', 'ยังไม่มีบัญชีที่ได้รับอนุญาต');
+    const empty = () => el('li', 'text-sm text-slate-500 dark:text-neutral-400', cfg.none || 'ยังไม่มีบัญชีที่ได้รับอนุญาต');
     r.data.users.forEach((u) => ul.append(row(u)));
     if (!r.data.users.length) ul.append(empty());
     form.addEventListener('submit', async (e) => {
@@ -235,9 +237,9 @@
       add.disabled = false;
       if (!d.ok) return say(d.data.error || 'ทำรายการไม่สำเร็จ', 'err');
       inp.value = '';
-      if ([...ul.children].some((x) => x.querySelector && x.querySelector('a[href$="' + encodeURIComponent(d.data.user.id) + '"]'))) return say('บัญชีนี้ได้รับอนุญาตอยู่แล้ว', 'ok');
+      if ([...ul.children].some((x) => x.querySelector && x.querySelector('a[href$="' + encodeURIComponent(d.data.user.id) + '"]'))) return say(cfg.has || 'บัญชีนี้ได้รับอนุญาตอยู่แล้ว', 'ok');
       if (ul.firstChild && !ul.firstChild.querySelector('a')) ul.firstChild.remove();
-      ul.prepend(row(d.data.user)); say('อนุญาต @' + d.data.user.id + ' แล้ว', 'ok');
+      ul.prepend(row(d.data.user)); say((cfg.onMsg || 'อนุญาต') + ' @' + d.data.user.id + ' แล้ว', 'ok');
     });
     box.append(form, ul);
     $('list').append(box);

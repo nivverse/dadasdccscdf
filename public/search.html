@@ -55,7 +55,7 @@
 </main>
 <div id="main-footer" class="z-10"></div>
 
-<script src="/nivread.js?v=20261120i"></script>
+<script src="/nivread.js?v=20261120j"></script>
 <script>
 (() => {
   const { api, el, userUrl, avatarEl, postCardEl } = NIV;
@@ -301,7 +301,8 @@
         const a = el('a', 'flex items-center gap-3 p-3 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-amber-500/50 transition-colors');
         a.href = userUrl(u.id);
         const t = el('div', 'min-w-0');
-        t.append(el('div', 'font-semibold text-sm truncate', u.display_name), el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + u.id));
+        const nmRow = el('div', 'flex items-center gap-1 min-w-0'); nmRow.append(el('div', 'font-semibold text-sm truncate', u.display_name)); { const ub = NIV.badgeEl(u.badge); if (ub) nmRow.append(ub); }
+        t.append(nmRow, el('div', 'text-xs text-slate-500 dark:text-neutral-400 truncate', '@' + u.id));
         a.append(avatarEl(u, 'w-11 h-11'), t);
         g.append(a);
       }

@@ -64,7 +64,19 @@
   };
 
   // รูปโปรไฟล์ (หรืออักษรตัวแรก) ใช้ซ้ำทั้งเว็บ — ไม่ใช้ innerHTML จึงไม่เสี่ยง XSS
-  function avatarEl(user, size = 'w-9 h-9') {
+  // ไอคอนติ๊กถูกข้างชื่อ: kind = 'admin' (สีทอง · แอดมิน) | 'verified' (สีฟ้า · บัญชีที่แอดมินมอบให้) · อื่น ๆ = ไม่แสดง
+const BADGE_D = 'M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a.75.75 0 00-1.214-.882l-3.236 4.53L7.53 10.53a.75.75 0 00-1.06 1.061l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z';
+function badgeEl(kind) {
+  if (kind !== 'admin' && kind !== 'verified') return null;
+  const title = kind === 'admin' ? 'ผู้ดูแลระบบ' : 'บัญชียืนยันแล้ว';
+  const s = document.createElement('span');
+  s.className = 'inline-flex shrink-0';
+  s.style.cssText = 'color:' + (kind === 'admin' ? '#f5b50a' : '#1d9bf0') + ';vertical-align:middle';
+  s.title = title;
+  s.innerHTML = '<svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" role="img" aria-label="' + title + '"><title>' + title + '</title><path fill-rule="evenodd" d="' + BADGE_D + '" clip-rule="evenodd"/></svg>';
+  return s;
+}
+function avatarEl(user, size = 'w-9 h-9') {
     const name = String(user?.display_name || user?.id || '?');
     const ok = user?.avatar_url && /^https?:\/\//.test(user.avatar_url);
     if (ok) {
@@ -433,6 +445,7 @@
     const nameRow = el('div', 'flex items-center gap-1 min-w-0');
     const a2 = el('a', 'font-semibold text-sm truncate hover:text-amber-500', p.display_name || p.author_id); a2.href = userUrl(p.author_id);
     nameRow.append(a2);
+    { const bd = badgeEl(p.badge); if (bd) nameRow.append(bd); }
     const sub = el('div', 'text-xs text-slate-500 dark:text-neutral-400', ago(p.published_at));
     if (p.category) { const ca = el('a', 'ml-2 text-amber-600 dark:text-amber-400 hover:text-amber-500 transition-colors', p.category); ca.href = '/category/' + encodeURIComponent(p.category); sub.append(ca); }
     meta.append(nameRow, sub);
@@ -1481,7 +1494,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
     const rst = document.createElement('style'); rst.id = 'niv-repost-css'; rst.textContent = RPCSS; document.head.appendChild(rst);
   }
   // หัวรีโพสต์ฝั่งเบราว์เซอร์ (โปรไฟล์ ฯลฯ) — หน้าตาเดียวกับ repostWrap() ใน render.js
-  // r = { by_id, by_name, by_avatar, at, note, others }
+  // r = { by_id, by_name, by_avatar, by_badge, at, note, others }
   function repostWrap(card, r) {
     const wrap = el('div', 'rp-card rounded-2xl border border-orange-500/25 bg-gradient-to-b from-orange-500/[0.07] to-transparent overflow-hidden shadow-sm');
     wrap.append(el('div', 'rp-bar'));
@@ -1493,7 +1506,8 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
     a.append(badge);
     const t = el('div', 'min-w-0 text-sm text-slate-600 dark:text-neutral-300 leading-tight');
     const nm = el('a', 'font-semibold text-slate-900 dark:text-white hover:text-amber-500', r.by_name || r.by_id); nm.href = userUrl(r.by_id);
-    t.append(nm, document.createTextNode(' รีโพสต์' + (r.others > 0 ? ' และอีก ' + r.others + ' คน' : '') + ' '), el('span', 'text-xs text-slate-400 dark:text-neutral-500', '· ' + ago(r.at)));
+    const rb = badgeEl(r.by_badge); if (rb) rb.style.marginLeft = '4px';
+    t.append(nm, ...(rb ? [rb] : []), document.createTextNode(' รีโพสต์' + (r.others > 0 ? ' และอีก ' + r.others + ' คน' : '') + ' '), el('span', 'text-xs text-slate-400 dark:text-neutral-500', '· ' + ago(r.at)));
     head.append(a, t); wrap.append(head);
     if (r.note) wrap.append(el('p', 'rp-note px-4 pt-2 text-[15px] leading-relaxed text-slate-800 dark:text-neutral-100 whitespace-pre-line break-words', r.note));
     const inner = el('div', 'p-3'); inner.append(card); wrap.append(inner);
@@ -1769,7 +1783,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
     } catch {}
   }
 
-  window.NIV = { soundChipEl, sndStop, discSvg: DISC_SVG, skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam, repostWrap };
+  window.NIV = { badgeEl, soundChipEl, sndStop, discSvg: DISC_SVG, skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam, repostWrap };
 
   // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
   if (!document.getElementById('niv-nozoom')) {

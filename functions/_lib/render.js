@@ -115,6 +115,14 @@ export const FBCSS = `.fb{cursor:pointer;font-weight:600;transition:color .2s,ba
 .fb-plus:hover{color:#f59e0b}
 .fb[disabled]{opacity:.6;cursor:default}`;
 
+// ไอคอนติ๊กถูกข้างชื่อ (SSR): 'admin' = สีทอง · 'verified' = สีฟ้า · อื่น ๆ = ว่าง (เวอร์ชันฝั่งเบราว์เซอร์: NIV.badgeEl ใน /nivread.js)
+const BADGE_D = 'M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a.75.75 0 00-1.214-.882l-3.236 4.53L7.53 10.53a.75.75 0 00-1.06 1.061l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z';
+export function badgeHtml(kind) {
+  if (kind !== 'admin' && kind !== 'verified') return '';
+  const title = kind === 'admin' ? 'ผู้ดูแลระบบ' : 'บัญชียืนยันแล้ว';
+  return `<span class="inline-flex shrink-0" style="color:${kind === 'admin' ? '#f5b50a' : '#1d9bf0'};vertical-align:middle" title="${title}"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" role="img" aria-label="${title}"><title>${title}</title><path fill-rule="evenodd" d="${BADGE_D}" clip-rule="evenodd"/></svg></span>`;
+}
+
 function postHead(p) {
   const profile = p.author_id ? `/user?id=${encodeURIComponent(p.author_id)}` : '';
   const who = esc(p.display_name || 'nivread');
@@ -122,7 +130,7 @@ function postHead(p) {
     ${profile ? `<a href="${profile}" class="flex-shrink-0" aria-label="โปรไฟล์ ${who}">${avatar(p)}</a>` : avatar(p)}
     <div class="min-w-0">
       ${profile
-        ? `<div class="flex items-center gap-1 min-w-0"><a href="${profile}" class="font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a></div>`
+        ? `<div class="flex items-center gap-1 min-w-0"><a href="${profile}" class="font-semibold text-sm text-slate-900 dark:text-white truncate hover:text-amber-500">${who}</a>${badgeHtml(p.badge)}</div>`
         : `<div class="font-semibold text-sm text-slate-900 dark:text-white truncate">${who}</div>`}
       <div class="text-xs text-slate-500 dark:text-neutral-400">
         ${timeTag(p.published_at || p.updated_at)}
@@ -160,7 +168,7 @@ export function repostWrap(p, innerHtml, viewerId = '') {
   <div class="rp-bar"></div>
   <div class="flex items-center gap-2.5 px-4 pt-3">
     <a href="${profile}" class="relative flex-shrink-0" aria-label="โปรไฟล์ ${who}">${avatar({ display_name: r.by_name || r.by, avatar_url: r.by_avatar }, 'w-9 h-9')}<span class="rp-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON.repost}</svg></span></a>
-    <div class="min-w-0 text-sm text-slate-600 dark:text-neutral-300 leading-tight"><a href="${profile}" class="font-semibold text-slate-900 dark:text-white hover:text-amber-500">${who}</a> ${what}${more} <span class="text-xs text-slate-400 dark:text-neutral-500">· ${esc(ago(r.at))}</span></div>
+    <div class="min-w-0 text-sm text-slate-600 dark:text-neutral-300 leading-tight"><a href="${profile}" class="font-semibold text-slate-900 dark:text-white hover:text-amber-500">${who}</a>${badgeHtml(r.by_badge)} ${what}${more} <span class="text-xs text-slate-400 dark:text-neutral-500">· ${esc(ago(r.at))}</span></div>
   </div>
   ${r.note ? `<p class="rp-note px-4 pt-2 text-[15px] leading-relaxed text-slate-800 dark:text-neutral-100 whitespace-pre-line break-words">${esc(r.note)}</p>` : ''}
   <div class="p-3">${innerHtml}</div>
@@ -341,7 +349,7 @@ ${ld}
 </div>
 <header id="main-header" class="z-20"></header>
 ${body}
-<script src="/nivread.js?v=20261120i"></script>
+<script src="/nivread.js?v=20261120j"></script>
 <script src="/posts-feed.js" defer></script>
 </body>
 </html>`;
