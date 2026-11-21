@@ -751,6 +751,10 @@
     return root;
   }
 
+  // ตัวเล่น YouTube (iframe) ตรวจเหตุการณ์ play ไม่ได้ → ถ้ามี iframe อยู่บนจอ ถือว่ามีสื่อกำลังเล่น: วิดีโออัปโหลดไม่เล่นเอง/เพลงไม่เล่นซ้อน
+  const ytOnScreen = () => { for (const f of document.querySelectorAll('.vg iframe')) { const r = f.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight) return true; } return false; };
+  const pauseUploadedVideos = () => document.querySelectorAll('.uv video').forEach((x) => { if (!x.paused) x.pause(); });
+
   if (!document.getElementById('niv-vg')) {
     const st = document.createElement('style');
     st.id = 'niv-vg';
@@ -770,6 +774,7 @@
       f.title = (root.dataset.title || 'วิดีโอ') + ' — วิดีโอ ' + (i + 1);
       f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
       f.allowFullscreen = true; f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+      pauseUploadedVideos(); sndStop(); // ผู้ใช้กดเล่น YouTube → หยุดวิดีโออัปโหลดและเพลงพื้นหลัง (เล่นทีละสื่อ)
       stage.replaceChildren(f);
       ts.forEach((x, k) => { if (k === i) x.setAttribute('aria-current', 'true'); else x.removeAttribute('aria-current'); });
       if (count) count.textContent = (i + 1) + ' / ' + (ts.length || 1);
@@ -796,17 +801,14 @@
       + '@media (prefers-reduced-motion:reduce){.uv:not(.ok)::before{animation:none}}';
     document.head.appendChild(observerStyle);
 
-    const PICK_DELAY = 300, FAR_MARGIN = '150% 0px';
+    const PICK_DELAY = 300, WARM_DELAY = 120, FAR_MARGIN = '150% 0px', WARM_MARGIN = '80% 0px';
     const seenVideos = new Set();   // คลิปที่เห็น ≥ 50% ตอนนี้
     let current = null;             // คลิปที่กำลังเล่นอยู่ (มีได้คลิปเดียว)
     let pickT = 0;
     const setSrc = (v) => { if (!v.getAttribute('src') && v.dataset.src) v.setAttribute('src', v.dataset.src); };
     const playIt = (v) => { setSrc(v); v.play().catch(() => { if (!v.muted) { v.muted = true; v.play().catch(() => {}); } }); }; // เล่นแบบมีเสียงไม่ได้ = ถอยเป็นปิดเสียง
-    const schedulePick = () => { clearTimeout(pickT); pickT = setTimeout(pick, PICK_DELAY); };
-
-    function pick() {
-      pickT = 0;
-      if (document.visibilityState !== 'visible') return;
+    // เลือกคลิปที่ใกล้กลางจอที่สุดในกลุ่มที่เห็น (ใช้ทั้งตอนเลือกเล่นและตอนกำหนดเวลารอ)
+    function bestVideo() {
       const mid = innerHeight / 2;
       let best = null, bestD = Infinity;
       seenVideos.forEach((v) => {
@@ -815,6 +817,16 @@
         const r = v.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - mid);
         if (d < bestD) { bestD = d; best = v; }
       });
+      return best;
+    }
+    // คลิปที่ผู้ใช้กำลังจะเจอถูก "อุ่น" ไว้แล้ว (มี metadata) → รอแค่ 120ms · ยังไม่อุ่น → รอ 300ms เหมือนเดิม (เลื่อนเร็วไม่สั่งโหลดรัว)
+    const schedulePick = () => { clearTimeout(pickT); const b = bestVideo(); pickT = setTimeout(pick, b && b.readyState >= 1 ? WARM_DELAY : PICK_DELAY); };
+
+    function pick() {
+      pickT = 0;
+      if (document.visibilityState !== 'visible') return;
+      if (ytOnScreen()) return; // มี YouTube เล่นอยู่บนจอ → ไม่เล่นวิดีโออัปโหลดซ้อน
+      const best = bestVideo();
       if (!best || (best === current && !best.paused)) return;
       playIt(best);
     }
@@ -861,18 +873,33 @@
       if (!v.paused) v.pause();
       if (v === current) current = null;
       if (v.videoWidth && v.videoHeight) v.style.aspectRatio = v.videoWidth + ' / ' + v.videoHeight; // รักษาความสูงเดิม ไม่ให้หน้ากระโดด
+      v.preload = 'none';
       v.removeAttribute('src');
       v.load(); // ยกเลิกการดาวน์โหลดที่ค้าง + คืนตัวถอดรหัส/บัฟเฟอร์ (โปสเตอร์ยังอยู่)
     }
     const far = new IntersectionObserver((entries) => {
       for (const e of entries) {
         const v = e.target;
-        if (e.isIntersecting) { clearTimeout(relT.get(v)); relT.delete(v); setSrc(v); } // กลับมาใกล้จอ (preload=none จึงยังไม่โหลดจนกว่าจะสั่งเล่น)
+        if (e.isIntersecting) { clearTimeout(relT.get(v)); relT.delete(v); } // กลับมาอยู่ในระยะ = ยกเลิกการปล่อย (การคืน src/โหลด metadata เป็นหน้าที่ของ warm ที่ใกล้จอกว่า)
         else if (v.dataset.src && (v.readyState > 0 || v.networkState === 2) && !relT.has(v)) { // ไกลจอและเคยโหลด/กำลังโหลด → ปล่อย (หลังนิ่ง 1.2 วิ)
           relT.set(v, setTimeout(() => { relT.delete(v); if (v.isConnected) release(v); }, 1200));
         }
       }
     }, { rootMargin: FAR_MARGIN, threshold: 0 });
+
+    // อุ่นเครื่อง: คลิปที่อยู่ห่างจอไม่เกิน ~0.8 จอ ขอเฉพาะ "ส่วนหัวไฟล์" (metadata) ไว้ก่อน → ต่อ CDN/แคช edge ล่วงหน้า · ตอนผู้ใช้เลื่อนมาถึงจึงเริ่มเล่นได้เร็ว
+    // ข้ามถ้าเปิดโหมดประหยัดข้อมูล/เครือข่าย 2G · ไม่ยุ่งกับคลิปที่ผู้ใช้กดหยุดเอง · การ "เล่น" ยังเป็นหน้าที่ของ pick() เท่านั้น (ไม่มีการเล่นซ้อน)
+    const lowData = () => { const c = navigator.connection; return !!(c && (c.saveData || /(^|-)2g$/.test(c.effectiveType || ''))); };
+    const warmUp = (v) => {
+      if (!v.dataset.src) return;
+      if (lowData()) { setSrc(v); return; } // ประหยัดข้อมูล: คืน src ให้กดเล่นได้ แต่ไม่โหลดล่วงหน้า (preload ยังเป็น none)
+      if (v.readyState > 0 || v.networkState === 2) return;
+      v.preload = 'metadata';
+      if (!v.getAttribute('src')) setSrc(v); else v.load(); // มี src อยู่แล้ว (SSR) แต่ถูกหน่วงไว้ด้วย preload=none → load() ให้เบราว์เซอร์ประเมินใหม่
+    };
+    const warm = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) { clearTimeout(relT.get(e.target)); relT.delete(e.target); warmUp(e.target); }
+    }, { rootMargin: WARM_MARGIN, threshold: 0 });
 
     const observeVideos = () => {
       document.querySelectorAll('.uv video:not([data-observed])').forEach((v) => {
@@ -881,6 +908,7 @@
         lockRatioFromPoster(v);
         near.observe(v);
         far.observe(v);
+        warm.observe(v);
       });
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observeVideos);
@@ -1555,7 +1583,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
     if (cur && cv < 0.15) { sndStop(); }                               // การ์ดที่เล่นอยู่เกือบพ้นจอ → หยุด
     else if (cur && bv < cv + 0.15) return;                           // ยังเป็นการ์ดหลักอยู่ → ไม่สลับไปมา
     if (!best || bv < 0.25 || (sCur && sCur.parentElement === best)) return;
-    if (sndLoudVideo()) return;                                       // มีวิดีโอเปิดเสียงอยู่ → ไม่เล่นซ้อน
+    if (sndLoudVideo() || ytOnScreen()) return;                       // มีวิดีโอเปิดเสียง/YouTube อยู่บนจอ → ไม่เล่นซ้อน
     const b = best.querySelector(':scope > .snd-badge');
     if (b && b.tagName === 'BUTTON' && b._sndUrl) sndPlay(b, b._sndUrl);
     else if (b && sCur) sndStop(); // โพสต์หลักเป็นวิดีโอ (เสียงมาจากวิดีโอ) → ไม่ให้เพลงของโพสต์ก่อนหน้าค้างซ้อน
