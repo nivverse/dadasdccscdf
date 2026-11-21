@@ -956,30 +956,33 @@ function avatarEl(user, size = 'w-9 h-9') {
 .uv.bp video{display:block;width:100%;max-height:36rem;object-fit:contain;border-radius:${BP_R}px;background:transparent!important;border:0}
 @media (min-width:500px){html:not(.niv-single) .uv.bp video{object-fit:cover!important}}
 .uv.bp:focus-visible{box-shadow:0 0 0 2px #f59e0b}
-.bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;opacity:0;transition:opacity .2s}
 .bp-svg rect,.bp-svg path{fill:none}
 .bp-track{stroke:transparent;stroke-width:${BP_SW}}
 .bp-fill{stroke:#f59e0b;stroke-opacity:.55;stroke-width:${BP_SW};stroke-linecap:butt;transition:stroke-width .15s,stroke-opacity .15s}
-.bp-hit{stroke:transparent;stroke-width:${BP_PAD * 2 + 6};pointer-events:stroke;cursor:pointer;touch-action:none}
-.uv.bp:hover .bp-fill,.uv.bp.bp-drag .bp-fill{stroke-width:${BP_SW + 1};stroke-opacity:.85}
+.bp-hit{stroke:transparent;stroke-width:${BP_PAD * 2 + 6};pointer-events:none;cursor:pointer;touch-action:none}
+.uv.bp.bp-drag .bp-fill{stroke-width:${BP_SW + 1};stroke-opacity:.85}
 .bp-play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:rgba(15,23,42,.72);cursor:pointer;display:grid;place-items:center;opacity:0;transform:scale(.85);transition:.2s;pointer-events:none}
 .uv.bp.bp-paused .bp-play{opacity:1;transform:none;pointer-events:auto}
 .bp-play::before{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:4px}
 .bp-bar{position:absolute;left:${BP_PAD + 10}px;bottom:${BP_PAD + 10}px;display:flex;gap:8px;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;font:600 12px/1.4 ui-monospace,monospace;opacity:0;transition:opacity .2s}
-.uv.bp:hover .bp-bar,.uv.bp.bp-paused .bp-bar,.uv.bp:focus-visible .bp-bar{opacity:1}
+.uv.bp.bp-ui .bp-bar,.uv.bp.bp-paused .bp-bar,.uv.bp:focus-visible .bp-bar{opacity:1}
+/* แถบเวลา + เส้นความคืบหน้ารอบกรอบ: ซ่อนไว้ แสดงเมื่อแตะวิดีโอ (.bp-ui · หายเองใน 3 วิถ้ากำลังเล่น) หรือเมื่อหยุดชั่วคราว/ลากเส้น/โฟกัสคีย์บอร์ด · ปุ่มเสียง (.bp-snd) แสดงตลอด */
+.uv.bp.bp-ui .bp-svg,.uv.bp.bp-paused .bp-svg,.uv.bp.bp-drag .bp-svg,.uv.bp:focus-visible .bp-svg{opacity:1}
+.uv.bp.bp-ui .bp-hit,.uv.bp.bp-paused .bp-hit,.uv.bp.bp-drag .bp-hit,.uv.bp:focus-visible .bp-hit{pointer-events:stroke}
+@media (hover:hover){.uv.bp:hover .bp-svg,.uv.bp:hover .bp-bar{opacity:1}.uv.bp:hover .bp-hit{pointer-events:stroke}.uv.bp:hover .bp-fill{stroke-width:3;stroke-opacity:.85}} /* เมาส์ชี้ (เฉพาะอุปกรณ์ที่มีเมาส์) แสดงเหมือนแตะ · จอสัมผัสต้องแตะ */
 .bp-fast-tag{position:absolute;top:${BP_PAD + 10}px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;font:700 12px/1.4 ui-monospace,monospace;opacity:0;pointer-events:none;transition:opacity .15s}
 .uv.bp.bp-fast .bp-fast-tag{opacity:1}
 .bp-fast-tag svg{width:14px;height:14px;fill:#f59e0b}
-.bp-mute{all:unset;cursor:pointer;display:grid;place-items:center;width:18px;height:18px;border-radius:4px}
-.bp-mute:focus-visible{box-shadow:0 0 0 2px #f59e0b}
-.bp-mute svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-@media (hover:none){.bp-bar{opacity:1}}
-@media (prefers-reduced-motion:reduce){.bp-fill,.bp-play,.bp-bar,.bp-fast-tag{transition:none}}`;
+.bp-snd{position:absolute;right:12px;bottom:12px;z-index:2;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:rgba(15,23,42,.72)!important;color:#fff;cursor:pointer;display:grid;place-items:center;touch-action:manipulation;-webkit-backdrop-filter:none;backdrop-filter:none}
+.bp-snd:focus-visible{box-shadow:0 0 0 2px #f59e0b}
+.bp-snd svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion:reduce){.bp-svg,.bp-fill,.bp-play,.bp-bar,.bp-fast-tag{transition:none}}`;
     if (!document.getElementById("niv-css")) document.head.appendChild(bpStyle); // หน้า SSR โหลด /niv.css แล้ว
     // หน้า SSR ใช้ CSS จาก /niv.css (ที่ยังมี backdrop-filter) → ทับด้วยกฎเบาแทน: เบลอทับวิดีโอที่กำลังเล่นทุกเฟรมหนักมากบนมือถือ ใช้พื้นทึบกึ่งโปร่งแทน
     if (!document.getElementById('niv-bp-lite')) {
       const lite = document.createElement('style'); lite.id = 'niv-bp-lite';
-      lite.textContent = '.bp-play,.bp-bar,.bp-fast-tag{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:rgba(15,23,42,.72)}';
+      lite.textContent = '.bp-play,.bp-bar,.bp-fast-tag,.bp-snd{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:rgba(15,23,42,.72)}';
       document.head.appendChild(lite);
     }
 
@@ -1052,10 +1055,11 @@ function avatarEl(user, size = 'w-9 h-9') {
         '<svg class="bp-svg" aria-hidden="true"><rect class="bp-track"/><path class="bp-fill"/><path class="bp-fill"/><rect class="bp-hit"/></svg>' +
         '<div class="bp-fast-tag" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m13 19 9-7-9-7z"/><path d="m2 19 9-7-9-7z"/></svg>2x</div>' +
         '<button class="bp-play" type="button" aria-label="เล่น"></button>' +
-        '<div class="bp-bar"><span class="bp-time">0:00</span><button class="bp-mute" type="button" aria-label="เสียง"></button></div>');
+        '<div class="bp-bar"><span class="bp-time">0:00</span></div>' +
+        '<button class="bp-snd" type="button" aria-label="เสียง"></button>');
       const svg = box.querySelector('.bp-svg'), rects = svg.querySelectorAll('rect'), fills = svg.querySelectorAll('.bp-fill');
       const hit = box.querySelector('.bp-hit');
-      const time = box.querySelector('.bp-time'), mute = box.querySelector('.bp-mute');
+      const time = box.querySelector('.bp-time'), mute = box.querySelector('.bp-snd');
       const I = BP_SW / 2;
       let len = 1, W = 0, H = 0, drag = false, raf = 0;
 
@@ -1104,7 +1108,7 @@ function avatarEl(user, size = 'w-9 h-9') {
         e.stopPropagation(); drag = true; box.classList.add('bp-drag');
         hit.setPointerCapture(e.pointerId); seekFrom(e);
       });
-      hit.addEventListener('pointermove', (e) => { if (drag) seekFrom(e); });
+      hit.addEventListener('pointermove', (e) => { if (drag) { seekFrom(e); showUi(); } });
       const endDrag = () => { drag = false; box.classList.remove('bp-drag'); };
       hit.addEventListener('pointerup', endDrag);
       hit.addEventListener('pointercancel', endDrag);
@@ -1114,6 +1118,9 @@ function avatarEl(user, size = 'w-9 h-9') {
         if (v.paused) { delete v.dataset.up; v.play().catch(() => { if (!v.muted) { v.muted = true; v.play().catch(() => {}); } }); }
         else { v.dataset.up = '1'; v.pause(); }
       };
+      // แตะ/คลิกวิดีโอ = แสดงแถบเวลา + เส้นความคืบหน้า 3 วิ (ค้างไว้ตลอดตอนหยุดชั่วคราว) · ไม่แตะ = ซ่อน
+      let uiT = 0;
+      const showUi = () => { box.classList.add('bp-ui'); clearTimeout(uiT); uiT = setTimeout(() => box.classList.remove('bp-ui'), 3000); };
       let holdT = 0, held = false;
       const endHold = () => {
         clearTimeout(holdT);
@@ -1121,7 +1128,8 @@ function avatarEl(user, size = 'w-9 h-9') {
       };
       box.addEventListener('pointerdown', (e) => {
         held = false; clearTimeout(holdT);
-        if (e.button > 0 || e.target.closest('.bp-bar,.bp-hit,.bp-play')) return;
+        if (e.button <= 0 && !e.target.closest('.bp-snd')) showUi();
+        if (e.button > 0 || e.target.closest('.bp-bar,.bp-hit,.bp-play,.bp-snd')) return;
         holdT = setTimeout(() => {
           if (v.paused) return;
           held = true; v.playbackRate = 2; box.classList.add('bp-fast');
@@ -1131,7 +1139,7 @@ function avatarEl(user, size = 'w-9 h-9') {
       box.addEventListener('contextmenu', (e) => { if (held) e.preventDefault(); }); // กดค้างบนมือถือ ไม่ให้เมนูโผล่
       box.addEventListener('click', (e) => {
         if (held) { held = false; return; }
-        if (!e.target.closest('.bp-bar,.bp-hit')) toggle();
+        if (!e.target.closest('.bp-bar,.bp-hit,.bp-snd')) toggle();
       });
       // โพสต์ที่มีแผ่นเสียง: เสียงของโพสต์ = เสียงจากแผ่นเสียงเท่านั้น (วิดีโอถูกปิดเสียงตลอด) ปุ่มนี้จึงสลับตามสถานะการเล่นของแผ่นเสียงในโพสต์นี้
       mute.addEventListener('click', (e) => { e.stopPropagation(); bpSetAllMuted(!v.muted); });
@@ -1142,7 +1150,7 @@ function avatarEl(user, size = 'w-9 h-9') {
         if (lastM !== em) { // เขียน DOM เฉพาะตอนสถานะเสียงเปลี่ยนจริง
           lastM = em;
           mute.innerHTML = em ? IC_OFF : IC_ON;
-          mute.setAttribute('aria-label', em ? 'เปิดเสียง' : 'ปิดเสียง');
+          mute.setAttribute('aria-label', em ? 'เปิดเสียง' : 'ปิดเสียง'); mute.title = em ? 'เปิดเสียง' : 'ปิดเสียง';
         }
       };
       // วนอัปเดตเฉพาะตอนกำลังเล่น (ไม่กิน CPU ตอนหยุด/อยู่นอกจอ)
@@ -1156,6 +1164,7 @@ function avatarEl(user, size = 'w-9 h-9') {
         else if (e.key === 'ArrowLeft') v.currentTime -= 5;
         else if (e.key === ' ') toggle();
         else return;
+        showUi();
         e.preventDefault();
       });
       bpRO.observe(box); // layout() จะถูกเรียกจาก ResizeObserver ตอนกรอบมีขนาด (ไม่อ่านขนาดในลูปสแกน)
