@@ -33,13 +33,36 @@
         await sub.unsubscribe().catch(() => {});
       })(), new Promise((r) => setTimeout(r, 1500))]);
     } catch {}
-    ['token', 'userId', 'userEmail', 'userName', 'userAvatar', 'nv_nc', 'nv_nc_lock', 'nv_push_ep', 'nv_push_t'].forEach((k) => { try { localStorage.removeItem(k); } catch {} });
+    ['token', 'userId', 'userEmail', 'userName', 'userAvatar', 'coinBalance', 'nv_nc', 'nv_nc_lock', 'nv_push_ep', 'nv_push_t'].forEach((k) => { try { localStorage.removeItem(k); } catch {} });
     try { navigator.clearAppBadge?.(); } catch {}
     try { window.google?.accounts?.id?.disableAutoSelect(); } catch {}
     location.href = '/';
   };
   const userUrl = (id) => '/@' + encodeURIComponent(id);
   const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // ---------- Coin: กระเป๋าเดียวกับ fnnz (api.fnnz.art) · ไอคอนเหรียญโหลดเมื่อต้องใช้เท่านั้น ----------
+  let coinJs = null, coinReq = null;
+  const loadCoinIcon = () => coinJs || (coinJs = new Promise((done) => {
+    if (customElements.get('fnnz-coin')) return done();
+    const j = document.createElement('script'); j.src = '/coin-icon.js?v=20261123'; j.onload = j.onerror = () => done();
+    document.head.appendChild(j);
+  }));
+  const coinIcon = (size = 16, spin = false) => {
+    loadCoinIcon();
+    const c = document.createElement('fnnz-coin'); c.setAttribute('size', String(size)); if (!spin) c.setAttribute('static', '');
+    return c;
+  };
+  // ยอด coin ล่าสุด (คำขอเดียวต่อหน้า; force = ถามใหม่ เช่นหลังซื้อ/ปลดล็อก) · ไม่สำเร็จ = null
+  const coinBalance = (force) => {
+    const s = session(); if (!s.token || !s.userId) return Promise.resolve(null);
+    if (coinReq && !force) return coinReq;
+    coinReq = api('/api/get-coin-balance?id=' + encodeURIComponent(s.userId)).then((r) => {
+      if (r.ok && Number.isFinite(Number(r.data.coinBalance))) { lsSet('coinBalance', String(Number(r.data.coinBalance))); return Number(r.data.coinBalance); }
+      return null;
+    }).catch(() => null);
+    return coinReq;
+  };
 
   // เรียก API พร้อมแนบ token อัตโนมัติ
   async function api(path, opts = {}) {
@@ -1799,7 +1822,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
     } catch {}
   }
 
-  window.NIV = { badgeEl, soundChipEl, sndStop, discSvg: DISC_SVG, skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam, repostWrap };
+  window.NIV = { coinIcon, coinBalance, badgeEl, soundChipEl, sndStop, discSvg: DISC_SVG, skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam, repostWrap };
 
   // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
   if (!document.getElementById('niv-nozoom')) {
@@ -1986,6 +2009,11 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     </div>
     <div class="flex-none border-t border-slate-200 dark:border-white/10 p-4" style="padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))">
       ${loggedIn ? `
+        <a id="niv-coin" href="/coins" class="mb-3 flex items-center gap-2.5 px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15" aria-label="Coin ของฉัน — เติม Coin">
+          <span id="niv-coin-ic" class="flex-none w-6 h-6"></span>
+          <span class="flex-1 min-w-0"><span class="block text-[11px] leading-tight text-slate-500 dark:text-neutral-400">Coin ของฉัน</span><span id="niv-coin-n" class="block text-base font-bold leading-tight tabular-nums text-amber-600 dark:text-amber-400">–</span></span>
+          <span class="text-xs font-semibold text-amber-600 dark:text-amber-400">เติม</span>
+        </a>
         <a id="niv-me" href="${userUrl(s.userId)}" class="flex items-center gap-3 p-1.5 -m-1.5 rounded-xl hover:bg-slate-200/60 dark:hover:bg-white/5" aria-label="ไปที่โปรไฟล์ของฉัน">
           <span id="niv-me-av"></span>
           <span class="min-w-0"><span id="niv-me-name" class="block text-sm font-semibold truncate"></span><span id="niv-me-id" class="block text-xs text-slate-500 dark:text-neutral-400 truncate"></span></span>
@@ -2048,6 +2076,18 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
       };
       fill({ id: s.userId, display_name: s.name, avatar_url: s.avatar });
       document.getElementById('niv-logout').addEventListener('click', logout);
+      // ยอด coin ในเมนู: แสดงค่าที่จำไว้ทันที แล้วถามยอดจริงตอนเปิดเมนูครั้งแรกเท่านั้น (ไม่ยิงทุกหน้า)
+      {
+        const nEl = document.getElementById('niv-coin-n'), fmt = (n) => Number(n).toLocaleString('th-TH');
+        const cached = ls('coinBalance'); if (cached !== '' && Number.isFinite(Number(cached))) nEl.textContent = fmt(cached);
+        let done = false;
+        const loadCoin = () => {
+          if (done) return; done = true;
+          document.getElementById('niv-coin-ic').replaceChildren(coinIcon(24));
+          coinBalance().then((n) => { if (n == null) { done = false; return; } nEl.textContent = fmt(n); });
+        };
+        ['niv-burger', 'niv-burger-m'].forEach((id) => document.getElementById(id)?.addEventListener('click', loadCoin));
+      }
       // ดึงชื่อ/รูปล่าสุดมาอัปเดตในเมนู
       api('/api/blog/me?userId=' + encodeURIComponent(s.userId)).then((r) => {
         if (r.status === 401) { logout(); return; }

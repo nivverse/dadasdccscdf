@@ -255,6 +255,14 @@
           <div id="energy" class="mt-0.5 text-2xl font-semibold tabular-nums text-amber-500">…</div>
           <div id="energy-sub" class="mt-1 text-xs text-slate-400 dark:text-neutral-500"></div>
           <p class="mt-2 text-xs leading-relaxed text-slate-400 dark:text-neutral-500">พิมพ์สั้น ๆ ใช้พลังงานน้อยกว่า</p>
+          <div class="mt-3 flex items-center gap-2 text-sm"><span id="coin-ic" class="flex-none w-[18px] h-[18px]"></span><span>Coin <b id="coin-n" class="tabular-nums">…</b></span><a href="/coins" class="ml-auto text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline">เติม Coin</a></div>
+          <div id="plan-box" class="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+            <div class="flex items-center justify-between gap-2"><b class="text-sm">Nivread AI Plus</b><span id="plan-state" class="text-[11px] text-slate-500 dark:text-neutral-400"></span></div>
+            <p id="plan-desc" class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-neutral-400">คุยได้มากขึ้นทุกวัน + เก็บแชทไม่ถูกลบ</p>
+            <button id="plan-buy" type="button" class="hidden mt-2 w-full py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold cursor-pointer disabled:opacity-60 disabled:cursor-default"></button>
+            <a id="plan-topup" href="/coins" class="hidden mt-2 block w-full py-2 rounded-lg border border-amber-500/60 text-center text-sm font-semibold text-amber-600 dark:text-amber-400">Coin ไม่พอ — เติม Coin</a>
+            <p id="plan-msg" class="hidden mt-2 text-xs" role="status"></p>
+          </div>
         </div>
         <div class="menu-acct my-1 h-px bg-slate-200 dark:bg-white/10"></div>
         <label id="mask-row" class="mitem hidden"><span><b>ปิดบังข้อมูลส่วนตัว</b><small>เลขบัตร เบอร์โทร อีเมล</small></span><input id="mask" type="checkbox" checked class="ml-auto w-4 h-4 accent-amber-500"></label>
@@ -336,7 +344,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script src="/nivread.js?v=20261120i"></script>
+<script src="/nivread.js?v=20261123a"></script>
 <script>
 (() => {
   const s = NIV.session() || {};
@@ -978,6 +986,40 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
     $('energy-sub').textContent = 'ฟรีวันนี้ ' + f.toLocaleString() + ' · สำรอง ' + r.toLocaleString();
     const mb = $('more-btn'); if (n <= 0) mb.dataset.e = 'zero'; else if (n < 15) mb.dataset.e = 'low'; else mb.removeAttribute('data-e'); // จุดเตือนที่ปุ่ม ⋮ เมื่อพลังงานเหลือน้อย
   }
+  // ---------- แผน Plus (จ่ายด้วย coin กระเป๋าเดียวกับ fnnz) + ยอด coin ในเมนู ⋮ ----------
+  const planMsg = (text, ok) => { const m = $('plan-msg'); m.textContent = text; m.className = 'mt-2 text-xs ' + (ok ? 'text-emerald-500' : 'text-red-500'); };
+  function showPlan(d) {
+    if (!d || d.coin == null) return;
+    const coin = Number(d.coin) || 0, o = (d.offers && d.offers.plus) || { price: 400, days: 30 };
+    const loc = (window.NIV_I18N && NIV_I18N.locale) || 'th-TH', on = !!d.plusActive;
+    $('coin-n').textContent = coin.toLocaleString();
+    const ic = $('coin-ic'); if (!ic.firstChild && NIV.coinIcon) ic.append(NIV.coinIcon(18));
+    $('plan-state').textContent = on ? 'ใช้งานอยู่' : 'ยังไม่ได้สมัคร';
+    $('plan-state').classList.toggle('text-emerald-500', on);
+    $('plan-desc').textContent = on
+      ? 'ใช้ได้ถึง ' + new Date(d.plusExp).toLocaleDateString(loc, { day: 'numeric', month: 'short', year: 'numeric' }) + ' · พลังงานฟรี ' + (Number(d.freeMax) || 0).toLocaleString() + ' ต่อวัน'
+      : 'พลังงานฟรี ' + (d.baseEnergy || 30).toLocaleString() + ' → ' + (d.plusEnergy || 300).toLocaleString() + ' ต่อวัน และเก็บแชทไม่ถูกลบ นาน ' + o.days + ' วัน';
+    const enough = coin >= o.price, b = $('plan-buy');
+    b.textContent = (on ? 'ต่ออายุ ' : 'สมัคร ') + o.price.toLocaleString() + ' coin / ' + o.days + ' วัน';
+    b.classList.toggle('hidden', !enough); $('plan-topup').classList.toggle('hidden', enough);
+  }
+  $('plan-buy').onclick = async () => {
+    const b = $('plan-buy');
+    if (!confirm(b.textContent + ' ?')) return;
+    const idem = ((window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2)).replace(/[^\w-]/g, '');
+    b.disabled = true;
+    try {
+      const res = await call('/buy', { method: 'POST', body: JSON.stringify({ offer: 'plus', idem }) });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok && d.success && d.bought) {
+        showEnergy({ free: d.free, reserve: d.reserve }); showPlan(d); planMsg('สมัครสำเร็จ', true);
+        if (NIV.coinBalance) NIV.coinBalance(true);
+      } else if (d.dup) planMsg('กำลังทำรายการอยู่ รอสักครู่แล้วดูสถานะอีกครั้ง', false);
+      else planMsg(d.error || 'สมัครไม่สำเร็จ ลองใหม่อีกครั้ง', false);
+    } catch (e) { if (String(e && e.message) !== '401') planMsg('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง', false); }
+    b.disabled = false;
+  };
+
   // ---------- ต้องเข้าสู่ระบบก่อนถึงจะคุยได้ (เหมือน chat.html ของ fnnz.art) ----------
   function showLoginGate() {
     form.classList.add('hidden');
@@ -1297,7 +1339,7 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
   mode = MODES[qm] ? qm : MODES[hm] ? hm : 'general';
   if (hm && MODES[hm]) history.replaceState(null, '', pathOf(mode));
   load();
-  if (LOGGED_IN) call('/status').then((r) => r.json()).then((d) => showEnergy({ free: d.free, reserve: d.reserve })).catch(() => {});
+  if (LOGGED_IN) call('/status').then((r) => r.json()).then((d) => { showEnergy({ free: d.free, reserve: d.reserve }); showPlan(d); }).catch(() => {});
   else { showLoginGate(); $('menu-acct').classList.add('hidden'); document.querySelectorAll('.menu-acct').forEach((e) => e.classList.add('hidden')); $('clear-btn').classList.add('hidden'); }
 })();
 </script>
