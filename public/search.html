@@ -51,7 +51,24 @@
   @keyframes cat-look{0%,20%,100%{transform:translateX(0)}35%,50%{transform:translateX(-1.6px)}65%,80%{transform:translateX(1.6px)}}
   @keyframes cat-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
   @keyframes cat-hop{0%{transform:none}35%{transform:translateY(-10px) scale(1.04,.97)}70%{transform:translateY(0) scale(1.03,.96)}100%{transform:none}}
-  @media (prefers-reduced-motion:reduce){.gate-in,.cat-tail,.cat-head,.cat-ear-r,.cat-eye,.cat-pupil,.cat-say,.pet .cat-svg{animation:none!important}}
+  /* แมวเศร้า (คำค้นหาที่น่าห่วง) */
+  .cat-lid,.cat-shine,.cat-tear{display:none}
+  .sad .cat-lid{display:block;fill:var(--cat)}
+  .sad .cat-shine{display:block}
+  .sad .cat-head{animation:cat-droop 5s ease-in-out infinite}
+  .sad .cat-tail{animation:cat-tail-sad 4s ease-in-out infinite}
+  .sad .cat-pupil{animation:none}
+  .sad .cat-ear-l{transform-box:view-box;transform-origin:56px 30px;transform:rotate(-14deg)}
+  .sad .cat-ear-r{animation:none;transform:rotate(14deg)}
+  .sad .cat-tear{display:block;opacity:0;animation:cat-tear 3s ease-in infinite}
+  .sad .cat-tear.t2{animation-delay:1.5s}
+  .worry .cat-tear{display:none}
+  .care-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 0;border-radius:12px;font-size:14px;font-weight:600;transition:filter .15s,transform .15s}
+  .care-btn:active{transform:scale(.98)}
+  @keyframes cat-droop{0%,100%{transform:translateY(2px) rotate(-3deg)}50%{transform:translateY(3px) rotate(2deg)}}
+  @keyframes cat-tail-sad{0%,100%{transform:rotate(0)}50%{transform:rotate(5deg)}}
+  @keyframes cat-tear{0%{opacity:0;transform:translateY(0)}15%{opacity:.9}100%{opacity:0;transform:translateY(15px)}}
+  @media (prefers-reduced-motion:reduce){.gate-in,.cat-tail,.cat-head,.cat-ear-r,.cat-eye,.cat-pupil,.cat-say,.pet .cat-svg,.sad .cat-head{animation:none!important}.sad .cat-tear{animation:none!important;opacity:.85}}
 </style>
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
@@ -231,40 +248,51 @@
   const skeleton = () => { view.textContent = ''; view.append(NIV.skel(3)); };
 
   // ต้องเข้าสู่ระบบก่อนค้นหา: แสดงแมวดำ + การ์ดชวนล็อกอินแทนผลลัพธ์ (ไม่ยิง API เลย)
-  const CAT_SVG = '<svg class="cat-svg" viewBox="0 0 160 120" aria-hidden="true">'
-    + '<path class="cat-tail" d="M108 108C138 110 146 82 130 68"/>'
-    + '<ellipse class="cat-f" cx="80" cy="88" rx="24" ry="25"/>'
-    + '<ellipse class="cat-f" cx="68" cy="113" rx="8" ry="3.5"/><ellipse class="cat-f" cx="92" cy="113" rx="8" ry="3.5"/>'
-    + '<g class="cat-head">'
-    + '<polygon class="cat-f" points="54,36 56,12 73,25"/>'
-    + '<g class="cat-ear-r"><polygon class="cat-f" points="106,36 104,12 87,25"/><polygon points="102,29 102,19 95,25" fill="#6b2d44"/></g>'
-    + '<polygon points="58,30 58,19 66,25" fill="#6b2d44"/>'
-    + '<ellipse class="cat-f" cx="80" cy="46" rx="27" ry="22"/>'
-    + '<g class="cat-eye"><ellipse cx="68" cy="46" rx="5.5" ry="6.5" fill="#fbbf24"/><ellipse class="cat-pupil" cx="68" cy="46" rx="1.8" ry="5" fill="#0d0d0d"/></g>'
-    + '<g class="cat-eye"><ellipse cx="92" cy="46" rx="5.5" ry="6.5" fill="#fbbf24"/><ellipse class="cat-pupil" cx="92" cy="46" rx="1.8" ry="5" fill="#0d0d0d"/></g>'
-    + '<path d="M77 54h6l-3 3.5z" fill="#f472b6"/>'
-    + '<path d="M80 57.5v2M80 59.5q-4 3-7 0M80 59.5q4 3 7 0" stroke="#9ca3af" stroke-width="1.2" fill="none" stroke-linecap="round"/>'
-    + '<path d="M58 55 43 52M58 59 44 61M102 55l15-3M102 59l14 2" stroke="#9ca3af" stroke-width="1" stroke-linecap="round" opacity=".7"/>'
-    + '</g></svg>';
+  // mood: '' = แมวปกติ, 'self' = เศร้า+น้ำตา, 'worry' = เศร้าเฉย ๆ
+  function catSvg(mood) {
+    const sad = !!mood, pr = sad ? [3.2, 4.2] : [1.8, 5];
+    const eye = (cx) => '<g class="cat-eye"><ellipse cx="' + cx + '" cy="46" rx="5.5" ry="6.5" fill="#fbbf24"/><ellipse class="cat-pupil" cx="' + cx + '" cy="46" rx="' + pr[0] + '" ry="' + pr[1] + '" fill="#0d0d0d"/><circle class="cat-shine" cx="' + (cx - 1.6) + '" cy="44.5" r="1.4" fill="#fff"/></g>';
+    return '<svg class="cat-svg' + (sad ? ' sad ' + mood : '') + '" viewBox="0 0 160 120" aria-hidden="true">'
+      + '<path class="cat-tail" d="' + (sad ? 'M108 108C128 116 140 114 148 108' : 'M108 108C138 110 146 82 130 68') + '"/>'
+      + '<ellipse class="cat-f" cx="80" cy="88" rx="24" ry="25"/>'
+      + '<ellipse class="cat-f" cx="68" cy="113" rx="8" ry="3.5"/><ellipse class="cat-f" cx="92" cy="113" rx="8" ry="3.5"/>'
+      + '<g class="cat-head">'
+      + '<g class="cat-ear-l"><polygon class="cat-f" points="54,36 56,12 73,25"/><polygon points="58,30 58,19 66,25" fill="#6b2d44"/></g>'
+      + '<g class="cat-ear-r"><polygon class="cat-f" points="106,36 104,12 87,25"/><polygon points="102,29 102,19 95,25" fill="#6b2d44"/></g>'
+      + '<ellipse class="cat-f" cx="80" cy="46" rx="27" ry="22"/>'
+      + eye(68) + eye(92)
+      + '<path class="cat-lid" d="M61 38H75V40L61 47Z"/><path class="cat-lid" d="M99 38H85V40L99 47Z"/>'
+      + '<path class="cat-tear" d="M63 55q-3 4.5 0 7q3-2.5 0-7z" fill="#7dd3fc"/><path class="cat-tear t2" d="M97 55q-3 4.5 0 7q3-2.5 0-7z" fill="#7dd3fc"/>'
+      + '<path d="M77 54h6l-3 3.5z" fill="#f472b6"/>'
+      + '<path d="' + (sad ? 'M80 57.5v2M80 59.5q-4-3-7 0M80 59.5q4-3 7 0' : 'M80 57.5v2M80 59.5q-4 3-7 0M80 59.5q4 3 7 0') + '" stroke="#9ca3af" stroke-width="1.2" fill="none" stroke-linecap="round"/>'
+      + '<path d="M58 55 43 52M58 59 44 61M102 55l15-3M102 59l14 2" stroke="#9ca3af" stroke-width="1" stroke-linecap="round" opacity=".7"/>'
+      + '</g></svg>';
+  }
 
-  function gate(expired) {
-    token++;
-    setTabs(null);
-    view.textContent = '';
-    const wrap = el('div', 'gate-in mt-8 mx-auto max-w-sm');
+  // แมว + กรอบคำพูด (กดที่แมวได้)
+  function catStage(mood, msg, petMsg) {
     const stage = el('div', 'relative z-10 flex items-start justify-center gap-2 -mb-[3px]');
     const cat = el('button', 'cat-wrap');
     cat.type = 'button'; cat.setAttribute('aria-label', 'ลูบแมว');
-    cat.innerHTML = CAT_SVG;
-    const msg = expired ? 'login ใหม่อีกทีนะ~' : 'ต้อง login ก่อนนะ~';
+    cat.innerHTML = catSvg(mood);
     const say = el('div', 'cat-say', msg);
     stage.append(cat, say);
     let t;
     cat.onclick = () => {
       stage.classList.remove('pet'); void stage.offsetWidth; stage.classList.add('pet');
-      say.textContent = 'เมี๊ยว~'; clearTimeout(t);
-      t = setTimeout(() => { say.textContent = msg; stage.classList.remove('pet'); }, 1400);
+      say.textContent = petMsg; clearTimeout(t);
+      t = setTimeout(() => { say.textContent = msg; stage.classList.remove('pet'); }, 1800);
     };
+    return stage;
+  }
+
+  // ต้องเข้าสู่ระบบก่อนค้นหา: แสดงแมวดำ + การ์ดชวนล็อกอินแทนผลลัพธ์ (ไม่ยิง API เลย)
+  function gate(expired) {
+    token++;
+    setTabs(null);
+    view.textContent = '';
+    const wrap = el('div', 'gate-in mt-8 mx-auto max-w-sm');
+    const stage = catStage('', expired ? 'login ใหม่อีกทีนะ~' : 'ต้อง login ก่อนนะ~', 'เมี๊ยว~');
     const box = el('div', 'text-center rounded-3xl px-8 pb-8 pt-7 bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10');
     const go = el('a', 'mt-5 inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110 active:scale-[.98] transition', 'เข้าสู่ระบบ');
     go.href = '/login?redirect=' + encodeURIComponent(location.pathname + location.search);
@@ -274,6 +302,47 @@
       el('h2', 'text-lg font-extrabold', expired ? 'เซสชันหมดอายุ' : 'เข้าสู่ระบบเพื่อค้นหา'),
       el('p', 'mt-1 text-sm text-slate-500 dark:text-neutral-400', expired ? 'กรุณาเข้าสู่ระบบอีกครั้งเพื่อใช้งานการค้นหา' : 'สมาชิกเท่านั้นที่ค้นหาโพสต์ หมวดหมู่ และผู้ใช้ได้'),
       go, more);
+    wrap.append(stage, box);
+    view.append(wrap);
+  }
+
+  // ---------- คำค้นหาที่น่าห่วง: แมวเศร้า + คำปลอบใจ (ไม่ยิง API ไม่บันทึกประวัติ) ----------
+  // แก้รายการคำได้ตามต้องการ (เทียบแบบตัดช่องว่าง/ขีดออก และไม่สนตัวพิมพ์เล็กใหญ่)
+  const RISK = {
+    self: ['ฆ่าตัวตาย', 'ฆ่าตัวเอง', 'อยากตาย', 'วิธีตาย', 'ไม่อยากอยู่ต่อ', 'ไม่อยากมีชีวิต', 'ทำร้ายตัวเอง', 'กรีดข้อมือ', 'กรีดแขน', 'จบชีวิต', 'ผูกคอตาย', 'กระโดดตึก', 'กินยาตาย',
+      'suicide', 'suicidal', 'killmyself', 'killingmyself', 'wanttodie', 'endmylife', 'selfharm', 'cutmywrist'],
+    danger: ['ฆ่าคน', 'ทำระเบิด', 'สร้างระเบิด', 'วางยาพิษ', 'killsomeone', 'makeabomb', 'bombmaking'],
+  };
+  const riskOf = (q) => {
+    const n = String(q).toLowerCase().replace(/[\s\-_.]+/g, '');
+    for (const k of ['self', 'danger']) if (RISK[k].some((w) => n.includes(w))) return k;
+    return null;
+  };
+
+  function care(kind) {
+    token++;
+    setTabs(null);
+    view.textContent = '';
+    const self = kind === 'self';
+    const wrap = el('div', 'gate-in mt-8 mx-auto max-w-sm');
+    const stage = catStage(self ? 'self' : 'worry', self ? 'เราอยู่ตรงนี้นะ' : 'อื้ม… คำนี้ดูไม่ดีเลย', self ? 'ลูบหัวให้… ไม่เป็นไรนะ' : 'ลองคำอื่นนะ~');
+    const box = el('div', 'text-center rounded-3xl px-8 pb-8 pt-7 bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10');
+    box.append(
+      el('h2', 'text-lg font-extrabold', self ? 'ช่วงนี้คงหนักมากเลยใช่ไหม' : 'คำนี้ดูอันตรายนิดนึง'),
+      el('p', 'mt-2 text-sm leading-relaxed text-slate-500 dark:text-neutral-400', self
+        ? 'เราไม่รู้ว่าคุณกำลังเจออะไรอยู่ แต่ความเจ็บปวดนั้นเป็นเรื่องจริง และคุณไม่ต้องแบกมันไว้คนเดียว ลองหายใจลึก ๆ สักครู่ แล้วบอกคนที่ไว้ใจว่าตอนนี้คุณรู้สึกยังไง'
+        : 'เราไม่แสดงผลค้นหาสำหรับคำที่อาจเป็นอันตราย ลองใช้คำอื่นดูนะ'));
+    if (self) {
+      const call = el('a', 'care-btn mt-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/25 hover:brightness-110', 'โทร 1323 สายด่วนสุขภาพจิต (24 ชม.)');
+      call.href = 'tel:1323';
+      const em = el('a', 'care-btn mt-2 border border-slate-300 dark:border-white/15 text-slate-700 dark:text-neutral-200 hover:bg-amber-500/10', 'ตอนนี้ไม่ปลอดภัย? โทร 1669');
+      em.href = 'tel:1669';
+      box.append(call, em);
+    }
+    const other = el('button', 'mt-4 text-sm font-medium text-amber-500 hover:underline cursor-pointer', 'ค้นหาคำอื่น');
+    other.type = 'button';
+    other.onclick = () => { input.value = ''; toggleClear(); history.replaceState({}, '', '/search'); document.title = 'ค้นหา | nivread'; home(); input.focus(); };
+    box.append(other);
     wrap.append(stage, box);
     view.append(wrap);
   }
@@ -297,6 +366,8 @@
     if (q.length < 2) { input.focus(); return; }
     input.value = q; toggleClear();
     input.blur();
+    const risk = riskOf(q);
+    if (risk) { document.title = 'ค้นหา | nivread'; care(risk); return; }   // ไม่ค้นหา ไม่เก็บประวัติ ไม่ส่งสัญญาณฟีด
     document.title = `ค้นหา "${q}" | nivread`;
     if (!opt.pop) history.pushState({ q }, '', '/search?q=' + encodeURIComponent(q));
     addHist(q);
