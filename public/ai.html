@@ -255,14 +255,9 @@
           <div id="energy" class="mt-0.5 text-2xl font-semibold tabular-nums text-amber-500">…</div>
           <div id="energy-sub" class="mt-1 text-xs text-slate-400 dark:text-neutral-500"></div>
           <p class="mt-2 text-xs leading-relaxed text-slate-400 dark:text-neutral-500">พิมพ์สั้น ๆ ใช้พลังงานน้อยกว่า</p>
-          <div class="mt-3 flex items-center gap-2 text-sm"><span id="coin-ic" class="flex-none w-[18px] h-[18px]"></span><span>Coin <b id="coin-n" class="tabular-nums">…</b></span><a href="/coins" class="ml-auto text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline">เติม Coin</a></div>
-          <div id="plan-box" class="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
-            <div class="flex items-center justify-between gap-2"><b class="text-sm">Nivread AI Plus</b><span id="plan-state" class="text-[11px] text-slate-500 dark:text-neutral-400"></span></div>
-            <p id="plan-desc" class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-neutral-400">คุยได้มากขึ้นทุกวัน + เก็บแชทไม่ถูกลบ</p>
-            <button id="plan-buy" type="button" class="hidden mt-2 w-full py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold cursor-pointer disabled:opacity-60 disabled:cursor-default"></button>
-            <a id="plan-topup" href="/coins" class="hidden mt-2 block w-full py-2 rounded-lg border border-amber-500/60 text-center text-sm font-semibold text-amber-600 dark:text-amber-400">Coin ไม่พอ — เติม Coin</a>
-            <p id="plan-msg" class="hidden mt-2 text-xs" role="status"></p>
-          </div>
+          <button id="pkg-open" type="button" class="mt-3 w-full py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold cursor-pointer hover:brightness-110">ซื้อแพ็กเกจ</button>
+          <p id="pkg-state" class="hidden mt-1.5 text-center text-xs text-emerald-500"></p>
+        </div>
         </div>
         <div class="menu-acct my-1 h-px bg-slate-200 dark:bg-white/10"></div>
         <label id="mask-row" class="mitem hidden"><span><b>ปิดบังข้อมูลส่วนตัว</b><small>เลขบัตร เบอร์โทร อีเมล</small></span><input id="mask" type="checkbox" checked class="ml-auto w-4 h-4 accent-amber-500"></label>
@@ -338,6 +333,19 @@
       <button id="clr-cancel" type="button" class="w-1/2 py-3 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 font-semibold text-sm cursor-pointer">ยกเลิก</button>
       <button id="clr-ok" type="button" class="w-1/2 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 cursor-pointer">ล้างแชท</button>
     </div>
+  </div>
+</div>
+
+<!-- Popup แพ็กเกจ AI (จ่ายด้วย coin) — เพิ่มแพ็กเกจใหม่ที่ OFFERS ใน ai.js (niv: true) แล้วจะขึ้นที่นี่เอง -->
+<div id="pkg-modal" class="hidden fixed inset-0 z-[70] items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="pkg-title">
+  <div class="w-full sm:max-w-md max-h-[90dvh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-white dark:bg-[#1c1c1c] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 shadow-2xl p-5" style="padding-bottom:max(1.25rem,env(safe-area-inset-bottom))">
+    <div class="flex items-center justify-between gap-3">
+      <h2 id="pkg-title" class="text-lg font-bold">แพ็กเกจ Nivread AI</h2>
+      <button id="pkg-close" type="button" aria-label="ปิด" class="w-9 h-9 -mr-2 rounded-full flex items-center justify-center text-slate-500 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    </div>
+    <div class="mt-3 flex items-center gap-2 rounded-xl bg-slate-100 dark:bg-white/5 px-3 py-2 text-sm"><span id="pkg-coin-ic" class="w-5 h-5 flex-none"></span><span>Coin ของคุณ <b id="pkg-coin-n" class="tabular-nums">…</b></span><a href="/coins" class="ml-auto text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline">เติม Coin</a></div>
+    <div id="pkg-list" class="mt-4 space-y-3"></div>
+    <p id="pkg-msg" class="hidden mt-3 text-sm text-center" role="status"></p>
   </div>
 </div>
 
@@ -986,39 +994,66 @@ table.pg{width:100%;margin:0;border:0;border-radius:0;font-size:inherit;border-c
     $('energy-sub').textContent = 'ฟรีวันนี้ ' + f.toLocaleString() + ' · สำรอง ' + r.toLocaleString();
     const mb = $('more-btn'); if (n <= 0) mb.dataset.e = 'zero'; else if (n < 15) mb.dataset.e = 'low'; else mb.removeAttribute('data-e'); // จุดเตือนที่ปุ่ม ⋮ เมื่อพลังงานเหลือน้อย
   }
-  // ---------- แผน Plus (จ่ายด้วย coin กระเป๋าเดียวกับ fnnz) + ยอด coin ในเมนู ⋮ ----------
-  const planMsg = (text, ok) => { const m = $('plan-msg'); m.textContent = text; m.className = 'mt-2 text-xs ' + (ok ? 'text-emerald-500' : 'text-red-500'); };
-  function showPlan(d) {
-    if (!d || d.coin == null) return;
-    const coin = Number(d.coin) || 0, o = (d.offers && d.offers.plus) || { price: 400, days: 30 };
-    const loc = (window.NIV_I18N && NIV_I18N.locale) || 'th-TH', on = !!d.plusActive;
-    $('coin-n').textContent = coin.toLocaleString();
-    const ic = $('coin-ic'); if (!ic.firstChild && NIV.coinIcon) ic.append(NIV.coinIcon(18));
-    $('plan-state').textContent = on ? 'ใช้งานอยู่' : 'ยังไม่ได้สมัคร';
-    $('plan-state').classList.toggle('text-emerald-500', on);
-    $('plan-desc').textContent = on
-      ? 'ใช้ได้ถึง ' + new Date(d.plusExp).toLocaleDateString(loc, { day: 'numeric', month: 'short', year: 'numeric' }) + ' · พลังงานฟรี ' + (Number(d.freeMax) || 0).toLocaleString() + ' ต่อวัน'
-      : 'พลังงานฟรี ' + (d.baseEnergy || 30).toLocaleString() + ' → ' + (d.plusEnergy || 300).toLocaleString() + ' ต่อวัน และเก็บแชทไม่ถูกลบ นาน ' + o.days + ' วัน';
-    const enough = coin >= o.price, b = $('plan-buy');
-    b.textContent = (on ? 'ต่ออายุ ' : 'สมัคร ') + o.price.toLocaleString() + ' coin / ' + o.days + ' วัน';
-    b.classList.toggle('hidden', !enough); $('plan-topup').classList.toggle('hidden', enough);
+  // ---------- แพ็กเกจ (จ่ายด้วย coin กระเป๋าเดียวกับ fnnz): ปุ่มในเมนู ⋮ → popup รายการแพ็กเกจ ----------
+  let pkgInfo = null, pkgBusy = false;
+  const pkgDate = (ms) => new Date(ms).toLocaleDateString((window.NIV_I18N && NIV_I18N.locale) || 'th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+  const pkgOpen = () => !$('pkg-modal').classList.contains('hidden');
+  const pkgMsg = (text, ok) => { const m = $('pkg-msg'); m.textContent = text || ''; m.className = 'mt-3 text-sm text-center ' + (text ? (ok ? 'text-emerald-500' : 'text-red-500') : 'hidden'); };
+  function showPlan(d) { // เก็บสถานะล่าสุด + ข้อความใต้ปุ่มซื้อในเมนู
+    if (!d || d.coin == null) return; pkgInfo = d;
+    const st = $('pkg-state'), on = !!d.plusActive;
+    st.classList.toggle('hidden', !on); if (on) st.textContent = 'แพ็กเกจใช้ได้ถึง ' + pkgDate(d.plusExp);
+    if (pkgOpen()) drawPkgs();
   }
-  $('plan-buy').onclick = async () => {
-    const b = $('plan-buy');
-    if (!confirm(b.textContent + ' ?')) return;
+  function drawPkgs() {
+    const d = pkgInfo, list = $('pkg-list'); list.replaceChildren();
+    $('pkg-coin-n').textContent = d ? (Number(d.coin) || 0).toLocaleString() : '…';
+    const ic = $('pkg-coin-ic'); if (!ic.firstChild && NIV.coinIcon) ic.append(NIV.coinIcon(20));
+    if (!d) { list.append(h('p', 'text-sm text-center text-slate-500 dark:text-neutral-400', 'กำลังโหลด…')); return; }
+    const coin = Number(d.coin) || 0;
+    Object.entries(d.offers || {}).filter(([, o]) => o && o.niv).forEach(([id, o]) => {
+      const active = !!d[id + 'Active'], card = h('div', 'rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4');
+      const top = h('div', 'flex items-center justify-between gap-2'); top.append(h('b', 'text-base', o.name));
+      if (active) top.append(h('span', 'text-[11px] font-semibold text-emerald-500', 'ใช้ได้ถึง ' + pkgDate(d[id + 'Exp'])));
+      card.append(top);
+      const perks = h('ul', 'mt-2 space-y-1 text-sm text-slate-600 dark:text-neutral-300');
+      (o.perks || [o.desc]).forEach((p) => perks.append(h('li', '', '✓ ' + p)));
+      card.append(perks);
+      const price = h('div', 'mt-3 flex items-center gap-1.5 text-lg font-bold'); if (NIV.coinIcon) price.append(NIV.coinIcon(22));
+      price.append(document.createTextNode(Number(o.price).toLocaleString()), h('span', 'text-sm font-normal text-slate-500 dark:text-neutral-400', ' / ' + o.days + ' วัน'));
+      card.append(price);
+      if (coin >= o.price) {
+        const b = h('button', 'mt-3 w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold cursor-pointer hover:brightness-110 disabled:opacity-60 disabled:cursor-default', (active ? 'ต่ออายุ ' : 'ซื้อ ') + Number(o.price).toLocaleString() + ' coin');
+        b.type = 'button'; b.disabled = pkgBusy; b.onclick = () => buyPkg(id); card.append(b);
+      } else {
+        const a = h('a', 'mt-3 block w-full py-2.5 rounded-xl border border-amber-500/60 text-center text-sm font-semibold text-amber-600 dark:text-amber-400', 'Coin ไม่พอ — เติม Coin'); a.href = '/coins'; card.append(a);
+      }
+      list.append(card);
+    });
+  }
+  async function buyPkg(id) {
+    if (pkgBusy) return; pkgBusy = true; pkgMsg(''); drawPkgs();
     const idem = ((window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2)).replace(/[^\w-]/g, '');
-    b.disabled = true;
     try {
-      const res = await call('/buy', { method: 'POST', body: JSON.stringify({ offer: 'plus', idem }) });
+      const res = await call('/buy', { method: 'POST', body: JSON.stringify({ offer: id, idem }) });
       const d = await res.json().catch(() => ({}));
       if (res.ok && d.success && d.bought) {
-        showEnergy({ free: d.free, reserve: d.reserve }); showPlan(d); planMsg('สมัครสำเร็จ', true);
+        showEnergy({ free: d.free, reserve: d.reserve }); pkgInfo = d; showPlan(d); pkgMsg('ซื้อสำเร็จ', true);
         if (NIV.coinBalance) NIV.coinBalance(true);
-      } else if (d.dup) planMsg('กำลังทำรายการอยู่ รอสักครู่แล้วดูสถานะอีกครั้ง', false);
-      else planMsg(d.error || 'สมัครไม่สำเร็จ ลองใหม่อีกครั้ง', false);
-    } catch (e) { if (String(e && e.message) !== '401') planMsg('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง', false); }
-    b.disabled = false;
-  };
+      } else if (d.dup) pkgMsg('กำลังทำรายการอยู่ รอสักครู่แล้วเปิดดูสถานะอีกครั้ง', false);
+      else pkgMsg(d.error || 'ซื้อไม่สำเร็จ ลองใหม่อีกครั้ง', false);
+    } catch (e) { if (String(e && e.message) !== '401') pkgMsg('เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง', false); }
+    pkgBusy = false; drawPkgs();
+  }
+  function openPkg() {
+    closeMenus(); pkgMsg(''); $('pkg-modal').classList.replace('hidden', 'flex'); drawPkgs();
+    call('/status').then((r) => r.json()).then((d) => { if (d && d.success) { showEnergy({ free: d.free, reserve: d.reserve }); showPlan(d); } }).catch(() => {}); // ยอดล่าสุดทุกครั้งที่เปิด
+  }
+  const closePkg = () => $('pkg-modal').classList.replace('flex', 'hidden');
+  $('pkg-open').onclick = openPkg;
+  $('pkg-close').onclick = closePkg;
+  $('pkg-modal').addEventListener('click', (e) => { if (e.target.id === 'pkg-modal') closePkg(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && pkgOpen()) closePkg(); });
 
   // ---------- ต้องเข้าสู่ระบบก่อนถึงจะคุยได้ (เหมือน chat.html ของ fnnz.art) ----------
   function showLoginGate() {

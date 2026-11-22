@@ -58,7 +58,7 @@
     const s = session(); if (!s.token || !s.userId) return Promise.resolve(null);
     if (coinReq && !force) return coinReq;
     coinReq = api('/api/get-coin-balance?id=' + encodeURIComponent(s.userId)).then((r) => {
-      if (r.ok && Number.isFinite(Number(r.data.coinBalance))) { lsSet('coinBalance', String(Number(r.data.coinBalance))); return Number(r.data.coinBalance); }
+      if (r.ok && Number.isFinite(Number(r.data.coinBalance))) { const n = Number(r.data.coinBalance); lsSet('coinBalance', String(n)); const chip = document.getElementById('niv-coin-n'); if (chip) chip.textContent = n.toLocaleString('th-TH'); return n; }
       return null;
     }).catch(() => null);
     return coinReq;
@@ -1938,6 +1938,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     const here = encodeURIComponent(location.pathname + location.search);
     const params = new URLSearchParams(location.search);
     const isMyProfile = (uid) => { let p = ''; try { p = decodeURIComponent(location.pathname); } catch {} return p === '/@' + uid || (location.pathname.replace(/\.html$/, '') === '/user' && params.get('id') === uid); };
+    const isNovel = path === '/novels' || path.startsWith('/novels/') || path === '/novel-library';  // หน้านิยาย: โชว์ยอด coin บนแถบบน
     const q0 = path === '/search' ? (params.get('q') || '') : '';
 
     const nav = [
@@ -1968,6 +1969,7 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     <div class="hidden sm:block flex-1 max-w-md mx-auto">${searchBox('niv-q')}</div>
     <nav class="flex items-center gap-1.5" aria-label="เมนูด่วน">
       <a href="/search" class="hidden w-10 h-10 place-items-center rounded-xl text-slate-700 dark:text-neutral-200 hover:bg-slate-200/70 dark:hover:bg-white/10" aria-label="ค้นหา">${svg('search', 'w-5 h-5')}</a>
+      ${loggedIn && isNovel ? `<a id="niv-coin" href="/coins" class="inline-flex items-center gap-1.5 h-9 pl-2 pr-3 rounded-full border border-amber-500/40 bg-amber-500/10 text-sm font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/20" aria-label="Coin ของฉัน — เติม Coin"><span id="niv-coin-ic" class="w-5 h-5 flex-none"></span><span id="niv-coin-n" class="tabular-nums">–</span></a>` : ''}
       ${loggedIn ? `<a id="niv-bell" href="/notifications" class="relative inline-grid w-10 h-10 place-items-center rounded-xl text-slate-700 dark:text-neutral-200 hover:text-amber-500 hover:bg-slate-200/70 dark:hover:bg-white/10" aria-label="การแจ้งเตือน"${path === '/notifications' ? ' aria-current="page"' : ''}>${svg('bell', 'w-5 h-5')}<span id="niv-bell-n" class="nv-badge" hidden></span></a>` : ''}
       ${loggedIn
         ? `<a href="/write" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110">${svg('write', 'w-4 h-4')}เขียนโพสต์</a>`
@@ -2009,11 +2011,6 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     </div>
     <div class="flex-none border-t border-slate-200 dark:border-white/10 p-4" style="padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))">
       ${loggedIn ? `
-        <a id="niv-coin" href="/coins" class="mb-3 flex items-center gap-2.5 px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15" aria-label="Coin ของฉัน — เติม Coin">
-          <span id="niv-coin-ic" class="flex-none w-6 h-6"></span>
-          <span class="flex-1 min-w-0"><span class="block text-[11px] leading-tight text-slate-500 dark:text-neutral-400">Coin ของฉัน</span><span id="niv-coin-n" class="block text-base font-bold leading-tight tabular-nums text-amber-600 dark:text-amber-400">–</span></span>
-          <span class="text-xs font-semibold text-amber-600 dark:text-amber-400">เติม</span>
-        </a>
         <a id="niv-me" href="${userUrl(s.userId)}" class="flex items-center gap-3 p-1.5 -m-1.5 rounded-xl hover:bg-slate-200/60 dark:hover:bg-white/5" aria-label="ไปที่โปรไฟล์ของฉัน">
           <span id="niv-me-av"></span>
           <span class="min-w-0"><span id="niv-me-name" class="block text-sm font-semibold truncate"></span><span id="niv-me-id" class="block text-xs text-slate-500 dark:text-neutral-400 truncate"></span></span>
@@ -2076,17 +2073,12 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
       };
       fill({ id: s.userId, display_name: s.name, avatar_url: s.avatar });
       document.getElementById('niv-logout').addEventListener('click', logout);
-      // ยอด coin ในเมนู: แสดงค่าที่จำไว้ทันที แล้วถามยอดจริงตอนเปิดเมนูครั้งแรกเท่านั้น (ไม่ยิงทุกหน้า)
-      {
-        const nEl = document.getElementById('niv-coin-n'), fmt = (n) => Number(n).toLocaleString('th-TH');
-        const cached = ls('coinBalance'); if (cached !== '' && Number.isFinite(Number(cached))) nEl.textContent = fmt(cached);
-        let done = false;
-        const loadCoin = () => {
-          if (done) return; done = true;
-          document.getElementById('niv-coin-ic').replaceChildren(coinIcon(24));
-          coinBalance().then((n) => { if (n == null) { done = false; return; } nEl.textContent = fmt(n); });
-        };
-        ['niv-burger', 'niv-burger-m'].forEach((id) => document.getElementById(id)?.addEventListener('click', loadCoin));
+      // ชิป coin บนแถบบน (เฉพาะหน้านิยาย): แสดงยอดที่จำไว้ทันที แล้วถามยอดจริง
+      if (isNovel) {
+        const nEl = document.getElementById('niv-coin-n'), cached = ls('coinBalance');
+        if (cached !== '' && Number.isFinite(Number(cached))) nEl.textContent = Number(cached).toLocaleString('th-TH');
+        document.getElementById('niv-coin-ic').replaceChildren(coinIcon(20));
+        coinBalance();
       }
       // ดึงชื่อ/รูปล่าสุดมาอัปเดตในเมนู
       api('/api/blog/me?userId=' + encodeURIComponent(s.userId)).then((r) => {
