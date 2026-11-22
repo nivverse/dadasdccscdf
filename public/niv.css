@@ -127,17 +127,18 @@
 .bp-play::before{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:4px}
 .bp-bar{position:absolute;left:15px;bottom:15px;display:flex;gap:8px;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:600 12px/1.4 ui-monospace,monospace;opacity:0;transition:opacity .2s}
 .uv.bp.bp-ui .bp-bar,.uv.bp.bp-paused .bp-bar,.uv.bp:focus-visible .bp-bar{opacity:1}
-/* แถบเวลา + เส้นความคืบหน้ารอบกรอบ: ซ่อนไว้ แสดงเมื่อแตะวิดีโอ (.bp-ui · หายเองใน 3 วิถ้ากำลังเล่น) หรือเมื่อหยุดชั่วคราว/ลากเส้น/โฟกัสคีย์บอร์ด · ปุ่มเสียง (.bp-snd) แสดงตลอด */
+/* แถบเวลา + เส้นความคืบหน้ารอบกรอบ: ซ่อนไว้ แสดงเมื่อแตะวิดีโอ (.bp-ui · หายเองใน 3 วิถ้ากำลังเล่น) หรือเมื่อหยุดชั่วคราว/ลากเส้น/โฟกัสคีย์บอร์ด · ปุ่มเสียง (.bp-snd) ดูกฎ html.bp-hint ด้านล่าง */
 .uv.bp.bp-ui .bp-svg,.uv.bp.bp-paused .bp-svg,.uv.bp.bp-drag .bp-svg,.uv.bp:focus-visible .bp-svg{opacity:1}
 .uv.bp.bp-ui .bp-hit,.uv.bp.bp-paused .bp-hit,.uv.bp.bp-drag .bp-hit,.uv.bp:focus-visible .bp-hit{pointer-events:stroke}
-@media (hover:hover){.uv.bp:hover .bp-svg,.uv.bp:hover .bp-bar{opacity:1}.uv.bp:hover .bp-hit{pointer-events:stroke}.uv.bp:hover .bp-fill{stroke-width:3;stroke-opacity:.85}} /* เมาส์ชี้ (เฉพาะอุปกรณ์ที่มีเมาส์) แสดงเหมือนแตะ · จอสัมผัสต้องแตะ */
+.uv.bp.bp-ui .bp-snd,.uv.bp.bp-paused .bp-snd,.uv.bp.bp-drag .bp-snd,.uv.bp:focus-visible .bp-snd,html.bp-hint .bp-snd{opacity:1;pointer-events:auto} /* ปุ่มเสียง: ตอนเพิ่งเปิดเว็บและยังไม่มีเสียง (html.bp-hint) แสดงค้างไว้ · มีเสียงแล้ว = เหมือนแถบเวลา (แตะ/ชี้/หยุด แล้วซ่อน) */
+@media (hover:hover){.uv.bp:hover .bp-svg,.uv.bp:hover .bp-bar,.uv.bp:hover .bp-snd{opacity:1}.uv.bp:hover .bp-snd{pointer-events:auto}.uv.bp:hover .bp-hit{pointer-events:stroke}.uv.bp:hover .bp-fill{stroke-width:3;stroke-opacity:.85}} /* เมาส์ชี้ (เฉพาะอุปกรณ์ที่มีเมาส์) แสดงเหมือนแตะ · จอสัมผัสต้องแตะ */
 .bp-fast-tag{position:absolute;top:15px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font:700 12px/1.4 ui-monospace,monospace;opacity:0;pointer-events:none;transition:opacity .15s}
 .uv.bp.bp-fast .bp-fast-tag{opacity:1}
 .bp-fast-tag svg{width:14px;height:14px;fill:#f59e0b}
-.bp-snd{position:absolute;right:12px;bottom:12px;z-index:2;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:rgba(15,23,42,.72)!important;color:#fff;cursor:pointer;display:grid;place-items:center;touch-action:manipulation;-webkit-backdrop-filter:none;backdrop-filter:none}
+.bp-snd{position:absolute;right:12px;bottom:12px;z-index:2;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:rgba(15,23,42,.72)!important;color:#fff;cursor:pointer;display:grid;place-items:center;touch-action:manipulation;-webkit-backdrop-filter:none;backdrop-filter:none;opacity:0;pointer-events:none;transition:opacity .2s}
 .bp-snd:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-snd svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-@media (prefers-reduced-motion:reduce){.bp-svg,.bp-fill,.bp-play,.bp-bar,.bp-fast-tag{transition:none}}
+@media (prefers-reduced-motion:reduce){.bp-svg,.bp-fill,.bp-play,.bp-bar,.bp-snd,.bp-fast-tag{transition:none}}
 /* ===== โพสต์ตัวละคร · ฟีด (.cx-*) — แถวรูปเลื่อนแนวนอนแบบ X อยู่ในการ์ด ไม่ล้นการ์ด ===== */
 .cx-from{font-size:12px;font-weight:500;color:#d97706;text-decoration:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html.dark .cx-from{color:#fbbf24}

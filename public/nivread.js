@@ -967,17 +967,18 @@ function avatarEl(user, size = 'w-9 h-9') {
 .bp-play::before{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:4px}
 .bp-bar{position:absolute;left:${BP_PAD + 10}px;bottom:${BP_PAD + 10}px;display:flex;gap:8px;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;font:600 12px/1.4 ui-monospace,monospace;opacity:0;transition:opacity .2s}
 .uv.bp.bp-ui .bp-bar,.uv.bp.bp-paused .bp-bar,.uv.bp:focus-visible .bp-bar{opacity:1}
-/* แถบเวลา + เส้นความคืบหน้ารอบกรอบ: ซ่อนไว้ แสดงเมื่อแตะวิดีโอ (.bp-ui · หายเองใน 3 วิถ้ากำลังเล่น) หรือเมื่อหยุดชั่วคราว/ลากเส้น/โฟกัสคีย์บอร์ด · ปุ่มเสียง (.bp-snd) แสดงตลอด */
+/* แถบเวลา + เส้นความคืบหน้ารอบกรอบ: ซ่อนไว้ แสดงเมื่อแตะวิดีโอ (.bp-ui · หายเองใน 3 วิถ้ากำลังเล่น) หรือเมื่อหยุดชั่วคราว/ลากเส้น/โฟกัสคีย์บอร์ด · ปุ่มเสียง (.bp-snd) ดูกฎ html.bp-hint ด้านล่าง */
 .uv.bp.bp-ui .bp-svg,.uv.bp.bp-paused .bp-svg,.uv.bp.bp-drag .bp-svg,.uv.bp:focus-visible .bp-svg{opacity:1}
 .uv.bp.bp-ui .bp-hit,.uv.bp.bp-paused .bp-hit,.uv.bp.bp-drag .bp-hit,.uv.bp:focus-visible .bp-hit{pointer-events:stroke}
-@media (hover:hover){.uv.bp:hover .bp-svg,.uv.bp:hover .bp-bar{opacity:1}.uv.bp:hover .bp-hit{pointer-events:stroke}.uv.bp:hover .bp-fill{stroke-width:3;stroke-opacity:.85}} /* เมาส์ชี้ (เฉพาะอุปกรณ์ที่มีเมาส์) แสดงเหมือนแตะ · จอสัมผัสต้องแตะ */
+.uv.bp.bp-ui .bp-snd,.uv.bp.bp-paused .bp-snd,.uv.bp.bp-drag .bp-snd,.uv.bp:focus-visible .bp-snd,html.bp-hint .bp-snd{opacity:1;pointer-events:auto} /* ปุ่มเสียง: ตอนเพิ่งเปิดเว็บและยังไม่มีเสียง (html.bp-hint) แสดงค้างไว้ · มีเสียงแล้ว = เหมือนแถบเวลา (แตะ/ชี้/หยุด แล้วซ่อน) */
+@media (hover:hover){.uv.bp:hover .bp-svg,.uv.bp:hover .bp-bar,.uv.bp:hover .bp-snd{opacity:1}.uv.bp:hover .bp-snd{pointer-events:auto}.uv.bp:hover .bp-hit{pointer-events:stroke}.uv.bp:hover .bp-fill{stroke-width:3;stroke-opacity:.85}} /* เมาส์ชี้ (เฉพาะอุปกรณ์ที่มีเมาส์) แสดงเหมือนแตะ · จอสัมผัสต้องแตะ */
 .bp-fast-tag{position:absolute;top:${BP_PAD + 10}px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;font:700 12px/1.4 ui-monospace,monospace;opacity:0;pointer-events:none;transition:opacity .15s}
 .uv.bp.bp-fast .bp-fast-tag{opacity:1}
 .bp-fast-tag svg{width:14px;height:14px;fill:#f59e0b}
-.bp-snd{position:absolute;right:12px;bottom:12px;z-index:2;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:rgba(15,23,42,.72)!important;color:#fff;cursor:pointer;display:grid;place-items:center;touch-action:manipulation;-webkit-backdrop-filter:none;backdrop-filter:none}
+.bp-snd{position:absolute;right:12px;bottom:12px;z-index:2;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:rgba(15,23,42,.72)!important;color:#fff;cursor:pointer;display:grid;place-items:center;touch-action:manipulation;-webkit-backdrop-filter:none;backdrop-filter:none;opacity:0;pointer-events:none;transition:opacity .2s}
 .bp-snd:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-snd svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-@media (prefers-reduced-motion:reduce){.bp-svg,.bp-fill,.bp-play,.bp-bar,.bp-fast-tag{transition:none}}`;
+@media (prefers-reduced-motion:reduce){.bp-svg,.bp-fill,.bp-play,.bp-bar,.bp-snd,.bp-fast-tag{transition:none}}`;
     if (!document.getElementById("niv-css")) document.head.appendChild(bpStyle); // หน้า SSR โหลด /niv.css แล้ว
     // หน้า SSR ใช้ CSS จาก /niv.css (ที่ยังมี backdrop-filter) → ทับด้วยกฎเบาแทน: เบลอทับวิดีโอที่กำลังเล่นทุกเฟรมหนักมากบนมือถือ ใช้พื้นทึบกึ่งโปร่งแทน
     if (!document.getElementById('niv-bp-lite')) {
@@ -1007,6 +1008,12 @@ function avatarEl(user, size = 'w-9 h-9') {
       };
       evs.forEach((n) => addEventListener(n, onFirst, { capture: true, passive: true }));
     }
+
+    // ปุ่มเสียง: ตอนเพิ่งเปิดเว็บและยังไม่มีเสียง (ตั้งปิดเสียงไว้ หรือเบราว์เซอร์ยังไม่ให้เล่นเสียงจนกว่าจะแตะ) แสดงค้างไว้ให้เห็น (html.bp-hint)
+    // พอมีเสียงแล้ว (เปิดเสียงเอง หรือเบราว์เซอร์เปิดให้หลังแตะครั้งแรก) หรือกดปุ่มเสียง → ทำงานเหมือนแถบเวลา: แสดงเมื่อแตะ/ชี้/หยุด แล้วซ่อน
+    const bpClearHint = () => document.documentElement.classList.remove('bp-hint');
+    if (bpMuted || !bpActive()) document.documentElement.classList.add('bp-hint');
+    document.addEventListener('volumechange', (e) => { if (e.target instanceof HTMLVideoElement && !e.target.muted) bpClearHint(); }, true);
 
     // ตำแหน่งเมาส์ (x,y ภายในกรอบ) → สัดส่วนบนเส้นรอบกรอบมุมโค้ง (เริ่มบนซ้าย วนตามเข็มนาฬิกา)
     function bpFrac(x, y, w, h, r) {
@@ -1142,7 +1149,7 @@ function avatarEl(user, size = 'w-9 h-9') {
         if (!e.target.closest('.bp-bar,.bp-hit,.bp-snd')) toggle();
       });
       // โพสต์ที่มีแผ่นเสียง: เสียงของโพสต์ = เสียงจากแผ่นเสียงเท่านั้น (วิดีโอถูกปิดเสียงตลอด) ปุ่มนี้จึงสลับตามสถานะการเล่นของแผ่นเสียงในโพสต์นี้
-      mute.addEventListener('click', (e) => { e.stopPropagation(); bpSetAllMuted(!v.muted); });
+      mute.addEventListener('click', (e) => { e.stopPropagation(); bpClearHint(); bpSetAllMuted(!v.muted); });
       const syncUi = () => {
         box.classList.toggle('bp-paused', v.paused);
         if (v.paused) { v.playbackRate = 1; box.classList.remove('bp-fast'); }
