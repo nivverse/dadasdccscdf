@@ -26,6 +26,32 @@
   .line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   #sq::-webkit-search-cancel-button{display:none}
   .noscroll{scrollbar-width:none}.noscroll::-webkit-scrollbar{display:none}
+
+  /* ---------- แมวดำหน้า "ต้องเข้าสู่ระบบ" ---------- */
+  :root{--cat:#15151a}.dark{--cat:#23232b}
+  .gate-in{animation:gate-rise .5s cubic-bezier(.2,.8,.2,1) both}
+  .cat-wrap{display:block;width:132px;flex:none;padding:0;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .cat-svg{display:block;width:100%;height:auto;overflow:visible}
+  .dark .cat-svg{filter:drop-shadow(0 0 .6px rgba(255,255,255,.55))}
+  .cat-f{fill:var(--cat);stroke:var(--cat);stroke-width:6;stroke-linejoin:round}
+  .cat-tail{fill:none;stroke:var(--cat);stroke-width:9;stroke-linecap:round;transform-box:view-box;transform-origin:108px 108px;animation:cat-tail 2.6s ease-in-out infinite}
+  .cat-head{transform-box:view-box;transform-origin:80px 70px;animation:cat-tilt 6s ease-in-out infinite}
+  .cat-ear-r{transform-box:view-box;transform-origin:104px 30px;animation:cat-twitch 7s ease-in-out infinite}
+  .cat-eye{transform-box:fill-box;transform-origin:center;animation:cat-blink 4.6s infinite}
+  .cat-pupil{animation:cat-look 7s ease-in-out infinite}
+  .cat-say{position:relative;margin-top:10px;padding:6px 12px;border-radius:16px;font-size:13px;font-weight:600;white-space:nowrap;color:#0f172a;background:#fff;border:1px solid rgba(100,116,139,.3);animation:cat-float 3s ease-in-out infinite}
+  .dark .cat-say{color:#fff;background:#26262b;border-color:rgba(255,255,255,.14)}
+  .cat-say::before{content:"";position:absolute;left:-5px;bottom:9px;width:9px;height:9px;background:inherit;border-left:1px solid;border-bottom:1px solid;border-color:inherit;transform:rotate(45deg)}
+  .pet .cat-svg{animation:cat-hop .5s ease-out}
+  @keyframes gate-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @keyframes cat-tail{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(13deg)}}
+  @keyframes cat-tilt{0%,30%,100%{transform:rotate(0)}40%,58%{transform:rotate(-5deg)}75%,88%{transform:rotate(4deg)}}
+  @keyframes cat-twitch{0%,90%,100%{transform:rotate(0)}93%{transform:rotate(9deg)}96%{transform:rotate(-3deg)}}
+  @keyframes cat-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+  @keyframes cat-look{0%,20%,100%{transform:translateX(0)}35%,50%{transform:translateX(-1.6px)}65%,80%{transform:translateX(1.6px)}}
+  @keyframes cat-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  @keyframes cat-hop{0%{transform:none}35%{transform:translateY(-10px) scale(1.04,.97)}70%{transform:translateY(0) scale(1.03,.96)}100%{transform:none}}
+  @media (prefers-reduced-motion:reduce){.gate-in,.cat-tail,.cat-head,.cat-ear-r,.cat-eye,.cat-pupil,.cat-say,.pet .cat-svg{animation:none!important}}
 </style>
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
@@ -204,23 +230,52 @@
   let data = null, curTab = 'all', curQ = '';
   const skeleton = () => { view.textContent = ''; view.append(NIV.skel(3)); };
 
-  // ต้องเข้าสู่ระบบก่อนค้นหา: แสดงการ์ดชวนล็อกอินแทนผลลัพธ์ (ไม่ยิง API เลย)
+  // ต้องเข้าสู่ระบบก่อนค้นหา: แสดงแมวดำ + การ์ดชวนล็อกอินแทนผลลัพธ์ (ไม่ยิง API เลย)
+  const CAT_SVG = '<svg class="cat-svg" viewBox="0 0 160 120" aria-hidden="true">'
+    + '<path class="cat-tail" d="M108 108C138 110 146 82 130 68"/>'
+    + '<ellipse class="cat-f" cx="80" cy="88" rx="24" ry="25"/>'
+    + '<ellipse class="cat-f" cx="68" cy="113" rx="8" ry="3.5"/><ellipse class="cat-f" cx="92" cy="113" rx="8" ry="3.5"/>'
+    + '<g class="cat-head">'
+    + '<polygon class="cat-f" points="54,36 56,12 73,25"/>'
+    + '<g class="cat-ear-r"><polygon class="cat-f" points="106,36 104,12 87,25"/><polygon points="102,29 102,19 95,25" fill="#6b2d44"/></g>'
+    + '<polygon points="58,30 58,19 66,25" fill="#6b2d44"/>'
+    + '<ellipse class="cat-f" cx="80" cy="46" rx="27" ry="22"/>'
+    + '<g class="cat-eye"><ellipse cx="68" cy="46" rx="5.5" ry="6.5" fill="#fbbf24"/><ellipse class="cat-pupil" cx="68" cy="46" rx="1.8" ry="5" fill="#0d0d0d"/></g>'
+    + '<g class="cat-eye"><ellipse cx="92" cy="46" rx="5.5" ry="6.5" fill="#fbbf24"/><ellipse class="cat-pupil" cx="92" cy="46" rx="1.8" ry="5" fill="#0d0d0d"/></g>'
+    + '<path d="M77 54h6l-3 3.5z" fill="#f472b6"/>'
+    + '<path d="M80 57.5v2M80 59.5q-4 3-7 0M80 59.5q4 3 7 0" stroke="#9ca3af" stroke-width="1.2" fill="none" stroke-linecap="round"/>'
+    + '<path d="M58 55 43 52M58 59 44 61M102 55l15-3M102 59l14 2" stroke="#9ca3af" stroke-width="1" stroke-linecap="round" opacity=".7"/>'
+    + '</g></svg>';
+
   function gate(expired) {
     token++;
     setTabs(null);
     view.textContent = '';
-    const box = el('div', 'mt-10 mx-auto max-w-sm text-center rounded-3xl p-8 bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10');
-    const ic = el('div', 'mx-auto w-14 h-14 rounded-full grid place-items-center bg-amber-500/15 text-amber-500');
-    ic.append(svg('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>', 'w-7 h-7'));
-    const go = el('a', 'mt-5 inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110', 'เข้าสู่ระบบ');
+    const wrap = el('div', 'gate-in mt-8 mx-auto max-w-sm');
+    const stage = el('div', 'relative z-10 flex items-start justify-center gap-2 -mb-[3px]');
+    const cat = el('button', 'cat-wrap');
+    cat.type = 'button'; cat.setAttribute('aria-label', 'ลูบแมว');
+    cat.innerHTML = CAT_SVG;
+    const msg = expired ? 'login ใหม่อีกทีนะ~' : 'ต้อง login ก่อนนะ~';
+    const say = el('div', 'cat-say', msg);
+    stage.append(cat, say);
+    let t;
+    cat.onclick = () => {
+      stage.classList.remove('pet'); void stage.offsetWidth; stage.classList.add('pet');
+      say.textContent = 'เมี๊ยว~'; clearTimeout(t);
+      t = setTimeout(() => { say.textContent = msg; stage.classList.remove('pet'); }, 1400);
+    };
+    const box = el('div', 'text-center rounded-3xl px-8 pb-8 pt-7 bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10');
+    const go = el('a', 'mt-5 inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110 active:scale-[.98] transition', 'เข้าสู่ระบบ');
     go.href = '/login?redirect=' + encodeURIComponent(location.pathname + location.search);
-    const cat = el('a', 'mt-3 inline-block text-sm font-medium text-amber-500 hover:underline', 'หรือดูหมวดหมู่ทั้งหมด');
-    cat.href = '/categories';
-    box.append(ic,
-      el('h2', 'mt-4 text-lg font-extrabold', expired ? 'เซสชันหมดอายุ' : 'เข้าสู่ระบบเพื่อค้นหา'),
+    const more = el('a', 'mt-3 inline-block text-sm font-medium text-amber-500 hover:underline', 'หรือดูหมวดหมู่ทั้งหมด');
+    more.href = '/categories';
+    box.append(
+      el('h2', 'text-lg font-extrabold', expired ? 'เซสชันหมดอายุ' : 'เข้าสู่ระบบเพื่อค้นหา'),
       el('p', 'mt-1 text-sm text-slate-500 dark:text-neutral-400', expired ? 'กรุณาเข้าสู่ระบบอีกครั้งเพื่อใช้งานการค้นหา' : 'สมาชิกเท่านั้นที่ค้นหาโพสต์ หมวดหมู่ และผู้ใช้ได้'),
-      go, cat);
-    view.append(box);
+      go, more);
+    wrap.append(stage, box);
+    view.append(wrap);
   }
 
   class NeedLogin extends Error {}
