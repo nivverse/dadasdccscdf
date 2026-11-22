@@ -268,15 +268,7 @@
     const msg = document.getElementById('lock-msg'), btn = document.getElementById('unlock-btn'), login = document.getElementById('login-link');
     const price = Number(panel.dataset.price) || 0;
     const q = `slug=${enc(slug)}&no=${no}&userId=${enc(s.userId || '')}`;
-    const topup = document.getElementById('topup-link'), bal = document.getElementById('lock-bal');
-    const show = (text, o = {}) => { msg.textContent = text; btn.classList.toggle('hidden', !o.unlock); login.classList.toggle('hidden', !o.needLogin); if (topup) topup.classList.toggle('hidden', !o.topup); };
-    // ยอด coin ของผู้อ่านใต้ข้อความล็อก (กระเป๋าเดียวกับ fnnz) — ถามไม่สำเร็จ = ไม่แสดง
-    const paintBal = async (force) => {
-      if (!bal || !authed || !window.NIV || !NIV.coinBalance) return null;
-      const n = await NIV.coinBalance(force); if (n == null) return null;
-      bal.replaceChildren(NIV.coinIcon(16), document.createTextNode(' คุณมี ' + n.toLocaleString('th-TH') + ' coin'));
-      bal.classList.remove('hidden'); bal.classList.add('inline-flex'); return n;
-    };
+    const show = (text, o = {}) => { msg.textContent = text; btn.classList.toggle('hidden', !o.unlock); login.classList.toggle('hidden', !o.needLogin); };
     const load = async () => {
       if (!authed) return show('ต้องเข้าสู่ระบบก่อนจึงจะปลดล็อกตอนนี้ได้', { needLogin: true });
       const r = await api('/api/novel/chapter?' + q);
@@ -284,17 +276,14 @@
       if (!r.ok) return show(r.data.error || 'โหลดตอนนี้ไม่สำเร็จ ลองรีเฟรชหน้านี้');
       if (!r.data.locked) return renderContent(r.data.chapter.content);
       show('ใช้ ' + price.toLocaleString('th-TH') + ' coin เพื่ออ่านตอนนี้ (ปลดล็อกครั้งเดียว อ่านซ้ำได้ตลอด)', { unlock: true });
-      const have = await paintBal();
-      if (have != null && have < price) show('Coin ไม่พอ ต้องใช้อีก ' + (price - have).toLocaleString('th-TH') + ' coin', { topup: true });
     };
     btn.addEventListener('click', async () => {
       btn.disabled = true;
       const r = await api('/api/novel/unlock', { method: 'POST', body: { userId: s.userId, slug, no } });
       btn.disabled = false;
-      if (r.status === 402) { paintBal(true); return show('Coin ไม่พอสำหรับปลดล็อกตอนนี้', { topup: true }); }
+      if (r.status === 402) return show('Coin ไม่พอสำหรับปลดล็อกตอนนี้');
       if (r.status === 401) return show('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่', { needLogin: true });
       if (!r.ok) return show(r.data.error || 'ปลดล็อกไม่สำเร็จ ลองใหม่อีกครั้ง', { unlock: true });
-      if (window.NIV && NIV.coinBalance) NIV.coinBalance(true);   // ยอดในเมนูอัปเดตตามที่หักไป
       load();
     });
     load();

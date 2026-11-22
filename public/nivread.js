@@ -33,36 +33,13 @@
         await sub.unsubscribe().catch(() => {});
       })(), new Promise((r) => setTimeout(r, 1500))]);
     } catch {}
-    ['token', 'userId', 'userEmail', 'userName', 'userAvatar', 'coinBalance', 'nv_nc', 'nv_nc_lock', 'nv_push_ep', 'nv_push_t'].forEach((k) => { try { localStorage.removeItem(k); } catch {} });
+    ['token', 'userId', 'userEmail', 'userName', 'userAvatar', 'nv_nc', 'nv_nc_lock', 'nv_push_ep', 'nv_push_t'].forEach((k) => { try { localStorage.removeItem(k); } catch {} });
     try { navigator.clearAppBadge?.(); } catch {}
     try { window.google?.accounts?.id?.disableAutoSelect(); } catch {}
     location.href = '/';
   };
   const userUrl = (id) => '/@' + encodeURIComponent(id);
   const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-  // ---------- Coin: กระเป๋าเดียวกับ fnnz (api.fnnz.art) · ไอคอนเหรียญโหลดเมื่อต้องใช้เท่านั้น ----------
-  let coinJs = null, coinReq = null;
-  const loadCoinIcon = () => coinJs || (coinJs = new Promise((done) => {
-    if (customElements.get('fnnz-coin')) return done();
-    const j = document.createElement('script'); j.src = '/coin-icon.js?v=20261123'; j.onload = j.onerror = () => done();
-    document.head.appendChild(j);
-  }));
-  const coinIcon = (size = 16, spin = false) => {
-    loadCoinIcon();
-    const c = document.createElement('fnnz-coin'); c.setAttribute('size', String(size)); if (!spin) c.setAttribute('static', '');
-    return c;
-  };
-  // ยอด coin ล่าสุด (คำขอเดียวต่อหน้า; force = ถามใหม่ เช่นหลังซื้อ/ปลดล็อก) · ไม่สำเร็จ = null
-  const coinBalance = (force) => {
-    const s = session(); if (!s.token || !s.userId) return Promise.resolve(null);
-    if (coinReq && !force) return coinReq;
-    coinReq = api('/api/get-coin-balance?id=' + encodeURIComponent(s.userId)).then((r) => {
-      if (r.ok && Number.isFinite(Number(r.data.coinBalance))) { const n = Number(r.data.coinBalance); lsSet('coinBalance', String(n)); const chip = document.getElementById('niv-coin-n'); if (chip) chip.textContent = n.toLocaleString('th-TH'); return n; }
-      return null;
-    }).catch(() => null);
-    return coinReq;
-  };
 
   // เรียก API พร้อมแนบ token อัตโนมัติ
   async function api(path, opts = {}) {
@@ -1822,7 +1799,7 @@ html:not(.niv-single) [data-view-slug] a[aria-label="อ่านโพสต์
     } catch {}
   }
 
-  window.NIV = { coinIcon, coinBalance, badgeEl, soundChipEl, sndStop, discSvg: DISC_SVG, skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam, repostWrap };
+  window.NIV = { badgeEl, soundChipEl, sndStop, discSvg: DISC_SVG, skel, skelHtml, API, session, logout, api, el, userUrl, avatarEl, postCardEl, videoEl, galleryEl, ago, reportDialog, REASONS, fbBtn, paintFollows, loadFollows, toast, countView, recordInterest, interestParam, repostWrap };
 
   // ---------- กันเบราว์เซอร์มือถือซูมเองตอนแตะช่องกรอก (ต้องไม่เล็กกว่า 16px) ----------
   if (!document.getElementById('niv-nozoom')) {
@@ -1938,7 +1915,6 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     const here = encodeURIComponent(location.pathname + location.search);
     const params = new URLSearchParams(location.search);
     const isMyProfile = (uid) => { let p = ''; try { p = decodeURIComponent(location.pathname); } catch {} return p === '/@' + uid || (location.pathname.replace(/\.html$/, '') === '/user' && params.get('id') === uid); };
-    const isNovel = path === '/novels' || path.startsWith('/novels/') || path === '/novel-library';  // หน้านิยาย: โชว์ยอด coin บนแถบบน
     const q0 = path === '/search' ? (params.get('q') || '') : '';
 
     const nav = [
@@ -1969,7 +1945,6 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
     <div class="hidden sm:block flex-1 max-w-md mx-auto">${searchBox('niv-q')}</div>
     <nav class="flex items-center gap-1.5" aria-label="เมนูด่วน">
       <a href="/search" class="hidden w-10 h-10 place-items-center rounded-xl text-slate-700 dark:text-neutral-200 hover:bg-slate-200/70 dark:hover:bg-white/10" aria-label="ค้นหา">${svg('search', 'w-5 h-5')}</a>
-      ${loggedIn && isNovel ? `<a id="niv-coin" href="/coins" class="inline-flex items-center gap-1.5 h-9 pl-2 pr-3 rounded-full border border-amber-500/40 bg-amber-500/10 text-sm font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/20" aria-label="Coin ของฉัน — เติม Coin"><span id="niv-coin-ic" class="w-5 h-5 flex-none"></span><span id="niv-coin-n" class="tabular-nums">–</span></a>` : ''}
       ${loggedIn ? `<a id="niv-bell" href="/notifications" class="relative inline-grid w-10 h-10 place-items-center rounded-xl text-slate-700 dark:text-neutral-200 hover:text-amber-500 hover:bg-slate-200/70 dark:hover:bg-white/10" aria-label="การแจ้งเตือน"${path === '/notifications' ? ' aria-current="page"' : ''}>${svg('bell', 'w-5 h-5')}<span id="niv-bell-n" class="nv-badge" hidden></span></a>` : ''}
       ${loggedIn
         ? `<a href="/write" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-md shadow-amber-500/25 hover:brightness-110">${svg('write', 'w-4 h-4')}เขียนโพสต์</a>`
@@ -2073,13 +2048,6 @@ html.nv-menu-open .sk-b::after,html.nv-menu-open .rp-bar,html.nv-menu-open .rp-g
       };
       fill({ id: s.userId, display_name: s.name, avatar_url: s.avatar });
       document.getElementById('niv-logout').addEventListener('click', logout);
-      // ชิป coin บนแถบบน (เฉพาะหน้านิยาย): แสดงยอดที่จำไว้ทันที แล้วถามยอดจริง
-      if (isNovel) {
-        const nEl = document.getElementById('niv-coin-n'), cached = ls('coinBalance');
-        if (cached !== '' && Number.isFinite(Number(cached))) nEl.textContent = Number(cached).toLocaleString('th-TH');
-        document.getElementById('niv-coin-ic').replaceChildren(coinIcon(20));
-        coinBalance();
-      }
       // ดึงชื่อ/รูปล่าสุดมาอัปเดตในเมนู
       api('/api/blog/me?userId=' + encodeURIComponent(s.userId)).then((r) => {
         if (r.status === 401) { logout(); return; }

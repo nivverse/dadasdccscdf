@@ -35,11 +35,9 @@ export async function onRequestGet({ request, env, params }) {
       <p class="text-lg font-bold">ตอนนี้ต้องปลดล็อกก่อนอ่าน</p>
       <p class="nv-lock-price">${fmtNum(c.price)} <span>coin</span></p>
       <p id="lock-msg" class="text-sm opacity-70" role="status">กำลังตรวจสอบสิทธิ์…</p>
-      <p id="lock-bal" class="hidden items-center justify-center gap-1 text-sm font-semibold" role="status"></p>
       <div class="nv-lock-btns">
         <button id="unlock-btn" type="button" class="${BTN} hidden w-full">${ICON.lock}ปลดล็อกตอนนี้</button>
         <a id="login-link" href="/login?redirect=${encodeURIComponent(path)}" class="${BTN} hidden w-full">เข้าสู่ระบบเพื่ออ่าน</a>
-        <a id="topup-link" href="/coins" class="${BTN} hidden w-full">เติม Coin</a>
       </div>
     </div>`;
 
