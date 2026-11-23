@@ -104,24 +104,35 @@
   });
 
   // ---------- ยอด Coin คงเหลือ (กดไปหน้าเติม /coins · อัปเดตเมื่อกลับมาที่แท็บ) ----------
-  // ถ้าอยากกำหนดตำแหน่งเอง ใส่ <a id="coin-bal"></a> ใน HTML ได้ ไม่งั้นสคริปต์จะสร้างไว้ข้างปุ่มแชร์ให้
+  // ถ้าอยากกำหนดตำแหน่งเอง ใส่ <a id="coin-bal"></a> ใน HTML ได้ ไม่งั้นสคริปต์จะสร้างไว้ข้างหัวข้อ "สารบัญ" (ไม่เจอหัวข้อค่อยไปข้างปุ่มแชร์)
   function mountCoin() {
     let hasUid = false; try { hasUid = !!localStorage.getItem('userId'); } catch {}
     if (!NS.authed() && !hasUid) return;
     let el = $('coin-bal');
     if (!el) {
-      // ตำแหน่ง: แถวหัว "สารบัญ" ฝั่งขวา ชิดซ้ายของลิงก์ "ตอนล่าสุด" (ไม่มีลิงก์นั้นก็ชิดขวาสุด)
-      const toc = $('toc'), anchor = toc || $('act-share');
-      if (!anchor || !anchor.parentElement) { console.warn('[coin] ไม่พบ #toc / #act-share / #coin-bal ให้วางชิป'); return; }
-      el = document.createElement('a'); el.id = 'coin-bal';
-      if (toc) { toc.after(el); el.style.marginLeft = 'auto'; el.style.paddingBlock = '.25rem'; }
-      else { (anchor.closest('.nv-actions') || anchor.parentElement).after(el); el.style.alignSelf = 'flex-start'; }
+      const toc = $('toc');   // หัวข้อ "สารบัญ" (h2#toc) — วางชิปไว้ข้างกัน แถวเดียวกัน กึ่งกลางแนวตั้ง
+      if (toc && toc.parentElement) {
+        let row = toc.parentElement;
+        if (!row.classList.contains('nv-toc-head')) {
+          row = document.createElement('div');
+          row.className = 'nv-toc-head flex items-center gap-2.5 min-w-0';
+          toc.parentElement.insertBefore(row, toc);
+          row.append(toc);
+        }
+        el = document.createElement('a'); el.id = 'coin-bal';
+        row.append(el);
+      } else {
+        const anchor = $('act-share'); if (!anchor || !anchor.parentElement) { console.warn('[coin] ไม่พบ #toc / #act-share / #coin-bal ให้วางชิป'); return; }
+        el = document.createElement('a'); el.id = 'coin-bal';
+        anchor.parentElement.append(el);
+      }
     }
     el.href = '/coins'; el.title = 'เติม Coin';
-    el.className = (el.className ? el.className + ' ' : '') + 'inline-flex items-center gap-1 text-amber-500 font-semibold';
+    // ชิปทรงเม็ดยา สูงเท่าตัวอักษรหัวข้อ: ไอคอน 18px + ตัวเลข text-sm ตรงกลางแนวตั้งกับคำว่า "สารบัญ"
+    el.className = 'inline-flex items-center gap-1.5 shrink-0 leading-none text-sm text-amber-500 font-semibold tabular-nums rounded-full border border-amber-500/30 bg-amber-500/10 pl-1.5 pr-2.5 py-1 hover:bg-amber-500/20 transition-colors';
     el.setAttribute('aria-label', 'ยอด Coin คงเหลือ');
     // เหรียญตัวเดียวกับหน้า art: เว็บคอมโพเนนต์ <fnnz-coin> จาก /coin-icon.js (โหลดเองถ้าหน้านี้ยังไม่ได้ใส่)
-    if (!customElements.get('fnnz-coin') && !document.querySelector('script[src^="/coin-icon.js"]')) {
+    if (!customElements.get('fnnz-coin') && !document.querySelector('script[src="/coin-icon.js"]')) {
       const sc = document.createElement('script'); sc.src = '/coin-icon.js'; document.head.append(sc);
     }
     const icon = document.createElement('fnnz-coin');
@@ -139,7 +150,7 @@
       fb.setAttribute('viewBox', '0 0 24 24'); fb.setAttribute('width', '18'); fb.setAttribute('height', '18'); fb.setAttribute('aria-hidden', 'true');
       fb.innerHTML = '<circle cx="12" cy="12" r="10" fill="#f59e0b"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="1.5"/>';
       icon.replaceWith(fb);
-    }, 3000);
+    }, 1500);
 
     // เรียก API เดียวกับหน้า art ทุกอย่าง: GET /api/get-coin-balance?id=<userId> + Authorization: Bearer <token> → { success, coinBalance }
     const lsGet = (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
@@ -151,10 +162,6 @@
       return [...new Set([(m && m.content || '').replace(/\/+$/, ''), 'https://api.fnnz.art'].filter(Boolean))];
     };
     const refresh = async () => {
-      // ใช้ตัวช่วยเดียวกับหน้า /coins ถ้ามี (nivread.js ใหม่) · ไม่มีก็ยิง API ตรงตามด้านล่าง
-      if (typeof NIV.coinBalance === 'function') {
-        try { const n = await NIV.coinBalance(true); if (n != null) { paint(n); return; } } catch {}
-      }
       const id = uid(); if (!id) { console.warn('[coin] ไม่พบ userId'); return; }
       const headers = token() ? { Authorization: 'Bearer ' + token() } : {};
       for (const base of bases()) {
