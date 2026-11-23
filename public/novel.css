@@ -161,7 +161,7 @@ html[data-par="off"] .rd-pb { display: none; }
 .rd-prog i { display: block; height: 100%; transform-origin: 0 50%; transform: scaleX(0); background: linear-gradient(90deg, var(--nv-amber), var(--nv-amber2)); will-change: transform; }
 
 /* แถบเครื่องมือล่าง: ซ่อน/แสดงด้วย transform ตามทิศการเลื่อน */
-.rd-bar { position: fixed; z-index: 55; left: 50%; bottom: calc(.75rem + env(safe-area-inset-bottom, 0px)); width: min(94vw, 26rem); transform: translate3d(-50%, 0, 0); transition: transform .38s var(--nv-ease), opacity .3s;
+.rd-bar { position: fixed; z-index: 45; left: 50%; bottom: calc(.75rem + env(safe-area-inset-bottom, 0px)); width: min(94vw, 26rem); transform: translate3d(-50%, 0, 0); transition: transform .38s var(--nv-ease), opacity .3s;
   display: flex; align-items: center; justify-content: space-between; gap: .25rem; padding: .35rem; border-radius: 1.1rem;
   background: rgba(255, 255, 255, .88); border: 1px solid rgba(148, 163, 184, .35); box-shadow: 0 10px 34px -8px rgba(0, 0, 0, .3); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 html.dark .rd-bar { background: rgba(23, 23, 23, .86); border-color: rgba(255, 255, 255, .12); }
@@ -173,10 +173,17 @@ html.dark .rd-bar { background: rgba(23, 23, 23, .86); border-color: rgba(255, 2
 .rd-bar [aria-disabled="true"] { opacity: .3; pointer-events: none; }
 .rd-bar .rd-badge { position: absolute; top: .15rem; right: .3rem; min-width: 1rem; height: 1rem; padding: 0 .25rem; border-radius: 999px; background: var(--nv-amber); color: #fff; font-size: 10px; font-weight: 700; line-height: 1rem; text-align: center; }
 
-/* มือถือ: เว็บมีแถบเมนูล่างของตัวเอง (#niv-tabbar สูง 3.5rem + safe area) ให้แถบเครื่องมือลอยอยู่เหนือมัน */
-@media (max-width: 639px) {
+/* แถบเมนูล่างของเว็บ (#niv-tabbar) มี 2 แบบ จึงต้องยกแถบเครื่องมือหนีให้ถูกแบบ — z-index ของ .rd-bar (45) ต่ำกว่าเมนูข้าง (50) กันลอยทับเมนู
+   · จอ < 500px: แถบเต็มความกว้างสูง 3.5rem ติดขอบล่าง → ลอยเหนือมัน
+   · จอ 500–1023px: tabbar เป็นแคปซูลลอยสูง 56px ห่างขอบล่าง 16px → ลอยเหนือแคปซูล
+   · จอ ≥ 1024px: tabbar ไปอยู่แนวตั้งซ้าย ไม่ชนกัน ใช้ค่าปกติ */
+@media (max-width: 499px) {
   .rd-bar { bottom: calc(4.4rem + env(safe-area-inset-bottom, 0px)); }
   .nv-toast { bottom: calc(8.2rem + env(safe-area-inset-bottom, 0px)); }
+}
+@media (min-width: 500px) and (max-width: 1023px) {
+  .rd-bar { bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); }
+  .nv-toast { bottom: calc(9.6rem + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* ตัวเลือกในแผงตั้งค่า */
