@@ -185,6 +185,16 @@ html.dark .rd-bar { background: rgba(23, 23, 23, .86); border-color: rgba(255, 2
 .rd-bar   { bottom: calc(var(--niv-tab-top) + .75rem); }
 .nv-toast { bottom: calc(var(--niv-tab-top) + 4.8rem); }
 
+/* หน้าอ่าน (มี #rd-bar): ซ่อน #niv-tabbar ทุกขนาดจอ ให้เหลือแถบเครื่องมืออ่านแถบเดียว ไม่ซ้อนกัน
+   · ตัวแปรเลื่อนเหลือแค่ safe area → แถบเครื่องมือ/ทอสต์ลงมาอยู่ล่างสุด
+   · เนื้อหาเว้นล่างให้พ้นแถบเครื่องมือ และเลิกเว้นซ้ายของ tabbar แนวตั้งบนคอม
+   · จอ ≥ 500px เว็บซ่อนแถบ header บนไว้เพราะใช้ tabbar แทน → เมื่อซ่อน tabbar ต้องคืนแถบบนให้ (ไม่งั้นไม่มีทางไปเมนูอื่น)
+   ใช้ :has() จึงไม่ต้องแก้ไฟล์ฝั่งเซิร์ฟเวอร์ (รองรับ Chrome/Edge 105+, Safari 15.4+, Firefox 121+) */
+html:has(#rd-bar) { --niv-tab-top: env(safe-area-inset-bottom, 0px); }
+html:has(#rd-bar) #niv-tabbar { display: none !important; }
+html:has(#rd-bar) body { padding-left: 0; padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
+html:has(#rd-bar) #main-header .niv-topbar { display: block; }
+
 /* ตัวเลือกในแผงตั้งค่า */
 .rd-set { display: grid; gap: 1.1rem; }
 .rd-set h4 { font-size: .8rem; opacity: .65; margin: 0 0 .45rem; font-weight: 500; }
