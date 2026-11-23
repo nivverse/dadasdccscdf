@@ -103,6 +103,39 @@
     NS.toast(next ? 'ขอบคุณสำหรับคะแนน' : 'ถอนคะแนนแล้ว');
   });
 
+  // ---------- ยอด Coin คงเหลือ (กดไปหน้าเติม /coins · อัปเดตเมื่อกลับมาที่แท็บ) ----------
+  // ถ้าอยากกำหนดตำแหน่งเอง ใส่ <a id="coin-bal"></a> ใน HTML ได้ ไม่งั้นสคริปต์จะสร้างไว้ข้างปุ่มแชร์ให้
+  function mountCoin() {
+    if (!NS.authed()) return;
+    let el = $('coin-bal');
+    if (!el) {
+      const anchor = $('act-share'); if (!anchor || !anchor.parentElement) return;
+      el = document.createElement('a'); el.id = 'coin-bal';
+      anchor.parentElement.append(el);
+    }
+    el.href = '/coins'; el.title = 'เติม Coin';
+    el.className = (el.className ? el.className + ' ' : '') + 'inline-flex items-center gap-1 text-amber-500 font-semibold';
+    el.setAttribute('aria-label', 'ยอด Coin คงเหลือ');
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('viewBox', '0 0 24 24'); icon.setAttribute('width', '18'); icon.setAttribute('height', '18'); icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = '<circle cx="12" cy="12" r="10" fill="currentColor"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>';
+    const val = document.createElement('span'); val.className = 'nv-coin-n';
+    const paint = (n) => { val.textContent = NS.num(Math.max(0, Number(n) || 0)); };
+    const s0 = NIV.session(); paint(s0 && s0.coinBalance);         // โชว์ค่าที่ล็อกอินเก็บไว้ก่อน แล้วค่อยซิงก์ของจริง
+    el.replaceChildren(icon, val);
+    const refresh = async () => {
+      const s = NIV.session(); if (!s || !s.userId) return;
+      try {
+        const d = await NIV.api('/api/get-coin-balance?id=' + encodeURIComponent(s.userId));
+        if (d && d.success !== false && d.coinBalance != null) paint(d.coinBalance);
+      } catch {}
+    };
+    refresh();
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+    addEventListener('pageshow', (e) => { if (e.persisted) refresh(); });
+  }
+  mountCoin();
+
   // ---------- อ่านต่อ ----------
   const start = $('btn-start');
   const tocNos = new Set([...document.querySelectorAll('.nv-toc a[data-no]')].map((a) => Number(a.dataset.no)));
