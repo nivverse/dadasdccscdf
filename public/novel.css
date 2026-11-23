@@ -173,18 +173,17 @@ html.dark .rd-bar { background: rgba(23, 23, 23, .86); border-color: rgba(255, 2
 .rd-bar [aria-disabled="true"] { opacity: .3; pointer-events: none; }
 .rd-bar .rd-badge { position: absolute; top: .15rem; right: .3rem; min-width: 1rem; height: 1rem; padding: 0 .25rem; border-radius: 999px; background: var(--nv-amber); color: #fff; font-size: 10px; font-weight: 700; line-height: 1rem; text-align: center; }
 
-/* แถบเมนูล่างของเว็บ (#niv-tabbar) มี 2 แบบ จึงต้องยกแถบเครื่องมือหนีให้ถูกแบบ — z-index ของ .rd-bar (45) ต่ำกว่าเมนูข้าง (50) กันลอยทับเมนู
-   · จอ < 500px: แถบเต็มความกว้างสูง 3.5rem ติดขอบล่าง → ลอยเหนือมัน
-   · จอ 500–1023px: tabbar เป็นแคปซูลลอยสูง 56px ห่างขอบล่าง 16px → ลอยเหนือแคปซูล
-   · จอ ≥ 1024px: tabbar ไปอยู่แนวตั้งซ้าย ไม่ชนกัน ใช้ค่าปกติ */
-@media (max-width: 499px) {
-  .rd-bar { bottom: calc(4.4rem + env(safe-area-inset-bottom, 0px)); }
-  .nv-toast { bottom: calc(8.2rem + env(safe-area-inset-bottom, 0px)); }
-}
-@media (min-width: 500px) and (max-width: 1023px) {
-  .rd-bar { bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); }
-  .nv-toast { bottom: calc(9.6rem + env(safe-area-inset-bottom, 0px)); }
-}
+/* ซ้อนบน #niv-tabbar: --niv-tab-top = ความสูงจากขอบล่างจอถึง "ขอบบน" ของ tabbar ในแต่ละขนาดจอ
+   (ต้องตรงกับ CSS ของ #niv-tabbar ใน nivread.js — ถ้า nivread.js ประกาศตัวแปรนี้เอง ค่าของมันจะทับบล็อกนี้)
+   สิ่งที่ลอยอยู่ล่างจอ (แถบเครื่องมืออ่าน / ทอสต์) วางตัวเองไว้เหนือ tabbar เสมอ โดยตัว tabbar ไม่ถูกแตะ หน้าตาเหมือนเดิมทุกขนาดจอ
+   · < 500px  : แถบเต็มความกว้าง สูง 3.5rem ติดขอบล่าง
+   · 500–1023 : แคปซูลลอย สูง 56px ห่างขอบล่าง 16px  (= 72px)
+   · ≥ 1024   : tabbar ไปอยู่แนวตั้งซ้าย ไม่กินพื้นที่ล่าง (= 0) */
+:root { --niv-tab-top: calc(3.5rem + env(safe-area-inset-bottom, 0px)); }
+@media (min-width: 500px)  { :root { --niv-tab-top: calc(72px + env(safe-area-inset-bottom, 0px)); } }
+@media (min-width: 1024px) { :root { --niv-tab-top: 0px; } }
+.rd-bar   { bottom: calc(var(--niv-tab-top) + .75rem); }
+.nv-toast { bottom: calc(var(--niv-tab-top) + 4.8rem); }
 
 /* ตัวเลือกในแผงตั้งค่า */
 .rd-set { display: grid; gap: 1.1rem; }
