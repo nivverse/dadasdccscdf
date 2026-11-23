@@ -179,6 +179,30 @@
   }
   mountCoin();
 
+  // ---------- ตอนที่จ่ายแล้ว: เอากุญแจ+ราคาออกจากสารบัญ ----------
+  // หน้านี้ถูกสร้างฝั่งเซิร์ฟเวอร์โดยไม่รู้ว่าใครดู จึงวาดกุญแจให้ทุกตอนที่มีราคา · ฝั่งเบราว์เซอร์ถามเซิร์ฟเวอร์ว่าบัญชีนี้จ่ายตอนไหนแล้ว
+  // (เช็คจาก chapter_unlocks จริง) แล้วลบกุญแจเฉพาะตอนนั้น · เหลือไอคอนหูฟังไว้ · ไม่ล็อกอิน/ถามไม่สำเร็จ = ไม่ลบอะไร
+  let unlockBusy = false;
+  async function hideUnlockedLocks() {
+    if (unlockBusy || !NS.authed()) return;
+    const rows = [...document.querySelectorAll('.nv-toc a[data-no]')].filter((a) => a.querySelector('.nv-meta svg'));
+    if (!rows.length) return;
+    const nos = rows.map((a) => Number(a.dataset.no)).filter(Number.isFinite);
+    unlockBusy = true;
+    try {
+      const s = NIV.session(), lo = Math.min(...nos), hi = Math.max(...nos);
+      const r = await NS.call('/api/novel/get?slug=' + encodeURIComponent(slug) + '&from=' + lo + '&to=' + hi + '&limit=200&userId=' + encodeURIComponent(s.userId));
+      const un = new Set(r.ok && Array.isArray(r.data.unlocked) ? r.data.unlocked.map(Number) : []);
+      rows.forEach((a) => {
+        if (!un.has(Number(a.dataset.no))) return;
+        a.querySelectorAll('.nv-meta > span').forEach((sp) => { if (sp.querySelector('svg') && !sp.classList.contains('nv-aud-i')) sp.remove(); });
+      });
+    } finally { unlockBusy = false; }
+  }
+  hideUnlockedLocks();
+  addEventListener('pageshow', (e) => { if (e.persisted) hideUnlockedLocks(); });   // กดย้อนกลับจากหน้าอ่านแล้วหน้าถูกกู้จากแคช
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) hideUnlockedLocks(); });
+
   // ---------- อ่านต่อ ----------
   const start = $('btn-start');
   const tocNos = new Set([...document.querySelectorAll('.nv-toc a[data-no]')].map((a) => Number(a.dataset.no)));
