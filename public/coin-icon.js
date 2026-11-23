@@ -96,10 +96,15 @@
           .edges { position:absolute; inset:0; transform-style:preserve-3d; }
           .edge  { position:absolute; inset:0; border-radius:50%; background:${edgeBg}; }
 
-          /* โลโก้ดุนนูนสีทองเข้ม: ย้อมดำแล้วคูณสี ใส่ขอบสว่างด้านล่างให้ดูเป็นรอยปั๊ม */
+          /* โลโก้ทองดุนนูน: คงสีทองของไฟล์ SVG ไว้ ใส่ขอบน้ำตาลเข้มรอบตัว (ให้อ่านออกบนหน้าเหรียญทอง)
+                 + เงามืดล่างขวา / ขอบสว่างบนซ้าย ให้ดูเป็นรอยปั๊มนูน */
           img { width:${logo}px; height:auto; max-height:${logo * 1.2}px; object-fit:contain; position:relative; z-index:2;
-                filter:brightness(0) drop-shadow(0 ${Math.max(0.5, s * 0.012)}px 0 rgba(255,246,190,.85));
-                opacity:.8; mix-blend-mode:multiply; user-select:none; }
+                filter:
+                  drop-shadow(0 0 ${Math.max(0.4, s * 0.008)}px #3d2000)
+                  drop-shadow(0 0 ${Math.max(0.4, s * 0.008)}px #3d2000)
+                  drop-shadow(${Math.max(0.5, s * 0.014)}px ${Math.max(0.5, s * 0.016)}px ${Math.max(0.5, s * 0.014)}px rgba(60,30,0,.65))
+                  drop-shadow(${-Math.max(0.3, s * 0.006)}px ${-Math.max(0.3, s * 0.006)}px 0 rgba(255,246,190,.7));
+                user-select:none; }
 
           /* แสงสะท้อนบนหน้าเหรียญ: สว่างเมื่อหันเข้าหาแสง จางเมื่อเฉียง */
           .lit { position:absolute; inset:0; z-index:3; pointer-events:none; opacity:.55;
