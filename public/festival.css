@@ -1,0 +1,195 @@
+/* /festival.css — ธีมเทศกาลแบบมินิมอล (เบาเครื่อง) ใช้ได้ทุกเทศกาล
+   หลักการ: "ไม่ทับสีของคอมโพเนนต์เดิม" — ปุ่ม ข้อความ รีโพสต์ ฯลฯ คงสีของเว็บไว้ทั้งหมด จึงอ่านออกเสมอ
+   ธีมเปลี่ยนแค่: พื้นหลังอุ่น ๆ + ของตกแต่งบนสุดของหน้า + ตัวเล็กท้ายหน้า
+   ทุกกฎขึ้นต้นด้วย html[data-festival] — ถอดแอตทริบิวต์ออกแล้วเว็บกลับเป็นปกติ
+   animation ทุกตัวใช้ transform/opacity เท่านั้น และไม่มีตัวไหนลอยบนเนื้อหา
+
+   โครงไฟล์:
+     1) ส่วนกลาง (ใช้ร่วมทุกเทศกาล) — อ่านค่าสีจากตัวแปร --fx-*
+     2) บล็อกของแต่ละเทศกาล: html[data-festival="<id>"] { ตัวแปร } + สไตล์ตัวตกแต่งของเทศกาลนั้น
+   เพิ่มเทศกาลใหม่ = เพิ่มบล็อกข้อ 2 แล้วเพิ่มรายการใน /festival.js */
+
+/* ===================== 1) ส่วนกลาง ===================== */
+html[data-festival]{accent-color:var(--fx-accent);scrollbar-color:var(--fx-scroll) transparent}
+html[data-festival] body{background-color:var(--fx-bg)!important}
+html[data-festival] ::selection{background:rgb(var(--fx-rgb) / .4)}
+
+/* พื้นหลัง: แสงจาง ๆ มุมบน (layer fixed เดียว ไม่ repaint ตอนเลื่อน) */
+.fx-glow{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(700px 380px at 50% -8%,rgb(var(--fx-glow) / var(--fx-glow-a)),transparent 70%)}
+
+/* ตัวตกแต่ง (สร้างโดย /festival.js) — ซ่อนทันทีเมื่อปิดธีม */
+.fx-deco{display:none}
+html[data-festival] .fx-deco{display:block}
+
+/* ตัวเล็กท้ายหน้า */
+html[data-festival] .fx-ft{display:flex;justify-content:flex-end;padding:0 1.5rem;margin:1rem 0 -.6rem;pointer-events:none}
+.fx-ft,.fx-ft *,.fx-ft :after,.fx-ft :before{box-sizing:border-box}
+@keyframes fx-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* ปุ่มเปิด/ปิดธีมในเมนูข้าง */
+#fx-toggle .fx-state{margin-left:auto;font-size:.72rem;font-weight:600;padding:.1rem .55rem;border-radius:999px;border:1px solid rgba(148,163,184,.5);color:#64748b}
+html[data-festival] #fx-toggle .fx-state{color:var(--fx-pill);border-color:rgb(var(--fx-pill-bd) / .55);background:rgb(var(--fx-rgb) / .12)}
+#fx-toggle .fx-on{display:none}
+html[data-festival] #fx-toggle .fx-on{display:inline}
+html[data-festival] #fx-toggle .fx-off{display:none}
+
+/* ===================== 2) ฮาโลวีน ===================== */
+html[data-festival="halloween"]{
+  --fx-bg:#fffaf3;
+  --fx-glow:251 146 60; --fx-glow-a:.14;
+  --fx-rgb:249 115 22;
+  --fx-accent:#f97316;
+  --fx-scroll:#c2410c;
+  --fx-pill:#c2410c; --fx-pill-bd:251 146 60;
+  --hw-web:#9a3412;
+  --hw-gh:#7c2d12;
+}
+html[data-festival="halloween"].dark{
+  --fx-bg:#110b07;
+  --fx-glow:234 88 12; --fx-glow-a:.16;
+  --fx-pill:#fed7aa;
+  --hw-web:#fdba74;
+  --hw-gh:#9a3412;
+}
+
+/* ใยแมงมุมมุมบน: absolute ที่ต้นหน้า เลื่อนแล้วหายไปเอง */
+.hw-web{position:absolute;top:0;z-index:31;width:clamp(60px,11vw,120px);height:auto;color:var(--hw-web);opacity:.4;pointer-events:none}
+.hw-web-l{left:0}
+.hw-web-r{right:0;transform:scaleX(-1)}
+.hw-web path{fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:round}
+
+/* แมงมุมห้อยลงมาจากใยฝั่งซ้าย: ไหล่ขึ้นลงช้า ๆ (transform อย่างเดียว) */
+.hw-spider{position:absolute;top:-68px;left:clamp(34px,7vw,70px);width:18px;height:90px;color:var(--hw-web);
+  opacity:.65;pointer-events:none;z-index:31;animation:hw-drop 6s ease-in-out infinite alternate}
+.hw-spider line,.hw-spider path{stroke:currentColor;stroke-width:1;stroke-linecap:round;fill:none}
+.hw-spider circle{fill:currentColor}
+@keyframes hw-drop{from{transform:translateY(0)}to{transform:translateY(18px)}}
+
+/* ผีตัวเล็กท้ายหน้า (ดัดแปลงจาก "Little Halloween" ของ khadkamhn): ลอยขึ้นลงเบา ๆ ไม่บังเนื้อหา */
+html[data-festival="halloween"] .fx-ft{--gf:#fff7ed;--ge:#fbbf24}
+.hw-gm{width:30px;height:44px;opacity:.9;animation:fx-bob 4s ease-in-out infinite}
+.hw-g-head{position:relative;z-index:1;width:25px;height:25px;border-radius:50%;background:var(--hw-gh)}
+.hw-g-skull{position:absolute;left:2px;bottom:2px;width:16px;height:16px;border-radius:50%;
+  color:var(--gf);background:var(--gf);animation:hw-skull 4s infinite}
+.hw-g-skull:before,.hw-g-skull:after,.hw-g-eye:before,.hw-g-body:before,.hw-g-body:after,.hw-g-legs:before{content:'';position:absolute}
+.hw-g-skull:before{top:9px;left:50%;width:0;height:0;z-index:1;margin-left:-2px;border:2px solid transparent;border-bottom-color:var(--hw-gh)}
+.hw-g-skull:after{top:14px;left:50%;width:1px;height:4px;margin-left:-1px;background:var(--gf);
+  box-shadow:2px 0,-2px 0,4px 0,-4px 0,-3px -2px,-1px -2px,1px -2px,3px -2px}
+.hw-g-eyes{position:relative;width:16px;height:16px;overflow:hidden;border-radius:50%}
+.hw-g-eye{position:absolute;top:5px;width:5px;height:5px;border-radius:50%;background:var(--ge);
+  border:1px solid var(--hw-gh);border-right-width:2px}
+.hw-g-eye:before{top:-1px;left:-1px;width:5px;height:3px;background:var(--gf);border-radius:5px 5px 0 0;animation:hw-blink 4s infinite}
+.hw-g-eye.l{left:1px}
+.hw-g-eye.r{right:1px}
+.hw-g-body{position:relative;top:-3px;width:24px;height:17px;background:var(--hw-gh);border-radius:10px 10px 2px 2px}
+.hw-g-body:before,.hw-g-body:after{top:3px;width:4px;height:12px;background:var(--hw-gh)}
+.hw-g-body:before{left:1px;border-radius:100% 0 0 2px;transform:rotate(10deg);animation:hw-hand-l 4s infinite}
+.hw-g-body:after{right:1px;border-radius:0 100% 2px 0;transform:rotate(-10deg);animation:hw-hand-r 4s infinite}
+.hw-g-legs{position:relative;top:-3px;left:50%;width:21px;height:10px;overflow:hidden;margin-left:-13px;border-bottom:1px solid rgba(0,0,0,.2)}
+.hw-g-legs:before{top:0;left:-7px;width:60px;height:10px;
+  background-image:linear-gradient(-495deg,var(--hw-gh) 4px,transparent 0),linear-gradient(-45deg,transparent 4px,var(--hw-gh) 0);
+  background-size:4px 8px;background-repeat:repeat-x;animation:hw-legs 4s infinite}
+@keyframes hw-skull{0%,100%{transform:translate(0,0)}25%{transform:translate(2px,1px)}75%{transform:translate(3px,-1px)}}
+@keyframes hw-blink{0%,40%,100%{transform:translateY(-4px)}50%,60%{transform:translateY(0)}}
+@keyframes hw-hand-l{0%,100%{transform:rotate(10deg) translateX(0)}50%{transform:rotate(10deg) translateX(-3px)}}
+@keyframes hw-hand-r{0%,100%{transform:rotate(-10deg) translateX(0)}50%{transform:rotate(-10deg) translateX(3px)}}
+@keyframes hw-legs{0%,100%{transform:translateX(0)}50%{transform:translateX(-18px)}}
+
+/* ===================== 2) คริสต์มาส (ดำอมแดง + ทอง นุ่ม ๆ พรีเมียม) ===================== */
+html[data-festival="christmas"]{
+  --fx-bg:#fff6f4;
+  --fx-glow:244 63 94; --fx-glow-a:.10;
+  --fx-rgb:220 38 38;
+  --fx-accent:#dc2626;
+  --fx-scroll:#b91c1c;
+  --fx-pill:#b91c1c; --fx-pill-bd:239 68 68;
+  --xm-gold:#b8862b;
+  --xm-red:#dc2626;
+  --xm-tree:#be123c;
+  --xm-orn:#fff7ed;
+  --xm-snow:rgb(190 110 120 / .5);
+  --xm-deer:#92613f;
+  --xm-fly-top:60px;      /* ระยะจากขอบบน — ปรับให้อยู่ใต้แถบปุ่มด้านบน */
+  --xm-fly-z:25;          /* 25 = ลอยทับเนื้อหา (กดทะลุได้) · 0 = บินอยู่หลังเนื้อหา */
+}
+html[data-festival="christmas"].dark{
+  --fx-bg:#130909;
+  --fx-glow:220 38 38; --fx-glow-a:.17;
+  --fx-pill:#fecaca;
+  --xm-gold:#e8c27a;
+  --xm-red:#e11d48;
+  --xm-tree:#fecdd3;
+  --xm-orn:#e11d48;
+  --xm-snow:rgb(255 255 255 / .6);
+  --xm-deer:#d4b08c;
+}
+
+/* ซานต้า + กวางเรนเดียร์: บินผ่านจอ ~15 วิ แล้วเว้นช่วงยาว (รอบละ 75 วิ) · อยู่ใต้แถบปุ่มบน กดทะลุได้ ไม่บังปุ่ม
+   ชั้นนอกเลื่อนแนวนอน ชั้นในโยกขึ้นลงเบา ๆ — transform อย่างเดียว */
+.xm-flywrap{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + var(--xm-fly-top));height:64px;
+  z-index:var(--xm-fly-z);overflow:hidden;pointer-events:none}
+.xm-fly{position:absolute;left:0;top:0;width:clamp(96px,15vw,150px);opacity:.78;
+  animation:xm-fly 75s linear 4s infinite backwards}
+.xm-fly svg{display:block;width:100%;height:auto;animation:xm-bobfly 3.2s ease-in-out infinite}
+@keyframes xm-fly{0%{transform:translateX(-180px)}20%,100%{transform:translateX(calc(100vw + 40px))}}
+@keyframes xm-bobfly{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-6px) rotate(1.5deg)}}
+.xm-d{fill:var(--xm-deer)}
+.xm-ant,.xm-leg{fill:none;stroke:var(--xm-deer);stroke-linecap:round}
+.xm-ant{stroke-width:1.3}
+.xm-leg{stroke-width:2.2}
+.xm-nose{fill:#ef4444}
+.xm-rein{fill:none;stroke:var(--xm-gold);stroke-width:.9}
+.xm-run,.xm-curl{fill:none;stroke:var(--xm-gold);stroke-width:2;stroke-linecap:round}
+.xm-sled{fill:var(--xm-red)}
+.xm-sack{fill:var(--xm-gold)}
+.xm-coat,.xm-hat{fill:#dc2626}
+.xm-face{fill:#fde7d4}
+.xm-beard,.xm-brim{fill:#fff}
+
+/* หิมะจาง ๆ 3 ชั้น: layer fixed อยู่หลังเนื้อหา (z-index:0 ต่ำกว่า main/header) กดทะลุได้
+   เลื่อนทีละ "1 กระเบื้อง" เต็ม ๆ จึงวนต่อเนื่องไม่กระตุก ใช้ transform อย่างเดียว
+   อยากให้หิมะลอยทับเนื้อหาด้วย → เปลี่ยน z-index ของ .xm-snowwrap เป็น 30 */
+.xm-snowwrap{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.xm-snow{position:absolute;left:0;right:0;height:calc(100% + var(--t));will-change:transform;animation:xm-fall linear infinite}
+@keyframes xm-fall{to{transform:translateY(var(--t))}}
+.xm-s1{--t:280px;top:-280px;background-size:280px 280px;opacity:.55;animation-duration:42s}
+.xm-s1{background-image:
+    radial-gradient(circle 1.6px at 20px 40px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 90px 170px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 150px 60px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 210px 230px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 250px 110px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 60px 250px,var(--xm-snow),transparent),
+    radial-gradient(circle 1.6px at 180px 140px,var(--xm-snow),transparent)}
+.xm-s2{--t:340px;top:-340px;background-size:340px 340px;opacity:.7;animation-duration:28s}
+.xm-s2{background-image:
+    radial-gradient(circle 2.4px at 40px 80px,var(--xm-snow),transparent),
+    radial-gradient(circle 2.4px at 130px 250px,var(--xm-snow),transparent),
+    radial-gradient(circle 2.4px at 220px 30px,var(--xm-snow),transparent),
+    radial-gradient(circle 2.4px at 300px 160px,var(--xm-snow),transparent),
+    radial-gradient(circle 2.4px at 90px 320px,var(--xm-snow),transparent),
+    radial-gradient(circle 2.4px at 260px 290px,var(--xm-snow),transparent)}
+.xm-s3{--t:420px;top:-420px;background-size:420px 420px;opacity:.6;animation-duration:19s}
+.xm-s3{background-image:
+    radial-gradient(circle 3.4px at 70px 120px,var(--xm-snow),transparent),
+    radial-gradient(circle 3.4px at 240px 340px,var(--xm-snow),transparent),
+    radial-gradient(circle 3.4px at 360px 60px,var(--xm-snow),transparent),
+    radial-gradient(circle 3.4px at 150px 400px,var(--xm-snow),transparent),
+    radial-gradient(circle 3.4px at 330px 230px,var(--xm-snow),transparent)}
+
+/* ต้นไม้เล็กท้ายหน้า (SVG): ลอยขึ้นลงเบา ๆ ไม่บังเนื้อหา */
+.xm-tree{width:30px;height:44px;opacity:.92;animation:fx-bob 4s ease-in-out infinite}
+.xm-tt{fill:var(--xm-tree)}
+.xm-trunk{fill:var(--xm-gold);opacity:.75}
+.xm-gar{fill:none;stroke:var(--xm-gold);stroke-width:1;stroke-linecap:round}
+.xm-ob{fill:var(--xm-orn)}
+.xm-og{fill:var(--xm-gold)}
+.xm-star{fill:var(--xm-gold);animation:xm-twinkle 2.4s ease-in-out infinite}
+@keyframes xm-twinkle{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* เคารพผู้ที่ลดการเคลื่อนไหว: ทุกอย่างนิ่ง */
+@media (prefers-reduced-motion:reduce){
+  .hw-spider,.xm-tree,.xm-star,.fx-ft *,.fx-ft :before,.fx-ft :after{animation:none!important}
+  .xm-snowwrap,.xm-flywrap{display:none}
+}

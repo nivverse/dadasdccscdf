@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+<meta charset="UTF-8">
+<script src="/i18n.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>จัดการนิยาย | nivread</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.ico?v=20261120" sizes="any">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d0d0d">
+<script>
+  if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+  else document.documentElement.classList.add('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Kanit',sans-serif}</style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white min-h-screen flex flex-col relative overflow-x-hidden">
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+  <div class="absolute top-1/2 -right-40 w-96 h-96 bg-orange-500/20 opacity-30 dark:opacity-100 rounded-full blur-[128px]"></div>
+</div>
+<header id="main-header" class="z-20"></header>
+
+<main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-4 sm:py-6 z-10">
+  <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">จัดการนิยาย</h1>
+  <p id="note" class="text-sm text-slate-600 dark:text-neutral-400 mt-1">สร้างนิยาย อัปโหลดปก และเพิ่มตอน</p>
+  <div id="toast" class="text-sm font-medium min-h-[1.25rem] mt-3" role="status"></div>
+
+  <!-- รายการนิยายของฉัน -->
+  <section id="list-view" class="mt-4">
+    <div class="flex items-center justify-between">
+      <h2 class="font-bold">นิยายของฉัน</h2>
+      <button id="new-novel" type="button" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold">+ นิยายใหม่</button>
+    </div>
+    <ul id="novel-list" class="mt-3 grid sm:grid-cols-2 gap-3"></ul>
+  </section>
+
+  <!-- แก้ไขนิยาย + ตอน -->
+  <section id="edit-view" class="mt-4 hidden">
+    <button id="back" type="button" class="inline-flex items-center gap-1 -ml-1 px-1 py-2 text-sm text-slate-500 dark:text-neutral-400 hover:text-amber-500"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>กลับไปรายการ</button>
+    <div class="mt-3 grid md:grid-cols-[200px_1fr] gap-5">
+      <div>
+        <div id="cover-box" class="aspect-[2/3] w-full max-w-[9.5rem] mx-auto md:max-w-none rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 bg-slate-200 dark:bg-white/5 flex items-center justify-center text-xs text-slate-500">ยังไม่มีปก</div>
+        <input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp" class="hidden">
+        <div class="mt-2 flex gap-2">
+          <button id="cover-pick" type="button" class="flex-1 px-3 py-2 rounded-xl border border-slate-300 dark:border-white/15 text-sm hover:border-amber-500">อัปโหลดปก</button>
+          <button id="cover-del" type="button" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-white/15 text-sm hover:border-rose-500 hidden">ลบ</button>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">ระบบครอปเป็นสัดส่วน 2:3 และบีบรูปให้อัตโนมัติ</p>
+      </div>
+      <form id="novel-form" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md p-4 space-y-3">
+        <label class="block"><span class="block text-xs text-slate-500 dark:text-neutral-400 mb-1">ชื่อเรื่อง</span><input id="n-title" maxlength="150" required placeholder="ชื่อเรื่อง" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm focus:outline-none focus:border-amber-500"></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="block text-xs text-slate-500 dark:text-neutral-400 mb-1">หมวดหมู่</span><input id="n-cat" maxlength="40" placeholder="เช่น แฟนตาซี" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm focus:outline-none focus:border-amber-500"></label>
+          <label class="block"><span class="block text-xs text-slate-500 dark:text-neutral-400 mb-1">ลิงก์ (slug)</span><input id="n-slug" maxlength="80" placeholder="ว่าง = สุ่มให้" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm focus:outline-none focus:border-amber-500"></label>
+          <label class="block"><span class="block text-xs text-slate-500 dark:text-neutral-400 mb-1">ความคืบหน้า</span><select id="n-status" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm focus:outline-none focus:border-amber-500"><option value="ongoing">กำลังเขียน</option><option value="completed">จบแล้ว</option><option value="hiatus">พักการเขียน</option></select></label>
+          <label class="block"><span class="block text-xs text-slate-500 dark:text-neutral-400 mb-1">การมองเห็น</span><select id="n-vis" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm focus:outline-none focus:border-amber-500"><option value="draft">ฉบับร่าง (ซ่อน)</option><option value="public">เผยแพร่</option></select></label>
+        </div>
+        <textarea id="n-syn" rows="5" maxlength="3000" placeholder="เรื่องย่อ" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm leading-7 focus:outline-none focus:border-amber-500"></textarea>
+        <div class="flex flex-wrap gap-2 items-center">
+          <button type="submit" class="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold">บันทึกนิยาย</button>
+          <a id="view-link" href="#" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400 hover:underline hidden">ดูหน้าเว็บ<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+          <button id="n-del" type="button" class="ml-auto px-4 py-3 rounded-xl border border-rose-400/60 text-rose-500 text-sm hidden">ลบนิยาย</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="chapters-box" class="mt-8 hidden">
+      <div class="flex items-center justify-between"><h2 class="font-bold">ตอนทั้งหมด</h2>
+        <button id="new-ch" type="button" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-white/15 text-sm hover:border-amber-500">+ ตอนใหม่</button></div>
+      <ul id="ch-list" class="mt-3 rounded-2xl border border-slate-200 dark:border-white/10 divide-y divide-slate-200 dark:divide-white/10 overflow-hidden bg-white/85 dark:bg-white/5"></ul>
+
+      <form id="ch-form" class="mt-5 rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md p-4 space-y-3">
+        <h3 id="ch-h" class="font-semibold">ตอนใหม่</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <label class="block"><span class="block text-xs text-slate-500 dark:text-neutral-400 mb-1">เลขตอน</span><input id="c-no" type="number" inputmode="numeric" min="1" placeholder="ต่อท้ายอัตโนมัติ" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm focus:outline-none focus:border-amber-500"></label>
+          <label class="block"><span class="block text-xs text-slate-500 dark:text-neutral-400 mb-1">ราคา (coin)</span><input id="c-price" type="number" inputmode="numeric" min="0" max="1000" value="0" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm focus:outline-none focus:border-amber-500"></label>
+          <label class="block col-span-2 sm:col-span-1"><span class="block text-xs text-slate-500 dark:text-neutral-400 mb-1">สถานะ</span><select id="c-vis" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm focus:outline-none focus:border-amber-500"><option value="draft">ฉบับร่าง</option><option value="public">เผยแพร่</option></select></label>
+        </div>
+        <p class="text-xs text-slate-400 -mt-1">ราคา 0 = อ่านฟรี · เฉพาะแอดมินตั้งราคาได้</p>
+        <label class="block"><span class="block text-xs text-slate-500 dark:text-neutral-400 mb-1">ชื่อตอน</span><input id="c-title" maxlength="150" required placeholder="ชื่อตอน" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm focus:outline-none focus:border-amber-500"></label>
+        <div class="flex justify-end text-xs text-slate-400"><span id="c-count">0 / 150000</span></div>
+        <textarea id="c-body" rows="16" maxlength="150000" required placeholder="เนื้อหาตอน — ขึ้นบรรทัดใหม่ = ขึ้นย่อหน้าใหม่" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-base sm:text-sm leading-7 focus:outline-none focus:border-amber-500"></textarea>
+        <!-- เสียงประกอบตอน: บีบเป็น MP3 โมโนในเบราว์เซอร์ก่อน แล้วอัปโหลดตอนกด "บันทึกตอน" -->
+        <div id="au-box" class="rounded-xl border border-slate-300 dark:border-white/10 p-3 space-y-2">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <span class="text-sm font-semibold">เสียงประกอบตอน <span class="text-xs font-normal text-slate-400">(ไม่บังคับ)</span></span>
+            <select id="au-q" aria-label="คุณภาพเสียง" class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-sm focus:outline-none focus:border-amber-500">
+              <option value="24">ประหยัดพื้นที่สุด · 24 kbps</option>
+              <option value="32" selected>มาตรฐาน · 32 kbps</option>
+              <option value="48">คมชัด · 48 kbps</option>
+            </select>
+          </div>
+          <input id="au-file" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.opus,.flac,.webm" class="hidden">
+          <div class="flex flex-wrap gap-2 items-center">
+            <button id="au-pick" type="button" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-white/15 text-sm hover:border-amber-500">เลือกไฟล์เสียง</button>
+            <button id="au-del" type="button" class="px-4 py-2 rounded-xl border border-rose-400/60 text-rose-500 text-sm hidden">ลบเสียง</button>
+          </div>
+          <p id="au-info" class="text-xs text-slate-500 dark:text-neutral-400 min-h-[1rem]" role="status"></p>
+          <div id="au-bar" class="hidden h-1.5 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden"><i id="au-bar-i" class="block h-full w-0 bg-amber-500"></i></div>
+          <audio id="au-prev" controls preload="none" class="w-full hidden"></audio>
+          <p class="text-[11px] text-slate-400">ระบบแปลงเป็น MP3 โมโนก่อนอัปโหลดให้อัตโนมัติ (เสียงเล่าเรื่อง ~11–22 MB ต่อชั่วโมง) · ยาวได้ไม่เกิน 90 นาทีต่อตอน · เลือกไฟล์ใหม่ = แทนที่เสียงเดิม · ไฟล์จะอัปโหลดตอนกด “บันทึกตอน”</p>
+        </div>
+        <div class="flex gap-2 items-center">
+          <button id="c-save" type="submit" class="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold disabled:opacity-60">บันทึกตอน</button>
+          <button id="c-del" type="button" class="px-4 py-3 rounded-xl border border-rose-400/60 text-rose-500 text-sm hidden">ลบตอนนี้</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<div id="main-footer" class="z-10"></div>
+<script src="/nivread.js?v=20261120i"></script>
+<script>
+(() => {
+  const { session, api: rawApi, el } = NIV;
+  const api = async (path, opts) => {          // ถ้า Worker ตอบแปลกๆ (เช่น catch-all 200) ให้ถือว่าล้มเหลว ไม่ใช่สำเร็จ
+    const r = await rawApi(path, opts);
+    if (r.ok && r.data.success !== true) return { ok: false, status: r.status, data: { error: 'เซิร์ฟเวอร์ตอบผิดรูปแบบ (Worker อาจยังไม่ได้อัปเดต)' } };
+    return r;
+  };
+  const s = session();
+  if (!s.token || !s.userId) { location.replace('/login?redirect=/novel-admin'); return; }
+  const $ = (id) => document.getElementById(id);
+  const enc = encodeURIComponent;
+  const uid = s.userId;
+  let novel = null;      // นิยายที่กำลังแก้ (null = สร้างใหม่)
+  let chapter = null;    // ตอนที่กำลังแก้ (null = ตอนใหม่)
+
+  const toast = (t, kind) => { const m = $('toast'); m.textContent = t || ''; m.className = 'text-sm font-medium min-h-[1.25rem] mt-3 ' + (kind === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : kind === 'err' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600'); };
+  const fail = (r, fb) => { if (r.status === 401) { toast('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่', 'err'); setTimeout(() => location.replace('/login?redirect=/novel-admin'), 1200); } else toast(r.data.error || fb, 'err'); };
+  const view = (name) => { $('list-view').classList.toggle('hidden', name !== 'list'); $('edit-view').classList.toggle('hidden', name !== 'edit'); toast(''); };
+
+  // ---------- รายการนิยาย ----------
+  async function loadList() {
+    const r = await api('/api/novel/mine?userId=' + enc(uid));
+    if (!r.ok) return fail(r, 'โหลดรายการไม่สำเร็จ');
+    $('new-novel').classList.toggle('hidden', !r.data.canWrite);
+    if (!r.data.canWrite) $('note').textContent = 'บัญชีนี้ยังไม่ได้รับสิทธิ์ลงนิยาย';
+    const ul = $('novel-list'); ul.replaceChildren();
+    if (!r.data.novels.length) ul.append(el('li', 'text-sm text-slate-500 dark:text-neutral-400', 'ยังไม่มีนิยาย'));
+    r.data.novels.forEach((n) => {
+      const li = el('li', 'rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 flex gap-3 items-center cursor-pointer hover:border-amber-500/60');
+      if (n.cover_url) { const im = el('img', 'w-12 h-[72px] rounded-lg object-cover shrink-0'); im.src = n.cover_url; im.alt = ''; li.append(im); }
+      const box = el('div', 'min-w-0');
+      box.append(el('p', 'font-semibold truncate', n.title), el('p', 'text-xs text-slate-500 dark:text-neutral-400', (n.visibility === 'public' ? 'เผยแพร่' : 'ฉบับร่าง') + ' · ' + n.total_chapters + ' ตอน'));
+      li.append(box); li.addEventListener('click', () => openNovel(n)); ul.append(li);
+    });
+  }
+
+  // ---------- ฟอร์มนิยาย ----------
+  function fillNovel(n) {
+    novel = n;
+    $('n-title').value = n ? n.title : ''; $('n-cat').value = n ? n.category : ''; $('n-slug').value = n ? n.slug : '';
+    $('n-status').value = n ? n.status : 'ongoing'; $('n-vis').value = n ? n.visibility : 'draft'; $('n-syn').value = n ? n.synopsis : '';
+    $('n-del').classList.toggle('hidden', !n); $('chapters-box').classList.toggle('hidden', !n);
+    const v = $('view-link'); v.classList.toggle('hidden', !n); if (n) v.href = '/novels/' + enc(n.slug);
+    paintCover();
+  }
+  function paintCover() {
+    const box = $('cover-box'); box.replaceChildren();
+    if (novel && novel.cover_url) { const im = el('img', 'w-full h-full object-cover'); im.src = novel.cover_url + '?t=' + Date.now(); im.alt = 'ปกนิยาย'; box.append(im); }
+    else box.textContent = novel ? 'ยังไม่มีปก' : 'บันทึกนิยายก่อนจึงจะอัปโหลดปกได้';
+    $('cover-del').classList.toggle('hidden', !(novel && novel.cover_url));
+  }
+  function openNovel(n) { fillNovel(n); view('edit'); if (n) loadChapters(0); }
+
+  $('new-novel').onclick = () => { fillNovel(null); view('edit'); };
+  $('back').onclick = () => { view('list'); loadList(); };
+
+  $('novel-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const body = { userId: uid, title: $('n-title').value, category: $('n-cat').value, status: $('n-status').value, visibility: $('n-vis').value, synopsis: $('n-syn').value, slug: $('n-slug').value.trim() || undefined };
+    const r = novel ? await api('/api/novel/update', { method: 'POST', body: { ...body, id: novel.id } }) : await api('/api/novel/create', { method: 'POST', body });
+    if (!r.ok) return fail(r, 'บันทึกไม่สำเร็จ');
+    if (novel && r.data.slug && r.data.slug !== novel.slug) await api('/api/blog/novel-audio-rename', { method: 'POST', body: { userId: uid, novelId: novel.id, slug: r.data.slug } });   // เสียงผูกกับ slug ที่หน้าอ่านใช้ค้น
+    toast('บันทึกแล้ว', 'ok');
+    const mine = await api('/api/novel/mine?userId=' + enc(uid));
+    const fresh = mine.ok && mine.data.novels.find((n) => n.slug === r.data.slug);
+    if (fresh) openNovel(fresh);
+  });
+
+  $('n-del').onclick = async () => {
+    if (!novel || !confirm('ลบนิยาย "' + novel.title + '" และทุกตอนถาวร?')) return;
+    const r = await api('/api/novel/delete', { method: 'POST', body: { userId: uid, id: novel.id } });
+    if (!r.ok) return fail(r, 'ลบไม่สำเร็จ');
+    await api('/api/blog/novel-audio-delete', { method: 'POST', body: { userId: uid, novelId: novel.id } });   // เสียงทุกตอนของเรื่องนี้
+    view('list'); loadList(); toast('ลบนิยายแล้ว', 'ok');
+  };
+
+  // ---------- ภาพปก: ครอป 2:3 + บีบเป็น WebP ในเบราว์เซอร์ ----------
+  async function makeCover(file) {
+    const bmp = await createImageBitmap(file);
+    const W = 600, H = 900, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const k = Math.max(W / bmp.width, H / bmp.height);
+    c.getContext('2d').drawImage(bmp, (W - bmp.width * k) / 2, (H - bmp.height * k) / 2, bmp.width * k, bmp.height * k);
+    const to = (type, q) => new Promise((res) => c.toBlob(res, type, q));
+    let blob = await to('image/webp', 0.85);
+    if (!blob || blob.type !== 'image/webp') blob = await to('image/jpeg', 0.85);
+    return blob;
+  }
+  $('cover-pick').onclick = () => { if (!novel) return toast('บันทึกนิยายก่อนจึงจะอัปโหลดปกได้', 'err'); $('cover-file').click(); };
+  $('cover-file').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f || !novel) return;
+    toast('กำลังอัปโหลด…');
+    let blob; try { blob = await makeCover(f); } catch { return toast('อ่านรูปนี้ไม่ได้ ลองไฟล์ JPG / PNG / WebP', 'err'); }
+    const res = await fetch(NIV.API + '/api/novel/cover?userId=' + enc(uid) + '&novelId=' + novel.id, { method: 'POST', headers: { Authorization: 'Bearer ' + s.token }, body: blob });
+    let data = {}; try { data = await res.json(); } catch {}
+    if (!res.ok || data.success === false) return fail({ status: res.status, data }, 'อัปโหลดปกไม่สำเร็จ');
+    novel.cover_url = data.cover_url; paintCover(); toast('อัปโหลดปกแล้ว', 'ok');
+  });
+  $('cover-del').onclick = async () => {
+    if (!novel) return;
+    const r = await api('/api/novel/update', { method: 'POST', body: { userId: uid, id: novel.id, removeCover: true } });
+    if (!r.ok) return fail(r, 'ลบปกไม่สำเร็จ');
+    novel.cover_url = null; paintCover(); toast('ลบปกแล้ว', 'ok');
+  };
+
+  // ---------- ตอน ----------
+  // รายการตอนโหลดทีละ 100 (ตามเลขตอน) มีปุ่ม "โหลดตอนถัดไป" — ไม่ดึงทั้งสารบัญทุกครั้ง
+  async function loadChapters(from) {
+    const ul = $('ch-list'); let more = $('ch-more');
+    const [r] = await Promise.all([api('/api/novel/get?slug=' + enc(novel.slug) + '&userId=' + enc(uid) + '&limit=100' + (from ? '&from=' + from : '')), from ? null : loadAudioNos()]);
+    if (!r.ok) return fail(r, 'โหลดรายการตอนไม่สำเร็จ');
+    if (!from) ul.replaceChildren();
+    if (!r.data.chapters.length && !from) ul.append(el('li', 'px-4 py-3 text-sm text-slate-500', 'ยังไม่มีตอน'));
+    r.data.chapters.forEach((c) => {
+      const li = el('li', 'px-4 py-3 min-h-[3rem] flex items-center gap-3 cursor-pointer hover:bg-amber-500/10 text-sm');
+      const hp = el('span', 'shrink-0 text-amber-500' + (audioNos.has(c.no) ? '' : ' hidden'));
+      hp.title = 'มีเสียงประกอบ'; hp.innerHTML = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="มีเสียงประกอบ"><path d="M4 14v-2a8 8 0 0116 0v2M4 14h3v5H5a1 1 0 01-1-1v-4zM20 14h-3v5h2a1 1 0 001-1v-4z"/></svg>';
+      li.append(el('span', 'text-slate-400 w-16 shrink-0', 'ตอน ' + c.no), el('span', 'flex-1 truncate', c.title), hp,
+        el('span', 'text-xs ' + (c.visibility === 'public' ? 'text-emerald-500' : 'text-slate-400'), c.visibility === 'public' ? 'เผยแพร่' : 'ร่าง'),
+        el('span', 'text-xs text-amber-500 w-16 text-right', c.price > 0 ? c.price + ' coin' : 'ฟรี'));
+      li.addEventListener('click', () => editChapter(c.no)); ul.append(li);
+    });
+    if (more) more.remove();
+    const lastNo = r.data.chapters.length ? r.data.chapters[r.data.chapters.length - 1].no : 0;
+    if (r.data.meta && r.data.meta.more && lastNo) {
+      more = el('button', 'mt-2 w-full py-3 rounded-xl border border-slate-300 dark:border-white/15 text-sm hover:border-amber-500', 'โหลดตอนถัดไป'); more.type = 'button'; more.id = 'ch-more';
+      more.addEventListener('click', () => { more.disabled = true; loadChapters(lastNo + 1); });
+      ul.after(more);
+    }
+  }
+
+
+  // ---------- เสียงประกอบตอน ----------
+  // เก็บใน R2 โฟลเดอร์ nv/ (เสิร์ฟจาก CDN ตรง ๆ) · ที่นี่บีบเป็น MP3 โมโนก่อนส่ง เพื่อลดพื้นที่ R2 และแบนด์วิดท์ผู้ฟัง
+  const AQ = { 24: 22050, 32: 24000, 48: 32000 };            // kbps → sample rate (เสียงพูดไม่ต้องการ 44.1kHz)
+  const A_SRC_MAX = 200 * 1024 * 1024, A_MAX_SEC = 5400, A_OUT_MAX = 40e6;
+  const LAME_SRC = ['https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js'];
+  let lameP = null, audioNos = new Set(), aPending = null, aCurrent = null, aBusy = false;
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+  const fmtSize = (b) => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+  const fmtDur = (t) => { t = Math.round(t); const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), x = t % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0'); };
+  const loadScript = (src) => new Promise((ok, no) => { const e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = () => { e.remove(); no(new Error('load')); }; document.head.append(e); });
+  const loadLame = () => lameP || (lameP = (async () => {
+    if (window.lamejs) return;
+    for (const u of LAME_SRC) { try { await loadScript(u); if (window.lamejs) return; } catch {} }
+    lameP = null; throw new Error('ไม่สามารถโหลดตัวบีบเสียงได้ (ตรวจอินเทอร์เน็ตแล้วลองใหม่)');
+  })());
+  const setBar = (p) => { const b = $('au-bar'); b.classList.toggle('hidden', p == null); if (p != null) $('au-bar-i').style.width = Math.round(p * 100) + '%'; };
+  const info = (t, kind) => { const i = $('au-info'); i.textContent = t || ''; i.className = 'text-xs min-h-[1rem] ' + (kind === 'err' ? 'text-rose-500' : kind === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-neutral-400'); };
+
+  // ถอดรหัสไฟล์ → โมโนที่ sample rate ปลายทาง (ให้เบราว์เซอร์รีแซมเปิลเอง) → Int16
+  async function decodeMono(file, rate) {
+    const Ctx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!Ctx) throw new Error('เบราว์เซอร์นี้ไม่รองรับการแปลงเสียง ลองใช้ Chrome / Edge / Safari รุ่นใหม่');
+    let buf;
+    try { buf = await new Ctx(1, 1, rate).decodeAudioData(await file.arrayBuffer()); }
+    catch { throw new Error('อ่านไฟล์เสียงนี้ไม่ได้ ลองไฟล์ MP3 / M4A / WAV / OGG'); }
+    const n = buf.length, ch = buf.numberOfChannels, pcm = new Int16Array(n), data = [];
+    for (let c = 0; c < ch; c++) data.push(buf.getChannelData(c));
+    for (let i = 0; i < n; i++) {
+      let v = 0; for (let c = 0; c < ch; c++) v += data[c][i];
+      v /= ch; pcm[i] = v <= -1 ? -32768 : v >= 1 ? 32767 : Math.round(v * 32767);
+      if ((i & 0x1fffff) === 0x1fffff) await tick();
+    }
+    return { pcm, dur: n / rate };
+  }
+  async function encodeMp3(pcm, rate, kbps, onP) {
+    await loadLame();
+    const enc = new window.lamejs.Mp3Encoder(1, rate, kbps), parts = [], BLK = 1152 * 20;
+    for (let i = 0, k = 0; i < pcm.length; i += BLK, k++) {
+      const o = enc.encodeBuffer(pcm.subarray(i, i + BLK)); if (o.length) parts.push(o.slice());
+      if ((k & 31) === 0) { onP(i / pcm.length); await tick(); }
+    }
+    const f = enc.flush(); if (f.length) parts.push(f.slice());
+    return new Blob(parts, { type: 'audio/mpeg' });
+  }
+
+  function paintAudio() {
+    const prev = $('au-prev'), del = $('au-del');
+    if (prev.dataset.blob) { URL.revokeObjectURL(prev.dataset.blob); delete prev.dataset.blob; }
+    prev.pause(); prev.removeAttribute('src');
+    if (aPending) {
+      const u = URL.createObjectURL(aPending.blob); prev.dataset.blob = u; prev.src = u; prev.classList.remove('hidden');
+      del.textContent = 'ยกเลิกไฟล์ที่เลือก'; del.classList.remove('hidden');
+      info(aPending.name + ' → MP3 ' + fmtSize(aPending.blob.size) + ' · ' + fmtDur(aPending.dur) + ' (จากเดิม ' + fmtSize(aPending.orig) + ') — จะอัปโหลดเมื่อกด “บันทึกตอน”' + (aCurrent ? ' และแทนที่เสียงเดิม' : ''), 'ok');
+    } else if (aCurrent) {
+      prev.src = aCurrent.url; prev.classList.remove('hidden');
+      del.textContent = 'ลบเสียง'; del.classList.remove('hidden');
+      info('ตอนนี้มีเสียงแล้ว · ' + fmtDur(aCurrent.duration) + ' · ' + fmtSize(aCurrent.bytes));
+    } else { prev.classList.add('hidden'); del.classList.add('hidden'); info(''); }
+    $('au-pick').textContent = aPending || aCurrent ? 'เปลี่ยนไฟล์เสียง' : 'เลือกไฟล์เสียง';
+  }
+  async function loadChapterAudio(no) {
+    const r = await api('/api/blog/novel-audio?slug=' + enc(novel.slug) + '&no=' + no);
+    if (!chapter || chapter.no !== no) return;               // ผู้ใช้สลับไปตอนอื่นแล้ว
+    aCurrent = r.ok && r.data.audio ? r.data.audio : null; paintAudio();
+  }
+  async function loadAudioNos() {
+    const r = await api('/api/blog/novel-audio-list?novelId=' + enc(novel.id));
+    audioNos = new Set(r.ok ? r.data.audio.map((x) => x.no) : []);
+  }
+  $('au-pick').onclick = () => { if (!aBusy) $('au-file').click(); };
+  $('au-file').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f || aBusy) return;
+    if (f.size > A_SRC_MAX) return info('ไฟล์ต้นฉบับใหญ่เกิน 200 MB', 'err');
+    const kbps = Number($('au-q').value) || 32, rate = AQ[kbps] || 24000;
+    aBusy = true; $('c-save').disabled = true; $('au-pick').disabled = true; setBar(0);
+    try {
+      info('กำลังถอดรหัสไฟล์เสียง…');
+      const { pcm, dur } = await decodeMono(f, rate);
+      if (dur > A_MAX_SEC) throw new Error('เสียงยาวเกิน 90 นาที (ไฟล์นี้ ' + fmtDur(dur) + ') — แบ่งเป็นหลายตอนก่อน');
+      const blob = await encodeMp3(pcm, rate, kbps, (p) => { setBar(p); info('กำลังบีบเป็น MP3 ' + Math.round(p * 100) + '%'); });
+      if (blob.size > A_OUT_MAX) throw new Error('หลังบีบยังใหญ่เกิน 40 MB — ลองเลือก “ประหยัดพื้นที่สุด”');
+      aPending = { blob, dur, orig: f.size, name: f.name.length > 40 ? f.name.slice(0, 37) + '…' : f.name };
+    } catch (err) { aPending = null; paintAudio(); info(err.message || 'แปลงเสียงไม่สำเร็จ', 'err'); setBar(null); aBusy = false; $('c-save').disabled = false; $('au-pick').disabled = false; return; }
+    setBar(null); aBusy = false; $('c-save').disabled = false; $('au-pick').disabled = false; paintAudio();
+  });
+  $('au-del').onclick = async () => {
+    if (aBusy) return;
+    if (aPending) { aPending = null; paintAudio(); return; }
+    if (!aCurrent || !chapter || !confirm('ลบเสียงของตอนที่ ' + chapter.no + ' ?')) return;
+    const r = await api('/api/blog/novel-audio-delete', { method: 'POST', body: { userId: uid, novelId: novel.id, no: chapter.no } });
+    if (!r.ok) return fail(r, 'ลบเสียงไม่สำเร็จ');
+    aCurrent = null; paintAudio(); toast('ลบเสียงแล้ว', 'ok'); loadChapters(0);
+  };
+  // อัปโหลดแบบ XHR เพื่อให้มีแถบความคืบหน้า (fetch ยังไม่มี upload progress)
+  const uploadAudio = (a, no) => new Promise((res) => {
+    const q = 'userId=' + enc(uid) + '&novelId=' + enc(novel.id) + '&no=' + no + '&slug=' + enc(novel.slug) + '&duration=' + a.dur.toFixed(1);
+    const x = new XMLHttpRequest(); x.open('POST', NIV.API + '/api/blog/novel-audio-upload?' + q);
+    x.setRequestHeader('Authorization', 'Bearer ' + s.token);
+    x.upload.onprogress = (e) => { if (e.lengthComputable) { setBar(e.loaded / e.total); info('กำลังอัปโหลดเสียง ' + Math.round(e.loaded / e.total * 100) + '%'); } };
+    x.onload = () => { let d = {}; try { d = JSON.parse(x.responseText); } catch {} res(x.status >= 200 && x.status < 300 && d.success !== false ? { ok: true, status: x.status, data: d } : { ok: false, status: x.status, data: d }); };
+    x.onerror = () => res({ ok: false, status: 0, data: { error: 'เครือข่ายขัดข้อง' } });
+    setBar(0); x.send(a.blob);
+  });
+
+  function fillChapter(c) {
+    chapter = c;
+    $('ch-h').textContent = c ? 'แก้ไขตอนที่ ' + c.no : 'ตอนใหม่';
+    $('c-no').value = c ? c.no : ''; $('c-no').disabled = !!c;
+    $('c-price').value = c ? c.price : 0; $('c-vis').value = c ? c.visibility : 'draft';
+    $('c-title').value = c ? c.title : ''; $('c-body').value = c ? c.content : '';
+    $('c-del').classList.toggle('hidden', !c); count();
+    aPending = null; aCurrent = null; paintAudio(); if (c) loadChapterAudio(c.no);
+  }
+  const count = () => { $('c-count').textContent = $('c-body').value.length.toLocaleString('th-TH') + ' / 150,000'; };
+  $('c-body').addEventListener('input', count);
+  $('new-ch').onclick = () => { fillChapter(null); $('ch-form').scrollIntoView({ behavior: 'smooth' }); };
+  async function editChapter(no) {
+    const r = await api('/api/novel/chapter-get?userId=' + enc(uid) + '&novelId=' + novel.id + '&no=' + no);
+    if (!r.ok) return fail(r, 'โหลดตอนไม่สำเร็จ');
+    fillChapter(r.data.chapter); $('ch-form').scrollIntoView({ behavior: 'smooth' });
+  }
+  $('ch-form').addEventListener('submit', async (e) => {
+    e.preventDefault(); if (!novel || aBusy) return;
+    const r = await api('/api/novel/chapter-save', { method: 'POST', body: {
+      userId: uid, novelId: novel.id, chapterId: chapter ? chapter.id : undefined, chapterNo: $('c-no').value ? Number($('c-no').value) : undefined,
+      title: $('c-title').value, content: $('c-body').value, price: Number($('c-price').value) || 0, visibility: $('c-vis').value } });
+    if (!r.ok) return fail(r, 'บันทึกตอนไม่สำเร็จ');
+    const no = r.data.no, keep = aPending;
+    if (keep) {
+      $('c-save').disabled = true; aBusy = true; toast('บันทึกตอนที่ ' + no + ' แล้ว กำลังอัปโหลดเสียง…');
+      const u = await uploadAudio(keep, no);
+      aBusy = false; $('c-save').disabled = false; setBar(null);
+      if (!u.ok) {                                   // ตอนบันทึกแล้ว แต่เสียงไม่ขึ้น → เปิดตอนเดิมค้างไว้พร้อมไฟล์ที่บีบแล้ว ให้กดบันทึกซ้ำได้ ไม่ต้องบีบใหม่
+        await editChapter(no); aPending = keep; paintAudio(); loadChapters(0);
+        return toast('บันทึกตอนที่ ' + no + ' แล้ว แต่อัปโหลดเสียงไม่สำเร็จ: ' + (u.data.error || 'ลองกดบันทึกอีกครั้ง'), 'err');
+      }
+    }
+    toast('บันทึกตอนที่ ' + no + ' แล้ว' + (keep ? ' · อัปโหลดเสียงแล้ว' : ''), 'ok'); fillChapter(null); loadChapters(0);
+  });
+  $('c-del').onclick = async () => {
+    if (!chapter || !confirm('ลบตอนที่ ' + chapter.no + ' ถาวร?')) return;
+    const r = await api('/api/novel/chapter-delete', { method: 'POST', body: { userId: uid, novelId: novel.id, chapterId: chapter.id } });
+    if (!r.ok) return fail(r, 'ลบตอนไม่สำเร็จ');
+    await api('/api/blog/novel-audio-delete', { method: 'POST', body: { userId: uid, novelId: novel.id, no: chapter.no } });   // เสียงของตอนที่ลบ (ล้มเหลว = ไม่กระทบการลบตอน)
+    toast('ลบตอนแล้ว', 'ok'); fillChapter(null); loadChapters(0);
+  };
+
+  fillChapter(null); loadList();
+})();
+</script>
+</body>
+</html>

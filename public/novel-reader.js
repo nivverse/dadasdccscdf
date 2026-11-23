@@ -1,0 +1,394 @@
+// /novel-reader.js — หน้าอ่านตอน
+//  · ตั้งค่าการอ่าน (ธีม ฟอนต์ ขนาด ระยะบรรทัด ความกว้าง) จำไว้ในเครื่อง
+//  · แถบความคืบหน้า + แถบเครื่องมือที่ซ่อนเมื่อเลื่อนลง (เขียนแค่ transform, scroll แบบ passive + rAF)
+//  · จำตำแหน่งที่อ่านค้าง (ในเครื่อง + ซิงก์ไปบัญชีถ้าล็อกอิน) · นับวิวครั้งเดียวหลังอ่านจริง
+//  · คอมเมนต์รายย่อหน้า · สารบัญตอน · ลูกศรซ้าย/ขวาเปลี่ยนตอน
+//  · เสียงประกอบตอน (ถ้าแอดมินอัปโหลดไว้): ตัวเล่นเหนือเนื้อหา · จำตำแหน่ง/ความเร็ว · ฟังจบแล้วมีปุ่มไปตอนถัดไป
+//  · ตอนที่มีราคา: ตรวจสิทธิ์หลังล็อกอิน ปลดล็อกด้วย coin แล้วค่อยแสดงเนื้อหา (ข้อความใส่ด้วย textContent)
+(() => {
+  const art = document.getElementById('reader');
+  if (!art || !window.NIV || !window.NovelSocial) return;
+  const NS = NovelSocial, { el, session } = NIV;
+  const api = NS.call;      // ตัวห่อที่ตรวจรูปแบบคำตอบ (ดู novel-social.js)
+  const enc = encodeURIComponent;
+  const root = document.documentElement;
+  const slug = art.dataset.slug, no = Number(art.dataset.no);
+  const s = session();
+  const authed = !!(s.token && s.userId);
+
+  // ================= ตั้งค่าการอ่าน =================
+  const FONTS = {
+    kanit: { label: 'Kanit', css: "'Kanit', sans-serif" },
+    sarabun: { label: 'Sarabun', css: "'Sarabun', 'Kanit', sans-serif", q: 'Sarabun:wght@400;600' },
+    serif: { label: 'Noto Serif', css: "'Noto Serif Thai', serif", q: 'Noto+Serif+Thai:wght@400;600' },
+    sys: { label: 'ระบบ', css: 'system-ui, -apple-system, sans-serif' },
+  };
+  const WIDTH = { n: '36rem', m: '48rem', w: '64rem' };
+  const DEF = { t: 'auto', f: 'kanit', s: 18, lh: 2, w: 'm', par: 'some' };
+  let prefs = { ...DEF };
+  try { prefs = { ...DEF, ...JSON.parse(localStorage.getItem('nv:rd') || '{}') }; } catch {}
+  function applyPrefs() {
+    if (prefs.t === 'auto') root.removeAttribute('data-rt'); else root.setAttribute('data-rt', prefs.t);
+    const f = FONTS[prefs.f] || FONTS.kanit;
+    if (f.q && !document.querySelector(`link[data-nvf="${f.q}"]`)) {
+      const l = document.createElement('link'); l.rel = 'stylesheet'; l.dataset.nvf = f.q;
+      l.href = 'https://fonts.googleapis.com/css2?family=' + f.q + '&display=swap'; document.head.append(l);
+    }
+    root.style.setProperty('--rd-font', f.css);
+    root.style.setProperty('--rd-size', prefs.s + 'px');
+    root.style.setProperty('--rd-lh', String(prefs.lh));
+    root.style.setProperty('--rd-w', WIDTH[prefs.w] || WIDTH.m);
+    root.setAttribute('data-par', prefs.par);
+  }
+  const savePrefs = () => { try { localStorage.setItem('nv:rd', JSON.stringify(prefs)); } catch {} };
+  applyPrefs();
+
+  // ================= ความคืบหน้า / แถบเครื่องมือ =================
+  const bar = document.getElementById('rd-bar');
+  const progI = document.querySelector('#rd-prog i');
+  const readP = () => { const r = art.getBoundingClientRect(); return r.height ? Math.max(0, Math.min(1, (innerHeight - r.top) / r.height)) : 0; };
+  const scrollToP = (p) => { const r = art.getBoundingClientRect(); window.scrollTo({ top: Math.max(0, scrollY + r.top + p * r.height - innerHeight), behavior: 'auto' }); };
+  let contentReady = false, lastY = scrollY, queued = false, lastSave = 0, lastSent = { pct: -10, t: 0 }, prefetched = false, curP = 0;
+  const posKey = `nv:pos:${slug}:${no}`;
+
+  function frame() {
+    queued = false;
+    const y = scrollY, dy = y - lastY;
+    curP = readP();
+    if (progI) progI.style.transform = `scaleX(${curP.toFixed(4)})`;
+    if (bar && Math.abs(dy) > 6) {
+      const atEnd = innerHeight + y >= document.documentElement.scrollHeight - 90;
+      bar.classList.toggle('hide', dy > 0 && y > 140 && !atEnd);
+      lastY = y;
+    }
+    if (!contentReady) return;
+    const now = Date.now();
+    if (now - lastSave > 1000) { lastSave = now; savePos(); }
+    if (!prefetched && curP > 0.9) {
+      prefetched = true;
+      const nx = document.querySelector('a[rel="next"]');
+      if (nx) { const l = document.createElement('link'); l.rel = 'prefetch'; l.href = nx.href; document.head.append(l); }
+    }
+    syncProgress(false);
+  }
+  // บันทึกอีกครั้งหลังหยุดเลื่อน (การบันทึกระหว่างเลื่อนถูกจำกัดความถี่ จึงอาจตกค้างที่จุดที่เลื่อนผ่าน)
+  let settleT = 0;
+  const settle = () => { if (!contentReady) return; curP = readP(); savePos(); syncProgress(false); };
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(frame); } clearTimeout(settleT); settleT = setTimeout(settle, 600); };
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule, { passive: true });
+
+  function savePos() {
+    try {
+      const pct = Math.round(curP * 1000) / 10;
+      localStorage.setItem(posKey, String(pct));
+      localStorage.setItem('nv:last:' + slug, JSON.stringify({ no, pct, t: Date.now() }));
+    } catch {}
+  }
+  // ซิงก์ความคืบหน้าเข้าบัญชีเฉพาะนิยายที่ "เก็บเข้าชั้น" (ชั้นหนังสือ/อ่านต่อข้ามเครื่องใช้เฉพาะเรื่องที่เก็บ)
+  // เรื่องอื่นจำในเครื่องอย่างเดียว → ลดการเขียน D1 ลงมาก · ธงเก็บในเครื่อง 24 ชม. ถ้าไม่มีถามเซิร์ฟเวอร์ครั้งเดียว
+  let bm = false;
+  if (authed) {
+    let c = null; try { c = JSON.parse(localStorage.getItem('nv:bm:' + slug) || 'null'); } catch {}
+    if (c && Date.now() - c.t < 86400000) bm = c.v === 1;
+    else NS.me(slug).then((d) => { bm = !!(d && d.bookmarked); try { localStorage.setItem('nv:bm:' + slug, JSON.stringify({ v: bm ? 1 : 0, t: Date.now() })); } catch {} });
+  }
+  function syncProgress(force) {
+    if (!authed || !contentReady || !bm) return;
+    const now = Date.now(), pct = Math.round(curP * 100);
+    if (!force && (now - lastSent.t < 90000 || Math.abs(pct - lastSent.pct) < 5)) return;
+    if (force && Math.abs(pct - lastSent.pct) < 2) return;
+    lastSent = { pct, t: now };
+    try {
+      fetch(NIV.API + '/api/novel/progress', { method: 'POST', keepalive: true,
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.token }, body: JSON.stringify({ userId: s.userId, slug, no, pct }) }).catch(() => {});
+    } catch {}
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { curP = readP(); savePos(); syncProgress(true); } });
+  addEventListener('pagehide', () => { curP = readP(); if (contentReady) savePos(); syncProgress(true); });
+
+  // ================= ฟองคอมเมนต์รายย่อหน้า =================
+  const paras = () => [...art.querySelectorAll('.rd-text > p')];
+  // มือถือ: ไม่เว้นช่องว่างขวาให้ฟองคอมเมนต์แล้ว → ย้ายปุ่มไปไว้ใต้ย่อหน้า (จอใหญ่ใช้ตำแหน่งเดิม)
+  function bubbleCss() {
+    if (document.getElementById('nv-pb-css')) return;
+    const st = document.createElement('style'); st.id = 'nv-pb-css';
+    const ic = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a8 8 0 01-11.6 7.1L3 21l1.9-5.4A8 8 0 1121 12z'/%3E%3C/svg%3E\")";
+    st.textContent = '@media (max-width:639px){'
+      + '.rd-text{padding-right:0!important;margin-right:0!important}'
+      + '.rd-text>p{padding-right:0!important;margin-right:0!important}'
+      + '.rd-text>p>.rd-pb{position:static!important;inset:auto!important;transform:none!important;display:flex!important;align-items:center;justify-content:center;gap:.3rem;'
+      +   'width:auto!important;min-width:2.25rem;height:1.75rem!important;margin:.35rem 0 0 auto!important;padding:0 .6rem!important;border-radius:999px!important;'
+      +   'font-size:.75rem!important;line-height:1;font-variant-numeric:tabular-nums;color:inherit!important;opacity:.6;background:transparent!important;'
+      +   'border:1px solid color-mix(in srgb,currentColor 25%,transparent)!important;box-shadow:none!important;cursor:pointer}'
+      + '.rd-text>p>.rd-pb::before{content:"";width:1rem;height:1rem;background:currentColor;-webkit-mask:' + ic + ' center/contain no-repeat;mask:' + ic + ' center/contain no-repeat}'
+      + '.rd-text>p>.rd-pb[data-c]{opacity:.9}'
+      + '[data-par="off"] .rd-text>p>.rd-pb,[data-par="some"] .rd-text>p>.rd-pb:not([data-c]){display:none!important}'
+      + '}';
+    document.head.append(st);
+  }
+  function injectBubbles() {
+    bubbleCss();
+    paras().forEach((p, i) => {
+      if (p.querySelector('.rd-pb')) return;
+      p.dataset.p = String(i + 1);
+      const b = el('button', 'rd-pb'); b.type = 'button'; b.dataset.p = String(i + 1);
+      b.setAttribute('aria-label', 'ความคิดเห็นย่อหน้าที่ ' + (i + 1));
+      p.append(b);
+    });
+  }
+  let countsLoaded = false;
+  async function loadCounts() {
+    if (countsLoaded) return; countsLoaded = true;
+    try {
+      const r = await fetch(NIV.API + '/api/novel/para-counts?slug=' + enc(slug) + '&no=' + no);
+      const d = await r.json(); if (!d.counts) return;
+      art.querySelectorAll('.rd-pb').forEach((b) => { const c = d.counts[b.dataset.p]; if (c) { b.dataset.c = String(c); b.textContent = c > 99 ? '99+' : String(c); } });
+    } catch {}
+  }
+  const paraText = (p) => [...p.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').trim();
+  function openPara(n) {
+    const p = art.querySelector(`.rd-text > p[data-p="${n}"]`); if (!p) return;
+    const bub = p.querySelector('.rd-pb');
+    NS.openSheet({
+      title: 'ความคิดเห็นย่อหน้าที่ ' + n,
+      dock: true,
+      render: (body) => {
+        const q = el('blockquote', 'flex-none px-3 py-2 mb-3 rounded-lg border-l-4 border-amber-500 bg-amber-500/10 text-slate-600 dark:text-neutral-300');
+        const qt = el('p', 'text-sm leading-6 line-clamp-2'); qt.textContent = paraText(p); q.append(qt); body.append(q);   // ตัดบรรทัดที่ข้อความด้านใน ไม่ใช่กล่องที่มี padding (กันบรรทัดที่สามโผล่)
+        const box = el('div'); body.append(box);
+        NS.mountComments(box, { slug, no, para: n, dock: true, placeholder: 'พูดถึงย่อหน้านี้…',
+          onTotal: (d) => { const c = Math.max(0, (parseInt(bub.dataset.c, 10) || 0) + d); bub.dataset.c = String(c); bub.textContent = c ? (c > 99 ? '99+' : String(c)) : ''; } });
+      },
+    });
+  }
+  art.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.rd-pb'); if (b) { e.preventDefault(); openPara(Number(b.dataset.p)); } });
+
+
+  // ================= เสียงประกอบตอน (แสดงเฉพาะตอนที่แอดมินอัปโหลดไว้ · ไฟล์เสิร์ฟจากโดเมน R2/CDN ตรง ๆ ไม่ผ่าน Worker) =================
+  //  · ตอนที่มีราคา: เรียกหลังเนื้อหาแสดงแล้วเท่านั้น (onContentReady) จึงไม่โผล่ตัวเล่นให้คนที่ยังไม่ปลดล็อก
+  //  · preload="none" ไม่โหลดไฟล์จนกว่าจะกดเล่น · จำตำแหน่งที่ฟังค้าง + ความเร็ว · ปุ่มบนหน้าจอล็อก (Media Session)
+  let audioMounted = false, fabAudio = false;   // fabAudio = ปุ่มลอย (#rd-cm) ถูกเปลี่ยนจากคอมเมนต์เป็นปุ่มเสียงแล้ว
+  const AUD_RATES = [1, 1.25, 1.5, 1.75, 2, 0.75];
+  const fmtT = (t) => { t = Math.max(0, Math.floor(t || 0)); const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), x = t % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0'); };
+  function audioCss() {
+    if (document.getElementById('nv-aud-css')) return;
+    const st = document.createElement('style'); st.id = 'nv-aud-css';
+    st.textContent = '.nv-rg{width:1.75rem;height:1.75rem}.nv-rg .bg{fill:none;stroke:rgba(245,158,11,.3);stroke-width:2}.nv-rg .fg{fill:none;stroke:#f59e0b;stroke-width:2;stroke-linecap:round;stroke-dasharray:65.97;stroke-dashoffset:65.97;transform:rotate(-90deg);transform-origin:12px 12px}';
+    document.head.append(st);
+  }
+  async function mountAudio() {
+    if (audioMounted) return; audioMounted = true;
+    let a = null;
+    try { const d = await (await fetch(NIV.API + '/api/blog/novel-audio?slug=' + enc(slug) + '&no=' + no)).json(); a = d && d.success && d.audio; } catch { return; }
+    if (!a || !a.url) return;
+    const fab = document.getElementById('rd-cm');
+    if (!fab) return;                                   // ไม่มีปุ่มลอย = ไม่มีที่ควบคุมเสียง (ไม่แสดงตัวเล่นอื่นอีกแล้ว)
+    audioCss();
+    const au = el('audio'); au.preload = 'none'; au.src = a.url;
+    const dur = () => (isFinite(au.duration) && au.duration > 0 ? au.duration : a.duration || 0);
+    const posKeyA = `nv:aud:${slug}:${no}`;
+    let lastSave = 0;
+    try { const r = parseFloat(localStorage.getItem('nv:aud:rate')); if (AUD_RATES.indexOf(r) >= 0) au.playbackRate = r; } catch {}
+    let saved = NaN; try { saved = parseFloat(localStorage.getItem(posKeyA)); } catch {}
+    if (saved > 3 && saved < (a.duration || Infinity) - 5) au.addEventListener('loadedmetadata', () => { if (au.currentTime < 1) au.currentTime = saved; }, { once: true });
+    const save = (force) => { const n = Date.now(); if (!force && n - lastSave < 3000) return; lastSave = n; try { au.currentTime > 3 && au.currentTime < dur() - 5 ? localStorage.setItem(posKeyA, String(Math.floor(au.currentTime))) : localStorage.removeItem(posKeyA); } catch {} };
+
+    // ปุ่มลอยเดิม = ไปคอมเมนต์ → ตอนที่มีเสียง: หยุดอยู่ = หูฟังเฉยๆ · กำลังเล่น = วงกลมเดียว (วงแหวนความคืบหน้า + จุดเต้น) · แตะเพื่อสลับเล่น/หยุด
+    const old = fab.querySelector('svg'), cls = old ? old.getAttribute('class') : '';
+    const dot = () => { const t = document.createElement('span'); t.innerHTML = '<svg class="nv-rg" viewBox="0 0 24 24" aria-hidden="true"><circle class="bg" cx="12" cy="12" r="10.5"/><circle class="fg" cx="12" cy="12" r="10.5"/><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>'; return t.firstChild; };
+    const setFab = (on) => {
+      const ic = on ? dot() : NS.ico('headphones', cls), cur = fab.querySelector('svg');
+      if (cur) cur.replaceWith(ic); else fab.prepend(ic);
+      const t = on ? 'หยุดเสียงชั่วคราว' : 'ฟังเสียงตอนนี้'; fab.setAttribute('aria-label', t); fab.title = t;
+      fab.classList.toggle('nv-fab-on', on); if (on) paint();
+    };
+    fabAudio = true; setFab(false);
+    const paint = () => { const f = fab.querySelector('.nv-rg .fg'); if (!f) return; const d = dur(), r = d ? Math.min(1, Math.max(0, au.currentTime / d)) : 0; f.style.strokeDashoffset = String((65.97 * (1 - r)).toFixed(2)); };
+
+    const toggle = () => { if (au.paused) au.play().catch(() => NS.toast('เล่นเสียงไม่สำเร็จ ลองอีกครั้ง')); else au.pause(); };
+    fab.addEventListener('click', (e) => { e.preventDefault(); toggle(); });
+    au.addEventListener('timeupdate', () => { paint(); save(false); });
+    au.addEventListener('loadedmetadata', paint);
+    au.addEventListener('play', () => setFab(true));
+    au.addEventListener('pause', () => { setFab(false); save(true); });
+    au.addEventListener('error', () => { if (au.error && au.currentSrc) NS.toast('โหลดเสียงไม่สำเร็จ ลองรีเฟรชหน้านี้'); });
+    au.addEventListener('ended', () => {
+      try { localStorage.removeItem(posKeyA); } catch {}
+      const nx = document.querySelector('a[rel="next"]');
+      if (nx && nx.href) NS.toast('ฟังจบตอนนี้แล้ว', { label: 'ตอนถัดไป', fn: () => { location.href = nx.href; } });
+    });
+    addEventListener('pagehide', () => save(true));
+    if ('mediaSession' in navigator && window.MediaMetadata) {          // ปุ่มบนหน้าจอล็อกยังใช้ข้าม/ย้อนได้
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({ title: 'ตอนที่ ' + no, artist: document.title.split('|')[0].trim() });
+        navigator.mediaSession.setActionHandler('play', toggle); navigator.mediaSession.setActionHandler('pause', toggle);
+        navigator.mediaSession.setActionHandler('seekbackward', () => { au.currentTime = Math.max(0, au.currentTime - 15); });
+        navigator.mediaSession.setActionHandler('seekforward', () => { au.currentTime = Math.min(dur(), au.currentTime + 15); });
+      } catch {}
+    }
+  }
+
+  // ================= เริ่มทำงานเมื่อมีเนื้อหา =================
+  function onContentReady() {
+    if (contentReady) return;
+    contentReady = true;
+    injectBubbles(); if (prefs.par !== 'off') loadCounts();
+    mountAudio();
+    curP = readP(); if (progI) progI.style.transform = `scaleX(${curP.toFixed(4)})`;
+    // นับวิว: อ่านจริงอย่างน้อย 4 วินาทีและแท็บยังเปิดอยู่
+    setTimeout(() => { if (document.visibilityState === 'visible') NS.view(slug, no); }, 4000);
+    // ลิงก์ย่อหน้า #p12 หรือกลับมาอ่านต่อจากจุดเดิม
+    const m = /^#p(\d{1,4})$/.exec(location.hash);
+    if (m) {
+      const p = art.querySelector(`.rd-text > p[data-p="${m[1]}"]`);
+      if (p) setTimeout(() => { p.scrollIntoView({ block: 'center', behavior: 'smooth' }); p.classList.add('rd-flash'); }, 250);
+    } else {
+      let saved = NaN; try { saved = parseFloat(localStorage.getItem(posKey)); } catch {}
+      if (saved > 3 && saved < 97 && scrollY < 60) {
+        requestAnimationFrame(() => {
+          scrollToP(saved / 100);
+          NS.toast('กลับมาอ่านต่อจากเดิม', { label: 'เริ่มใหม่', fn: () => window.scrollTo({ top: 0, behavior: 'smooth' }) });
+        });
+      }
+    }
+    schedule();
+  }
+
+  // ================= ตอนที่มีราคา =================
+  const panel = document.getElementById('lock-panel');
+  function renderContent(text) {
+    const box = el('div', 'rd-text');
+    String(text || '').split(/\n+/).map((t) => t.trim()).filter(Boolean).forEach((t) => box.append(el('p', '', t)));
+    art.replaceChildren(box);
+    onContentReady();
+  }
+  if (!panel) onContentReady();
+  else {
+    const msg = document.getElementById('lock-msg'), btn = document.getElementById('unlock-btn'), login = document.getElementById('login-link');
+    const price = Number(panel.dataset.price) || 0;
+    const q = `slug=${enc(slug)}&no=${no}&userId=${enc(s.userId || '')}`;
+    const show = (text, o = {}) => { msg.textContent = text; btn.classList.toggle('hidden', !o.unlock); login.classList.toggle('hidden', !o.needLogin); };
+    const load = async () => {
+      if (!authed) return show('ต้องเข้าสู่ระบบก่อนจึงจะปลดล็อกตอนนี้ได้', { needLogin: true });
+      const r = await api('/api/novel/chapter?' + q);
+      if (r.status === 401) return show('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่', { needLogin: true });
+      if (!r.ok) return show(r.data.error || 'โหลดตอนนี้ไม่สำเร็จ ลองรีเฟรชหน้านี้');
+      if (!r.data.locked) return renderContent(r.data.chapter.content);
+      show('ใช้ ' + price.toLocaleString('th-TH') + ' coin เพื่ออ่านตอนนี้ (ปลดล็อกครั้งเดียว อ่านซ้ำได้ตลอด)', { unlock: true });
+    };
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      const r = await api('/api/novel/unlock', { method: 'POST', body: { userId: s.userId, slug, no } });
+      btn.disabled = false;
+      if (r.status === 402) return show('Coin ไม่พอสำหรับปลดล็อกตอนนี้');
+      if (r.status === 401) return show('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่', { needLogin: true });
+      if (!r.ok) return show(r.data.error || 'ปลดล็อกไม่สำเร็จ ลองใหม่อีกครั้ง', { unlock: true });
+      load();
+    });
+    load();
+  }
+
+  // ================= สารบัญตอน (โหลดเป็นช่วงรอบตอนที่อ่านอยู่ ไม่ดึงทั้งเรื่อง) =================
+  document.getElementById('rd-toc')?.addEventListener('click', () => {
+    NS.openSheet({ title: 'สารบัญ', render: async (body) => {
+      const wait = el('p', 'nv-pulse text-sm text-slate-500', 'กำลังโหลดสารบัญ…'); body.append(wait);
+      const get = async (qs) => { try { const d = await (await fetch(NIV.API + '/api/novel/get?slug=' + enc(slug) + '&' + qs)).json(); return d && d.chapters ? d : null; } catch { return null; } };
+      const [d, aNos] = await Promise.all([get(`from=${Math.max(1, no - 40)}&limit=100`), NS.audioNos(slug)]);
+      if (!d) { wait.textContent = 'โหลดสารบัญไม่สำเร็จ'; wait.classList.remove('nv-pulse'); return; }
+      const meta = d.meta || {};
+      const ul = el('ul', 'nv-toc divide-y divide-slate-200 dark:divide-white/10 -mx-2');
+      const btn = (label) => { const b = el('button', 'w-full mt-2 mb-2 py-3 rounded-xl border border-slate-300 dark:border-white/15 text-sm hover:border-amber-500 transition-colors', label); b.type = 'button'; return b; };
+      const prevBtn = btn('โหลดตอนก่อนหน้า'), nextBtn = btn('โหลดตอนถัดไป');
+      let firstShown = 0, lastShown = 0, cur = null;
+      const row = (c) => {
+        const li = el('li'); const a = el('a', 'flex items-center justify-between gap-3 px-3 min-h-[3rem] py-2 rounded-lg text-sm');
+        a.href = `/novels/${enc(slug)}/${c.no}`;
+        const l = el('span', 'min-w-0 truncate'); l.append(el('span', 'text-slate-400 mr-2', String(c.no)), document.createTextNode(c.title));
+        const pr = el('span', 'shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400');
+        if (aNos.has(c.no)) pr.append(NS.audioIco());   // ตอนที่มีเสียงประกอบ
+        if (c.price > 0) pr.append(NS.ico('lock'), document.createTextNode(String(c.price)));
+        a.append(l, pr);
+        if (c.no === no) { a.setAttribute('aria-current', 'true'); cur = a; }
+        li.append(a); return li;
+      };
+      const sync = () => { prevBtn.classList.toggle('hidden', !(firstShown > (meta.first_no || 1))); nextBtn.classList.toggle('hidden', !(lastShown < (meta.last_no || 0))); };
+      const add = (chs, atTop) => {
+        if (!chs.length) return;
+        const frag = document.createDocumentFragment(); chs.forEach((c) => frag.append(row(c)));
+        if (atTop) ul.prepend(frag); else ul.append(frag);
+        firstShown = firstShown ? Math.min(firstShown, chs[0].no) : chs[0].no; lastShown = Math.max(lastShown, chs[chs.length - 1].no); sync();
+      };
+      add(d.chapters, false);
+      wait.replaceWith(prevBtn); prevBtn.after(ul); ul.after(nextBtn); sync();
+      prevBtn.addEventListener('click', async () => { prevBtn.disabled = true; const r = await get(`to=${firstShown - 1}&limit=100`); prevBtn.disabled = false; if (r) add(r.chapters, true); });
+      nextBtn.addEventListener('click', async () => { nextBtn.disabled = true; const r = await get(`from=${lastShown + 1}&limit=100`); nextBtn.disabled = false; if (r) add(r.chapters, false); });
+      if (cur) cur.scrollIntoView({ block: 'center' });
+    } });
+  });
+
+  // ================= ตั้งค่าการอ่าน =================
+  document.getElementById('rd-set')?.addEventListener('click', () => {
+    NS.openSheet({ title: 'ตั้งค่าการอ่าน', render: (body) => {
+      const wrap = el('div', 'rd-set');
+      const sample = el('div', 'rd-sample', 'ตัวอย่างข้อความ — ลมหนาวพัดผ่านทุ่งหญ้า เสียงกระดิ่งดังแว่วมาแต่ไกล');
+      const groups = [];
+      const change = (key, v) => {
+        const p0 = contentReady ? readP() : 0;
+        prefs[key] = v; applyPrefs(); savePrefs(); groups.forEach((g) => g());
+        if (key === 'par' && v !== 'off' && contentReady) loadCounts();
+        if (contentReady && key !== 'par' && key !== 't') requestAnimationFrame(() => scrollToP(p0));   // รักษาตำแหน่งที่อ่านอยู่เมื่อข้อความไหลใหม่
+        schedule();
+      };
+      const group = (title, opts, key) => {
+        const h = el('div'); h.append(el('h4', '', title));
+        const seg = el('div', 'rd-seg');
+        const paint = () => seg.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(String(prefs[key]) === b.dataset.v)));
+        opts.forEach(([v, label, sw]) => {
+          const b = el('button'); b.type = 'button'; b.dataset.v = String(v);
+          if (sw) { const i = el('span', 'rd-sw'); i.style.background = sw; b.append(i); }
+          b.append(document.createTextNode(label));
+          b.addEventListener('click', () => change(key, typeof DEF[key] === 'number' ? Number(v) : v));
+          seg.append(b);
+        });
+        h.append(seg); groups.push(paint); paint(); return h;
+      };
+      wrap.append(
+        group('ธีม', [['auto', 'ตามเว็บ'], ['light', 'สว่าง', '#fff'], ['sepia', 'ซีเปีย', '#f4ecd8'], ['dark', 'มืด', '#161616'], ['black', 'ดำสนิท', '#000']], 't'),
+        group('ฟอนต์', Object.entries(FONTS).map(([k, f]) => [k, f.label]), 'f'),
+        group('ขนาดตัวอักษร', [[15, '15'], [17, '17'], [18, '18'], [20, '20'], [22, '22'], [25, '25']], 's'),
+        group('ระยะบรรทัด', [[1.6, 'แน่น'], [1.8, 'ปกติ'], [2, 'โปร่ง'], [2.3, 'โปร่งมาก']], 'lh'),
+        group('ความกว้างหน้า', [['n', 'แคบ'], ['m', 'กลาง'], ['w', 'กว้าง']], 'w'),
+        group('คอมเมนต์รายย่อหน้า', [['off', 'ปิด'], ['some', 'เฉพาะที่มี'], ['all', 'ทุกย่อหน้า']], 'par'),
+        sample,
+      );
+      const reset = el('button', 'text-sm text-slate-500 dark:text-neutral-400 hover:text-amber-500 justify-self-start', 'คืนค่าเริ่มต้น'); reset.type = 'button';
+      reset.addEventListener('click', () => { prefs = { ...DEF }; applyPrefs(); savePrefs(); groups.forEach((g) => g()); schedule(); });
+      wrap.append(reset); body.append(wrap);
+    } });
+  });
+
+  // ================= คอมเมนต์ท้ายตอน (โหลดเมื่อเลื่อนใกล้ถึง) =================
+  const cmRoot = document.getElementById('cm-root');
+  document.getElementById('rd-cm')?.addEventListener('click', () => { if (fabAudio) return; document.getElementById('chapter-comments')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  if (cmRoot) {
+    const title = document.getElementById('cm-total');
+    let total = 0;
+    const mount = () => NS.mountComments(cmRoot, { slug, no, para: 0, placeholder: 'ตอนนี้เป็นยังไงบ้าง? เล่าให้ฟังหน่อย…',
+      onTotal: (d) => { total = Math.max(0, total + d); if (title) title.textContent = total ? '(' + NS.num(total) + ')' : ''; } });
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((en) => { if (en[0].isIntersecting) { io.disconnect(); mount(); } }, { rootMargin: '500px 0px' });
+      io.observe(cmRoot);
+    } else mount();
+  }
+
+  // ================= คีย์ลัด =================
+  document.addEventListener('keydown', (e) => {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const t = e.target; if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+    if (document.querySelector('.nv-sheet.open')) return;
+    const sel = e.key === 'ArrowLeft' ? 'a[rel="prev"]' : e.key === 'ArrowRight' ? 'a[rel="next"]' : null;
+    const a = sel && document.querySelector(sel);
+    if (a && a.href) location.href = a.href;
+  });
+})();
