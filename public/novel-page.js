@@ -110,19 +110,19 @@
     if (!NS.authed() && !hasUid) return;
     let el = $('coin-bal');
     if (!el) {
-      const anchor = $('act-share'); if (!anchor || !anchor.parentElement) { console.warn('[coin] ไม่พบ #act-share / #coin-bal ให้วางชิป'); return; }
+      // ตำแหน่ง: แถวหัว "สารบัญ" ฝั่งขวา ชิดซ้ายของลิงก์ "ตอนล่าสุด" (ไม่มีลิงก์นั้นก็ชิดขวาสุด)
+      const toc = $('toc'), anchor = toc || $('act-share');
+      if (!anchor || !anchor.parentElement) { console.warn('[coin] ไม่พบ #toc / #act-share / #coin-bal ให้วางชิป'); return; }
       el = document.createElement('a'); el.id = 'coin-bal';
-      (anchor.closest('.nv-actions') || anchor.parentElement).after(el);
-      el.style.alignSelf = 'flex-start';
+      if (toc) { toc.after(el); el.style.marginLeft = 'auto'; el.style.paddingBlock = '.25rem'; }
+      else { (anchor.closest('.nv-actions') || anchor.parentElement).after(el); el.style.alignSelf = 'flex-start'; }
     }
     el.href = '/coins'; el.title = 'เติม Coin';
     el.className = (el.className ? el.className + ' ' : '') + 'inline-flex items-center gap-1 text-amber-500 font-semibold';
     el.setAttribute('aria-label', 'ยอด Coin คงเหลือ');
     // เหรียญตัวเดียวกับหน้า art: เว็บคอมโพเนนต์ <fnnz-coin> จาก /coin-icon.js (โหลดเองถ้าหน้านี้ยังไม่ได้ใส่)
-    if (!customElements.get('fnnz-coin') && !document.querySelector('script[src="/coin-icon.js"]')) {
-      const sc = document.createElement('script'); sc.src = '/coin-icon.js';
-      sc.onerror = () => { const r = document.createElement('script'); r.src = 'https://fnnz.art/coin-icon.js'; document.head.append(r); };   // ยังไม่มีไฟล์ในโปรเจกต์นี้ → ใช้ตัวจาก fnnz.art
-      document.head.append(sc);
+    if (!customElements.get('fnnz-coin') && !document.querySelector('script[src^="/coin-icon.js"]')) {
+      const sc = document.createElement('script'); sc.src = '/coin-icon.js'; document.head.append(sc);
     }
     const icon = document.createElement('fnnz-coin');
     icon.setAttribute('size', '18'); icon.setAttribute('static', '');
@@ -151,6 +151,10 @@
       return [...new Set([(m && m.content || '').replace(/\/+$/, ''), 'https://api.fnnz.art'].filter(Boolean))];
     };
     const refresh = async () => {
+      // ใช้ตัวช่วยเดียวกับหน้า /coins ถ้ามี (nivread.js ใหม่) · ไม่มีก็ยิง API ตรงตามด้านล่าง
+      if (typeof NIV.coinBalance === 'function') {
+        try { const n = await NIV.coinBalance(true); if (n != null) { paint(n); return; } } catch {}
+      }
       const id = uid(); if (!id) { console.warn('[coin] ไม่พบ userId'); return; }
       const headers = token() ? { Authorization: 'Bearer ' + token() } : {};
       for (const base of bases()) {
