@@ -103,6 +103,71 @@
     NS.toast(next ? 'ขอบคุณสำหรับคะแนน' : 'ถอนคะแนนแล้ว');
   });
 
+  // ---------- ยอด Coin คงเหลือ (กดไปหน้าเติม /coins · อัปเดตเมื่อกลับมาที่แท็บ) ----------
+  // ถ้าอยากกำหนดตำแหน่งเอง ใส่ <a id="coin-bal"></a> ใน HTML ได้ ไม่งั้นสคริปต์จะสร้างไว้ข้างปุ่มแชร์ให้
+  function mountCoin() {
+    let hasUid = false; try { hasUid = !!localStorage.getItem('userId'); } catch {}
+    if (!NS.authed() && !hasUid) return;
+    let el = $('coin-bal');
+    if (!el) {
+      const anchor = $('act-share'); if (!anchor || !anchor.parentElement) { console.warn('[coin] ไม่พบ #act-share / #coin-bal ให้วางชิป'); return; }
+      el = document.createElement('a'); el.id = 'coin-bal';
+      (anchor.closest('.nv-actions') || anchor.parentElement).after(el);
+      el.style.alignSelf = 'flex-start';
+    }
+    el.href = '/coins'; el.title = 'เติม Coin';
+    el.className = (el.className ? el.className + ' ' : '') + 'inline-flex items-center gap-1 text-amber-500 font-semibold';
+    el.setAttribute('aria-label', 'ยอด Coin คงเหลือ');
+    // เหรียญตัวเดียวกับหน้า art: เว็บคอมโพเนนต์ <fnnz-coin> จาก /coin-icon.js (โหลดเองถ้าหน้านี้ยังไม่ได้ใส่)
+    if (!customElements.get('fnnz-coin') && !document.querySelector('script[src="/coin-icon.js"]')) {
+      const sc = document.createElement('script'); sc.src = '/coin-icon.js';
+      sc.onerror = () => { const r = document.createElement('script'); r.src = 'https://fnnz.art/coin-icon.js'; document.head.append(r); };   // ยังไม่มีไฟล์ในโปรเจกต์นี้ → ใช้ตัวจาก fnnz.art
+      document.head.append(sc);
+    }
+    const icon = document.createElement('fnnz-coin');
+    icon.setAttribute('size', '18'); icon.setAttribute('static', '');
+    const val = document.createElement('span'); val.className = 'nv-coin-n';
+    const paint = (n) => { n = Math.max(0, Number(n) || 0); val.textContent = NS.num(n); try { localStorage.setItem('coinBalance', n); } catch {} };
+    let c0 = 0; try { c0 = Number(localStorage.getItem('coinBalance')) || 0; } catch {}
+    val.textContent = NS.num(c0);                                   // โชว์ค่าที่แคชไว้ (คีย์เดียวกับหน้า art) แล้วค่อยซิงก์ของจริง
+    el.replaceChildren(icon, val);
+    // ถ้า /coin-icon.js ไม่ขึ้น (404 / คนละโดเมน) <fnnz-coin> จะเป็นกล่องว่าง → สลับเป็นเหรียญ SVG แทน เพื่อไม่ให้ชิปหายไป
+    setTimeout(() => {
+      if (customElements.get('fnnz-coin')) return;
+      console.warn('[coin] /coin-icon.js ไม่ถูกโหลด — ใช้เหรียญสำรอง');
+      const fb = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      fb.setAttribute('viewBox', '0 0 24 24'); fb.setAttribute('width', '18'); fb.setAttribute('height', '18'); fb.setAttribute('aria-hidden', 'true');
+      fb.innerHTML = '<circle cx="12" cy="12" r="10" fill="#f59e0b"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="1.5"/>';
+      icon.replaceWith(fb);
+    }, 3000);
+
+    // เรียก API เดียวกับหน้า art ทุกอย่าง: GET /api/get-coin-balance?id=<userId> + Authorization: Bearer <token> → { success, coinBalance }
+    const lsGet = (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
+    const sess = () => { try { return NIV.session() || {}; } catch { return {}; } };
+    const uid = () => lsGet('userId') || sess().userId || sess().id || '';
+    const token = () => lsGet('token') || lsGet('authToken') || lsGet('sessionToken') || sess().token || '';
+    const bases = () => {
+      const m = document.querySelector('meta[name="api-base"]');
+      return [...new Set([(m && m.content || '').replace(/\/+$/, ''), 'https://api.fnnz.art'].filter(Boolean))];
+    };
+    const refresh = async () => {
+      const id = uid(); if (!id) { console.warn('[coin] ไม่พบ userId'); return; }
+      const headers = token() ? { Authorization: 'Bearer ' + token() } : {};
+      for (const base of bases()) {
+        try {
+          const r = await fetch(`${base}/api/get-coin-balance?id=${encodeURIComponent(id)}`, { headers });
+          const d = await r.json().catch(() => ({}));
+          if (r.ok && d.success && d.coinBalance != null) { paint(d.coinBalance); return; }
+          console.warn('[coin]', base, r.status, d.error || d);
+        } catch (e) { console.warn('[coin] fetch ล้มเหลว', base, e.message || e); }
+      }
+    };
+    refresh();
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+    addEventListener('pageshow', (e) => { if (e.persisted) refresh(); });
+  }
+  mountCoin();
+
   // ---------- อ่านต่อ ----------
   const start = $('btn-start');
   const tocNos = new Set([...document.querySelectorAll('.nv-toc a[data-no]')].map((a) => Number(a.dataset.no)));
