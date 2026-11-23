@@ -103,6 +103,43 @@
     NS.toast(next ? 'ขอบคุณสำหรับคะแนน' : 'ถอนคะแนนแล้ว');
   });
 
+  // ---------- ยอด Coin คงเหลือ (กดไปหน้าเติม /coins · อัปเดตเมื่อกลับมาที่แท็บ) ----------
+  // ถ้าอยากกำหนดตำแหน่งเอง ใส่ <a id="coin-bal"></a> ใน HTML ได้ ไม่งั้นสคริปต์จะสร้างไว้ข้างปุ่มแชร์ให้
+  function mountCoin() {
+    if (!NS.authed()) return;
+    let el = $('coin-bal');
+    if (!el) {
+      const anchor = $('act-share'); if (!anchor || !anchor.parentElement) return;
+      el = document.createElement('a'); el.id = 'coin-bal';
+      anchor.parentElement.append(el);
+    }
+    el.href = '/coins'; el.title = 'เติม Coin';
+    el.className = (el.className ? el.className + ' ' : '') + 'inline-flex items-center gap-1 text-amber-500 font-semibold';
+    el.setAttribute('aria-label', 'ยอด Coin คงเหลือ');
+    // เหรียญตัวเดียวกับหน้า art: เว็บคอมโพเนนต์ <fnnz-coin> จาก /coin-icon.js (โหลดเองถ้าหน้านี้ยังไม่ได้ใส่)
+    if (!customElements.get('fnnz-coin') && !document.querySelector('script[src="/coin-icon.js"]')) {
+      const sc = document.createElement('script'); sc.src = '/coin-icon.js'; document.head.append(sc);
+    }
+    const icon = document.createElement('fnnz-coin');
+    icon.setAttribute('size', '18'); icon.setAttribute('static', '');
+    const val = document.createElement('span'); val.className = 'nv-coin-n';
+    const paint = (n) => { n = Math.max(0, Number(n) || 0); val.textContent = NS.num(n); try { localStorage.setItem('coinBalance', n); } catch {} };
+    let c0 = 0; try { c0 = Number(localStorage.getItem('coinBalance')) || 0; } catch {}
+    val.textContent = NS.num(c0);                                   // โชว์ค่าที่แคชไว้ (คีย์เดียวกับหน้า art) แล้วค่อยซิงก์ของจริง
+    el.replaceChildren(icon, val);
+    const refresh = async () => {
+      const s = NIV.session(); if (!s || !s.userId) return;
+      try {
+        const d = await NIV.api('/api/get-coin-balance?id=' + encodeURIComponent(s.userId));
+        if (d && d.success !== false && d.coinBalance != null) paint(d.coinBalance);
+      } catch {}
+    };
+    refresh();
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+    addEventListener('pageshow', (e) => { if (e.persisted) refresh(); });
+  }
+  mountCoin();
+
   // ---------- อ่านต่อ ----------
   const start = $('btn-start');
   const tocNos = new Set([...document.querySelectorAll('.nv-toc a[data-no]')].map((a) => Number(a.dataset.no)));
