@@ -97,14 +97,15 @@ ${XM_DEER(70, 14, false)}${XM_DEER(114, 8, true)}
 
   // ---------- theme-color (แถบเบราว์เซอร์มือถือ) ----------
   let tc = document.querySelector('meta[name="theme-color"]');
-  const origTc = tc ? tc.getAttribute('content') : '#0d0d0d';
+  const plainTc = () => (html.classList.contains('dark') ? '#0d0d0d' : '#f3f4f6');
   const syncThemeColor = () => {
     const on = html.hasAttribute('data-festival');
+    tc = document.querySelector('meta[name="theme-color"]') || tc;
     if (!tc) {
       if (!on) return;
       tc = document.createElement('meta'); tc.name = 'theme-color'; document.head.appendChild(tc);
     }
-    tc.setAttribute('content', on ? (html.classList.contains('dark') ? fest.tc.dark : fest.tc.light) : origTc);
+    tc.setAttribute('content', on ? (html.classList.contains('dark') ? fest.tc.dark : fest.tc.light) : plainTc());
   };
 
   // ---------- สร้างตัวตกแต่ง ----------

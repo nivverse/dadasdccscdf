@@ -333,8 +333,8 @@ ${ld}
   if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
   else document.documentElement.classList.add('dark');
 </script>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config = { darkMode: 'class' }</script>
+<script src=\"/theme-color.js\"></script>
+<link rel="stylesheet" href="/tailwind.css?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.nivread.com">
