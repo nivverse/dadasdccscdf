@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.nivread.twa",
+        "sha256_cert_fingerprints": ["6E:F8:1B:E8:9C:96:FD:26:F1:20:4B:2B:F0:B4:DE:84:87:67:A1:3D:EF:DE:AB:24:98:8D:A7:56:DA:7E:E1:16"]
+      }
+    }]
