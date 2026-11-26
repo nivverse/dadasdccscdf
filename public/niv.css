@@ -53,8 +53,8 @@
 .gal{margin:.25rem 1rem .75rem}
 .gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:transparent;cursor:zoom-in}
 .gal-s .bg{display:none}
-.gal-s .fg{position:relative;display:block;width:100%;height:auto;max-width:100%;max-height:min(480px,120vw);object-fit:contain}
-@media (min-width:768px){.gal-s .fg{border-radius:16px}}
+.gal-s .fg{position:relative;display:block;width:100%;height:auto;max-width:100%;max-height:none;object-fit:contain}
+@media (min-width:768px){.gal-s .fg{width:100%;max-height:560px;object-fit:cover;object-position:50% 20%;border-radius:16px}}
 .gal-t{position:relative;min-height:0;padding:0;border:0;background:#111;cursor:zoom-in;overflow:hidden}
 .gal-t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease,filter .3s}
 .gal-t:hover img{transform:scale(1.05);filter:brightness(1.08)}
@@ -70,13 +70,7 @@
 .gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-xw,.cx-feed{container-type:inline-size}
-.gal-xw,.cx-feed{container-type:inline-size}
-/* แต่ละรูป = สัดส่วนจริงของรูปนั้น (ไม่ครอป) · ความสูงทั้งแถว = ความสูงของรูปแรก (สูง ≤380px, กว้างรูปแรก ≤340px) · รูปถัดไปสูงเท่ารูปแรก กว้างตามสัดส่วนจริง (ไม่เกินการ์ด) · JS ใส่ --tr = กว้าง/สูงของรูปนั้น, --gr = ของรูปแรก */
-.gal-x{align-items:flex-start}
-.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(380px*var(--tr,.8)),88%,340px);aspect-ratio:var(--tr,.8);height:auto;border-radius:14px;scroll-snap-align:start}
-.gal-x .gal-t{width:min(calc(min(clamp(240px,100cqw,380px),340px / var(--gr,.8))*var(--tr,.8)),calc(100cqw - 2rem))}
-.gal-t img{object-fit:contain}
+.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)*var(--k,1)),88%,340px);max-height:560px;height:var(--gh,420px);border-radius:14px;scroll-snap-align:start}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
@@ -158,16 +152,8 @@ html.dark .cx-count{color:#fcd34d}
 .cx-feed:not(.cx-multi) .cx-slide{flex-basis:min(100%,340px)}
 .cx-frame{position:relative;display:block;aspect-ratio:var(--gr,4/5);max-height:560px;border-radius:18px;overflow:hidden;background:rgba(127,127,127,.16);box-shadow:inset 0 0 0 1px rgba(127,127,127,.22)}
 /* ฟีดตัวละครหลายตัว: ขนาดรูปตามสัดส่วนจริงของแต่ละรูปเหมือนแกลเลอรี (ไม่ครอป ไม่เต็มจอ) · ตัวเดียวคงเดิม · JS: fitX/layoutX ใน nivread.js */
-.cx-track{align-items:flex-start}
-.cx-multi .cx-slide{flex:0 0 auto;width:min(calc(380px*var(--tr,.8)),88%,340px);container-type:inline-size}
-.cx-multi .cx-slide{width:min(calc(min(clamp(240px,100cqw,380px),340px / var(--gr,.8))*var(--tr,.8)),calc(100cqw - 2rem))}
-.cx-multi .cx-slide:has(.cx-rest){--tr:.6}
-.cx-multi .cx-frame{aspect-ratio:var(--tr,.8);height:auto;max-height:none}
-.cx-multi .cx-img{object-fit:contain}
-.cx-feed:not(.cx-multi) .cx-slide{flex-basis:min(100%,340px,calc(380px*var(--gr,.8)))}
-.cx-feed:not(.cx-multi) .cx-slide{flex-basis:min(100%,340px,calc(clamp(240px,100cqw,380px)*var(--gr,.8)))}
-.cx-feed:not(.cx-multi) .cx-frame{max-height:none}
-.cx-feed:not(.cx-multi) .cx-img{object-fit:contain}
+.cx-multi .cx-slide{flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)*var(--k,1)),88%,340px);container-type:inline-size}
+.cx-multi .cx-frame{aspect-ratio:auto;height:var(--gh,420px)}
 @container (max-width:190px){.cx-cap{padding:9px}.cx-cap b{font-size:12.5px;overflow-wrap:anywhere;hyphens:auto}.cx-cap i{font-size:10px}.cx-cap em{font-size:9.5px;padding:3px 7px}.cx-idx{top:6px;right:6px;font-size:10px;padding:4px 7px}.cx-rest{font-size:13px}}
 .cx-img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
 .cx-noimg{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;opacity:.5}

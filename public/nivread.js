@@ -417,7 +417,7 @@ function avatarEl(user, size = 'w-9 h-9') {
   }
   function charBlockEl(p, full) { // แสดงแค่ที่จำเป็น (รูป + ชื่อ + เลขลำดับ) · จำกัด 8 สไลด์ — ตรงกับ charCardHtml() ฝั่งเซิร์ฟเวอร์
     if (!document.getElementById('niv-css') && !document.getElementById('niv-char-css')) {
-      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261126c'; document.head.appendChild(l);
+      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261120i'; document.head.appendChild(l);
     }
     const href = '/posts/' + encodeURIComponent(p.slug), total = full.length, list = full.slice(0, 8);
     const slides = list.map((c, i) => {
@@ -586,8 +586,8 @@ function avatarEl(user, size = 'w-9 h-9') {
 .gal{margin:.25rem 1rem .75rem}
 .gal-s{position:relative;display:flex;justify-content:center;border-radius:16px;overflow:hidden;background:transparent;cursor:zoom-in}
 .gal-s .bg{display:none}
-.gal-s .fg{position:relative;display:block;width:100%;height:auto;max-width:100%;max-height:min(480px,120vw);object-fit:contain}
-@media (min-width:768px){.gal-s .fg{border-radius:16px}}
+.gal-s .fg{position:relative;display:block;width:100%;height:auto;max-width:100%;max-height:none;object-fit:contain}
+@media (min-width:768px){.gal-s .fg{width:100%;max-height:560px;object-fit:cover;object-position:50% 20%;border-radius:16px}}
 .gal-t{position:relative;min-height:0;padding:0;border:0;background:#111;cursor:zoom-in;overflow:hidden}
 .gal-t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease,filter .3s}
 .gal-t:hover img{transform:scale(1.05);filter:brightness(1.08)}
@@ -603,12 +603,7 @@ function avatarEl(user, size = 'w-9 h-9') {
 .gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-xw,.cx-feed{container-type:inline-size}
-/* แต่ละรูป = สัดส่วนจริงของรูปนั้น (ไม่ครอป) · ความสูงทั้งแถว = ความสูงของรูปแรก (สูง ≤380px, กว้างรูปแรก ≤340px) · รูปถัดไปสูงเท่ารูปแรก กว้างตามสัดส่วนจริง (ไม่เกินการ์ด) · JS ใส่ --tr = กว้าง/สูงของรูปนั้น, --gr = ของรูปแรก */
-.gal-x{align-items:flex-start}
-.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(380px*var(--tr,.8)),88%,340px);aspect-ratio:var(--tr,.8);height:auto;border-radius:14px;scroll-snap-align:start}
-.gal-x .gal-t{width:min(calc(min(clamp(240px,100cqw,380px),340px / var(--gr,.8))*var(--tr,.8)),calc(100cqw - 2rem))}
-.gal-t img{object-fit:contain}
+.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)*var(--k,1)),88%,340px);max-height:560px;height:var(--gh,420px);border-radius:14px;scroll-snap-align:start}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
@@ -645,25 +640,47 @@ function avatarEl(user, size = 'w-9 h-9') {
       const x = img.closest && img.closest('.gal-x,.cx-track');
       if (!x || x.dataset.r || !img.naturalWidth || img !== x.querySelector('img')) return;
       x.dataset.r = '1';
-      x.style.setProperty('--gr', Math.min(2.4, Math.max(0.45, img.naturalWidth / img.naturalHeight)).toFixed(4));
+      x.style.setProperty('--gr', Math.min(1.91, Math.max(0.5625, img.naturalWidth / img.naturalHeight)).toFixed(4));
     };
-    // แถวรูป (แกลเลอรี .gal-x + การ์ดตัวละคร .cx-multi): "ความสูงแถวคงที่" มาจาก CSS ล้วน (clamp ตามความกว้างการ์ด) · JS แค่บอกสัดส่วนของแต่ละรูป → กำหนดความกว้างของสไลด์นั้นเท่านั้น
-    // ไม่มีการคำนวณความสูงจากส่วนผสมรูปทั้งแถว → ไม่กระโดดตอนรูปโหลด และทุกโพสต์ในเว็บได้ความสูงเท่ากัน
-    const TR_MIN = 0.45, TR_MAX = 2.4; // กันรูปแปลกสุดโต่ง (แถบยาวมาก) · ในช่วงนี้แสดงสัดส่วนจริงทุกรูป
-    const fitNav = (x) => { if (x.parentNode) x.parentNode.classList.toggle('nv-fit', x.scrollWidth <= x.clientWidth + 2); }; // ทุกรูปอยู่ในกรอบหมด → ซ่อนจุด/ลูกศร
-    const fitX = (img) => {
+    const layoutX = (x) => { // แถวรูปที่ใช้สัดส่วนจริง (แกลเลอรี + การ์ดตัวละครหลายตัวในฟีด): ทั้งแถวพอดีจอได้ → จัดความสูงให้พอดีแถว (สูงสุด 560px) · ไม่งั้นความสูงมาตรฐาน 420px แล้วเลื่อนดู
+      const ts = [].slice.call(x.children);
+      const rs = ts.map((t) => {
+        let v = parseFloat(t.style.getPropertyValue('--tr'));
+        if (isNaN(v) && !t.querySelector('img')) { v = 0.6; t.style.setProperty('--tr', v); } // สไลด์ "+N ดูทั้งหมด" ไม่มีรูป
+        return v;
+      });
+      if (!rs.length || rs.some((r) => isNaN(r))) return;
+      const cs = getComputedStyle(x), gap = parseFloat(cs.columnGap) || 8, H0 = 420;
+      const w = x.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const cap = Math.min(340, w * 0.88); // ความกว้างสูงสุดของรูปหนึ่งใบ (ตรงกับ CSS)
+      const sum = rs.reduce((a, b) => a + b, 0), gaps = gap * (rs.length - 1);
+      const his = rs.map((r) => Math.min(H0, cap / r)); // ความสูงที่แต่ละรูปจะเห็นครบโดยไม่ครอป
+      const lo = Math.min.apply(null, his), hi = Math.max.apply(null, his);
+      let h = hi / lo > 1.5 ? Math.max(lo, H0 * 0.7) : lo; // ทุกรูปในแถว "สูงเท่ากัน" · แถวผสมสูง/กว้างมาก ยอมครอปรูปกว้างเล็กน้อยแทนการหดรูปสูง
+      const hf = (w - gaps) / sum; // ความสูงที่ทำให้ทั้งแถวพอดีจอเป๊ะ (ไม่ครอป)
+      const need = w > 480 ? H0 * 0.67 : H0 * 0.85; // จอกว้างยอมให้รูปเตี้ยลงได้มากกว่าเพื่อให้ทั้งแถวอยู่ในกรอบ ไม่ต้องเลื่อน
+      let k = 1;
+      if (hf >= need && hf * Math.min.apply(null, rs) >= 108) { // รูปที่แคบสุดต้องกว้างอย่างน้อย ~108px ไม่งั้นให้เลื่อนแทน (กันรูปเล็กจิ๋วเมื่อมีรูปเยอะ)
+        if (hf <= 560) h = hf; // พอดีแถวเป๊ะ
+        else { h = 560; k = Math.min(hf / 560, 1.5); } // รูปน้อย/แคบ: ความสูงเต็มที่ 560 แล้วขยายความกว้างให้เต็มแถว (ครอปบน-ล่างเล็กน้อย เหมือน X)
+      }
+      x.style.setProperty('--k', k.toFixed(3));
+      x.style.setProperty('--gh', Math.round(h) + 'px');
+      if (x.parentNode) x.parentNode.classList.toggle('nv-fit', x.scrollWidth <= x.clientWidth + 2); // ทุกรูปอยู่ในกรอบหมด → ซ่อนจุด/ลูกศร (ไม่มีอะไรให้เลื่อน)
+    };
+    const fitX = (img) => { // แต่ละรูปใช้สัดส่วนจริงของตัวเอง (ไม่ครอป ไม่บังคับเต็มจอ) เหมือน X
       const t = img.closest && img.closest('.gal-x .gal-t,.cx-multi .cx-slide');
       if (!t || !img.naturalWidth || !img.naturalHeight) return;
-      const x = t.parentNode, r = img.naturalWidth / img.naturalHeight;
-      t.style.setProperty('--tr', Math.min(TR_MAX, Math.max(TR_MIN, r)).toFixed(4));
+      const x = t.parentNode;
+      t.style.setProperty('--tr', Math.min(1.91, Math.max(0.2, img.naturalWidth / img.naturalHeight)).toFixed(4));
       if (!x.dataset.e) { x.dataset.e = '1'; [].slice.call(x.querySelectorAll('img[loading="lazy"]')).forEach((m) => { m.loading = 'eager'; }); }
-      fitNav(x);
+      layoutX(x);
     };
     let rzT = 0;
-    window.addEventListener('resize', () => { cancelAnimationFrame(rzT); rzT = requestAnimationFrame(() => document.querySelectorAll('.gal-x,.cx-multi .cx-track').forEach(fitNav)); });
+    window.addEventListener('resize', () => { cancelAnimationFrame(rzT); rzT = requestAnimationFrame(() => document.querySelectorAll('.gal-x,.cx-multi .cx-track').forEach(layoutX)); });
     document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') { markOk(e.target); fitRow(e.target); fitX(e.target); } }, true);
     document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') markOk(e.target); }, true);
-    document.querySelectorAll('.gal img,.cx-feed img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); fitX(im); } });
+    document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); fitX(im); } });
 
     let lb = null, urls = [], idx = 0;
     const show = () => {
