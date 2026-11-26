@@ -72,10 +72,10 @@
 .gal-x::-webkit-scrollbar{display:none}
 .gal-xw,.cx-feed{container-type:inline-size}
 .gal-xw,.cx-feed{container-type:inline-size}
-/* แต่ละรูป = สัดส่วนจริงของรูปนั้น (ไม่ครอป) · ย่อให้พอดีกรอบสูงสุด (สูง ≤380px, กว้าง ≤340px และไม่เกินการ์ด) · JS ใส่ --tr = กว้าง/สูง */
+/* แต่ละรูป = สัดส่วนจริงของรูปนั้น (ไม่ครอป) · ความสูงทั้งแถว = ความสูงของรูปแรก (สูง ≤380px, กว้างรูปแรก ≤340px) · รูปถัดไปสูงเท่ารูปแรก กว้างตามสัดส่วนจริง (ไม่เกินการ์ด) · JS ใส่ --tr = กว้าง/สูงของรูปนั้น, --gr = ของรูปแรก */
 .gal-x{align-items:flex-start}
 .gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(380px*var(--tr,.8)),88%,340px);aspect-ratio:var(--tr,.8);height:auto;border-radius:14px;scroll-snap-align:start}
-.gal-x .gal-t{width:min(calc(clamp(240px,100cqw,380px)*var(--tr,.8)),min(calc(100cqw - 2rem),340px))}
+.gal-x .gal-t{width:min(calc(min(clamp(240px,100cqw,380px),340px / var(--gr,.8))*var(--tr,.8)),calc(100cqw - 2rem))}
 .gal-t img{object-fit:contain}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
@@ -160,7 +160,7 @@ html.dark .cx-count{color:#fcd34d}
 /* ฟีดตัวละครหลายตัว: ขนาดรูปตามสัดส่วนจริงของแต่ละรูปเหมือนแกลเลอรี (ไม่ครอป ไม่เต็มจอ) · ตัวเดียวคงเดิม · JS: fitX/layoutX ใน nivread.js */
 .cx-track{align-items:flex-start}
 .cx-multi .cx-slide{flex:0 0 auto;width:min(calc(380px*var(--tr,.8)),88%,340px);container-type:inline-size}
-.cx-multi .cx-slide{width:min(calc(clamp(240px,100cqw,380px)*var(--tr,.8)),min(calc(100cqw - 2rem),340px))}
+.cx-multi .cx-slide{width:min(calc(min(clamp(240px,100cqw,380px),340px / var(--gr,.8))*var(--tr,.8)),calc(100cqw - 2rem))}
 .cx-multi .cx-slide:has(.cx-rest){--tr:.6}
 .cx-multi .cx-frame{aspect-ratio:var(--tr,.8);height:auto;max-height:none}
 .cx-multi .cx-img{object-fit:contain}

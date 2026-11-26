@@ -13,7 +13,7 @@ html.dark .cx-count{color:#fcd34d}
 /* ฟีดตัวละครหลายตัว: ขนาดรูปตามสัดส่วนจริงของแต่ละรูปเหมือนแกลเลอรี (ไม่ครอป ไม่เต็มจอ) · ตัวเดียวคงเดิม · JS: fitX/layoutX ใน nivread.js */
 .cx-track{align-items:flex-start}
 .cx-multi .cx-slide{flex:0 0 auto;width:min(calc(380px*var(--tr,.8)),88%,340px);container-type:inline-size}
-.cx-multi .cx-slide{width:min(calc(clamp(240px,100cqw,380px)*var(--tr,.8)),min(calc(100cqw - 2rem),340px))}
+.cx-multi .cx-slide{width:min(calc(min(clamp(240px,100cqw,380px),340px / var(--gr,.8))*var(--tr,.8)),calc(100cqw - 2rem))}
 .cx-multi .cx-slide:has(.cx-rest){--tr:.6}
 .cx-multi .cx-frame{aspect-ratio:var(--tr,.8);height:auto;max-height:none}
 .cx-multi .cx-img{object-fit:contain}

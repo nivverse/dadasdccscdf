@@ -417,7 +417,7 @@ function avatarEl(user, size = 'w-9 h-9') {
   }
   function charBlockEl(p, full) { // แสดงแค่ที่จำเป็น (รูป + ชื่อ + เลขลำดับ) · จำกัด 8 สไลด์ — ตรงกับ charCardHtml() ฝั่งเซิร์ฟเวอร์
     if (!document.getElementById('niv-css') && !document.getElementById('niv-char-css')) {
-      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261126b'; document.head.appendChild(l);
+      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261126c'; document.head.appendChild(l);
     }
     const href = '/posts/' + encodeURIComponent(p.slug), total = full.length, list = full.slice(0, 8);
     const slides = list.map((c, i) => {
@@ -604,10 +604,10 @@ function avatarEl(user, size = 'w-9 h-9') {
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
 .gal-xw,.cx-feed{container-type:inline-size}
-/* แต่ละรูป = สัดส่วนจริงของรูปนั้น (ไม่ครอป) · ย่อให้พอดีกรอบสูงสุด (สูง ≤380px, กว้าง ≤340px และไม่เกินการ์ด) · JS ใส่ --tr = กว้าง/สูง */
+/* แต่ละรูป = สัดส่วนจริงของรูปนั้น (ไม่ครอป) · ความสูงทั้งแถว = ความสูงของรูปแรก (สูง ≤380px, กว้างรูปแรก ≤340px) · รูปถัดไปสูงเท่ารูปแรก กว้างตามสัดส่วนจริง (ไม่เกินการ์ด) · JS ใส่ --tr = กว้าง/สูงของรูปนั้น, --gr = ของรูปแรก */
 .gal-x{align-items:flex-start}
 .gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(380px*var(--tr,.8)),88%,340px);aspect-ratio:var(--tr,.8);height:auto;border-radius:14px;scroll-snap-align:start}
-.gal-x .gal-t{width:min(calc(clamp(240px,100cqw,380px)*var(--tr,.8)),min(calc(100cqw - 2rem),340px))}
+.gal-x .gal-t{width:min(calc(min(clamp(240px,100cqw,380px),340px / var(--gr,.8))*var(--tr,.8)),calc(100cqw - 2rem))}
 .gal-t img{object-fit:contain}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
