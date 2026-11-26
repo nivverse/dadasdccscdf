@@ -417,7 +417,7 @@ function avatarEl(user, size = 'w-9 h-9') {
   }
   function charBlockEl(p, full) { // แสดงแค่ที่จำเป็น (รูป + ชื่อ + เลขลำดับ) · จำกัด 8 สไลด์ — ตรงกับ charCardHtml() ฝั่งเซิร์ฟเวอร์
     if (!document.getElementById('niv-css') && !document.getElementById('niv-char-css')) {
-      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261120i'; document.head.appendChild(l);
+      const l = document.createElement('link'); l.id = 'niv-char-css'; l.rel = 'stylesheet'; l.href = '/char.css?v=20261126a'; document.head.appendChild(l);
     }
     const href = '/posts/' + encodeURIComponent(p.slug), total = full.length, list = full.slice(0, 8);
     const slides = list.map((c, i) => {
@@ -603,7 +603,12 @@ function avatarEl(user, size = 'w-9 h-9') {
 .gal-dots i.on{width:22px;opacity:.75}
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
-.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)*var(--k,1)),88%,340px);max-height:560px;height:var(--gh,420px);border-radius:14px;scroll-snap-align:start}
+.gal-xw,.cx-feed{container-type:inline-size}
+/* ความสูงแถวคงที่ทั้งเว็บ (ตามความกว้างการ์ด 260–420px) · ความกว้างสไลด์ = ความสูง × สัดส่วนของรูปนั้น (JS ใส่ --tr) · สูงสุดไม่เกินการ์ด */
+.gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;height:400px;width:min(calc(400px*var(--tr,.8)),88%);border-radius:14px;scroll-snap-align:start}
+.gal-x .gal-t{height:clamp(260px,104cqw,420px);width:min(calc(clamp(260px,104cqw,420px)*var(--tr,.8)),calc(100cqw - 2rem))}
+.gal-t.wd img{object-fit:contain}
+.gal-t.wd::before,.cx-slide.wd .cx-frame::before{content:"";position:absolute;inset:-24px;z-index:0;background:var(--bgi) center/cover;filter:blur(22px) brightness(.62);animation:none}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
@@ -642,45 +647,30 @@ function avatarEl(user, size = 'w-9 h-9') {
       x.dataset.r = '1';
       x.style.setProperty('--gr', Math.min(1.91, Math.max(0.5625, img.naturalWidth / img.naturalHeight)).toFixed(4));
     };
-    const layoutX = (x) => { // แถวรูปที่ใช้สัดส่วนจริง (แกลเลอรี + การ์ดตัวละครหลายตัวในฟีด): ทั้งแถวพอดีจอได้ → จัดความสูงให้พอดีแถว (สูงสุด 560px) · ไม่งั้นความสูงมาตรฐาน 420px แล้วเลื่อนดู
-      const ts = [].slice.call(x.children);
-      const rs = ts.map((t) => {
-        let v = parseFloat(t.style.getPropertyValue('--tr'));
-        if (isNaN(v) && !t.querySelector('img')) { v = 0.6; t.style.setProperty('--tr', v); } // สไลด์ "+N ดูทั้งหมด" ไม่มีรูป
-        return v;
-      });
-      if (!rs.length || rs.some((r) => isNaN(r))) return;
-      const cs = getComputedStyle(x), gap = parseFloat(cs.columnGap) || 8, H0 = 420;
-      const w = x.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      const cap = Math.min(340, w * 0.88); // ความกว้างสูงสุดของรูปหนึ่งใบ (ตรงกับ CSS)
-      const sum = rs.reduce((a, b) => a + b, 0), gaps = gap * (rs.length - 1);
-      const his = rs.map((r) => Math.min(H0, cap / r)); // ความสูงที่แต่ละรูปจะเห็นครบโดยไม่ครอป
-      const lo = Math.min.apply(null, his), hi = Math.max.apply(null, his);
-      let h = hi / lo > 1.5 ? Math.max(lo, H0 * 0.7) : lo; // ทุกรูปในแถว "สูงเท่ากัน" · แถวผสมสูง/กว้างมาก ยอมครอปรูปกว้างเล็กน้อยแทนการหดรูปสูง
-      const hf = (w - gaps) / sum; // ความสูงที่ทำให้ทั้งแถวพอดีจอเป๊ะ (ไม่ครอป)
-      const need = w > 480 ? H0 * 0.67 : H0 * 0.85; // จอกว้างยอมให้รูปเตี้ยลงได้มากกว่าเพื่อให้ทั้งแถวอยู่ในกรอบ ไม่ต้องเลื่อน
-      let k = 1;
-      if (hf >= need && hf * Math.min.apply(null, rs) >= 108) { // รูปที่แคบสุดต้องกว้างอย่างน้อย ~108px ไม่งั้นให้เลื่อนแทน (กันรูปเล็กจิ๋วเมื่อมีรูปเยอะ)
-        if (hf <= 560) h = hf; // พอดีแถวเป๊ะ
-        else { h = 560; k = Math.min(hf / 560, 1.5); } // รูปน้อย/แคบ: ความสูงเต็มที่ 560 แล้วขยายความกว้างให้เต็มแถว (ครอปบน-ล่างเล็กน้อย เหมือน X)
-      }
-      x.style.setProperty('--k', k.toFixed(3));
-      x.style.setProperty('--gh', Math.round(h) + 'px');
-      if (x.parentNode) x.parentNode.classList.toggle('nv-fit', x.scrollWidth <= x.clientWidth + 2); // ทุกรูปอยู่ในกรอบหมด → ซ่อนจุด/ลูกศร (ไม่มีอะไรให้เลื่อน)
+    // แถวรูป (แกลเลอรี .gal-x + การ์ดตัวละคร .cx-multi): "ความสูงแถวคงที่" มาจาก CSS ล้วน (clamp ตามความกว้างการ์ด) · JS แค่บอกสัดส่วนของแต่ละรูป → กำหนดความกว้างของสไลด์นั้นเท่านั้น
+    // ไม่มีการคำนวณความสูงจากส่วนผสมรูปทั้งแถว → ไม่กระโดดตอนรูปโหลด และทุกโพสต์ในเว็บได้ความสูงเท่ากัน
+    const TR_MIN = 0.6, TR_MAX = 1.25; // ช่วงสัดส่วน (กว้าง/สูง) ที่ใช้กำหนดความกว้างสไลด์ · นอกช่วง = จัดภาพเต็มรูปด้วย contain + พื้นหลังเบลอ
+    const fitTile = (t) => { // t = .gal-t หรือ .cx-slide ที่รู้สัดส่วนแล้ว (data-r)
+      const r = parseFloat(t.dataset.r), h = t.offsetHeight, w = t.offsetWidth;
+      if (!r || !h) return;
+      t.classList.toggle('wd', Math.abs(w / h / r - 1) > 0.08); // กรอบหลังถูกบีบ/ครอปเกิน ~8% → ไม่ครอป แสดงเต็มรูป + เบลอเติมขอบ
     };
-    const fitX = (img) => { // แต่ละรูปใช้สัดส่วนจริงของตัวเอง (ไม่ครอป ไม่บังคับเต็มจอ) เหมือน X
+    const fitNav = (x) => { if (x.parentNode) x.parentNode.classList.toggle('nv-fit', x.scrollWidth <= x.clientWidth + 2); }; // ทุกรูปอยู่ในกรอบหมด → ซ่อนจุด/ลูกศร
+    const fitX = (img) => {
       const t = img.closest && img.closest('.gal-x .gal-t,.cx-multi .cx-slide');
       if (!t || !img.naturalWidth || !img.naturalHeight) return;
-      const x = t.parentNode;
-      t.style.setProperty('--tr', Math.min(1.91, Math.max(0.2, img.naturalWidth / img.naturalHeight)).toFixed(4));
+      const x = t.parentNode, r = img.naturalWidth / img.naturalHeight;
+      t.dataset.r = r.toFixed(4);
+      t.style.setProperty('--tr', Math.min(TR_MAX, Math.max(TR_MIN, r)).toFixed(4));
+      t.style.setProperty('--bgi', 'url("' + (img.currentSrc || img.src) + '")');
       if (!x.dataset.e) { x.dataset.e = '1'; [].slice.call(x.querySelectorAll('img[loading="lazy"]')).forEach((m) => { m.loading = 'eager'; }); }
-      layoutX(x);
+      fitTile(t); fitNav(x);
     };
     let rzT = 0;
-    window.addEventListener('resize', () => { cancelAnimationFrame(rzT); rzT = requestAnimationFrame(() => document.querySelectorAll('.gal-x,.cx-multi .cx-track').forEach(layoutX)); });
+    window.addEventListener('resize', () => { cancelAnimationFrame(rzT); rzT = requestAnimationFrame(() => document.querySelectorAll('.gal-x [data-r],.cx-multi [data-r]').forEach((t) => { fitTile(t); fitNav(t.parentNode); })); });
     document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') { markOk(e.target); fitRow(e.target); fitX(e.target); } }, true);
     document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') markOk(e.target); }, true);
-    document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); fitX(im); } });
+    document.querySelectorAll('.gal img,.cx-feed img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); fitX(im); } });
 
     let lb = null, urls = [], idx = 0;
     const show = () => {
