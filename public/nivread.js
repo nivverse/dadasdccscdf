@@ -649,7 +649,9 @@ function avatarEl(user, size = 'w-9 h-9') {
         if (isNaN(v) && !t.querySelector('img')) { v = 0.6; t.style.setProperty('--tr', v); } // สไลด์ "+N ดูทั้งหมด" ไม่มีรูป
         return v;
       });
-      if (!rs.length || rs.some((r) => isNaN(r))) return;
+      const known = rs.find((r) => !isNaN(r)); // คำนวณทันทีตั้งแต่รูปแรกโหลด: รูปที่ยังไม่โหลดใช้สัดส่วนของรูปแรกไปก่อน (กันการ์ดค้าง 420px แล้วหดทีเดียวตอนรูปสุดท้ายมา)
+      if (!rs.length || known === undefined) return;
+      for (let i = 0; i < rs.length; i++) if (isNaN(rs[i])) rs[i] = known;
       const cs = getComputedStyle(x), gap = parseFloat(cs.columnGap) || 8, H0 = 420;
       const w = x.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
       const cap = Math.min(340, w * 0.88); // ความกว้างสูงสุดของรูปหนึ่งใบ (ตรงกับ CSS)
