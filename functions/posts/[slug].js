@@ -1,5 +1,5 @@
 // functions/posts/[slug].js — หน้าโพสต์เดี่ยว /posts/<slug> (SSR + meta + JSON-LD)
-import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard, characterCarousel, isCharacter, charList } from '../_lib/render.js';
+import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard, characterCarousel, isCharacter, charList, preloadDims } from '../_lib/render.js';
 import { videoGallery, videoLd } from '../_lib/videos.js';
 import { imageGallery, postImages } from '../_lib/gallery.js';
 
@@ -29,6 +29,7 @@ export async function onRequestGet({ request, env, params }) {
   }
 
   const p = data.post;
+  if (!isCharacter(p)) await preloadDims([p], true);
   const path = `/posts/${p.slug}`;
   const url = origin + path;
   const desc = stripText(stripLocks(p.excerpt)) || stripText(stripLocks(p.content)).slice(0, 155);

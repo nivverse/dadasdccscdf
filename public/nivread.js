@@ -621,14 +621,22 @@ function avatarEl(user, size = 'w-9 h-9') {
 #niv-lb .x{top:.75rem;right:.75rem}#niv-lb .p{left:.75rem;top:50%;margin-top:-22px}#niv-lb .n{right:.75rem;top:50%;margin-top:-22px}
 #niv-lb .c{position:absolute;top:1.1rem;left:50%;transform:translateX(-50%);color:#e5e5e5;font-size:.85rem;font-variant-numeric:tabular-nums}
 @media (max-width:640px){#niv-lb .p,#niv-lb .n{display:none}}
-/* ===== ฟีด: กล่องสื่อขนาดคงที่ตั้งแต่แรก (ไม่รอโหลดรูป/วิดีโอ จึงไม่กระโดดเล็ก→ใหญ่) — หน้าโพสต์เดี่ยว (html.niv-single) ไม่ถูกแตะ ===== */
-html:not(.niv-single) .gal-l .gal-s{aspect-ratio:4/5;max-height:560px;min-height:0;background:#111}
-html:not(.niv-single) .gal-l .gal-s .bg{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(22px) brightness(.55);transform:scale(1.15)}
-html:not(.niv-single) .gal-l .gal-s .fg{position:absolute;inset:0;z-index:1;width:100%;height:100%;max-height:none;object-fit:contain;border-radius:0}
-html:not(.niv-single) .gal-l .gal-x .gal-t{width:min(88%,340px);height:auto;max-height:none;aspect-ratio:4/5}
-html:not(.niv-single) .gal-l .gal-x-2 .gal-t{width:calc((100% - 8px)/2);aspect-ratio:4/5}
+/* ===== สื่อในฟีด: จองกรอบ "สัดส่วนจริง" ของรูป/วิดีโอตั้งแต่ SSR (ar / data-sr · เซิร์ฟเวอร์อ่านขนาดไฟล์ไว้ให้แล้ว) จึงไม่กระโดดเล็ก↔ใหญ่ · ไม่รู้ขนาด (.nd) ใช้กรอบสำรองคงที่ 4:5 ===== */
+.gal-s.ar{max-height:560px}
+.gal-s.ar .bg{display:none}
+.gal-s.ar .fg{position:absolute;inset:0;width:100%;height:100%;max-height:none;object-fit:cover;border-radius:0}
+.gal-x[data-sr]{container-type:inline-size}
+.gal-x[data-sr] .gal-t{width:min(calc(var(--gh)*var(--tr)),88%,340px);height:var(--gh);max-height:560px}
+.cx-multi .cx-track[data-sr]{container-type:inline-size}
+.cx-multi .cx-track[data-sr] .cx-slide{flex:0 0 auto;width:min(calc(var(--gh)*var(--tr)),88%,340px);height:var(--gh);max-height:560px}
+.cx-multi .cx-track[data-sr] .cx-frame{aspect-ratio:auto;height:100%;max-height:none}
+html:not(.niv-single) .gal-l .gal-s.nd{aspect-ratio:4/5;max-height:560px;min-height:0;background:#111}
+html:not(.niv-single) .gal-l .gal-s.nd .bg{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(22px) brightness(.55);transform:scale(1.15)}
+html:not(.niv-single) .gal-l .gal-s.nd .fg{position:absolute;inset:0;z-index:1;width:100%;height:100%;max-height:none;object-fit:contain;border-radius:0}
+html:not(.niv-single) .gal-l .gal-x.nd .gal-t{width:min(88%,340px);height:auto;max-height:none;aspect-ratio:4/5}
+html:not(.niv-single) .gal-l .gal-x-2.nd .gal-t{width:calc((100% - 8px)/2)}
 html:not(.niv-single) .uv.bp{background:#000!important}
-html:not(.niv-single) .uv video,html:not(.niv-single) .uv.bp video{aspect-ratio:4/5!important;width:100%;height:auto;min-height:0;object-fit:contain!important;background:#000!important}
+html:not(.niv-single) .uv.nd video{aspect-ratio:4/5!important;width:100%;height:auto;min-height:0;object-fit:contain!important;background:#000!important}
 `;
   if (!document.getElementById('niv-gal')) {
     const st = document.createElement('style');
@@ -651,6 +659,7 @@ html:not(.niv-single) .uv video,html:not(.niv-single) .uv.bp video{aspect-ratio:
       x.style.setProperty('--gr', Math.min(1.91, Math.max(0.5625, img.naturalWidth / img.naturalHeight)).toFixed(4));
     };
     const layoutX = (x) => { // แถวรูปที่ใช้สัดส่วนจริง (แกลเลอรี + การ์ดตัวละครหลายตัวในฟีด): ทั้งแถวพอดีจอได้ → จัดความสูงให้พอดีแถว (สูงสุด 560px) · ไม่งั้นความสูงมาตรฐาน 420px แล้วเลื่อนดู
+      if (x.dataset.sr) { if (x.parentNode) x.parentNode.classList.toggle('nv-fit', x.scrollWidth <= x.clientWidth + 2); return; } // เซิร์ฟเวอร์จัดขนาดแถวให้แล้ว (data-sr) · ไม่คำนวณซ้ำ เพื่อไม่ให้กระโดด
       const ts = [].slice.call(x.children);
       const rs = ts.map((t) => {
         let v = parseFloat(t.style.getPropertyValue('--tr'));
@@ -964,7 +973,7 @@ html:not(.niv-single) .uv video,html:not(.niv-single) .uv.bp video{aspect-ratio:
 .uv.bp{position:relative;padding:0!important;border-radius:${BP_R}px;background:transparent!important;border:0!important;box-shadow:none;cursor:pointer;touch-action:manipulation;outline:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .uv.bp video{-webkit-touch-callout:none}
 .uv.bp video{display:block;width:100%;max-height:36rem;object-fit:contain;border-radius:${BP_R}px;background:transparent!important;border:0}
-@media (min-width:500px){html:not(.niv-single) .uv.bp video{object-fit:contain!important}}
+@media (min-width:500px){html:not(.niv-single) .uv.bp video{object-fit:cover!important}}
 .uv.bp:focus-visible{box-shadow:0 0 0 2px #f59e0b}
 .bp-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;opacity:0;transition:opacity .2s}
 .bp-svg rect,.bp-svg path{fill:none}

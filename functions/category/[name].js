@@ -1,5 +1,5 @@
 // functions/category/[name].js — หน้ารวมโพสต์ตามหมวดหมู่ /category/<ชื่อหมวด>?page=N (SSR) และ ?partial=1 สำหรับเลื่อนโหลดเพิ่ม
-import { api, esc, postCard, shell, htmlResponse, catHref, followBtn } from '../_lib/render.js';
+import { api, esc, postCard, preloadDims, shell, htmlResponse, catHref, followBtn } from '../_lib/render.js';
 
 const PER_PAGE = 10;
 
@@ -28,6 +28,7 @@ export async function onRequestGet({ request, env, params }) {
     return htmlResponse('<!DOCTYPE html><meta charset="utf-8"><meta name="robots" content="noindex"><title>ระบบกำลังอัปเดต</title><p>ระบบหมวดหมู่ยังไม่พร้อม (ต้อง deploy blog-api.js เวอร์ชันล่าสุดที่ Worker)</p>', 503, 'no-store');
   }
 
+  await preloadDims(data.posts);
   const cards = data.posts.map((p, i) => postCard(p, origin, page === 1 && i === 0)).join('\n');
   if (partial) {
     return new Response(cards, {

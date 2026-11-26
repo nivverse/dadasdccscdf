@@ -1,6 +1,7 @@
 // functions/_lib/render.js — ตัวช่วยเรนเดอร์ HTML ฝั่งเซิร์ฟเวอร์ (Cloudflare Pages Functions)
-import { videoGallery } from './videos.js';
-import { imageGallery, postImages } from './gallery.js';
+import { videoGallery, cleanIds, isUp, posterOf } from './videos.js';
+import { imageGallery, postImages, ratioOf, rowGh } from './gallery.js';
+import { probeDims } from './dims.js';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -179,6 +180,21 @@ export function repostWrap(p, innerHtml, viewerId = '') {
 export function postCard(p, origin, first = false, viewerId = '') {
   return repostWrap(p, cardHtml(p, origin, first), viewerId);
 }
+// อ่านขนาดรูป/โปสเตอร์ของโพสต์ล่วงหน้า (ก่อน render การ์ด) · all = หน้าโพสต์เดี่ยว (ทุกรูป/ทุกคลิป) · ฟีด = เฉพาะที่แสดง
+export async function preloadDims(posts, all = false) {
+  const urls = [];
+  for (const p of posts || []) {
+    if (!p) continue;
+    if (!all && isCharacter(p)) { for (const c of charList(p).slice(0, FEED_MAX)) if (c.image) urls.push(c.image); continue; }
+    if (p.videos && p.videos.length) {
+      const ids = cleanIds(p.videos).filter(isUp);
+      for (const v of (all ? ids : ids.slice(0, 1))) urls.push(posterOf(v));
+      if (!all) continue;
+    }
+    for (const u of postImages(p)) urls.push(u);
+  }
+  await probeDims(urls);
+}
 function cardHtml(p, origin, first = false) {
   const href = `/posts/${p.slug}`;
   if (isCharacter(p)) return charCardHtml(p, origin, first, href);
@@ -228,13 +244,21 @@ function charCardHtml(p, origin, first, href) {
   const full = charList(p);
   const total = full.length;
   const list = full.slice(0, FEED_MAX);
+  const multi = total > 1;
+  const hasRest = total > list.length;
+  // สัดส่วนจริงของรูปตัวละคร (ถ้ารู้ครบ) → จองกรอบตั้งแต่ SSR ไม่ให้กระโดด · ไม่รู้ = ใช้กรอบสำรองคงที่ใน /niv.css
+  const rs = list.map((c) => (c.image ? ratioOf(c.image, 0.2, 1.91) : 0));
+  const sr = multi && rs.every((r) => r > 0);
   const slides = list.map((c, i) => {
     const pic = c.image
       ? `<img class="cx-img" src="${esc(c.image)}" alt="${esc(c.name)}${p.category ? ' - ' + esc(p.category) : ''}" loading="${first && i === 0 ? 'eager' : 'lazy'}" decoding="async" draggable="false">`
       : '<span class="cx-noimg">ไม่มีรูป</span>';
-    return `<a href="${href}#c${i + 1}" class="cx-slide" aria-label="${esc(c.name)}"><span class="cx-frame">${pic}<span class="cx-shade"></span>${total > 1 ? `<span class="cx-idx">${i + 1}/${total}</span>` : ''}<span class="cx-cap"><b>${esc(c.name)}</b></span></span></a>`;
-  }).join('') + (total > list.length ? `<a href="${href}" class="cx-slide" aria-label="ดูตัวละครทั้งหมด"><span class="cx-frame cx-rest">+${total - list.length}<br>ดูทั้งหมด</span></a>` : '');
-  const multi = total > 1;
+    const tr = sr ? ` style="--tr:${rs[i].toFixed(4)}"` : '';
+    return `<a href="${href}#c${i + 1}" class="cx-slide"${tr} aria-label="${esc(c.name)}"><span class="cx-frame">${pic}<span class="cx-shade"></span>${total > 1 ? `<span class="cx-idx">${i + 1}/${total}</span>` : ''}<span class="cx-cap"><b>${esc(c.name)}</b></span></span></a>`;
+  }).join('') + (hasRest ? `<a href="${href}" class="cx-slide"${sr ? ' style="--tr:0.6"' : ''} aria-label="ดูตัวละครทั้งหมด"><span class="cx-frame cx-rest">+${total - list.length}<br>ดูทั้งหมด</span></a>` : '');
+  let trackAttr = '';
+  if (sr) trackAttr = ` data-sr="1" style="--gh:${rowGh(hasRest ? rs.concat([0.6]) : rs)}"`;
+  else if (!multi) { const r1 = list[0] && list[0].image ? ratioOf(list[0].image) : 0; trackAttr = ` data-r="1"${r1 ? ` style="--gr:${r1.toFixed(4)}"` : ''}`; }
   const nav = multi ? `<button type="button" class="cx-nav cx-prev" aria-label="ตัวละครก่อนหน้า" hidden>${CHEV('M15 5l-7 7 7 7')}</button><button type="button" class="cx-nav cx-next" aria-label="ตัวละครถัดไป">${CHEV('M9 5l7 7-7 7')}</button>` : '';
   return `<article data-view-slug="${esc(p.slug)}" class="rounded-2xl bg-white/85 dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden">
   ${postHead(p)}
@@ -242,7 +266,7 @@ function charCardHtml(p, origin, first, href) {
     <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-snug"><a href="${href}" class="hover:text-amber-500 transition-colors">${esc(p.title)}</a></h2>
     ${p.excerpt ? `<p class="mt-1 text-sm text-slate-600 dark:text-neutral-300 line-clamp-2"><a href="${href}" class="block hover:text-amber-500 transition-colors">${esc(p.excerpt)}</a></p>` : ''}
   </div>
-  <div class="cx-feed${multi ? ' cx-multi' : ''}"><div class="cx-track" role="region" aria-label="ตัวละครในโพสต์ ปัดเพื่อดูตัวถัดไป">${slides}</div>${nav}</div>
+  <div class="cx-feed${multi ? ' cx-multi' : ''}"><div class="cx-track"${trackAttr} role="region" aria-label="ตัวละครในโพสต์ ปัดเพื่อดูตัวถัดไป">${slides}</div>${nav}</div>
   ${postBar(p, origin)}
 </article>`;
 }
@@ -340,7 +364,7 @@ ${ld}
 <link rel="preconnect" href="https://cdn.nivread.com">
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{font-family:'Kanit',sans-serif}.uv,.uv.bp{padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}.uv video{background:transparent!important;border:0!important}</style>
-<link id="niv-css" rel="stylesheet" href="/niv.css?v=20261126b">
+<link id="niv-css" rel="stylesheet" href="/niv.css?v=20261126c">
 </head>
 <body class="bg-[#f3f4f6] text-slate-900 dark:bg-[#0d0d0d] dark:text-white transition-colors duration-300 min-h-screen flex flex-col relative overflow-x-hidden">
 <div class="fixed inset-0 pointer-events-none z-0">

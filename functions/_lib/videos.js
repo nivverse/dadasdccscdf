@@ -1,6 +1,7 @@
 // functions/_lib/videos.js — แกลเลอรีวิดีโอ YouTube (SSR) — CSS และสคริปต์เล่นอยู่ใน /nivread.js (ใช้ร่วมกับการ์ดที่เรนเดอร์ฝั่งเบราว์เซอร์)
 // โหลด iframe เฉพาะตอนกดเล่น (หน้าเร็ว) ใช้ youtube-nocookie
 import { esc } from './render.js';
+import { getDim } from './dims.js';
 
 const YT_ID = /^[A-Za-z0-9_-]{11}$/;
 const thumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
@@ -8,13 +9,15 @@ const thumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 // วิดีโออัปโหลดเอง = URL ของ /api/blog/vid/... หรือโดเมน R2 (mp4/webm) · โปสเตอร์ = ไฟล์ .jpg ชื่อเดียวกัน
 const UP_RE = /^https:\/\/[^\s"'<>]{4,300}\/(?:api\/blog\/vid\/)?v\/[A-Za-z0-9._~%-]{1,180}\/[a-z0-9]{6,40}\.(mp4|webm)$/; // /api/blog/vid/<key> (ผ่าน Worker) หรือ /<key> (โดเมน R2)
 export const isUp = (x) => UP_RE.test(String(x));
-const posterOf = (u) => u.replace(/\.(mp4|webm)$/, '.jpg');
+export const posterOf = (u) => u.replace(/\.(mp4|webm)$/, '.jpg');
 
 export function cleanIds(list) {
   return (Array.isArray(list) ? list : []).filter((x) => YT_ID.test(x) || UP_RE.test(String(x))).slice(0, 15);
 }
 
-const uvBlock = (u, title, eager) => `<div class="uv bp"><video controls controlslist="nodownload noremoteplayback" disableremoteplayback draggable="false" playsinline muted loop preload="none" poster="${esc(posterOf(u))}" src="${esc(u)}" aria-label="${esc(title)}"></video></div>`;
+// สัดส่วนจริงของวิดีโออัปโหลด = ขนาดของโปสเตอร์ (.jpg ชื่อเดียวกัน) → จองกรอบไว้ก่อนวิดีโอโหลด · ไม่รู้ = class nd (กรอบสำรองคงที่ใน /niv.css)
+const uvRatio = (u) => { const d = getDim(posterOf(u)); return d ? Math.min(1.91, Math.max(0.5625, d[0] / d[1])) : 0; };
+const uvBlock = (u, title, eager) => `<div class="uv bp${uvRatio(u) ? '' : ' nd'}"><video${uvRatio(u) ? ` style="aspect-ratio:${uvRatio(u).toFixed(4)}"` : ''} controls controlslist="nodownload noremoteplayback" disableremoteplayback draggable="false" playsinline muted loop preload="none" poster="${esc(posterOf(u))}" src="${esc(u)}" aria-label="${esc(title)}"></video></div>`;
 
 export function videoLd(ids, { title, desc, uploadDate }) {
   return cleanIds(ids).map((id, i) => ({
