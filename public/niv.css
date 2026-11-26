@@ -152,8 +152,8 @@ html.dark .cx-count{color:#fcd34d}
 .cx-feed:not(.cx-multi) .cx-slide{flex-basis:min(100%,340px)}
 .cx-frame{position:relative;display:block;aspect-ratio:var(--gr,4/5);max-height:560px;border-radius:18px;overflow:hidden;background:rgba(127,127,127,.16);box-shadow:inset 0 0 0 1px rgba(127,127,127,.22)}
 /* ฟีดตัวละครหลายตัว: ขนาดรูปตามสัดส่วนจริงของแต่ละรูปเหมือนแกลเลอรี (ไม่ครอป ไม่เต็มจอ) · ตัวเดียวคงเดิม · JS: fitX/layoutX ใน nivread.js */
-.cx-multi .cx-slide{flex:0 0 min(88%,340px);width:min(88%,340px);container-type:inline-size}
-.cx-multi .cx-frame{aspect-ratio:25/26;height:auto}
+.cx-multi .cx-slide{flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)*var(--k,1)),88%,340px);container-type:inline-size}
+.cx-multi .cx-frame{aspect-ratio:auto;height:var(--gh,420px)}
 @container (max-width:190px){.cx-cap{padding:9px}.cx-cap b{font-size:12.5px;overflow-wrap:anywhere;hyphens:auto}.cx-cap i{font-size:10px}.cx-cap em{font-size:9.5px;padding:3px 7px}.cx-idx{top:6px;right:6px;font-size:10px;padding:4px 7px}.cx-rest{font-size:13px}}
 .cx-img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
 .cx-noimg{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;opacity:.5}
@@ -219,20 +219,3 @@ html.dark .cs-orig{color:#fbbf24}
 .cs-about{margin:28px 16px 0;padding-top:22px;border-top:1px solid rgba(127,127,127,.25)}
 .cs-about>h3{font-size:11px;font-weight:600;letter-spacing:.24em;color:#f59e0b;margin-bottom:10px}
 @media (prefers-reduced-motion:reduce){.cs-p{animation:none}.cx-track{scroll-behavior:auto}.cx-img,.cs-thi{transition:none}}
-
-/* ===== สื่อในฟีด: จองกรอบ "สัดส่วนจริง" ของรูป/วิดีโอตั้งแต่ SSR (ar / data-sr · เซิร์ฟเวอร์อ่านขนาดไฟล์ไว้ให้แล้ว) จึงไม่กระโดดเล็ก↔ใหญ่ · ไม่รู้ขนาด (.nd) ใช้กรอบสำรองคงที่ 4:5 ===== */
-.gal-s.ar{max-height:560px}
-.gal-s.ar .bg{display:none}
-.gal-s.ar .fg{position:absolute;inset:0;width:100%;height:100%;max-height:none;object-fit:cover;border-radius:0}
-.gal-x[data-sr]{container-type:inline-size}
-.gal-x[data-sr] .gal-t{width:min(calc(var(--gh)*var(--tr)),88%,340px);height:var(--gh);max-height:560px}
-.cx-multi .cx-track[data-sr]{container-type:inline-size}
-.cx-multi .cx-track[data-sr] .cx-slide{flex:0 0 auto;width:min(calc(var(--gh)*var(--tr)),88%,340px);height:var(--gh);max-height:560px}
-.cx-multi .cx-track[data-sr] .cx-frame{aspect-ratio:auto;height:100%;max-height:none}
-html:not(.niv-single) .gal-l .gal-s.nd{aspect-ratio:4/5;max-height:560px;min-height:0;background:#111}
-html:not(.niv-single) .gal-l .gal-s.nd .bg{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(22px) brightness(.55);transform:scale(1.15)}
-html:not(.niv-single) .gal-l .gal-s.nd .fg{position:absolute;inset:0;z-index:1;width:100%;height:100%;max-height:none;object-fit:contain;border-radius:0}
-html:not(.niv-single) .gal-l .gal-x.nd .gal-t{width:min(88%,340px);height:auto;max-height:none;aspect-ratio:4/5}
-html:not(.niv-single) .gal-l .gal-x-2.nd .gal-t{width:calc((100% - 8px)/2)}
-html:not(.niv-single) .uv.bp{background:#000!important}
-html:not(.niv-single) .uv.nd video{aspect-ratio:4/5!important;width:100%;height:auto;min-height:0;object-fit:contain!important;background:#000!important}

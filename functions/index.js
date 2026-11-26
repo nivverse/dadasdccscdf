@@ -2,7 +2,7 @@
 //  • ทุกคน/Google: SSR โพสต์ล่าสุด (มี canonical ของตัวเอง) + กล่องชวนกดติดตาม
 //  • สมาชิกที่ติดตามอะไรไว้: /home-feed.js สลับเป็นฟีดจากผู้ใช้/หมวดที่ติดตาม (เรนเดอร์ HTML จากเซิร์ฟเวอร์ผ่าน ?feed=1)
 //  • ?partial=1 = ชิ้นส่วนโพสต์ล่าสุดสำหรับเลื่อนโหลดเพิ่ม
-import { api, postCard, preloadDims, shell, htmlResponse } from './_lib/render.js';
+import { api, postCard, shell, htmlResponse } from './_lib/render.js';
 
 const PER_PAGE = 10;
 
@@ -56,7 +56,6 @@ export async function onRequestGet({ request, env }) {
     }
     if (!d || !d.success) return new Response('', { status: status === 401 ? 401 : 502, headers: noStore });
     const posts = await withCharMeta(env, d.posts);
-    await preloadDims(posts);
     const html = posts.map((p) => postCard(p, origin, false, userId)).join('\n');
     return new Response(html, {
       headers: {
@@ -74,7 +73,6 @@ export async function onRequestGet({ request, env }) {
     return htmlResponse('<!DOCTYPE html><meta charset="utf-8"><title>ระบบขัดข้อง</title><p>ไม่สามารถโหลดโพสต์ได้ กรุณาลองใหม่</p>', 503, 'no-store');
   }
 
-  await preloadDims(data.posts);
   const cards = data.posts.map((p, i) => postCard(p, origin, page === 1 && i === 0)).join('\n');
   if (partial) {
     return new Response(cards, {

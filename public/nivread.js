@@ -621,22 +621,6 @@ function avatarEl(user, size = 'w-9 h-9') {
 #niv-lb .x{top:.75rem;right:.75rem}#niv-lb .p{left:.75rem;top:50%;margin-top:-22px}#niv-lb .n{right:.75rem;top:50%;margin-top:-22px}
 #niv-lb .c{position:absolute;top:1.1rem;left:50%;transform:translateX(-50%);color:#e5e5e5;font-size:.85rem;font-variant-numeric:tabular-nums}
 @media (max-width:640px){#niv-lb .p,#niv-lb .n{display:none}}
-/* ===== สื่อในฟีด: จองกรอบ "สัดส่วนจริง" ของรูป/วิดีโอตั้งแต่ SSR (ar / data-sr · เซิร์ฟเวอร์อ่านขนาดไฟล์ไว้ให้แล้ว) จึงไม่กระโดดเล็ก↔ใหญ่ · ไม่รู้ขนาด (.nd) ใช้กรอบสำรองคงที่ 4:5 ===== */
-.gal-s.ar{max-height:560px}
-.gal-s.ar .bg{display:none}
-.gal-s.ar .fg{position:absolute;inset:0;width:100%;height:100%;max-height:none;object-fit:cover;border-radius:0}
-.gal-x[data-sr]{container-type:inline-size}
-.gal-x[data-sr] .gal-t{width:min(calc(var(--gh)*var(--tr)),88%,340px);height:var(--gh);max-height:560px}
-.cx-multi .cx-track[data-sr]{container-type:inline-size}
-.cx-multi .cx-track[data-sr] .cx-slide{flex:0 0 auto;width:min(calc(var(--gh)*var(--tr)),88%,340px);height:var(--gh);max-height:560px}
-.cx-multi .cx-track[data-sr] .cx-frame{aspect-ratio:auto;height:100%;max-height:none}
-html:not(.niv-single) .gal-l .gal-s.nd{aspect-ratio:4/5;max-height:560px;min-height:0;background:#111}
-html:not(.niv-single) .gal-l .gal-s.nd .bg{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(22px) brightness(.55);transform:scale(1.15)}
-html:not(.niv-single) .gal-l .gal-s.nd .fg{position:absolute;inset:0;z-index:1;width:100%;height:100%;max-height:none;object-fit:contain;border-radius:0}
-html:not(.niv-single) .gal-l .gal-x.nd .gal-t{width:min(88%,340px);height:auto;max-height:none;aspect-ratio:4/5}
-html:not(.niv-single) .gal-l .gal-x-2.nd .gal-t{width:calc((100% - 8px)/2)}
-html:not(.niv-single) .uv.bp{background:#000!important}
-html:not(.niv-single) .uv.nd video{aspect-ratio:4/5!important;width:100%;height:auto;min-height:0;object-fit:contain!important;background:#000!important}
 `;
   if (!document.getElementById('niv-gal')) {
     const st = document.createElement('style');
@@ -653,22 +637,19 @@ html:not(.niv-single) .uv.nd video{aspect-ratio:4/5!important;width:100%;height:
     // รูปโหลดเสร็จ/พลาด → เอา skeleton ออก
     const markOk = (img) => { const c = img.closest && img.closest('.gal-s,.gal-t'); if (c) c.classList.add('ok'); };
     const fitRow = (img) => { // แถวรูป (แกลเลอรี + การ์ดตัวละครในฟีด): สไลด์ใช้สัดส่วนของรูปแรก (ไม่ครอปเป็น 4:5 ตายตัว)
-      const x = img.closest && img.closest('.gal-x');
+      const x = img.closest && img.closest('.gal-x,.cx-track');
       if (!x || x.dataset.r || !img.naturalWidth || img !== x.querySelector('img')) return;
       x.dataset.r = '1';
       x.style.setProperty('--gr', Math.min(1.91, Math.max(0.5625, img.naturalWidth / img.naturalHeight)).toFixed(4));
     };
     const layoutX = (x) => { // แถวรูปที่ใช้สัดส่วนจริง (แกลเลอรี + การ์ดตัวละครหลายตัวในฟีด): ทั้งแถวพอดีจอได้ → จัดความสูงให้พอดีแถว (สูงสุด 560px) · ไม่งั้นความสูงมาตรฐาน 420px แล้วเลื่อนดู
-      if (x.dataset.sr) { if (x.parentNode) x.parentNode.classList.toggle('nv-fit', x.scrollWidth <= x.clientWidth + 2); return; } // เซิร์ฟเวอร์จัดขนาดแถวให้แล้ว (data-sr) · ไม่คำนวณซ้ำ เพื่อไม่ให้กระโดด
       const ts = [].slice.call(x.children);
       const rs = ts.map((t) => {
         let v = parseFloat(t.style.getPropertyValue('--tr'));
         if (isNaN(v) && !t.querySelector('img')) { v = 0.6; t.style.setProperty('--tr', v); } // สไลด์ "+N ดูทั้งหมด" ไม่มีรูป
         return v;
       });
-      const known = rs.find((r) => !isNaN(r)); // คำนวณทันทีตั้งแต่รูปแรกโหลด: รูปที่ยังไม่โหลดใช้สัดส่วนของรูปแรกไปก่อน (กันการ์ดค้าง 420px แล้วหดทีเดียวตอนรูปสุดท้ายมา)
-      if (!rs.length || known === undefined) return;
-      for (let i = 0; i < rs.length; i++) if (isNaN(rs[i])) rs[i] = known;
+      if (!rs.length || rs.some((r) => isNaN(r))) return;
       const cs = getComputedStyle(x), gap = parseFloat(cs.columnGap) || 8, H0 = 420;
       const w = x.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
       const cap = Math.min(340, w * 0.88); // ความกว้างสูงสุดของรูปหนึ่งใบ (ตรงกับ CSS)
@@ -887,7 +868,7 @@ html:not(.niv-single) .uv.nd video{aspect-ratio:4/5!important;width:100%;height:
     // ขนาดจริงของคลิปรู้แล้ว → ล็อกอัตราส่วนไว้ กันความสูงกระโดดตอนโหลดเสร็จ / ตอนปล่อยคลิป
     document.addEventListener('loadedmetadata', (e) => {
       const v = e.target;
-      if (v instanceof HTMLVideoElement && v.videoWidth && v.videoHeight && v.closest('.uv') && document.documentElement.classList.contains('niv-single')) v.style.aspectRatio = v.videoWidth + ' / ' + v.videoHeight;
+      if (v instanceof HTMLVideoElement && v.videoWidth && v.videoHeight && v.closest('.uv')) v.style.aspectRatio = v.videoWidth + ' / ' + v.videoHeight;
     }, true);
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') { if (current && !current.paused) current.pause(); }
