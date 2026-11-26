@@ -39,7 +39,7 @@ export async function onRequestGet({ request, env }) {
     ...posts.map((p) => {
       const mod = isoOrNull(p.updated_at) || isoOrNull(p.published_at);
       const img = p.cover_url && /^https:\/\//.test(p.cover_url)
-        ? `\n  <image:image><image:loc>${esc(String(p.cover_url).replace(/#.*$/, ''))}</image:loc><image:title>${esc(p.title)}</image:title></image:image>`
+        ? `\n  <image:image><image:loc>${esc(p.cover_url)}</image:loc><image:title>${esc(p.title)}</image:title></image:image>`
         : '';
       return `<url>\n  <loc>${esc(`${origin}/posts/${encodeURIComponent(p.slug)}`)}</loc>${mod ? `\n  ${lastmod(mod)}` : ''}${img}\n</url>`;
     }),

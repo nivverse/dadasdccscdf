@@ -296,7 +296,7 @@ export { postBar, postHead };
 
 export function shell({ origin, apiBase, path, title, desc, image, jsonld = [], body, robots = 'index, follow, max-image-preview:large', type = 'website', head = '' }) {
   const canonical = origin + path;
-  const img = String(image || `${origin}/og-image.jpg?v=20261120`).replace(/#.*$/, '');
+  const img = image || `${origin}/og-image.jpg?v=20261120`;
   const ld = jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`).join('\n');
   return `<!DOCTYPE html>
 <html lang="th" class="dark">

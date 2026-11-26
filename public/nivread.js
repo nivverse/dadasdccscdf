@@ -557,26 +557,21 @@ function avatarEl(user, size = 'w-9 h-9') {
 
   // ---------- แกลเลอรีรูปแบบ X (แถวรูปเลื่อนแนวนอน) + ดูรูปเต็ม (lightbox) ----------
   const IMG_OK = /^https:\/\/[^\s"'<>]{4,500}$/;
-  // สัดส่วนรูปแรกเก็บเป็น #r=<กว้าง/สูง> ต่อท้าย URL ตอนอัปโหลด → จองกรอบตั้งแต่แรก · โพสต์เก่าไม่มีค่า = ทำงานแบบเดิม (ขนาดตามรูปจริง)
-  const galFrag = (u) => String(u).replace(/#.*$/, '');
-  const galRatio = (u) => { const m = /#r=(\d+(?:\.\d+)?)$/.exec(String(u)); const r = m ? parseFloat(m[1]) : 0; return r > 0 ? Math.min(1.91, Math.max(0.5625, r)) : 0; };
   function galleryEl(list, title, href) {
-    const raw = (Array.isArray(list) ? list : []).filter((x) => IMG_OK.test(x)).slice(0, 10);
-    const n = raw.length;
+    const urls = (Array.isArray(list) ? list : []).filter((x) => IMG_OK.test(x)).slice(0, 10);
+    const n = urls.length;
     if (!n) return null;
-    const gr = galRatio(raw[0]), urls = raw.map(galFrag), st = gr ? ' style="--gr:' + gr.toFixed(3) + '"' : '', rk = gr ? ' rk' : '';
     const root = el('div', 'gal' + (href ? ' gal-l' : ''));
     const feed = !!href;
     const data = escHtml(JSON.stringify(urls)), alt = escHtml(title || '');
     if (n === 1) {
-      root.innerHTML = (feed ? '<a class="gal-s' + rk + '"' + st + ' href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' : '<div class="gal-s' + rk + '"' + st + ' data-imgs="' + data + '" data-i="0" role="button" tabindex="0" aria-label="ดูรูปเต็ม">') +
-        (gr ? '' : '<img class="bg" src="' + escHtml(urls[0]) + '" alt="" aria-hidden="true" loading="lazy" decoding="async">') +
+      root.innerHTML = (feed ? '<a class="gal-s" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' : '<div class="gal-s" data-imgs="' + data + '" data-i="0" role="button" tabindex="0" aria-label="ดูรูปเต็ม">') +
+        '<img class="bg" src="' + escHtml(urls[0]) + '" alt="" aria-hidden="true" loading="lazy" decoding="async">' +
         '<img class="fg" src="' + escHtml(urls[0]) + '" alt="' + alt + '" loading="lazy" decoding="async">' + (feed ? '</a>' : '</div>');
     } else { // หลายรูป = แถวรูปเลื่อนแนวนอนแบบ X (ไม่มีเลขลำดับ/ป้าย +N) · 2 รูปเต็มแถว · 3+ รูปเห็นรูปถัดไปโผล่ขอบขวา
       const chev = (d) => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
       root.classList.add('gal-xw');
-      if (gr && n === 2) root.classList.add('nv-fit'); // 2 รูปพอดีแถว ไม่มีอะไรให้เลื่อน → ซ่อนจุด/ลูกศร
-      root.innerHTML = (n > 1 ? '<div class="gal-dots" aria-hidden="true">' + urls.map((_, i) => '<i' + (i ? '' : ' class="on"') + '></i>').join('') + '</div>' : '') + '<div class="gal-x gal-x-' + (n === 2 ? '2' : 'm') + rk + '"' + st + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.map((u, i) => {
+      root.innerHTML = (n > 1 ? '<div class="gal-dots" aria-hidden="true">' + urls.map((_, i) => '<i' + (i ? '' : ' class="on"') + '></i>').join('') + '</div>' : '') + '<div class="gal-x gal-x-' + (n === 2 ? '2' : 'm') + '"' + (feed ? '' : ' data-imgs="' + data + '"') + '>' + urls.map((u, i) => {
         const im = '<img src="' + escHtml(u) + '" alt="' + alt + '" loading="lazy" decoding="async">';
         return feed
           ? '<a class="gal-t" href="' + escHtml(href) + '" aria-label="เปิดโพสต์ ' + alt + '">' + im + '</a>'
@@ -609,13 +604,6 @@ function avatarEl(user, size = 'w-9 h-9') {
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
 .gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)*var(--k,1)),88%,340px);max-height:560px;height:var(--gh,420px);border-radius:14px;scroll-snap-align:start}
-/* โพสต์ที่มีสัดส่วนรูปแรก (#r=…) → จองกรอบตั้งแต่แรกด้วย --gr · โพสต์เก่าที่ไม่มีค่าใช้กฎเดิมด้านบนทั้งหมด (.rk = ratio known) */
-.gal-s.rk{aspect-ratio:var(--gr)}
-.gal-s.rk:not(.ok){min-height:0}
-.gal-s.rk .fg{position:absolute;inset:0;height:100%;max-height:none;object-fit:cover}
-@media (min-width:768px){.gal-s.rk{max-height:560px}}
-.gal-x.rk .gal-t{align-self:flex-start;width:min(340px,78%);height:auto;aspect-ratio:var(--gr);max-height:560px}
-.gal-x-2.rk .gal-t{width:calc((100% - 8px)/2)}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}
@@ -650,7 +638,7 @@ function avatarEl(user, size = 'w-9 h-9') {
     const markOk = (img) => { const c = img.closest && img.closest('.gal-s,.gal-t'); if (c) c.classList.add('ok'); };
     const fitRow = (img) => { // แถวรูป (แกลเลอรี + การ์ดตัวละครในฟีด): สไลด์ใช้สัดส่วนของรูปแรก (ไม่ครอปเป็น 4:5 ตายตัว)
       const x = img.closest && img.closest('.gal-x,.cx-track');
-      if (!x || x.classList.contains('rk') || x.dataset.r || !img.naturalWidth || img !== x.querySelector('img')) return;
+      if (!x || x.dataset.r || !img.naturalWidth || img !== x.querySelector('img')) return;
       x.dataset.r = '1';
       x.style.setProperty('--gr', Math.min(1.91, Math.max(0.5625, img.naturalWidth / img.naturalHeight)).toFixed(4));
     };
@@ -684,13 +672,12 @@ function avatarEl(user, size = 'w-9 h-9') {
       const t = img.closest && img.closest('.gal-x .gal-t,.cx-multi .cx-slide');
       if (!t || !img.naturalWidth || !img.naturalHeight) return;
       const x = t.parentNode;
-      if (x.classList.contains('rk')) return;
       t.style.setProperty('--tr', Math.min(1.91, Math.max(0.2, img.naturalWidth / img.naturalHeight)).toFixed(4));
       if (!x.dataset.e) { x.dataset.e = '1'; [].slice.call(x.querySelectorAll('img[loading="lazy"]')).forEach((m) => { m.loading = 'eager'; }); }
       layoutX(x);
     };
     let rzT = 0;
-    window.addEventListener('resize', () => { cancelAnimationFrame(rzT); rzT = requestAnimationFrame(() => document.querySelectorAll('.gal-x:not(.rk),.cx-multi .cx-track').forEach(layoutX)); });
+    window.addEventListener('resize', () => { cancelAnimationFrame(rzT); rzT = requestAnimationFrame(() => document.querySelectorAll('.gal-x,.cx-multi .cx-track').forEach(layoutX)); });
     document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') { markOk(e.target); fitRow(e.target); fitX(e.target); } }, true);
     document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') markOk(e.target); }, true);
     document.querySelectorAll('.gal img').forEach((im) => { if (im.complete && im.naturalWidth > 0) { markOk(im); fitRow(im); fitX(im); } });

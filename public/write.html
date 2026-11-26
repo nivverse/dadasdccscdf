@@ -312,7 +312,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   const UP_MAX = 6;
   let uploading = false;
   // รูปที่อัปโหลดเอง: แบบเดิม …/api/blog/img/u/<key> หรือแบบใหม่จากโดเมน CDN …/u/<ผู้ใช้>/<ไฟล์>.webp|jpg|png (ใช้นับโควตาในหน้าจอเท่านั้น ฝั่งเซิร์ฟเวอร์ตรวจจริงอีกชั้น)
-  const isUp = (u) => (u = String(u).split('#')[0]).includes('/api/blog/img/u/') || /^https:\/\/[^/\s]+\/u\/[A-Za-z0-9._~%-]+\/[a-z0-9]{6,40}\.(?:webp|jpg|png)$/.test(u);
+  const isUp = (u) => u.includes('/api/blog/img/u/') || /^https:\/\/[^/\s]+\/u\/[A-Za-z0-9._~%-]+\/[a-z0-9]{6,40}\.(?:webp|jpg|png)$/.test(u);
   const upCount = () => images.filter(isUp).length;
   const imgMsg = (t, bad) => { const m = $('img-msg'); m.textContent = t; m.className = 'text-xs mt-1 ' + (bad ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-neutral-400'); };
   // ---------- กติกาการเลือกสื่อ (เสียงกับกล่องล็อกใช้ร่วมกับทุกแบบได้เสมอ) ----------
@@ -423,7 +423,7 @@ textarea.wr-f{resize:none;line-height:1.6}
           b = await toBlob(c2, 'image/jpeg', q);
         }
         if (!b) throw new Error('compress');
-        best = b; best.nivRatio = cv.width / cv.height; // สัดส่วนไฟล์ที่อัปโหลดจริง → เก็บต่อท้าย URL เป็น #r=… ให้ฟีดจองกรอบได้ตั้งแต่แรก
+        best = b;
         if (b.size <= TARGET) return best;
       }
       scale *= 0.8; // ยังใหญ่อยู่ → ลดขนาดภาพลงอีกนิด
@@ -473,7 +473,7 @@ textarea.wr-f{resize:none;line-height:1.6}
         });
         const d = await r.json().catch(() => ({}));
         if (!r.ok || !d.success) { notes.push(d.error || 'อัปโหลดไม่สำเร็จ'); bad = true; if (r.status === 401) needLogin(); continue; }
-        images.push(d.url + (blob.nivRatio ? '#r=' + blob.nivRatio.toFixed(3) : '')); done++; renderImages();
+        images.push(d.url); done++; renderImages();
       } catch { notes.push(f.name + (isHeic(f) ? ': แปลงไฟล์ HEIC ไม่สำเร็จ ลองส่งออกเป็น JPG แล้วอัปโหลดใหม่' : ': ประมวลผลรูปไม่ได้')); bad = true; }
     }
     uploading = false; renderImages();
@@ -518,7 +518,7 @@ textarea.wr-f{resize:none;line-height:1.6}
   const isVidUp = (u) => /\/v\/[A-Za-z0-9._~%-]+\/[a-z0-9]{6,40}\.(?:mp4|webm)$/.test(String(u));
   // วิดีโอที่เพิ่งอัปโหลดแล้วกด ✕ ก่อนบันทึกโพสต์ → สั่งลบจาก R2 ทันที (เดิมแค่ตัดออกจากรายการ ไฟล์จึงค้างใน R2 ตลอด)
   const savedImages = new Set(); // รูปที่บันทึกอยู่ในโพสต์แล้ว (โหมดแก้ไข) — ฝั่งเซิร์ฟเวอร์ตรวจซ้ำเสมอว่ามีโพสต์ใช้อยู่ไหม
-  const discardImage = (u) => { api('/api/blog/img-discard', { method: 'POST', body: { userId: s.userId, url: String(u).split('#')[0] } }).catch(() => {}); };
+  const discardImage = (u) => { api('/api/blog/img-discard', { method: 'POST', body: { userId: s.userId, url: u } }).catch(() => {}); };
   const discardVideo = (u) => { api('/api/blog/video-discard', { method: 'POST', body: { userId: s.userId, url: u } }).catch(() => {}); };
   // ออกจากหน้า/ปิดแท็บโดยไม่ได้โพสต์: วิดีโอที่อัปโหลดไว้แล้ว (และเสียงที่แยกไว้ใน R2 ของวิดีโอนั้น) ต้องถูกลบตาม ไม่ปล่อยเป็นไฟล์ขยะ
   // ฝั่งเซิร์ฟเวอร์ตรวจเองว่ามีโพสต์อ้างถึงอยู่ไหม (มี = ไม่ลบ) จึงปลอดภัยแม้ผู้ใช้เพิ่งบันทึกโพสต์
@@ -529,7 +529,7 @@ textarea.wr-f{resize:none;line-height:1.6}
     const junkImg = images.filter((u) => isUp(u) && !savedImages.has(u));
     if (!junk.length && !junkImg.length) return;
     leftAlready = true;
-    junkImg.forEach((u) => { try { fetch(NIV.API + '/api/blog/img-discard', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.token }, body: JSON.stringify({ userId: s.userId, url: String(u).split('#')[0] }) }).catch(() => {}); } catch {} });
+    junkImg.forEach((u) => { try { fetch(NIV.API + '/api/blog/img-discard', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.token }, body: JSON.stringify({ userId: s.userId, url: u }) }).catch(() => {}); } catch {} });
     junk.forEach((u) => { try { fetch(NIV.API + '/api/blog/video-discard', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.token }, body: JSON.stringify({ userId: s.userId, url: u }) }).catch(() => {}); } catch {} });
   });
   addEventListener('pageshow', (e) => { if (e.persisted) leftAlready = false; }); // กลับมาจาก bfcache = ยังอยู่ในหน้านี้
