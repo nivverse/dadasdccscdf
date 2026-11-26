@@ -71,6 +71,13 @@
 .gal-x{display:flex;gap:8px;padding:0 1rem;scroll-padding-inline:1rem;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .gal-x::-webkit-scrollbar{display:none}
 .gal-x .gal-t{display:block;box-sizing:border-box;flex:0 0 auto;width:min(calc(var(--gh,420px)*var(--tr,.8)*var(--k,1)),88%,340px);max-height:560px;height:var(--gh,420px);border-radius:14px;scroll-snap-align:start}
+/* โพสต์ที่มีสัดส่วนรูปแรก (#r=…) → จองกรอบตั้งแต่แรกด้วย --gr · โพสต์เก่าที่ไม่มีค่าใช้กฎเดิมด้านบนทั้งหมด (.rk = ratio known) */
+.gal-s.rk{aspect-ratio:var(--gr)}
+.gal-s.rk:not(.ok){min-height:0}
+.gal-s.rk .fg{position:absolute;inset:0;height:100%;max-height:none;object-fit:cover}
+@media (min-width:768px){.gal-s.rk{max-height:560px}}
+.gal-x.rk .gal-t{align-self:flex-start;width:min(340px,78%);height:auto;aspect-ratio:var(--gr);max-height:560px}
+.gal-x-2.rk .gal-t{width:calc((100% - 8px)/2)}
 .gal-x .gal-t img{transition:none}
 .gal-x .gal-t:hover img{transform:none;filter:none}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:rgba(0,0,0,.72);box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transition:opacity .2s,background .2s}

@@ -1,7 +1,7 @@
 // functions/posts/[slug].js — หน้าโพสต์เดี่ยว /posts/<slug> (SSR + meta + JSON-LD)
 import { api, esc, fmtDate, isoDate, shell, htmlResponse, postHead, postBar, postCard, characterCarousel, isCharacter, charList } from '../_lib/render.js';
 import { videoGallery, videoLd } from '../_lib/videos.js';
-import { imageGallery, postImages } from '../_lib/gallery.js';
+import { imageGallery, postImages, stripFrag } from '../_lib/gallery.js';
 
 const stripText = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 // ตัวคั่นกล่องล็อกในเนื้อหา [[lock:k1]] — ไม่ให้โผล่ใน meta/JSON-LD และวาดเป็นช่องว่างให้ /lock-box.js เติมกล่องทีหลัง (ข้อความที่ซ่อนไม่อยู่ใน HTML นี้)
@@ -53,7 +53,7 @@ export async function onRequestGet({ request, env, params }) {
       description: desc,
       url,
       mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-      image: postImages(p).length ? postImages(p) : undefined,
+      image: postImages(p).length ? postImages(p).map(stripFrag) : undefined,
       datePublished: isoDate(p.published_at || p.updated_at) || undefined,
       dateModified: isoDate(p.updated_at || p.published_at) || undefined,
       inLanguage: 'th',
